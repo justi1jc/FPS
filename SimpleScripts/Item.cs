@@ -1,7 +1,23 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class ItemController : MonoBehaviour{
+public class Item : MonoBehaviour{
+/*
+*
+*   GameObject structure
+*   
+*   General item
+*   Item|(ItemController)
+*       |Model(rigidbody, collider, meshrenderer)
+*   
+*   Ranged Weapon
+*   Item|(ItemController)
+*       |Model|(rigidbody, collider, meshrenderer)
+*             |MuzzlePoint//Forward position of barrel
+*             |RearPoint  //Rear position of barrel
+*/
+
+
   // Item Types
   const int SCENERY   = 0; // Can't be picked up.
   const int MISC      = 1; // No inherent use
@@ -10,7 +26,7 @@ public class ItemController : MonoBehaviour{
   const int RANGED    = 4; // Ranged weapon
   const int WARP      = 5; // Warps player to new area.
   const int CONTAINER = 6; // Access contents, but not pick up.
-  const int PROJECTILE= 7; // Flies forward until it hits something.
+  const int PROJECTILE= 7; // Flies forward when used.
   
   // General item variables
   public string prefabName;
@@ -151,12 +167,26 @@ public class ItemController : MonoBehaviour{
   /* Consume food. */
   public void Consume(){
     //TODO when ACTOR is set up.
+    //holder.hp+= healing;
   }
   
   /* Swings melee weapon. */
   public IEnumerator Swing(){
-    //TODO
-    yield return new WaitForSeconds(1f);
+    //TODO when Actor is set up.
+    if(sounds.Count > 0){
+      float vol = GameController.controller.masterVolume *
+                  GameController.controller.effectsVolume;
+      AudioSource.PlayClipAtPoint(
+                                  sounds[0],
+                                  transform.position,
+                                  vol
+                                  );
+    }
+    damageActive = false;
+    yield return new WaitForSeconds(damageBegin);
+    damageActive = true;
+    yield return new WaitForSeconds(damageEnd);
+    damageActive = false;
   }
   
   /* Sets weapon to ready after cooldown duration. */
@@ -167,7 +197,39 @@ public class ItemController : MonoBehaviour{
   
   /* Fires ranged weapon. */
   public void Fire(){
-    //TODO
+    if(sounds.Count > 0){
+      vol = GameController.controller.masterVolume *
+            GameController.controller.effectsVolume;
+      AudioSource.PlayClipAtPoint(
+                                  sounds[0],
+                                  transform.position,
+                                  vol
+                                  );
+    }
+    if(muzzlePoint != null && rearPoint != null){
+      ready = false;
+      //holder.SetAnimationTrigger(fireHash);
+      //holder.SetAnimationTrigger(fireHash);
+      ammo--;
+      Vector3 muzzlePos = muzzlePoint.transform.position;
+      Vector3 rearPos = rearPoint.transform.positon;
+      Vector3 relPos = muzzlePos - rearPos;
+      Quaternion projRot = Quaternion.LookRotation(relPos);
+      Rigidbody activeRB = active.GetComponent<Rigidbody>();
+      GameObject pref = (GameObject)Resources.Load(
+                                                     dat.prefabName,
+                                                     typeof(GameObject));
+                                                     );
+      GameObject proj = (GameObject)GameObject.Instantiate(pref.)
+      StartCoroutine(CoolDown());
+    }
+  }
+  
+  /* Reloads ranged weapon*/
+  publi void Reload(){
+    int displaced = ammo;
+    ammo = 0;
+    //TODO when Actor is set up
   }
   
   /* Warps to destination. */
