@@ -42,6 +42,9 @@ public class Actor{
   public HUDController hc;
   public Region reg;
   
+  //Player stats
+  public hp = 100;
+  
   /* Before Start */
   void Awake(){
   }

@@ -66,8 +66,10 @@ public class Item : MonoBehaviour{
   public int maxAmmo;
   public string ammoName;
   public string projectile;
-  public bool aimed;
+  public string aimString;
+  public int aimHash;
   public int rangedType;
+  public float reloadDelay;
   
   //WARP variables
   public string destName;
@@ -81,6 +83,7 @@ public class Item : MonoBehaviour{
     switch(itemType){
       case MELEE:
         swingHash = Animator.StringToHash(swingString);
+        aimHash = Animator.StringToHash(aimString);
         break;
 
       default:
@@ -166,13 +169,13 @@ public class Item : MonoBehaviour{
   
   /* Consume food. */
   public void Consume(){
-    //TODO when ACTOR is set up.
-    //holder.hp+= healing;
+    holder.hp += healing;
+    Destroy(this.gameObject);
   }
   
   /* Swings melee weapon. */
   public IEnumerator Swing(){
-    //TODO when Actor is set up.
+    holder.anim.SetAnimationTrigger(swingHash);
     if(sounds.Count > 0){
       float vol = GameController.controller.masterVolume *
                   GameController.controller.effectsVolume;
@@ -208,8 +211,8 @@ public class Item : MonoBehaviour{
     }
     if(muzzlePoint != null && rearPoint != null){
       ready = false;
-      //holder.SetAnimationTrigger(fireHash);
-      //holder.SetAnimationTrigger(fireHash);
+      holder.SetAnimationTrigger(fireHash);
+      holder.SetAnimationTrigger(fireHash);
       ammo--;
       Vector3 muzzlePos = muzzlePoint.transform.position;
       Vector3 rearPos = rearPoint.transform.positon;
@@ -225,12 +228,6 @@ public class Item : MonoBehaviour{
     }
   }
   
-  /* Reloads ranged weapon*/
-  publi void Reload(){
-    int displaced = ammo;
-    ammo = 0;
-    //TODO when Actor is set up
-  }
   
   /* Warps to destination. */
   public void Warp(){
@@ -239,13 +236,25 @@ public class Item : MonoBehaviour{
   
   /* Reloads weapon from player inventory if possible */
   public IEnumerator Reload(){
-    //TODO
-    yield return new WaitForSeconds(1f);
+    float vol = GameController.controller.masterVolume *
+                GameController.controller.effectsVolume;
+    AudioSource.PlayClipAtPoint(
+                                sounds[1],
+                                transform.position, 
+                                vol );
+    yield return new WaitForSeconds(reloadDelay);
+    int available = ammo + holder.RequestAmmo(ammoName , maxAmmo - ammo);
+    ammo = available;
   }
   
   /* Aims weapon or returns it to the hip.*/
   public void ToggleAim(){
-    //TODO
+    if(holder.GetAnimationBool(aimHash)){
+   	   holder.SetAnimationBool(aimHash, false);
+   	}
+   	else{
+   	   holder.SetAnimationBool(aimHash, true);
+   	}
   }
   
   /* Get the item's data. */

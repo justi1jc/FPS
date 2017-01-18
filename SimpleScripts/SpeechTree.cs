@@ -15,7 +15,7 @@ public class SpeechTree{
     root = active = 0;
   }
   
-  public string 
+   
   
   
   /* Reads data in from file. */
@@ -36,7 +36,8 @@ private class SpeechNode(){
                    _three = -1,
                    _four = -1
                    ){
-    
+   this.
+
   }
   
 }
