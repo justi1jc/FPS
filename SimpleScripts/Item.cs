@@ -64,7 +64,8 @@ public class Item : MonoBehaviour{
   //Ranged weapon variables 
   public int ammo;
   public int maxAmmo;
-  public string ammoName;
+  public int activeAmmoType;
+  public string[] ammoTypes;
   public string projectile;
   public string aimString;
   public int aimHash;
@@ -133,6 +134,13 @@ public class Item : MonoBehaviour{
         default:
           break;
       }
+    }
+  }
+  
+  /* Response to interaction from non-holder Actor */
+  public void Interact(Actor a, int mode = -1, int message = ""){
+    //TODO:
+    switch(itemType){
     }
   }
   
@@ -234,8 +242,40 @@ public class Item : MonoBehaviour{
     //TODO
   }
   
+  /* Returns true if this weapon consumes ammo. */
+  public bool ConsumesAmmo(){
+    switch(itemTyoe){
+      case RANGED:
+        return true;
+        break;
+    }
+    return false;
+  }
+  
+  /* Returns a list of valid ammo names */
+  public string[] GetAmmoTypes(){
+    return ammoTypes;
+  } 
+  
+  /* Adds ammo to weapon externally */
+  public LoadAmmo(){
+    int desired = ammoTypes[activeAmmoType];
+    int available = holder.RequestAmmo(requested, maxAmmo - ammo);
+    if(available > 0){ ammo = ammo + available; return; }
+    for(int i = 0; i < ammoTypes.Length; i++){
+      desired  = ammoTypes[i];
+      available = holder.RequestAmmo(requested, maxAmmo - ammo);
+      if(available > 0){ 
+        ammo = ammo + available;
+        activeAmmoType = ammoTypes[i];
+        return;
+      }
+    }
+  }
+  
   /* Reloads weapon from player inventory if possible */
   public IEnumerator Reload(){
+    //TODO: use ammoTypes instead
     float vol = GameController.controller.masterVolume *
                 GameController.controller.effectsVolume;
     AudioSource.PlayClipAtPoint(
@@ -243,8 +283,7 @@ public class Item : MonoBehaviour{
                                 transform.position, 
                                 vol );
     yield return new WaitForSeconds(reloadDelay);
-    int available = ammo + holder.RequestAmmo(ammoName , maxAmmo - ammo);
-    ammo = available;
+    LoadAmmo();
   }
   
   /* Aims weapon or returns it to the hip.*/
