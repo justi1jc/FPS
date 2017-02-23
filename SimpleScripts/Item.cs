@@ -68,9 +68,13 @@ public class Item : MonoBehaviour{
   public string[] ammoTypes;
   public string projectile;
   public string aimString;
+  public string fireString;
   public int aimHash;
   public int rangedType;
+  public int fireHash;
   public float reloadDelay;
+  public GameObject muzzlePoint;
+  public GameObject rearPoint;
   
   //WARP variables
   public string destName;
@@ -86,7 +90,9 @@ public class Item : MonoBehaviour{
         swingHash = Animator.StringToHash(swingString);
         aimHash = Animator.StringToHash(aimString);
         break;
-
+      case RANGED:
+        fireHash = Animator.StringToHash(fireString);
+        break;
       default:
         break;
     }
@@ -138,7 +144,7 @@ public class Item : MonoBehaviour{
   }
   
   /* Response to interaction from non-holder Actor */
-  public void Interact(Actor a, int mode = -1, int message = ""){
+  public void Interact(Actor a, int mode = -1, string message = ""){
     //TODO:
     switch(itemType){
     }
@@ -177,16 +183,16 @@ public class Item : MonoBehaviour{
   
   /* Consume food. */
   public void Consume(){
-    holder.hp += healing;
+    holder.ReceiveDamage(-healing, gameObject);
     Destroy(this.gameObject);
   }
   
   /* Swings melee weapon. */
   public IEnumerator Swing(){
-    holder.anim.SetAnimationTrigger(swingHash);
-    if(sounds.Count > 0){
-      float vol = GameController.controller.masterVolume *
-                  GameController.controller.effectsVolume;
+    holder.anim.SetTrigger(swingHash);
+    if(sounds.Length > 0){
+      float vol = 0f;//GameController.controller.masterVolume *
+                  //GameController.controller.effectsVolume;
       AudioSource.PlayClipAtPoint(
                                   sounds[0],
                                   transform.position,
@@ -194,7 +200,7 @@ public class Item : MonoBehaviour{
                                   );
     }
     damageActive = false;
-    yield return new WaitForSeconds(damageBegin);
+    yield return new WaitForSeconds(damageStart);
     damageActive = true;
     yield return new WaitForSeconds(damageEnd);
     damageActive = false;
@@ -208,9 +214,9 @@ public class Item : MonoBehaviour{
   
   /* Fires ranged weapon. */
   public void Fire(){
-    if(sounds.Count > 0){
-      vol = GameController.controller.masterVolume *
-            GameController.controller.effectsVolume;
+    if(sounds.Length > 0){
+      float vol = 0f;//GameController.controller.masterVolume *
+            //GameController.controller.effectsVolume;
       AudioSource.PlayClipAtPoint(
                                   sounds[0],
                                   transform.position,
@@ -219,19 +225,17 @@ public class Item : MonoBehaviour{
     }
     if(muzzlePoint != null && rearPoint != null){
       ready = false;
-      holder.SetAnimationTrigger(fireHash);
-      holder.SetAnimationTrigger(fireHash);
+      holder.anim.SetTrigger(fireHash);
+      holder.anim.SetTrigger(fireHash);
       ammo--;
       Vector3 muzzlePos = muzzlePoint.transform.position;
-      Vector3 rearPos = rearPoint.transform.positon;
+      Vector3 rearPos = rearPoint.transform.position;
       Vector3 relPos = muzzlePos - rearPos;
       Quaternion projRot = Quaternion.LookRotation(relPos);
-      Rigidbody activeRB = active.GetComponent<Rigidbody>();
       GameObject pref = (GameObject)Resources.Load(
-                                                     dat.prefabName,
-                                                     typeof(GameObject));
-                                                     );
-      GameObject proj = (GameObject)GameObject.Instantiate(pref.)
+        projectile,
+        typeof(GameObject));
+      GameObject proj = (GameObject)GameObject.Instantiate(pref);
       StartCoroutine(CoolDown());
     }
   }
@@ -244,10 +248,9 @@ public class Item : MonoBehaviour{
   
   /* Returns true if this weapon consumes ammo. */
   public bool ConsumesAmmo(){
-    switch(itemTyoe){
+    switch(itemType){
       case RANGED:
         return true;
-        break;
     }
     return false;
   }
@@ -258,16 +261,16 @@ public class Item : MonoBehaviour{
   } 
   
   /* Adds ammo to weapon externally */
-  public LoadAmmo(){
-    int desired = ammoTypes[activeAmmoType];
-    int available = holder.RequestAmmo(requested, maxAmmo - ammo);
+  public void LoadAmmo(){
+    string desired = ammoTypes[activeAmmoType];
+    int available = holder.RequestAmmo(desired, (maxAmmo - ammo));
     if(available > 0){ ammo = ammo + available; return; }
     for(int i = 0; i < ammoTypes.Length; i++){
       desired  = ammoTypes[i];
-      available = holder.RequestAmmo(requested, maxAmmo - ammo);
+      available = holder.RequestAmmo(desired, (maxAmmo - ammo));
       if(available > 0){ 
         ammo = ammo + available;
-        activeAmmoType = ammoTypes[i];
+        activeAmmoType = i;
         return;
       }
     }
@@ -276,8 +279,8 @@ public class Item : MonoBehaviour{
   /* Reloads weapon from player inventory if possible */
   public IEnumerator Reload(){
     //TODO: use ammoTypes instead
-    float vol = GameController.controller.masterVolume *
-                GameController.controller.effectsVolume;
+    float vol = 0f;//GameController.controller.masterVolume *
+                //GameController.controller.effectsVolume;
     AudioSource.PlayClipAtPoint(
                                 sounds[1],
                                 transform.position, 
@@ -288,11 +291,11 @@ public class Item : MonoBehaviour{
   
   /* Aims weapon or returns it to the hip.*/
   public void ToggleAim(){
-    if(holder.GetAnimationBool(aimHash)){
-   	   holder.SetAnimationBool(aimHash, false);
+    if(holder.anim.GetBool(aimHash)){
+   	   holder.anim.SetBool(aimHash, false);
    	}
    	else{
-   	   holder.SetAnimationBool(aimHash, true);
+   	   holder.anim.SetBool(aimHash, true);
    	}
   }
   

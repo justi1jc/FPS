@@ -19,10 +19,10 @@ using System.Collections;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
-public class Actor{
+public class Actor : MonoBehaviour{
   public string displayName;
   public string prefabName;
-  public playerNumber;
+  public int playerNumber;
   
   //Body parts
   public GameObject head;  // Gameobject containing the camera.
@@ -61,12 +61,8 @@ public class Actor{
   public string itemInReachName;
   public List<Data> inventory = new List<Data>();
   
-  public HUDController hc;
-  public Region reg;
-  
   //Player stats
-  public int hp = 100;
-  public float speed = 0.1;
+  public int health = 100;
   
   //Speech
   public Actor interlocutor; // Actor with whom you are speaking
@@ -83,10 +79,10 @@ public class Actor{
   
   /* Late-cycle loop. Orients the model before render.*/
   void LateUpdate(){
-    spine.rotation = Quaternion.Euler(new Vector3(
-                                                  headRotx,
-                                                  headRoty,
-                                                  spine.rotation.z);
+    spine.transform.rotation = Quaternion.Euler(new Vector3(
+      headRotx,
+      headRoty,
+      spine.transform.rotation.z));
                                                   
   }
   
@@ -95,26 +91,24 @@ public class Actor{
   *  >4 Initialize AI module
   */
   void AssignPlayer(int player){
-    player = _player;
     if(player <5 && player > 0){
       //TODO Register with gamecontroller
-      StartCoroutine(InputRoutine());
+      StartCoroutine("InputRoutine");
     }
     else if(player == 5){
       //TODO assign ai
-      
-      
     }
   }
   
   /* Handles input */
   IEnumerator InputRoutine(){
     while(true){
-      if(!GameController.controller.paused){
+      //if(!GameController.controller.paused){
+      if(true){
         KeyboardActorInput();
       }
       else{
-        KeyboardMenuInput();
+        //KeyboardMenuInput();
       }
     }
   }
@@ -123,16 +117,16 @@ public class Actor{
   void KeyboardActorInput(){
     //Basic movement
     bool shift = Input.GetKey(KeyCode.LeftShift);
-    bool walk = false;
-    if(Input.GetKey(KeyCode.W)){ Move(0,left); walk = true; }
-    if(Input.GetKey(KeyCode.S)){ Move(1,left); walk = true; }
-    if(Input.GetKey(KeyCode.A)){ Move(2,left); walk = true; }
-    if(Input.GetKey(KeyCode.D)){ Move(3,left); walk = true; }
+    bool walk = shift;
     if(walk != walking){
       walking = walk;
       anim.SetBool(walkingHash, walking);
     }
-    if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine(); )}
+    if(Input.GetKey(KeyCode.W)){ Move(0); walk = true; }
+    if(Input.GetKey(KeyCode.S)){ Move(1); walk = true; }
+    if(Input.GetKey(KeyCode.A)){ Move(2); walk = true; }
+    if(Input.GetKey(KeyCode.D)){ Move(3); walk = true; }
+    if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(KeyCode.LeftControl)){ToggleCrouch(); }
     if(Input.GetKeyUp(KeyCode.LeftControl)){ToggleCrouch(); }
     
@@ -165,12 +159,12 @@ public class Actor{
     3 = Left
   */
   public void Move(int direction){
-    Rigidbody rb = body.getComponent<Rigidbody>();
+    Rigidbody rb = body.GetComponent<Rigidbody>();
     if(rb == null){ return; }
     float pace = speed;
     Vector3 pos = body.transform.position;
-    Vector3 dest = Vector3();
-    Vector3 dir  = Vector3();
+    Vector3 dest = new Vector3();
+    Vector3 dir  = new Vector3();
     if(sprinting){ pace *= 1.25f; }
     switch(direction){
       case 0:
@@ -234,8 +228,8 @@ public class Actor{
   
   /* Jumps */
   IEnumerator JumpRoutine(){
-    if(jumpCoolDown){
-      Rigidbody rb = body.getComponent<Rigidbody>();
+    if(jumpReady){
+      Rigidbody rb = body.GetComponent<Rigidbody>();
       int lifts = 5;
       int jumpForce = 150;
       while(lifts > 0){
@@ -253,7 +247,7 @@ public class Actor{
   }
   
   /* Applies damage from attack. Ignores active weapon. */
-  void ReceiveDamage(int damage, GameObject weapon){
+  public void ReceiveDamage(int damage, GameObject weapon){
     if(health < 0 || weapon == activeItem){ return; }
     health -= damage;
     if(health < 1){
@@ -274,38 +268,38 @@ public class Actor{
     if(activeItem == null){ return; }
     Item item = activeItem.GetComponent<Item>();
     if(item == null){ print("Item missing:" + activeItem.name); return; }
-    item.use(use);
+    item.Use(use);
   }
   
   /* Selects an item in inventory. */
-  public void Equip(item itemIndex){
+  public void Equip(int itemIndex){
   //TODO: Ensure animations are correct
-    if(itemIndex < 0 || itemIndex => inventory.Count){ return; }
-    anim.setBool(aimRifleHash, false);
-    anim.setBool(holdRifleHash, false);
+    if(itemIndex < 0 || itemIndex >= inventory.Count){ return; }
+    anim.SetBool(aimRifleHash, false);
+    anim.SetBool(holdRifleHash, false);
     Data dat = inventory[itemIndex];
     GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
-    if(prefab == null){ print("Prefab null:" + dat.name); return;}
+    if(prefab == null){ print("Prefab null:" + dat.displayName); return;}
     GameObject itemGO = (GameObject)GameObject.Instantiate(
       prefab,
       transform.position,
       Quaternion.identity
     );
-    if(itemGO == null){print("GameObject null:" + dat.name); return; }
+    if(itemGO == null){print("GameObject null:" + dat.displayName); return; }
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
     itemGO.transform.parent = hand.transform;
     item.Hold(this);
     activeItem = itemGO;
     inventory.Remove(inventory[itemIndex]);
-    if(item.ConsumesAmmo()){ LoadAmmo(item); }
+    if(item.ConsumesAmmo()){ item.Reload(); }
   }
   
   /* Removes number of available ammo, up to max, and returns that number*/
   public int RequestAmmo(string ammoName,int max){
     for(int i = 0; i< inventory.Count; i++){
-      if(inventory[i].name == ammoName){
-        int available = inventory.stack;
+      if(inventory[i].displayName == ammoName){
+        int available = inventory[i].stack;
         if(available <= max){
           inventory.Remove(inventory[i]);
           return available;
@@ -358,6 +352,7 @@ public class Actor{
   /* Returns data not found in prefab for this Actor */
   public Data GetData(){
   //TODO
+    return new Data();
   }
   
   /* Loads data not specified for this prefab for this Actor */
@@ -382,42 +377,5 @@ public class Actor{
   public void ReceiveSpeech(int option = -1){
     //TODO Make one response for NPC, one for Player
   }
-    
-  /* Finds node nearest to Actor */
-  public NavNode NearestNode(){
-  //TODO
-  }
-  
-  /* move to a specific node. 
-     If no node specified by reference or index,
-     goes to nearest node.*/
-  public IEnumerator ToNode(int index = -1, NavNode node = null){
-  //TODO
-  }
-  
-  /* Moves to each node in order of list. */
-  public IENumerator TakePath(List<int> path){
-  //TODO
-  }
-  
-  /* Calculates path between two nodes, if one exists. */
-  public List<int> GetPath(int start, int finish){
-  //TODO
-  }
-  
-  /* Moves to a particular point in a straight line */
-  public IEnumerator MoveTo(Vector3 dest){
-  //TODO
-  }
-  
-  /* Orients look toward a particular orientation. */
-  public IEnumerator Aim(Vector3 eulers){
-  //TODO
-  }
-  
-  /* Returns the current look orientation */
-  public Vector3 CurrentAim(){
-  //TODO
-  }
-  
+     
 }
