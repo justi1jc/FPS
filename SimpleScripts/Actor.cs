@@ -70,6 +70,11 @@ public class Actor : MonoBehaviour{
   /* Before Start */
   void Awake(){
     //TODO
+    aliveHash = Animator.StringToHash(aliveString);
+    crouchedHash = Animator.StringToHash(crouchedString);
+    walkingHash = Animator.StringToHash(walkingString);
+    holdRifleHash = Animator.StringToHash(holdRifleString);
+    aimRifleHash = Animator.StringToHash(aimRifleString);
   }
   
   /* Before rest of code */

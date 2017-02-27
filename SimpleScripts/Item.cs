@@ -76,6 +76,9 @@ public class Item : MonoBehaviour{
   public GameObject muzzlePoint;
   public GameObject rearPoint;
   
+  //Projectile variables
+  public float muzzleVelocity;
+  
   //WARP variables
   public string destName;
   public Vector3 destPos;
@@ -114,9 +117,6 @@ public class Item : MonoBehaviour{
         case WARP:
           Warp();
           break;
-        case PROJECTILE:
-          // Launch
-          break;
         default:
           break;
       }
@@ -146,8 +146,6 @@ public class Item : MonoBehaviour{
   /* Response to interaction from non-holder Actor */
   public void Interact(Actor a, int mode = -1, string message = ""){
     //TODO:
-    switch(itemType){
-    }
   }
   
   /* Pick the item up. */
@@ -166,9 +164,7 @@ public class Item : MonoBehaviour{
                                               heldRot.z
                                               );
     Collider c = transform.GetComponent<Collider>();
-    if(c != null){
-      c.enabled = false;
-    }
+    c.isTrigger = true;
   }
   
   /* Drop the item. */
@@ -179,6 +175,7 @@ public class Item : MonoBehaviour{
       rb.useGravity = true;
     }
     Collider c = transform.GetComponent<Collider>();
+    c.isTrigger = false;
   }
   
   /* Consume food. */
@@ -214,6 +211,7 @@ public class Item : MonoBehaviour{
   
   /* Fires ranged weapon. */
   public void Fire(){
+  if(muzzlePoint != null && rearPoint != null){ return; }
     if(sounds.Length > 0){
       float vol = 0f;//GameController.controller.masterVolume *
             //GameController.controller.effectsVolume;
@@ -223,23 +221,24 @@ public class Item : MonoBehaviour{
                                   vol
                                   );
     }
-    if(muzzlePoint != null && rearPoint != null){
-      ready = false;
-      holder.anim.SetTrigger(fireHash);
-      holder.anim.SetTrigger(fireHash);
-      ammo--;
-      Vector3 muzzlePos = muzzlePoint.transform.position;
-      Vector3 rearPos = rearPoint.transform.position;
-      Vector3 relPos = muzzlePos - rearPos;
-      Quaternion projRot = Quaternion.LookRotation(relPos);
-      GameObject pref = (GameObject)Resources.Load(
-        projectile,
-        typeof(GameObject));
-      GameObject proj = (GameObject)GameObject.Instantiate(pref);
-      StartCoroutine(CoolDown());
-    }
+    ready = false;
+    holder.anim.SetTrigger(fireHash);
+    ammo--;
+    Vector3 muzzlePos = muzzlePoint.transform.position;
+    Vector3 rearPos = rearPoint.transform.position;
+    Vector3 relPos = muzzlePos - rearPos;
+    Quaternion projRot = Quaternion.LookRotation(relPos);
+    GameObject pref = (GameObject)Resources.Load(
+      projectile,
+      typeof(GameObject));
+    GameObject proj = (GameObject)GameObject.Instantiate(
+      pref,
+      muzzlePos,
+      projRot);
+    proj.GetComponent<Rigidbody>().velocity = relPos * muzzleVelocity;
+    StartCoroutine(CoolDown());
   }
-  
+ 
   
   /* Warps to destination. */
   public void Warp(){
@@ -348,9 +347,9 @@ public class Item : MonoBehaviour{
   
   /* Load the item's data. */
   public void LoadData(Data dat){
-    int i, s, f, d, b;
-    i = s = f = d =b = 0;
-    
+    int i, s, f;
+    i = s = f = 0;
+
     transform.position = new Vector3(dat.x, dat.y, dat.z);
     transform.rotation = Quaternion.Euler(dat.xr, dat.yr, dat.zr);
     stack = dat.stack;
