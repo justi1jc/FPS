@@ -12,6 +12,11 @@
           |     |     | Hand| // Mount point for held items.
           |     |     |     |Fist // Default weapon
           |     |     |     |activeItem // Item in current use, if applicable.
+          
+      Variables that must be set in animator or prefab
+      head, hand, spine
+      Speed
+      All animation strings
 */
 
 using UnityEngine;
