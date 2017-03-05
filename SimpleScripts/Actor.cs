@@ -5,13 +5,13 @@
         model, input/AI, inventory, and speech.
 
         GameObject structure:
-      Body|//Parent to others.
+      Body| // Parent to others. Rigidbody, collider, Actor
           |
-          |spine|//Pivot point for torso
-          |     | Head|//Contains Camera
-          |     |     | Hand|// Mount point for held items.
+          |spine| // Pivot point for torso
+          |     | Head| // Contains Camera
+          |     |     | Hand| // Mount point for held items.
           |     |     |     |Fist // Default weapon
-          |     |     |     |activeItem//Item in current use, if applicable.
+          |     |     |     |activeItem // Item in current use, if applicable.
 */
 
 using UnityEngine;
@@ -28,14 +28,14 @@ public class Actor : MonoBehaviour{
   public GameObject head;  // Gameobject containing the camera.
   public GameObject hand;  // GameObject where items are attached.
   public GameObject spine; // Pivot point of toros
-  public GameObject body;  // The parent gameobject of the actor
+  GameObject body;  // The base gameobject of the actor
   
   //Looking
   public float sensitivityX =1f;
   public float sensitivityY =1f;
   float rotxMax = 60f;
-  float headRotx = 0f;
-  float headRoty= 0f;
+  public float headRotx = 0f;
+  public float headRoty= 0f;
   float bodyRoty = 0f;
 
   //Walking 
@@ -79,16 +79,18 @@ public class Actor : MonoBehaviour{
   
   /* Before rest of code */
   void Start(){
+    body = gameObject;
     AssignPlayer(playerNumber);
   }
   
   /* Late-cycle loop. Orients the model before render.*/
   void LateUpdate(){
-    spine.transform.rotation = Quaternion.Euler(new Vector3(
-      headRotx,
-      headRoty,
-      spine.transform.rotation.z));
-                                                  
+    if(spine){
+      spine.transform.rotation = Quaternion.Euler(new Vector3(
+        headRotx,
+        headRoty,
+        spine.transform.rotation.z));
+    }                                    
   }
   
   /* 0 No AI
@@ -108,13 +110,14 @@ public class Actor : MonoBehaviour{
   /* Handles input */
   IEnumerator InputRoutine(){
     while(true){
-      //if(!GameController.controller.paused){
+      
       if(true){
         KeyboardActorInput();
       }
       else{
         //KeyboardMenuInput();
       }
+      yield return new WaitForSeconds(0.01f);
     }
   }
   
@@ -123,7 +126,7 @@ public class Actor : MonoBehaviour{
     //Basic movement
     bool shift = Input.GetKey(KeyCode.LeftShift);
     bool walk = shift;
-    if(walk != walking){
+    if(walk != walking && anim){
       walking = walk;
       anim.SetBool(walkingHash, walking);
     }
@@ -160,8 +163,8 @@ public class Actor : MonoBehaviour{
   /* Move in a direction 
     0 = Forward
     1 = Backward
-    2 = Right
-    3 = Left
+    2 = Left
+    3 = Right
   */
   public void Move(int direction){
     Rigidbody rb = body.GetComponent<Rigidbody>();
@@ -181,11 +184,11 @@ public class Actor : MonoBehaviour{
         dir = -body.transform.forward;
         break;
       case 2:
-        dest = pos + body.transform.right * pace;
+        dest = pos + body.transform.right * -pace;
         dir = body.transform.right;
         break;
       case 3:
-        dest = pos + body.transform.right * -pace;
+        dest = pos + body.transform.right * pace;
         dir = -body.transform.right;
         break;
     }
@@ -227,8 +230,10 @@ public class Actor : MonoBehaviour{
     bodyRoty += direction.y;
     if(headRotx > rotxMax){ headRotx = rotxMax; }
     if(headRotx < -rotxMax){ headRotx = -rotxMax; }
-    head.transform.rotation = Quaternion.Euler(headRotx, headRoty, 0f);
-    body.transform.rotation = Quaternion.Euler(0f,bodyRoty, 0f);
+    if(head){
+      head.transform.rotation = Quaternion.Euler(headRotx, headRoty, 0f);
+    }
+    body.transform.rotation = Quaternion.Euler(0f, bodyRoty, 0f);
   }
   
   /* Jumps */
@@ -236,7 +241,7 @@ public class Actor : MonoBehaviour{
     if(jumpReady){
       Rigidbody rb = body.GetComponent<Rigidbody>();
       int lifts = 5;
-      int jumpForce = 150;
+      int jumpForce = 50;
       while(lifts > 0){
         lifts--;
         rb.AddForce(body.transform.up * jumpForce);
@@ -248,7 +253,9 @@ public class Actor : MonoBehaviour{
   
   /* Toggles model's crouch */
   void ToggleCrouch(){
-    anim.SetBool(crouchedHash, !anim.GetBool(crouchedHash));
+    if(anim){
+      anim.SetBool(crouchedHash, !anim.GetBool(crouchedHash));
+    }
   }
   
   /* Applies damage from attack. Ignores active weapon. */
