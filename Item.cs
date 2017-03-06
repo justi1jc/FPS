@@ -3,6 +3,10 @@ using System.Collections;
 
 public class Item : MonoBehaviour{
 /*
+*   You'll quickly realize I'm using switch statements in place of polymorphism.
+*   Unity3d doesn't support script polymorphism. Creating an Item interface
+*   in the absence of abstract classes or inheritence was unmanageable, so this 
+*   is my solution.
 *
 *   GameObject structure
 *   
@@ -20,8 +24,12 @@ public class Item : MonoBehaviour{
 *   displayName
 *   prefabName
 *   itemType
+*   stack
+*   stackSize
 *   For food: healing
 *   For Melee weapon: damage, cooldown, damageStart, damageEnd
+*   For ranged weapon: damage, maxAmmo, projectile, rangeType, cooldown, muzzlePoint, rearPoint
+*     reloadDelay, muzzleVelocity
 */
 
 
@@ -34,6 +42,13 @@ public class Item : MonoBehaviour{
   const int WARP      = 5; // Warps player to new area.
   const int CONTAINER = 6; // Access contents, but not pick up.
   const int PROJECTILE= 7; // Flies forward when used.
+  
+  // Ranged weapon types
+  const int RIFLE  = 0; // Two-handed firearm.
+  const int PISTOL = 1; // One-handed firearm.
+  const int BOW    = 2; // Drawn back on click, then fired on release.
+  const int THROWN = 4; // Requires no ammo, destroyed on use.
+ 
   
   // General item variables
   public string prefabName;
@@ -62,11 +77,6 @@ public class Item : MonoBehaviour{
   public bool damageActive;
   public string swingString;
   public int swingHash;
-  
-  //Types of ranged weapons
-  const int RIFLE  = 0;
-  const int PISTOL = 1;
-  const int BOW    = 2;
   
   //Ranged weapon variables 
   public int ammo;
@@ -245,7 +255,7 @@ public class Item : MonoBehaviour{
   
   /* Fires ranged weapon. */
   public void Fire(){
-  if(muzzlePoint != null && rearPoint != null){ return; }
+  if(!muzzlePoint || !rearPoint || ammo < 1){ return; }
     if(sounds.Length > 0){
       float vol = 0f;//GameController.controller.masterVolume *
             //GameController.controller.effectsVolume;
@@ -256,7 +266,7 @@ public class Item : MonoBehaviour{
                                   );
     }
     ready = false;
-    holder.anim.SetTrigger(fireHash);
+    if(holder && holder.anim){ holder.anim.SetTrigger(fireHash); }
     ammo--;
     Vector3 muzzlePos = muzzlePoint.transform.position;
     Vector3 rearPos = rearPoint.transform.position;
@@ -295,6 +305,7 @@ public class Item : MonoBehaviour{
   
   /* Adds ammo to weapon externally */
   public void LoadAmmo(){
+    /* TODO: Implement multiple ammo types
     string desired = ammoTypes[activeAmmoType];
     int available = holder.RequestAmmo(desired, (maxAmmo - ammo));
     if(available > 0){ ammo = ammo + available; return; }
@@ -307,17 +318,22 @@ public class Item : MonoBehaviour{
         return;
       }
     }
+    */
+    int available = holder.RequestAmmo(projectile, (maxAmmo - ammo));
+    if(available > 0){ ammo = ammo + available; return; }
   }
   
   /* Reloads weapon from player inventory if possible */
   public IEnumerator Reload(){
     //TODO: use ammoTypes instead
-    float vol = 0f;//GameController.controller.masterVolume *
-                //GameController.controller.effectsVolume;
-    AudioSource.PlayClipAtPoint(
-                                sounds[1],
-                                transform.position, 
-                                vol );
+    if(sounds.Length > 1){
+      float vol = 0f;//GameController.controller.masterVolume *
+                  //GameController.controller.effectsVolume;
+      AudioSource.PlayClipAtPoint(
+                                  sounds[1],
+                                  transform.position, 
+                                  vol );
+    }
     yield return new WaitForSeconds(reloadDelay);
     LoadAmmo();
   }
@@ -359,7 +375,10 @@ public class Item : MonoBehaviour{
         break;
       case RANGED:
         dat.ints.Add(damage);
+        dat.ints.Add(ammo);
+        dat.ints.Add(rangedType);
         dat.floats.Add(cooldown);
+        dat.strings.Add(projectile);
         break;
       case WARP:
         dat.strings.Add(destName);
@@ -411,10 +430,10 @@ public class Item : MonoBehaviour{
         i++;
         ammo = dat.ints[i];
         i++;
-        projectile = dat.strings[s];
-        s++;
         rangedType = dat.ints[i];
         i++;
+        projectile = dat.strings[s];
+        s++;
         break;
       case WARP:
         destName = dat.strings[s];

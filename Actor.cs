@@ -407,7 +407,7 @@ public class Actor : MonoBehaviour{
   
   /* Removes number of available ammo, up to max, and returns that number*/
   public int RequestAmmo(string ammoName,int max){
-    for(int i = 0; i< inventory.Count; i++){
+    for(int i = 0; i < inventory.Count; i++){
       if(inventory[i].displayName == ammoName){
         int available = inventory[i].stack;
         if(available <= max){
@@ -426,6 +426,17 @@ public class Actor : MonoBehaviour{
   
   /* Adds item data to inventory */
   public void StoreItem(Data item){
+    if(item.stack == 0){ return; }
+    for(int i = 0; i < inventory.Count; i++){
+      if(item.stack < 1){ return; }
+      Data dat = inventory[i];
+      if(item.displayName == dat.displayName
+         && dat.stack < dat.stackSize){
+        int freeSpace = dat.stackSize - dat.stack;
+        if(freeSpace > item.stack){ dat.stack += item.stack; return; }
+        else{ dat.stack += freeSpace; item.stack -= freeSpace; }
+      }
+    }
     inventory.Add(item);
   }
   
@@ -441,7 +452,8 @@ public class Actor : MonoBehaviour{
     );
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
-    inventory.Remove(inventory[itemIndex]);
+    dat.stack--;
+    if(dat.stack < 1){ inventory.Remove(dat); }
   }
   
   /* Interact with item in reach.
