@@ -145,7 +145,8 @@ public class Item : MonoBehaviour{
   
   /* Response to interaction from non-holder Actor */
   public void Interact(Actor a, int mode = -1, string message = ""){
-    //TODO:
+    //TODO: Add other interaction modes.
+    a.PickUp(this);
   }
   
   /* Pick the item up. */

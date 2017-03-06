@@ -247,8 +247,8 @@ public class Actor : MonoBehaviour{
   
   /* Boxcasts to find the current item in reach, updating itemInReach if they
     do not match. */
-  GameObject UpdateReach(){
-    if(!hand){ print(gameObject.name + " hand missing"); return null; }
+  void UpdateReach(){
+    if(!hand){ print(gameObject.name + " hand missing"); return; }
     Vector3 center = hand.transform.position;
     Vector3 halfExtents = hand.transform.localScale / 2;
     Vector3 direction = hand.transform.forward;
@@ -266,9 +266,10 @@ public class Actor : MonoBehaviour{
     );
     for(int i = 0; i < found.Length; i++){
       Item item = found[i].collider.gameObject.GetComponent<Item>();
-      if(item){ print(item.gameObject); return item.gameObject; }
+      if(item){ itemInReach = item.gameObject; return; }
     }
-    return null;
+    itemInReach = null;
+    return;
   }  
   /* Two-axis movement. used by AI
    0 = no motion on axis
@@ -438,7 +439,13 @@ public class Actor : MonoBehaviour{
     if(itemInReach == null){ return; }
     Item item = itemInReach.GetComponent<Item>();
     if(item == null){ return; }
-    item.Interact(this, mode); 
+    item.Interact(this, mode);
+  }
+  
+  public void PickUp(Item item){
+    Data dat = item.GetData();
+    Destroy(item.gameObject);
+    print(dat);
   }
   
   /* Drops active item from hand */
