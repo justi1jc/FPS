@@ -370,12 +370,23 @@ public class Actor : MonoBehaviour{
     item.Use(use);
   }
   
-  /* Selects an item in inventory. */
+  /* Drops active item from hand */
+  public void Drop(){
+    if(activeItem == defaultItem || activeItem == null){ return; }
+    activeItem.transform.parent = null;
+    Item item = activeItem.GetComponent<Item>();
+    if(item){ item.Drop(); }
+    activeItem = defaultItem;
+  }
+  
+  /* Selects an item in inventory to equip. */
   public void Equip(int itemIndex){
   //TODO: Ensure animations are correct
     if(itemIndex < 0 || itemIndex >= inventory.Count){ return; }
-    anim.SetBool(aimRifleHash, false);
-    anim.SetBool(holdRifleHash, false);
+    if(anim){
+      anim.SetBool(aimRifleHash, false);
+      anim.SetBool(holdRifleHash, false);
+    }
     Data dat = inventory[itemIndex];
     GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
     if(prefab == null){ print("Prefab null:" + dat.displayName); return;}
@@ -442,19 +453,15 @@ public class Actor : MonoBehaviour{
     item.Interact(this, mode);
   }
   
+  /* Pick up item in world. */
   public void PickUp(Item item){
+    if(!item){ return; }
     Data dat = item.GetData();
     Destroy(item.gameObject);
-    print(dat);
+    StoreItem(dat);
+    if(activeItem == defaultItem){ Equip(inventory.Count - 1); }
+    Destroy(item.gameObject);
   }
-  
-  /* Drops active item from hand */
-  public void Drop(){
-    if(activeItem == defaultItem || activeItem == null){ return; }
-    activeItem.transform.parent = null;
-  }
-  
-
   
   /* Returns data not found in prefab for this Actor */
   public Data GetData(){

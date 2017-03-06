@@ -15,6 +15,10 @@ public class Item : MonoBehaviour{
 *       |Model|(rigidbody, collider, meshrenderer)
 *             |MuzzlePoint//Forward position of barrel
 *             |RearPoint  //Rear position of barrel
+*
+*   Variables that must be set for each instance
+*   displayName
+*   prefabName
 */
 
 
@@ -187,10 +191,10 @@ public class Item : MonoBehaviour{
   
   /* Swings melee weapon. */
   public IEnumerator Swing(){
-    holder.anim.SetTrigger(swingHash);
+    if(holder.anim){ holder.anim.SetTrigger(swingHash); }
     if(sounds.Length > 0){
-      float vol = 0f;//GameController.controller.masterVolume *
-                  //GameController.controller.effectsVolume;
+      float vol = 0f;//Session.controller.masterVolume *
+                  //Session.controller.effectsVolume;
       AudioSource.PlayClipAtPoint(
                                   sounds[0],
                                   transform.position,
