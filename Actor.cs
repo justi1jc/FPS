@@ -141,6 +141,7 @@ public class Actor : MonoBehaviour{
     while(true){
       
       if(!menuOpen){//TODO: Toggle menu controls properly
+        UpdateReach();
         KeyboardActorInput();
       }
       else{
@@ -239,10 +240,36 @@ public class Actor : MonoBehaviour{
       out hit,
       orientation,
       distance,
-      layerMask
+      layerMask,
+      QueryTriggerInteraction.Ignore
     );
   }
   
+  /* Boxcasts to find the current item in reach, updating itemInReach if they
+    do not match. */
+  GameObject UpdateReach(){
+    if(!hand){ print(gameObject.name + " hand missing"); return null; }
+    Vector3 center = hand.transform.position;
+    Vector3 halfExtents = hand.transform.localScale / 2;
+    Vector3 direction = hand.transform.forward;
+    Quaternion orientation = body.transform.rotation;
+    float distance = 1f;
+    int layerMask = ~(1 << 8);
+    RaycastHit[] found = Physics.BoxCastAll(
+      center,
+      halfExtents,
+      direction,
+      orientation,
+      distance,
+      layerMask,
+      QueryTriggerInteraction.Ignore
+    );
+    for(int i = 0; i < found.Length; i++){
+      Item item = found[i].collider.gameObject.GetComponent<Item>();
+      if(item){ print(item.gameObject); return item.gameObject; }
+    }
+    return null;
+  }  
   /* Two-axis movement. used by AI
    0 = no motion on axis
    1 = motion in positive direction
