@@ -19,6 +19,7 @@ public class Item : MonoBehaviour{
 *   Variables that must be set for each instance
 *   displayName
 *   prefabName
+*   itemType
 */
 
 
@@ -149,8 +150,8 @@ public class Item : MonoBehaviour{
   
   /* Response to interaction from non-holder Actor */
   public void Interact(Actor a, int mode = -1, string message = ""){
-    //TODO: Add other interaction modes.
-    a.PickUp(this);
+    //TODO: Account for other interaction modes.
+    if(itemType != SCENERY && holder == null){ a.PickUp(this); };
   }
   
   /* Pick the item up. */
@@ -181,11 +182,13 @@ public class Item : MonoBehaviour{
     }
     Collider c = transform.GetComponent<Collider>();
     c.isTrigger = false;
+    holder = null;
   }
   
   /* Consume food. */
   public void Consume(){
     holder.ReceiveDamage(-healing, gameObject);
+    holder.Drop();
     Destroy(this.gameObject);
   }
   
@@ -358,6 +361,8 @@ public class Item : MonoBehaviour{
     transform.position = new Vector3(dat.x, dat.y, dat.z);
     transform.rotation = Quaternion.Euler(dat.xr, dat.yr, dat.zr);
     stack = dat.stack;
+    weight = dat.ints[i];
+    i++;
     switch(itemType){
       case FOOD:
         healing = dat.ints[i];

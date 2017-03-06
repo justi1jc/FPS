@@ -347,7 +347,7 @@ public class Actor : MonoBehaviour{
   
   /* Applies damage from attack. Ignores active weapon. */
   public void ReceiveDamage(int damage, GameObject weapon){
-    if(health < 0 || weapon == activeItem){ return; }
+    if(health < 0 || (weapon == activeItem && damage > 0)){ return; }
     health -= damage;
     if(health < 1){
       health = 0;
