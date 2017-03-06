@@ -17,6 +17,7 @@
       head, hand, spine
       Speed
       All animation strings
+      playerNumber
 */
 
 using UnityEngine;
@@ -27,7 +28,7 @@ using System.Collections.Generic;
 public class Actor : MonoBehaviour{
   public string displayName;
   public string prefabName;
-  public int playerNumber;
+  public int playerNumber; // 1 for keyboard, 3-4 for controller, 5 for NPC
   
   //Body parts
   public GameObject head;  // Gameobject containing the camera.
@@ -51,7 +52,8 @@ public class Actor : MonoBehaviour{
   //Jumping
   public bool jumpReady = true;
   public bool falling;
-  public Vector3 fallOrigin;
+  public float fallOrigin;
+  public float safeFallDistance;
 
   //Animation
   public Animator anim;
@@ -88,6 +90,16 @@ public class Actor : MonoBehaviour{
     AssignPlayer(playerNumber);
   }
   
+  
+  /* Cycle loop. Listens for falling. */
+  void Update(){
+    Rigidbody rb = body.GetComponent<Rigidbody>();
+    if(!falling && rb && rb.velocity.y < 0f){
+      falling = true;
+      fallOrigin = transform.position.y;
+		}
+  }
+  
   /* Late-cycle loop. Orients the model before render.*/
   void LateUpdate(){
     if(spine){
@@ -105,6 +117,7 @@ public class Actor : MonoBehaviour{
   void AssignPlayer(int player){
     if(player <5 && player > 0){
       //TODO Register with gamecontroller
+      SetMenuControls(false);
       StartCoroutine("InputRoutine");
     }
     else if(player == 5){
@@ -112,15 +125,23 @@ public class Actor : MonoBehaviour{
     }
   }
   
+  /* Sets controls between menu and in-game contexts. */
+  void SetMenuControls(bool val){
+    Cursor.visible = !val;
+    if(!val){ Cursor.lockState = CursorLockMode.Locked; }
+    else{ Cursor.lockState = CursorLockMode.None; }
+  }
+  
+  
   /* Handles input */
   IEnumerator InputRoutine(){
     while(true){
       
-      if(true){
+      if(true){//TODO: Toggle menu controls effectively
         KeyboardActorInput();
       }
       else{
-        //KeyboardMenuInput();
+        KeyboardMenuInput();
       }
       yield return new WaitForSeconds(0.01f);
     }
@@ -244,6 +265,7 @@ public class Actor : MonoBehaviour{
   /* Jumps */
   IEnumerator JumpRoutine(){
     if(jumpReady){
+      jumpReady = false;
       Rigidbody rb = body.GetComponent<Rigidbody>();
       int lifts = 5;
       int jumpForce = 50;
@@ -256,11 +278,25 @@ public class Actor : MonoBehaviour{
     yield return new WaitForSeconds(0f);
   }
   
+  /* Refreshes Jump upon landing. */
+  void OnCollisionEnter(Collision col){
+    if(falling){ Land(fallOrigin - transform.position.y); }
+  }
+  
+  /* Replenishes Jump and applies fall damage. */
+  void Land(float distanceFallen){
+    falling = false;
+    jumpReady = true;
+    if(distanceFallen > safeFallDistance){
+      int damage = (int)(distanceFallen - safeFallDistance) * 5;
+      ReceiveDamage(damage, gameObject);
+    }
+  }
+  
   /* Toggles model's crouch */
   void ToggleCrouch(){
-    if(anim){
-      anim.SetBool(crouchedHash, !anim.GetBool(crouchedHash));
-    }
+    if(!anim){ return; }
+    anim.SetBool(crouchedHash, !anim.GetBool(crouchedHash));
   }
   
   /* Applies damage from attack. Ignores active weapon. */
@@ -365,6 +401,8 @@ public class Actor : MonoBehaviour{
     if(activeItem == defaultItem || activeItem == null){ return; }
     activeItem.transform.parent = null;
   }
+  
+
   
   /* Returns data not found in prefab for this Actor */
   public Data GetData(){

@@ -17,7 +17,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class HitBox : MonoBehaviour {
+public class OldHitBox : MonoBehaviour {
    public bool foot;
    public float safeFallDistance;
 	public NPC npc;
