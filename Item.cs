@@ -29,7 +29,7 @@ public class Item : MonoBehaviour{
 *   For food: healing
 *   For Melee weapon: damage, cooldown, damageStart, damageEnd
 *   For ranged weapon: damage, maxAmmo, projectile, rangeType, cooldown, muzzlePoint, rearPoint
-*     reloadDelay, muzzleVelocity
+*     reloadDelay, muzzleVelocity, impactForce
 */
 
 
@@ -92,14 +92,16 @@ public class Item : MonoBehaviour{
   public float reloadDelay;
   public GameObject muzzlePoint;
   public GameObject rearPoint;
-  
-  //Projectile variables
   public float muzzleVelocity;
+  public float impactForce;
   
   //WARP variables
   public string destName;
   public Vector3 destPos;
   public Vector3 destRot;
+  
+  //projectile variables
+  GameObject weaponOfOrigin;
   
   //Container variables
   public Data[] contents;
@@ -199,7 +201,7 @@ public class Item : MonoBehaviour{
   
   /* handle trigger collision */
   void OnTriggerEnter(Collider col){
-    if(damageActive && ready){
+    if(itemType == MELEE && damageActive && ready){
       HitBox hb = col.gameObject.GetComponent<HitBox>();
       if(hb){
         StartCoroutine(CoolDown());
@@ -207,17 +209,28 @@ public class Item : MonoBehaviour{
         
       }
     }
+    else if(
+        itemType == PROJECTILE
+        && damageActive
+        && weaponOfOrigin != col.gameObject
+      ){
+      HitBox hb = col.gameObject.GetComponent<HitBox>();
+      if(hb){ hb.ReceiveDamage(damage, gameObject); }
+      Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
+      if(rb){ rb.AddForce(transform.forward * impactForce); print("Pushed:" + col.gameObject);}
+      Destroy(this.gameObject);
+    }
   }
   
   /* handle continuing trigger collision */
   void OnTriggerStay(Collider col){
-    if(damageActive && ready){
-        HitBox hb = col.gameObject.GetComponent<HitBox>();
-        if(hb){
-          StartCoroutine(CoolDown());
-          hb.ReceiveDamage(damage, gameObject);
-        }
+    if(itemType == MELEE && damageActive && ready){
+      HitBox hb = col.gameObject.GetComponent<HitBox>();
+      if(hb){
+        StartCoroutine(CoolDown());
+        hb.ReceiveDamage(damage, gameObject);
       }
+    }
   }
   
   /* Consume food. */
@@ -279,6 +292,13 @@ public class Item : MonoBehaviour{
       pref,
       muzzlePos,
       projRot);
+    proj.GetComponent<Collider>().isTrigger = true;
+    Item item = proj.GetComponent<Item>();
+    if(item){
+      item.weaponOfOrigin = gameObject;
+      item.impactForce = impactForce;
+      item.damageActive = true;
+    }
     proj.GetComponent<Rigidbody>().velocity = relPos * muzzleVelocity;
     StartCoroutine(CoolDown());
   }
