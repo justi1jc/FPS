@@ -20,6 +20,8 @@ public class Item : MonoBehaviour{
 *   displayName
 *   prefabName
 *   itemType
+*   For food: healing
+*   For Melee weapon: damage, cooldown, damageStart, damageEnd
 */
 
 
@@ -52,7 +54,7 @@ public class Item : MonoBehaviour{
   // Weapon variables
   public int damage;
   public float cooldown;
-  public bool ready;
+  public bool ready = true;
   
   //Melee variables
   public float damageStart;
@@ -114,7 +116,7 @@ public class Item : MonoBehaviour{
           Consume();
           break;
         case MELEE:
-          StartCoroutine(Swing());
+          if(ready){ StartCoroutine(Swing()); }
           break;
         case RANGED:
           Fire();
@@ -165,9 +167,9 @@ public class Item : MonoBehaviour{
     }
     transform.localPosition = heldPos;
     transform.localRotation = Quaternion.Euler(
-                                              heldRot.x,    
-                                              heldRot.y, 
-                                              heldRot.z
+                                                heldRot.x,    
+                                                heldRot.y, 
+                                                heldRot.z
                                               );
     Collider c = transform.GetComponent<Collider>();
     c.isTrigger = true;
@@ -183,6 +185,29 @@ public class Item : MonoBehaviour{
     Collider c = transform.GetComponent<Collider>();
     c.isTrigger = false;
     holder = null;
+  }
+  
+  /* handle trigger collision */
+  void OnTriggerEnter(Collider col){
+    if(damageActive && ready){
+      HitBox hb = col.gameObject.GetComponent<HitBox>();
+      if(hb){
+        StartCoroutine(CoolDown());
+        hb.ReceiveDamage(damage, gameObject);
+        
+      }
+    }
+  }
+  
+  /* handle continuing trigger collision */
+  void OnTriggerStay(Collider col){
+    if(damageActive && ready){
+        HitBox hb = col.gameObject.GetComponent<HitBox>();
+        if(hb){
+          StartCoroutine(CoolDown());
+          hb.ReceiveDamage(damage, gameObject);
+        }
+      }
   }
   
   /* Consume food. */
@@ -213,6 +238,7 @@ public class Item : MonoBehaviour{
   
   /* Sets weapon to ready after cooldown duration. */
   public IEnumerator CoolDown(){
+    ready = false;
     yield return new WaitForSeconds(cooldown);
     ready = true;
   } 
@@ -328,6 +354,8 @@ public class Item : MonoBehaviour{
       case MELEE:
         dat.ints.Add(damage);
         dat.floats.Add(cooldown);
+        dat.floats.Add(damageStart);
+        dat.floats.Add(damageEnd);
         break;
       case RANGED:
         dat.ints.Add(damage);
@@ -371,6 +399,8 @@ public class Item : MonoBehaviour{
       case MELEE:
         damage = dat.ints[i];
         i++;
+        cooldown = dat.floats[f];
+        f++;
         damageStart = dat.floats[f];
         f++;
         damageEnd = dat.floats[f];

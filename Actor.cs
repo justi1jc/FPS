@@ -352,7 +352,7 @@ public class Actor : MonoBehaviour{
     if(health < 1){
       health = 0;
       StopAllCoroutines();
-      anim.SetBool(aliveHash, false);
+      if(anim){ anim.SetBool(aliveHash, false); }
       Ragdoll(true);
     }
   }
