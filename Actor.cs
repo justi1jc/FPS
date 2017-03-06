@@ -62,6 +62,7 @@ public class Actor : MonoBehaviour{
   public string holdRifleString, aimRifleString;
   
   //Inventory
+  bool menuOpen;
   public GameObject defaultItem;
   public GameObject activeItem;
   public GameObject itemInReach;
@@ -137,7 +138,7 @@ public class Actor : MonoBehaviour{
   IEnumerator InputRoutine(){
     while(true){
       
-      if(true){//TODO: Toggle menu controls effectively
+      if(!menuOpen){//TODO: Toggle menu controls properly
         KeyboardActorInput();
       }
       else{
@@ -182,7 +183,7 @@ public class Actor : MonoBehaviour{
   }
   
   /* Handles pause menu keyboard input. */
-  void KeyboadMenuInput(){
+  void KeyboardMenuInput(){
     
   }
   
@@ -200,6 +201,7 @@ public class Actor : MonoBehaviour{
     Vector3 dest = new Vector3();
     Vector3 dir  = new Vector3();
     if(sprinting){ pace *= 1.25f; }
+    if(!jumpReady){ pace *= 0.75f; }
     switch(direction){
       case 0:
         dest = pos + body.transform.forward * pace;
