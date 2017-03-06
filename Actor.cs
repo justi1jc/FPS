@@ -18,6 +18,8 @@
       Speed
       All animation strings
       playerNumber
+      safeFallDistance
+      rigidody constraints: rotation on x, y z axes.
 */
 
 using UnityEngine;
@@ -152,11 +154,9 @@ public class Actor : MonoBehaviour{
   void KeyboardActorInput(){
     //Basic movement
     bool shift = Input.GetKey(KeyCode.LeftShift);
-    bool walk = shift;
-    if(walk != walking && anim){
-      walking = walk;
-      anim.SetBool(walkingHash, walking);
-    }
+    bool walk = false;
+    //TODO: if(shift != sprinting && anim){ anim.SetBool(sprintingHash, shift)}
+    sprinting = shift;
     if(Input.GetKey(KeyCode.W)){ Move(0); walk = true; }
     if(Input.GetKey(KeyCode.S)){ Move(1); walk = true; }
     if(Input.GetKey(KeyCode.A)){ Move(2); walk = true; }
@@ -164,6 +164,7 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(KeyCode.LeftControl)){ToggleCrouch(); }
     if(Input.GetKeyUp(KeyCode.LeftControl)){ToggleCrouch(); }
+    if(walk != walking && anim){ anim.SetBool(walkingHash, walking); }
     
     //Mouse controls
     if(Input.GetMouseButtonDown(0)){ Use(0); }
@@ -200,7 +201,7 @@ public class Actor : MonoBehaviour{
     Vector3 pos = body.transform.position;
     Vector3 dest = new Vector3();
     Vector3 dir  = new Vector3();
-    if(sprinting){ pace *= 1.25f; }
+    if(sprinting){ pace *= 1.75f; }
     if(!jumpReady){ pace *= 0.75f; }
     switch(direction){
       case 0:
@@ -213,18 +214,33 @@ public class Actor : MonoBehaviour{
         break;
       case 2:
         dest = pos + body.transform.right * -pace;
-        dir = body.transform.right;
+        dir = -body.transform.right;
         break;
       case 3:
         dest = pos + body.transform.right * pace;
-        dir = -body.transform.right;
+        dir = body.transform.right;
         break;
     }
-    int layerMask = 1 << 8;
-       layerMask = ~layerMask;
-       RaycastHit[] hits =
-          Physics.RaycastAll(pos + new Vector3(0,1,0),dir,3*pace, layerMask);
-       if(hits.Length == 0){ rb.MovePosition(dest); } 
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
+  }
+  
+  /* Returns true if the Actor has clearance to move in a particular direction
+  a particular distance. */
+  bool MoveCheck(Vector3 direction, float distance){
+    Vector3 center = body.transform.position;
+    Vector3 halfExtents = body.transform.localScale / 2;
+    Quaternion orientation = body.transform.rotation;
+    int layerMask = ~(1 << 8);
+    RaycastHit hit;
+    return !Physics.BoxCast(
+      center,
+      halfExtents,
+      direction,
+      out hit,
+      orientation,
+      distance,
+      layerMask
+    );
   }
   
   /* Two-axis movement. used by AI
@@ -270,7 +286,7 @@ public class Actor : MonoBehaviour{
       jumpReady = false;
       Rigidbody rb = body.GetComponent<Rigidbody>();
       int lifts = 5;
-      int jumpForce = 50;
+      int jumpForce = 60;
       while(lifts > 0){
         lifts--;
         rb.AddForce(body.transform.up * jumpForce);
