@@ -360,6 +360,7 @@ public class Item : MonoBehaviour{
   
   /* Aims weapon or returns it to the hip.*/
   public void ToggleAim(){
+    if(!holder || !holder.anim){ return; }
     if(holder.anim.GetBool(aimHash)){
    	   holder.anim.SetBool(aimHash, false);
    	}

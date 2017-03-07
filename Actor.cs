@@ -96,6 +96,7 @@ public class Actor : MonoBehaviour{
   
   /* Cycle loop. Listens for falling. */
   void Update(){
+    UpdateReach();
     Rigidbody rb = body.GetComponent<Rigidbody>();
     if(!falling && rb && rb.velocity.y < 0f){
       falling = true;
@@ -118,10 +119,12 @@ public class Actor : MonoBehaviour{
   *  >4 Initialize AI module
   */
   void AssignPlayer(int player){
-    if(player <5 && player > 0){
-      //TODO Register with gamecontroller
+    if(player == 1){
       SetMenuControls(false);
-      StartCoroutine("InputRoutine");
+      StartCoroutine(KeyboardInputRoutine()); 
+    }
+    if(player <5 && player > 1){
+      StartCoroutine(ControllerInputRoutine());
     }
     else if(player == 5){
       //TODO assign ai
@@ -136,16 +139,27 @@ public class Actor : MonoBehaviour{
   }
   
   
-  /* Handles input */
-  IEnumerator InputRoutine(){
+  /* Handles input from keyboard. */
+  IEnumerator KeyboardInputRoutine(){
     while(true){
-      
       if(!menuOpen){//TODO: Toggle menu controls properly
-        UpdateReach();
         KeyboardActorInput();
       }
       else{
         KeyboardMenuInput();
+      }
+      yield return new WaitForSeconds(0.01f);
+    }
+  }
+  
+  /* Handles input from controller. */
+  IEnumerator ControllerInputRoutine(){
+    while(true){
+      if(!menuOpen){
+        ControllerActorInput();
+      }
+      else{
+        ControllerMenuInput();
       }
       yield return new WaitForSeconds(0.01f);
     }
@@ -189,6 +203,28 @@ public class Actor : MonoBehaviour{
     
   }
   
+  /* Handles controller input when not paused. */
+  void ControllerActorInput(){
+    //Get axis input
+    float xl = Input.GetAxis(Session.XL);
+    float yl = Input.GetAxis(Session.YL);
+    float xr = Input.GetAxis(Session.XR);
+    float yr = Input.GetAxis(Session.YR);
+    
+    // Basic movement
+    bool shift = Input.GetButton(Session.LB);
+    bool walk = xl != 0f || yl != 0;
+    //TODO: if(shift != sprinting && anim){ anim.SetBool(sprintingHash, shift)}
+    sprinting = shift;
+    AxisMove(xl, yl);
+    if(walk != walking && anim){ anim.SetBool(walkingHash, walking); }
+  }
+  
+  /* Handles pause menu controller input. */
+  void ControllerMenuInput(){
+    
+  }
+  
   /* Move in a direction 
     0 = Forward
     1 = Backward
@@ -222,6 +258,17 @@ public class Actor : MonoBehaviour{
         dir = body.transform.right;
         break;
     }
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
+  }
+  
+  /* Move according to x and y axes. */
+  public void AxisMove(float x, float y){
+    Vector3 dir = new Vector3(x, 0f, -y);
+    Rigidbody rb =  body.GetComponent<Rigidbody>();
+    float pace = speed;
+    if(sprinting){ pace *= 1.75f; }
+    if(!jumpReady){ pace *= 0.75f; } 
+    Vector3 dest = body.transform.position + (pace * dir);
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
   }
   
