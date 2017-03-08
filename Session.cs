@@ -31,19 +31,22 @@ public class Session : MonoBehaviour {
   public static string LT = "LT"; // "3rd Axis" DeadZone: 0.1
   public static string DX = "DX";  // "7th Axis" for wired controllers
   public static string DY = "DY";  // "8th Axis"
-  public static string RB = "RB"; // 5
-  public static string LB = "LB"; // 4
-  public static string A = "A"; // 0
-  public static string B = "B"; // 1
-  public static string X = "X"; // 2
-  public static string Y = "Y"; // 3
-  public static string START = "START"; // 7
-  public static string SELECT = "SELECT"; // 6
-  public static string DUB = "DUB"; // 13   For wireless controllers
-  public static string DDB = "DDB"; // 14
-  public static string DRB = "DRB"; // 11
-  public static string DLB = "DLB"; // 12
+  public static string RB = "joystick button 4"; // 5
+  public static string LB = "joystick button 4"; // 4
+  public static string A = "joystick button 0"; // 0
+  public static string B = "joystick button 1"; // 1
+  public static string X = "joystick button 2"; // 2
+  public static string Y = "joystick button 3"; // 3
+  public static string START = "joystick button 7"; // 7
+  public static string SELECT = "joystick button 6"; // 6
+  public static string DUB = "joystick button 13"; // 13   For wireless controllers
+  public static string DDB = "joystick button 14"; // 14
+  public static string DRB = "joystick button 11"; // 11
+  public static string DLB = "joystick button 12"; // 12
+  public static string RSC = "joystick button 10"; // 10
+  public static string LSC = "joystick button 9"; // 9
   
+  public Camera[] cameras = new Camera[4];
   
   void Awake(){
     if(Session.session){ Destroy(this); }
@@ -52,13 +55,24 @@ public class Session : MonoBehaviour {
   
   
   void Update(){
-    if(Input.GetKey(KeyCode.Escape)){
+    if(Input.GetKey(KeyCode.Escape) || Input.GetKey(Session.START)){
       Application.Quit();
     }
   }
   
   Data GatherInterior(){
     return new Data();
+  }
+  
+  public void RegisterPlayer(int player, Camera cam){
+    cameras[player-1] = cam;
+    int active = 0;
+    for(int i = 0; i < cameras.Length; i++){if(cameras[i]){ active++; }}
+    UpdateCameras(active);
+  }
+  
+  void UpdateCameras(int active){
+    
   }
   
 }

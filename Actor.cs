@@ -39,6 +39,8 @@ public class Actor : MonoBehaviour{
   GameObject body;  // The base gameobject of the actor
   
   //Looking
+  public bool rt_down = false;
+  public bool lt_down = false;
   public float sensitivityX =1f;
   public float sensitivityY =1f;
   float rotxMax = 60f;
@@ -210,14 +212,27 @@ public class Actor : MonoBehaviour{
     float yl = Input.GetAxis(Session.YL);
     float xr = Input.GetAxis(Session.XR);
     float yr = Input.GetAxis(Session.YR);
+    float rt = Input.GetAxis(Session.RT);
+    float lt = Input.GetAxis(Session.LT);
     
     // Basic movement
-    bool shift = Input.GetButton(Session.LB);
+    bool shift = Input.GetKey(Session.RB);
     bool walk = xl != 0f || yl != 0;
     //TODO: if(shift != sprinting && anim){ anim.SetBool(sprintingHash, shift)}
     sprinting = shift;
     AxisMove(xl, yl);
+    Turn(new Vector3(yr, xr, 0f));
     if(walk != walking && anim){ anim.SetBool(walkingHash, walking); }
+    
+    //Buttons
+    if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
+    if(Input.GetKeyDown(Session.X) && itemInReach){ Interact(); }
+    else if(Input.GetKeyDown(Session.X)){ Use(2); }
+    if(rt > 0 && !rt_down){ Use(0); rt_down = true;}
+    if(rt == 0){ rt_down = false; }
+    if(lt > 0 && !lt_down){ Use(1); lt_down = true;}
+    if(lt == 0){ lt_down = false; }
+    if(Input.GetKeyDown(Session.LSC)){ ToggleCrouch(); }
   }
   
   /* Handles pause menu controller input. */
@@ -388,6 +403,7 @@ public class Actor : MonoBehaviour{
   
   /* Toggles model's crouch */
   void ToggleCrouch(){
+    print("Crouch!");
     if(!anim){ return; }
     anim.SetBool(crouchedHash, !anim.GetBool(crouchedHash));
   }
