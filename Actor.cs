@@ -124,8 +124,10 @@ public class Actor : MonoBehaviour{
     if(player == 1){
       SetMenuControls(false);
       StartCoroutine(KeyboardInputRoutine()); 
+      if(Session.session){ Session.session.RegisterPlayer(player, head.GetComponent<Camera>()); }
     }
     if(player <5 && player > 1){
+      if(Session.session){ Session.session.RegisterPlayer(player, head.GetComponent<Camera>()); }
       StartCoroutine(ControllerInputRoutine());
     }
     else if(player == 5){
@@ -278,7 +280,9 @@ public class Actor : MonoBehaviour{
   
   /* Move according to x and y axes. */
   public void AxisMove(float x, float y){
-    Vector3 dir = new Vector3(x, 0f, -y);
+    Vector3 xdir = x * body.transform.right;
+    Vector3 ydir = -y * body.transform.forward;
+    Vector3 dir = xdir + ydir;
     Rigidbody rb =  body.GetComponent<Rigidbody>();
     float pace = speed;
     if(sprinting){ pace *= 1.75f; }

@@ -217,7 +217,7 @@ public class Item : MonoBehaviour{
       HitBox hb = col.gameObject.GetComponent<HitBox>();
       if(hb){ hb.ReceiveDamage(damage, gameObject); }
       Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
-      if(rb){ rb.AddForce(transform.forward * impactForce); print("Pushed:" + col.gameObject);}
+      if(rb){ rb.AddForce(transform.forward * impactForce); }
       Destroy(this.gameObject);
     }
   }

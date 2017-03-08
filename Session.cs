@@ -46,7 +46,8 @@ public class Session : MonoBehaviour {
   public static string RSC = "joystick button 10"; // 10
   public static string LSC = "joystick button 9"; // 9
   
-  public Camera[] cameras = new Camera[4];
+  Camera cam1;
+  Camera cam2;
   
   void Awake(){
     if(Session.session){ Destroy(this); }
@@ -65,14 +66,20 @@ public class Session : MonoBehaviour {
   }
   
   public void RegisterPlayer(int player, Camera cam){
-    cameras[player-1] = cam;
-    int active = 0;
-    for(int i = 0; i < cameras.Length; i++){if(cameras[i]){ active++; }}
-    UpdateCameras(active);
+    if(player == 1){ cam1 = cam; }
+    else if(player == 2){ cam2 = cam; }
+    UpdateCameras();
   }
   
-  void UpdateCameras(int active){
+  void UpdateCameras(){
+    bool split = cam1 && cam2;
+    if(split){
+      cam1.rect = new Rect(0f, 0f, 0.5f, 1f);
+      cam2.rect = new Rect(0.5f, 0, 0.5f, 1f);
+    }
+    else if(cam1){ cam1.rect = new Rect(0f, 0f, 1f, 1f); }
     
+   
   }
   
 }
