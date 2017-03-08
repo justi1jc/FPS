@@ -39,6 +39,7 @@ public class Actor : MonoBehaviour{
   GameObject body;  // The base gameobject of the actor
   
   //Looking
+  public Menu menu;
   public bool rt_down = false;
   public bool lt_down = false;
   public float sensitivityX =1f;
@@ -121,14 +122,13 @@ public class Actor : MonoBehaviour{
   *  >4 Initialize AI module
   */
   void AssignPlayer(int player){
-    if(player == 1){
-      SetMenuControls(false);
-      StartCoroutine(KeyboardInputRoutine()); 
+    if(player <5 && player > 0){
+      if(head){ menu = head.GetComponent<Menu>(); }
+      if(menu){ menu.Change(Menu.HUD); }
+      menuOpen = false;
       if(Session.session){ Session.session.RegisterPlayer(player, head.GetComponent<Camera>()); }
-    }
-    if(player <5 && player > 1){
-      if(Session.session){ Session.session.RegisterPlayer(player, head.GetComponent<Camera>()); }
-      StartCoroutine(ControllerInputRoutine());
+      if(player == 1){ SetMenuKeyboardControls(false); StartCoroutine(KeyboardInputRoutine()); }
+      else{StartCoroutine(ControllerInputRoutine()); }
     }
     else if(player == 5){
       //TODO assign ai
@@ -136,7 +136,8 @@ public class Actor : MonoBehaviour{
   }
   
   /* Sets controls between menu and in-game contexts. */
-  void SetMenuControls(bool val){
+  void SetMenuKeyboardControls(bool val){
+    menuOpen = val;
     Cursor.visible = !val;
     if(!val){ Cursor.lockState = CursorLockMode.Locked; }
     else{ Cursor.lockState = CursorLockMode.None; }
@@ -200,11 +201,18 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(KeyCode.RightArrow)){ Interact(2); }
     if(Input.GetKeyDown(KeyCode.DownArrow)){ Interact(3); }
     if(Input.GetKeyDown(KeyCode.Backspace)){ Interact(4); }
+    if(Input.GetKeyDown(KeyCode.Tab)){ 
+      SetMenuKeyboardControls(true);
+      if(menu){ menu.Change(Menu.INVENTORY); }
+    }
   }
   
   /* Handles pause menu keyboard input. */
   void KeyboardMenuInput(){
-    
+    if(Input.GetKeyDown(KeyCode.Tab)){
+      SetMenuKeyboardControls(false);
+      if(menu){ menu.Change(Menu.HUD); }
+    }
   }
   
   /* Handles controller input when not paused. */
@@ -230,16 +238,18 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(Session.X) && itemInReach){ Interact(); }
     else if(Input.GetKeyDown(Session.X)){ Use(2); }
+    if(Input.GetKeyDown(Session.Y)){ menuOpen=true; if(menu){ menu.Change(Menu.INVENTORY); } }
     if(rt > 0 && !rt_down){ Use(0); rt_down = true;}
     if(rt == 0){ rt_down = false; }
     if(lt > 0 && !lt_down){ Use(1); lt_down = true;}
     if(lt == 0){ lt_down = false; }
     if(Input.GetKeyDown(Session.LSC)){ ToggleCrouch(); }
+    
   }
   
   /* Handles pause menu controller input. */
   void ControllerMenuInput(){
-    
+    if(Input.GetKeyDown(Session.Y)){ menuOpen = false; if(menu){ menu.Change(Menu.HUD); } }
   }
   
   /* Move in a direction 
