@@ -22,18 +22,55 @@ public class Menu : MonoBehaviour{
   public const int QUEST     = 6; // quest menu
   
   // Button constants
+  public const int UP    = 0;
+  public const int DOWN  = 1;
+  public const int LEFT  = 2;
+  public const int RIGHT = 3;
+  public const int A     = 4;
+  public const int B     = 5;
+  public const int X     = 6;
+  public const int Y     = 7;
   
+  
+  public Actor actor;
   public int activeMenu = NONE;
+  public bool split;
+  public bool right;
   int px, py; // Primary focus (ie which table or is selected.)
   int pxMax, pyMax, pxMin, pyMin; // Primary focus boundaries.
   int sx, sy; // secondary focus (ie which item in a table is selected.)
   int sxMax, syMax, syMan, syMin; // Secondary focus boundaries.  
 
+  /* Receives button press from Actor. */
+  public void Press( int button){
+    switch(button){
+      case UP:
+        sy++;
+        UpdateFocus();
+        break;
+      case DOWN:
+        sy--;
+        UpdateFocus();
+        break;
+      case RIGHT:
+        sx++;
+        UpdateFocus();
+        break;
+      case LEFT:
+        sx--;
+        UpdateFocus();
+        break;
+    }
+    if(button <= Y && button >= A){ MenuInput(button); }
+  }
+
   public void Change(int menu){
+    if(!actor){ activeMenu = NONE; }
     if(menu <= QUEST && menu >= NONE){
       activeMenu = menu;
       px = py = sx = sy = 0;
       UpdateFocus();
+      if(menu == HUD && actor){ actor.SetMenuOpen(false); }
     }
   }
   
@@ -62,7 +99,37 @@ public class Menu : MonoBehaviour{
         break;
     }
   }
+  int Height(){
+    return Screen.height;
+  }
+  int Width(){
+    int x = Screen.width;
+    if(split){ x /= 2; }
+    return x;
+  }
+  /* Width Offset for splitscreen.  */
+  int XOffset(){
+    if(right){ return Width(); }
+    return 0;
+  }
   
+  void RenderHUD(){
+    if(!actor){ return; } // The HUD needs actor info to display.
+    
+    int cbs = 5; // condition bar scale
+    GUI.Box( 
+      new Rect(XOffset(), (4 * Height()/cbs), Width()/cbs, Height()/cbs),
+      ("HP: " + actor.health)
+    );
+  }
+  void RenderMain(){}
+  void RenderInventory(){ print("Rendering Inventory");}
+  void RenderOptions(){}
+  void RenderSpeech(){}
+  void RenderTrade(){}
+  void RenderQuest(){}
+
+  /* Call appropriate menu's focus handler. */
   void UpdateFocus(){
     switch(activeMenu){
       case HUD:
@@ -89,14 +156,6 @@ public class Menu : MonoBehaviour{
     }
   }
   
-  void RenderHUD(){ print("Rendering HUD");}
-  void RenderMain(){}
-  void RenderInventory(){ print("Rendering Inventory");}
-  void RenderOptions(){}
-  void RenderSpeech(){}
-  void RenderTrade(){}
-  void RenderQuest(){}
-  
   void MainFocus(){}
   void HUDFocus(){}
   void InventoryFocus(){}
@@ -104,5 +163,15 @@ public class Menu : MonoBehaviour{
   void SpeechFocus(){}
   void TradeFocus(){}
   void QuestFocus(){}
+ 
+  /* Call appropriate menu's input handler. */
+  void MenuInput(int button){
+  }
   
+  void MainInput(int button){}
+  void InventoryInput(int button){}
+  void OptionsInput(int button){}
+  void SpeechInput(int button){}
+  void TradeInput(int button){}
+  void QuestInput(int button){}
 }

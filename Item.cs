@@ -270,13 +270,12 @@ public class Item : MonoBehaviour{
   public void Fire(){
   if(!muzzlePoint || !rearPoint || ammo < 1){ return; }
     if(sounds.Length > 0){
-      float vol = 0f;//GameController.controller.masterVolume *
-            //GameController.controller.effectsVolume;
+      float vol = 1f;
       AudioSource.PlayClipAtPoint(
-                                  sounds[0],
-                                  transform.position,
-                                  vol
-                                  );
+        sounds[0],
+        transform.position,
+        vol
+      );
     }
     ready = false;
     if(holder && holder.anim){ holder.anim.SetTrigger(fireHash); }
@@ -298,6 +297,7 @@ public class Item : MonoBehaviour{
       item.weaponOfOrigin = gameObject;
       item.impactForce = impactForce;
       item.damageActive = true;
+      item.damage = damage;
     }
     proj.GetComponent<Rigidbody>().velocity = relPos * muzzleVelocity;
     StartCoroutine(CoolDown());
