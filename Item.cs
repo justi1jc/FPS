@@ -54,7 +54,7 @@ public class Item : MonoBehaviour{
   public string prefabName;
   public Vector3 heldPos;
   public Vector3 heldRot;
-  public string displayname;
+  public string displayName;
   public string itemDesc;
   public int stack;
   public int stackSize;
@@ -160,6 +160,19 @@ public class Item : MonoBehaviour{
           break;
       }
     }
+  }
+  
+  public string GetInfo(){
+    string  info = displayName;
+    switch(itemType){
+      case FOOD:
+        info += " +" + healing + " HP";
+        break;
+      case RANGED:
+        info += " " + ammo + "/" + maxAmmo;
+        break;
+    }
+    return info;
   }
   
   /* Response to interaction from non-holder Actor */
@@ -380,7 +393,7 @@ public class Item : MonoBehaviour{
     dat.yr = rot.y;
     dat.zr = rot.z;
     dat.prefabName = prefabName;
-    dat.displayName = displayname;
+    dat.displayName = displayName;
     dat.stack = stack;
     dat.stackSize = stackSize;
     dat.ints.Add(weight);

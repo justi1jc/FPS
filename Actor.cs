@@ -138,6 +138,16 @@ public class Actor : MonoBehaviour{
     }
   }
   
+  /* Returns an empty string or the info of the active item. */
+  public string ItemInfo(){
+    string info = "";
+    if(activeItem){
+      Item item = activeItem.GetComponent<Item>();
+      if(item){ info = item.GetInfo(); }
+    }
+    return info;
+  }
+  
   /* Sets controls between menu and in-game contexts. */
   public void SetMenuOpen(bool val){
     menuOpen = val;

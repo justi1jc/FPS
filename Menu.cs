@@ -116,10 +116,23 @@ public class Menu : MonoBehaviour{
   void RenderHUD(){
     if(!actor){ return; } // The HUD needs actor info to display.
     
-    int cbs = 5; // condition bar scale
+    //Display Condition bars
+    int cbsx = 3;  // condition bar width scale
+    int cbsy = 10; // condition bar height scale
     GUI.Box( 
-      new Rect(XOffset(), (4 * Height()/cbs), Width()/cbs, Height()/cbs),
+      new Rect(XOffset(), (9 * Height()/cbsy), Width()/cbsx, Height()/cbsy),
       ("HP: " + actor.health)
+    );
+    
+    //Display Item info
+    GUI.Box(
+      new Rect(
+            XOffset() + Width() - Width()/cbsx,
+            (9 * Height()/cbsy),
+            Width()/cbsx,
+            Height()/cbsy
+          ),
+      actor.ItemInfo()
     );
   }
   void RenderMain(){}
