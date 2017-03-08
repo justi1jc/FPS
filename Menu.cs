@@ -116,7 +116,7 @@ public class Menu : MonoBehaviour{
   void RenderHUD(){
     if(!actor){ return; } // The HUD needs actor info to display.
     
-    //Display Condition bars
+    // Display Condition bars
     int cbsx = 3;  // condition bar width scale
     int cbsy = 10; // condition bar height scale
     GUI.Box( 
@@ -124,7 +124,7 @@ public class Menu : MonoBehaviour{
       ("HP: " + actor.health)
     );
     
-    //Display Item info
+    // Display Item info
     GUI.Box(
       new Rect(
             XOffset() + Width() - Width()/cbsx,
@@ -133,6 +133,19 @@ public class Menu : MonoBehaviour{
             Height()/cbsy
           ),
       actor.ItemInfo()
+    );
+    
+    // Display item in reach, if it exists.
+    if(!actor.itemInReach){ return; }
+    Item inReach = actor.itemInReach.GetComponent<Item>(); 
+    GUI.Box(
+      new Rect(
+            XOffset() + Width() - (2* Width()/cbsx),
+            (9 * Height()/cbsy),
+            Width()/cbsx,
+            Height()/cbsy
+          ),
+      inReach.displayName
     );
   }
   void RenderMain(){}
