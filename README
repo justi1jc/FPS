@@ -1,0 +1,25 @@
+This is boiler-plate code for an open-world first-person shooter game.
+
+Vision: Provide first-person shooter roleplaying gameplay similar to the recent
+installments of The Elder Scrolls and Fallout series, albeit with the addition of 
+couch-multiplayer coop.
+
+Current version: 0.0.1
+
+    Current features
+Input(In-Game)
+Actor(Movement, Item Interaction, condition(health))
+Items(pickup, drop, use)
+Inventory(store)
+
+    Pending features for 1.0
+Menus(Main, Inventory, Save&Load, Options, Speech, Trade, Quest)
+Input(Menu)
+Actor(XP/RPG Stats, Combat AI, Ambient AI, condition(fatigue, mana, stat mods, effects&perks))
+Items(Warp door, Ranged types(BOW, PISTOL), Melee types(Knife, sword, double-handed sword), shield type, thrown type, Armor&Clothing type, damage&repair, ranged melee)
+Inventory(discard, equip)
+Abilities(Dual-wield, Magic, Unarmed)
+Save&Load(Starting Map, interior cells, exterior cells , PlayerData)
+World(Interior cells, exterior cells, NPC placement)
+Speech(speech tree, Trade system)
+Quest(Quest)
