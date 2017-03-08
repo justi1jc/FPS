@@ -18,6 +18,8 @@
       Speed
       All animation strings
       playerNumber
+      safeFallDistance
+      rigidody constraints: rotation on x, y z axes.
 */
 
 using UnityEngine;
@@ -37,6 +39,8 @@ public class Actor : MonoBehaviour{
   GameObject body;  // The base gameobject of the actor
   
   //Looking
+  public bool rt_down = false;
+  public bool lt_down = false;
   public float sensitivityX =1f;
   public float sensitivityY =1f;
   float rotxMax = 60f;
@@ -62,6 +66,7 @@ public class Actor : MonoBehaviour{
   public string holdRifleString, aimRifleString;
   
   //Inventory
+  bool menuOpen;
   public GameObject defaultItem;
   public GameObject activeItem;
   public GameObject itemInReach;
@@ -93,6 +98,7 @@ public class Actor : MonoBehaviour{
   
   /* Cycle loop. Listens for falling. */
   void Update(){
+    UpdateReach();
     Rigidbody rb = body.GetComponent<Rigidbody>();
     if(!falling && rb && rb.velocity.y < 0f){
       falling = true;
@@ -115,10 +121,14 @@ public class Actor : MonoBehaviour{
   *  >4 Initialize AI module
   */
   void AssignPlayer(int player){
-    if(player <5 && player > 0){
-      //TODO Register with gamecontroller
+    if(player == 1){
       SetMenuControls(false);
-      StartCoroutine("InputRoutine");
+      StartCoroutine(KeyboardInputRoutine()); 
+      if(Session.session){ Session.session.RegisterPlayer(player, head.GetComponent<Camera>()); }
+    }
+    if(player <5 && player > 1){
+      if(Session.session){ Session.session.RegisterPlayer(player, head.GetComponent<Camera>()); }
+      StartCoroutine(ControllerInputRoutine());
     }
     else if(player == 5){
       //TODO assign ai
@@ -133,11 +143,10 @@ public class Actor : MonoBehaviour{
   }
   
   
-  /* Handles input */
-  IEnumerator InputRoutine(){
+  /* Handles input from keyboard. */
+  IEnumerator KeyboardInputRoutine(){
     while(true){
-      
-      if(true){//TODO: Toggle menu controls effectively
+      if(!menuOpen){//TODO: Toggle menu controls properly
         KeyboardActorInput();
       }
       else{
@@ -147,15 +156,26 @@ public class Actor : MonoBehaviour{
     }
   }
   
+  /* Handles input from controller. */
+  IEnumerator ControllerInputRoutine(){
+    while(true){
+      if(!menuOpen){
+        ControllerActorInput();
+      }
+      else{
+        ControllerMenuInput();
+      }
+      yield return new WaitForSeconds(0.01f);
+    }
+  }
+  
   /* Handle keyboard input when not paused. */
   void KeyboardActorInput(){
     //Basic movement
     bool shift = Input.GetKey(KeyCode.LeftShift);
-    bool walk = shift;
-    if(walk != walking && anim){
-      walking = walk;
-      anim.SetBool(walkingHash, walking);
-    }
+    bool walk = false;
+    //TODO: if(shift != sprinting && anim){ anim.SetBool(sprintingHash, shift)}
+    sprinting = shift;
     if(Input.GetKey(KeyCode.W)){ Move(0); walk = true; }
     if(Input.GetKey(KeyCode.S)){ Move(1); walk = true; }
     if(Input.GetKey(KeyCode.A)){ Move(2); walk = true; }
@@ -163,6 +183,7 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(KeyCode.LeftControl)){ToggleCrouch(); }
     if(Input.GetKeyUp(KeyCode.LeftControl)){ToggleCrouch(); }
+    if(walk != walking && anim){ anim.SetBool(walkingHash, walking); }
     
     //Mouse controls
     if(Input.GetMouseButtonDown(0)){ Use(0); }
@@ -182,7 +203,42 @@ public class Actor : MonoBehaviour{
   }
   
   /* Handles pause menu keyboard input. */
-  void KeyboadMenuInput(){
+  void KeyboardMenuInput(){
+    
+  }
+  
+  /* Handles controller input when not paused. */
+  void ControllerActorInput(){
+    //Get axis input
+    float xl = Input.GetAxis(Session.XL);
+    float yl = Input.GetAxis(Session.YL);
+    float xr = Input.GetAxis(Session.XR);
+    float yr = Input.GetAxis(Session.YR);
+    float rt = Input.GetAxis(Session.RT);
+    float lt = Input.GetAxis(Session.LT);
+    
+    // Basic movement
+    bool shift = Input.GetKey(Session.RB);
+    bool walk = xl != 0f || yl != 0;
+    //TODO: if(shift != sprinting && anim){ anim.SetBool(sprintingHash, shift)}
+    sprinting = shift;
+    AxisMove(xl, yl);
+    Turn(new Vector3(yr, xr, 0f));
+    if(walk != walking && anim){ anim.SetBool(walkingHash, walking); }
+    
+    //Buttons
+    if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
+    if(Input.GetKeyDown(Session.X) && itemInReach){ Interact(); }
+    else if(Input.GetKeyDown(Session.X)){ Use(2); }
+    if(rt > 0 && !rt_down){ Use(0); rt_down = true;}
+    if(rt == 0){ rt_down = false; }
+    if(lt > 0 && !lt_down){ Use(1); lt_down = true;}
+    if(lt == 0){ lt_down = false; }
+    if(Input.GetKeyDown(Session.LSC)){ ToggleCrouch(); }
+  }
+  
+  /* Handles pause menu controller input. */
+  void ControllerMenuInput(){
     
   }
   
@@ -199,7 +255,8 @@ public class Actor : MonoBehaviour{
     Vector3 pos = body.transform.position;
     Vector3 dest = new Vector3();
     Vector3 dir  = new Vector3();
-    if(sprinting){ pace *= 1.25f; }
+    if(sprinting){ pace *= 1.75f; }
+    if(!jumpReady){ pace *= 0.75f; }
     switch(direction){
       case 0:
         dest = pos + body.transform.forward * pace;
@@ -211,20 +268,75 @@ public class Actor : MonoBehaviour{
         break;
       case 2:
         dest = pos + body.transform.right * -pace;
-        dir = body.transform.right;
+        dir = -body.transform.right;
         break;
       case 3:
         dest = pos + body.transform.right * pace;
-        dir = -body.transform.right;
+        dir = body.transform.right;
         break;
     }
-    int layerMask = 1 << 8;
-       layerMask = ~layerMask;
-       RaycastHit[] hits =
-          Physics.RaycastAll(pos + new Vector3(0,1,0),dir,3*pace, layerMask);
-       if(hits.Length == 0){ rb.MovePosition(dest); } 
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
   }
   
+  /* Move according to x and y axes. */
+  public void AxisMove(float x, float y){
+    Vector3 xdir = x * body.transform.right;
+    Vector3 ydir = -y * body.transform.forward;
+    Vector3 dir = xdir + ydir;
+    Rigidbody rb =  body.GetComponent<Rigidbody>();
+    float pace = speed;
+    if(sprinting){ pace *= 1.75f; }
+    if(!jumpReady){ pace *= 0.75f; } 
+    Vector3 dest = body.transform.position + (pace * dir);
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
+  }
+  
+  /* Returns true if the Actor has clearance to move in a particular direction
+  a particular distance. */
+  bool MoveCheck(Vector3 direction, float distance){
+    Vector3 center = body.transform.position;
+    Vector3 halfExtents = body.transform.localScale / 2;
+    Quaternion orientation = body.transform.rotation;
+    int layerMask = ~(1 << 8);
+    RaycastHit hit;
+    return !Physics.BoxCast(
+      center,
+      halfExtents,
+      direction,
+      out hit,
+      orientation,
+      distance,
+      layerMask,
+      QueryTriggerInteraction.Ignore
+    );
+  }
+  
+  /* Boxcasts to find the current item in reach, updating itemInReach if they
+    do not match. */
+  void UpdateReach(){
+    if(!hand){ print(gameObject.name + " hand missing"); return; }
+    Vector3 center = hand.transform.position;
+    Vector3 halfExtents = hand.transform.localScale / 2;
+    Vector3 direction = hand.transform.forward;
+    Quaternion orientation = body.transform.rotation;
+    float distance = 1f;
+    int layerMask = ~(1 << 8);
+    RaycastHit[] found = Physics.BoxCastAll(
+      center,
+      halfExtents,
+      direction,
+      orientation,
+      distance,
+      layerMask,
+      QueryTriggerInteraction.Ignore
+    );
+    for(int i = 0; i < found.Length; i++){
+      Item item = found[i].collider.gameObject.GetComponent<Item>();
+      if(item){ itemInReach = item.gameObject; return; }
+    }
+    itemInReach = null;
+    return;
+  }  
   /* Two-axis movement. used by AI
    0 = no motion on axis
    1 = motion in positive direction
@@ -268,7 +380,7 @@ public class Actor : MonoBehaviour{
       jumpReady = false;
       Rigidbody rb = body.GetComponent<Rigidbody>();
       int lifts = 5;
-      int jumpForce = 50;
+      int jumpForce = 60;
       while(lifts > 0){
         lifts--;
         rb.AddForce(body.transform.up * jumpForce);
@@ -295,18 +407,19 @@ public class Actor : MonoBehaviour{
   
   /* Toggles model's crouch */
   void ToggleCrouch(){
+    print("Crouch!");
     if(!anim){ return; }
     anim.SetBool(crouchedHash, !anim.GetBool(crouchedHash));
   }
   
   /* Applies damage from attack. Ignores active weapon. */
   public void ReceiveDamage(int damage, GameObject weapon){
-    if(health < 0 || weapon == activeItem){ return; }
+    if(health < 0 || (weapon == activeItem && damage > 0)){ return; }
     health -= damage;
     if(health < 1){
       health = 0;
       StopAllCoroutines();
-      anim.SetBool(aliveHash, false);
+      if(anim){ anim.SetBool(aliveHash, false); }
       Ragdoll(true);
     }
   }
@@ -324,12 +437,23 @@ public class Actor : MonoBehaviour{
     item.Use(use);
   }
   
-  /* Selects an item in inventory. */
+  /* Drops active item from hand */
+  public void Drop(){
+    if(activeItem == defaultItem || activeItem == null){ return; }
+    activeItem.transform.parent = null;
+    Item item = activeItem.GetComponent<Item>();
+    if(item){ item.Drop(); }
+    activeItem = defaultItem;
+  }
+  
+  /* Selects an item in inventory to equip. */
   public void Equip(int itemIndex){
   //TODO: Ensure animations are correct
     if(itemIndex < 0 || itemIndex >= inventory.Count){ return; }
-    anim.SetBool(aimRifleHash, false);
-    anim.SetBool(holdRifleHash, false);
+    if(anim){
+      anim.SetBool(aimRifleHash, false);
+      anim.SetBool(holdRifleHash, false);
+    }
     Data dat = inventory[itemIndex];
     GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
     if(prefab == null){ print("Prefab null:" + dat.displayName); return;}
@@ -350,7 +474,7 @@ public class Actor : MonoBehaviour{
   
   /* Removes number of available ammo, up to max, and returns that number*/
   public int RequestAmmo(string ammoName,int max){
-    for(int i = 0; i< inventory.Count; i++){
+    for(int i = 0; i < inventory.Count; i++){
       if(inventory[i].displayName == ammoName){
         int available = inventory[i].stack;
         if(available <= max){
@@ -369,6 +493,17 @@ public class Actor : MonoBehaviour{
   
   /* Adds item data to inventory */
   public void StoreItem(Data item){
+    if(item.stack == 0){ return; }
+    for(int i = 0; i < inventory.Count; i++){
+      if(item.stack < 1){ return; }
+      Data dat = inventory[i];
+      if(item.displayName == dat.displayName
+         && dat.stack < dat.stackSize){
+        int freeSpace = dat.stackSize - dat.stack;
+        if(freeSpace > item.stack){ dat.stack += item.stack; return; }
+        else{ dat.stack += freeSpace; item.stack -= freeSpace; }
+      }
+    }
     inventory.Add(item);
   }
   
@@ -384,7 +519,8 @@ public class Actor : MonoBehaviour{
     );
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
-    inventory.Remove(inventory[itemIndex]);
+    dat.stack--;
+    if(dat.stack < 1){ inventory.Remove(dat); }
   }
   
   /* Interact with item in reach.
@@ -393,16 +529,18 @@ public class Actor : MonoBehaviour{
     if(itemInReach == null){ return; }
     Item item = itemInReach.GetComponent<Item>();
     if(item == null){ return; }
-    item.Interact(this, mode); 
+    item.Interact(this, mode);
   }
   
-  /* Drops active item from hand */
-  public void Drop(){
-    if(activeItem == defaultItem || activeItem == null){ return; }
-    activeItem.transform.parent = null;
+  /* Pick up item in world. */
+  public void PickUp(Item item){
+    if(!item){ return; }
+    Data dat = item.GetData();
+    Destroy(item.gameObject);
+    StoreItem(dat);
+    if(activeItem == defaultItem){ Equip(inventory.Count - 1); }
+    Destroy(item.gameObject);
   }
-  
-
   
   /* Returns data not found in prefab for this Actor */
   public Data GetData(){

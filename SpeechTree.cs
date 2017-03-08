@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 public class SpeechTree{
   public string file;
-  List<SpeechNode> nodes;
+  //List<SpeechNode> nodes;
   public int root, active;
   
   /* Constructor */
