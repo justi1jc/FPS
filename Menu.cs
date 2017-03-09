@@ -8,6 +8,7 @@
 
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Menu : MonoBehaviour{
 
@@ -39,31 +40,9 @@ public class Menu : MonoBehaviour{
   int px, py; // Primary focus (ie which table or is selected.)
   int pxMax, pyMax, pxMin, pyMin; // Primary focus boundaries.
   int sx, sy; // secondary focus (ie which item in a table is selected.)
-  int sxMax, syMax, syMan, syMin; // Secondary focus boundaries.  
-
-  /* Receives button press from Actor. */
-  public void Press( int button){
-    switch(button){
-      case UP:
-        sy++;
-        UpdateFocus();
-        break;
-      case DOWN:
-        sy--;
-        UpdateFocus();
-        break;
-      case RIGHT:
-        sx++;
-        UpdateFocus();
-        break;
-      case LEFT:
-        sx--;
-        UpdateFocus();
-        break;
-    }
-    if(button <= Y && button >= A){ MenuInput(button); }
-  }
-
+  int sxMax, syMax, sxMin, syMin; // Secondary focus boundaries.  
+  public Vector2 scrollPosition = Vector2.zero;
+  
   public void Change(int menu){
     if(!actor){ activeMenu = NONE; }
     if(menu <= QUEST && menu >= NONE){
@@ -73,6 +52,7 @@ public class Menu : MonoBehaviour{
       if(menu == HUD && actor){ actor.SetMenuOpen(false); }
     }
   }
+  
   
   void OnGUI(){
     switch(activeMenu){
@@ -113,9 +93,8 @@ public class Menu : MonoBehaviour{
     return 0;
   }
   
+  
   void RenderHUD(){
-    if(!actor){ return; } // The HUD needs actor info to display.
-    
     // Display Condition bars
     int cbsx = 3;  // condition bar width scale
     int cbsy = 10; // condition bar height scale
@@ -148,19 +127,57 @@ public class Menu : MonoBehaviour{
       inReach.displayName
     );
   }
+  
+  
   void RenderMain(){}
-  void RenderInventory(){ print("Rendering Inventory");}
+  
+  
+  void RenderInventory(){
+    //Draw Background
+    GUI.Box(
+      new Rect(XOffset(), 0, Width(), Height()),
+      ""
+    );
+    
+    //Display Items
+    int iw = Width()/2;
+    int ih = Height()/20;
+    scrollPosition = GUI.BeginScrollView(
+      new Rect(XOffset(), Height()/2, Width(), Height()), scrollPosition, new Rect(0, 0, 200, 200)
+    );
+    
+    List<Data> inv = actor.inventory;
+    
+    for(int i = 0; i < inv.Count; i++){
+      Data item = inv[i];
+      string selected = i==sy ? ">" : "";
+      string name = item.displayName;
+      string info = " " + item.stack + "/" + item.stackSize;
+      if(GUI.Button(
+        new Rect(0, ih * i, iw, ih),
+        selected + name + info
+      )){
+        actor.Equip(i);
+      }
+      if(GUI.Button(
+        new Rect(iw, ih * i, iw, ih),
+        "DROP"
+      )){ actor.DiscardItem(i); }
+    }
+    GUI.EndScrollView();
+    
+    
+  }
+  
+  
   void RenderOptions(){}
   void RenderSpeech(){}
   void RenderTrade(){}
   void RenderQuest(){}
 
-  /* Call appropriate menu's focus handler. */
+  /* Call appropriate menu's focus update handler. */
   void UpdateFocus(){
     switch(activeMenu){
-      case HUD:
-        HUDFocus();
-        break;
       case MAIN:
         MainFocus();
         break;
@@ -183,19 +200,80 @@ public class Menu : MonoBehaviour{
   }
   
   void MainFocus(){}
-  void HUDFocus(){}
-  void InventoryFocus(){}
+  
+  void InventoryFocus(){
+    syMax = actor.inventory.Count-1;
+    syMin = 0;
+    if(sy > syMax){ sy = syMax; }
+    if(sy < syMin){ sy = 0; }
+    sxMax = 0;
+    sxMin = 0;
+    if(sx > syMax){ sx = sxMax; }
+    if(sx < syMin){ sx = sxMin; }
+  }
   void OptionsFocus(){}
   void SpeechFocus(){}
   void TradeFocus(){}
   void QuestFocus(){}
  
+  /* Receives button press from Actor. */
+  public void Press( int button){
+    switch(button){
+      case UP:
+        sy--;
+        UpdateFocus();
+        break;
+      case DOWN:
+        sy++;
+        UpdateFocus();
+        break;
+      case RIGHT:
+        sx++;
+        UpdateFocus();
+        break;
+      case LEFT:
+        sx--;
+        UpdateFocus();
+        break;
+    }
+    if(button <= Y && button >= A){ MenuInput(button); }
+  }
+ 
   /* Call appropriate menu's input handler. */
   void MenuInput(int button){
+    switch(activeMenu){
+      case MAIN:
+        MainInput(button);
+        break;
+      case INVENTORY:
+        InventoryInput(button);
+        break;
+      case OPTIONS:
+        OptionsInput(button);
+        break;
+      case SPEECH:
+        SpeechInput(button);
+        break;
+      case TRADE:
+        TradeInput(button);
+        break;
+      case QUEST:
+        QuestInput(button);
+        break;
+    }
   }
   
   void MainInput(int button){}
-  void InventoryInput(int button){}
+  void InventoryInput(int button){
+    if(button == B || button == Y){ // Exit menu
+      Change(HUD);
+      actor.SetMenuOpen(false);
+      return;
+    }
+    if(button == A){ actor.Equip(sy); return; }
+    if(button == X){ actor.DiscardItem(sy); return; }
+    
+  }
   void OptionsInput(int button){}
   void SpeechInput(int button){}
   void TradeInput(int button){}
