@@ -71,15 +71,32 @@ public class Session : MonoBehaviour {
     UpdateCameras();
   }
   
+  public void UnregisterPlayer(int player){
+    if(player == 1){ cam1 = null; }
+    else if(player == 2){ cam2 = null; }
+    UpdateCameras();
+  }
+  
   void UpdateCameras(){
     bool split = cam1 && cam2;
     if(split){
       cam1.rect = new Rect(0f, 0f, 0.5f, 1f);
       cam2.rect = new Rect(0.5f, 0, 0.5f, 1f);
+      Menu menu = cam1.gameObject.GetComponent<Menu>();
+      if(menu){ menu.split = true; menu.right = false; }
+      menu = cam2.gameObject.GetComponent<Menu>();
+      if(menu){ menu.split = true; menu.right = true; }
     }
-    else if(cam1){ cam1.rect = new Rect(0f, 0f, 1f, 1f); }
-    
-   
+    else if(cam1){
+      cam1.rect = new Rect(0f, 0f, 1f, 1f);
+      Menu menu = cam1.gameObject.GetComponent<Menu>();
+      if(menu){ menu.split = false; menu.right = false; }
+    }
+    else if(cam2){
+      cam2.rect = new Rect(0f, 0f, 1f, 1f);
+      Menu menu = cam2.gameObject.GetComponent<Menu>();
+      if(menu){ menu.split = false; menu.right = false; }
+    }   
   }
   
 }

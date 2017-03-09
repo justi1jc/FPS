@@ -54,7 +54,7 @@ public class Item : MonoBehaviour{
   public string prefabName;
   public Vector3 heldPos;
   public Vector3 heldRot;
-  public string displayname;
+  public string displayName;
   public string itemDesc;
   public int stack;
   public int stackSize;
@@ -160,6 +160,19 @@ public class Item : MonoBehaviour{
           break;
       }
     }
+  }
+  
+  public string GetInfo(){
+    string  info = displayName;
+    switch(itemType){
+      case FOOD:
+        info += " +" + healing + " HP";
+        break;
+      case RANGED:
+        info += " " + ammo + "/" + maxAmmo;
+        break;
+    }
+    return info;
   }
   
   /* Response to interaction from non-holder Actor */
@@ -270,13 +283,12 @@ public class Item : MonoBehaviour{
   public void Fire(){
   if(!muzzlePoint || !rearPoint || ammo < 1){ return; }
     if(sounds.Length > 0){
-      float vol = 0f;//GameController.controller.masterVolume *
-            //GameController.controller.effectsVolume;
+      float vol = 1f;
       AudioSource.PlayClipAtPoint(
-                                  sounds[0],
-                                  transform.position,
-                                  vol
-                                  );
+        sounds[0],
+        transform.position,
+        vol
+      );
     }
     ready = false;
     if(holder && holder.anim){ holder.anim.SetTrigger(fireHash); }
@@ -298,6 +310,7 @@ public class Item : MonoBehaviour{
       item.weaponOfOrigin = gameObject;
       item.impactForce = impactForce;
       item.damageActive = true;
+      item.damage = damage;
     }
     proj.GetComponent<Rigidbody>().velocity = relPos * muzzleVelocity;
     StartCoroutine(CoolDown());
@@ -380,7 +393,7 @@ public class Item : MonoBehaviour{
     dat.yr = rot.y;
     dat.zr = rot.z;
     dat.prefabName = prefabName;
-    dat.displayName = displayname;
+    dat.displayName = displayName;
     dat.stack = stack;
     dat.stackSize = stackSize;
     dat.ints.Add(weight);

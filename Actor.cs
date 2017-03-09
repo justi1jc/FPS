@@ -38,6 +38,11 @@ public class Actor : MonoBehaviour{
   public GameObject spine; // Pivot point of toros
   GameObject body;  // The base gameobject of the actor
   
+  //UI
+  public Menu menu;
+  bool menuMove = true;// Used to govern joystick menu inputs.
+  float menuMovementDelay = 0.15f; // How long to delay between menu movements
+  
   //Looking
   public bool rt_down = false;
   public bool lt_down = false;
@@ -121,25 +126,38 @@ public class Actor : MonoBehaviour{
   *  >4 Initialize AI module
   */
   void AssignPlayer(int player){
-    if(player == 1){
-      SetMenuControls(false);
-      StartCoroutine(KeyboardInputRoutine()); 
+    playerNumber = player;
+    if(player <5 && player > 0){
+      SetMenuOpen(false);
+      if(head){ menu = head.GetComponent<Menu>(); }
+      if(menu){ menu.Change(Menu.HUD);  menu.actor = this; }
       if(Session.session){ Session.session.RegisterPlayer(player, head.GetComponent<Camera>()); }
-    }
-    if(player <5 && player > 1){
-      if(Session.session){ Session.session.RegisterPlayer(player, head.GetComponent<Camera>()); }
-      StartCoroutine(ControllerInputRoutine());
+      if(player == 1){ StartCoroutine(KeyboardInputRoutine()); }
+      else{StartCoroutine(ControllerInputRoutine()); }
     }
     else if(player == 5){
       //TODO assign ai
     }
   }
   
+  /* Returns an empty string or the info of the active item. */
+  public string ItemInfo(){
+    string info = "";
+    if(activeItem){
+      Item item = activeItem.GetComponent<Item>();
+      if(item){ info = item.GetInfo(); }
+    }
+    return info;
+  }
+  
   /* Sets controls between menu and in-game contexts. */
-  void SetMenuControls(bool val){
-    Cursor.visible = !val;
-    if(!val){ Cursor.lockState = CursorLockMode.Locked; }
-    else{ Cursor.lockState = CursorLockMode.None; }
+  public void SetMenuOpen(bool val){
+    menuOpen = val;
+    if(playerNumber == 1){
+      Cursor.visible = !val;
+      if(!val){ Cursor.lockState = CursorLockMode.Locked; }
+      else{ Cursor.lockState = CursorLockMode.None; }
+    }
   }
   
   
@@ -200,11 +218,34 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(KeyCode.RightArrow)){ Interact(2); }
     if(Input.GetKeyDown(KeyCode.DownArrow)){ Interact(3); }
     if(Input.GetKeyDown(KeyCode.Backspace)){ Interact(4); }
+    if(Input.GetKeyDown(KeyCode.Tab)){ 
+      SetMenuOpen(true);
+      if(menu){ menu.Change(Menu.INVENTORY); }
+    }
   }
   
   /* Handles pause menu keyboard input. */
   void KeyboardMenuInput(){
-    
+    if(!menu){ SetMenuOpen(false); } // Return control if menu not available
+    if(Input.GetKeyDown(KeyCode.Tab)){ menu.Press(Menu.B); };
+    if(Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)){
+      menu.Press(Menu.UP);
+    }
+    if(Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)){
+      menu.Press(Menu.DOWN);
+    }
+    if(Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)){
+      menu.Press(Menu.RIGHT);
+    }
+    if(Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow)){
+      menu.Press(Menu.LEFT);
+    }
+    if(Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.E)){
+      menu.Press(Menu.A);
+    }
+    if(Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.RightShift)){
+      menu.Press(Menu.X);
+    }
   }
   
   /* Handles controller input when not paused. */
@@ -230,16 +271,39 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(Session.X) && itemInReach){ Interact(); }
     else if(Input.GetKeyDown(Session.X)){ Use(2); }
+    if(Input.GetKeyDown(Session.Y)){ SetMenuOpen(true); if(menu){ menu.Change(Menu.INVENTORY); } }
     if(rt > 0 && !rt_down){ Use(0); rt_down = true;}
     if(rt == 0){ rt_down = false; }
     if(lt > 0 && !lt_down){ Use(1); lt_down = true;}
     if(lt == 0){ lt_down = false; }
     if(Input.GetKeyDown(Session.LSC)){ ToggleCrouch(); }
+    if(Input.GetKeyDown(Session.LB)){ Drop(); }
+    
   }
   
   /* Handles pause menu controller input. */
   void ControllerMenuInput(){
+    if(!menu){ SetMenuOpen(false); } // Return control if menu not available
+    if(Input.GetKeyDown(Session.A)){ menu.Press(Menu.A); }
+    if(Input.GetKeyDown(Session.B)){ menu.Press(Menu.B); }
+    if(Input.GetKeyDown(Session.X)){ menu.Press(Menu.X); }
+    if(Input.GetKeyDown(Session.Y)){ menu.Press(Menu.Y); }
     
+    float xl = Input.GetAxis(Session.XL);
+    float yl = -Input.GetAxis(Session.YL);
+    
+    if(menuMove && xl > 0f){ menu.Press(Menu.RIGHT); StartCoroutine(MenuCooldown()); }
+    else if(menuMove && xl < 0f){ menu.Press(Menu.LEFT); StartCoroutine(MenuCooldown()); }
+    if(menuMove && yl > 0f){ menu.Press(Menu.UP); StartCoroutine(MenuCooldown()); }
+    else if(menuMove && yl < 0f){ menu.Press(Menu.DOWN); StartCoroutine(MenuCooldown()); }
+    
+  }
+  
+  /* Cooldown for joystick menu movement */
+  IEnumerator MenuCooldown(){
+    menuMove = false;
+    yield return new WaitForSeconds(menuMovementDelay);
+    menuMove = true;
   }
   
   /* Move in a direction 
@@ -390,7 +454,7 @@ public class Actor : MonoBehaviour{
     yield return new WaitForSeconds(0f);
   }
   
-  /* Refreshes Jump upon landing. */
+  /* Restores Jump upon landing. */
   void OnCollisionEnter(Collision col){
     if(falling){ Land(fallOrigin - transform.position.y); }
   }
@@ -454,6 +518,7 @@ public class Actor : MonoBehaviour{
       anim.SetBool(aimRifleHash, false);
       anim.SetBool(holdRifleHash, false);
     }
+    StoreActive();
     Data dat = inventory[itemIndex];
     GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
     if(prefab == null){ print("Prefab null:" + dat.displayName); return;}
@@ -489,6 +554,15 @@ public class Actor : MonoBehaviour{
       }
     }
     return 0;
+  }
+  
+  /* Stores the active item in the inventory */
+  public void StoreActive(){
+    if(!activeItem){ return; }
+    Item item = activeItem.GetComponent<Item>();
+    StoreItem(item.GetData());
+    Destroy(activeItem);
+    activeItem = null;
   }
   
   /* Adds item data to inventory */
