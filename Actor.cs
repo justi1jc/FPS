@@ -532,28 +532,43 @@ public class Actor : MonoBehaviour{
     //TODO
   }
   
-  /* Use active item according to its type */
+  /* Use primary or secondary item */
   void Use(int use){
-    if(!primaryItem){ return; }
-    Item primary = primaryItem.GetComponent<Item>();
-    if(!primary){ return; }
-    if(!secondaryItem){ primary.Use(use); return; }
-    Item secondary = secondaryItem.GetComponent<Item>();
-    if(use == 0 || !secondary){ primary.Use(use); return; }
-    secondary.Use(use);
+    
   }
   
   /* Drops active item from hand */
   public void Drop(){
-    if(primaryItem == null){ return; }
-    primaryItem.transform.parent = null;
-    Item item = primaryItem.GetComponent<Item>();
-    if(item){ item.Drop(); }
-    if(item.displayName == inventory[primaryIndex].displayName){
-      inventory.Remove(inventory[primaryIndex]); 
+    if(primaryItem){ 
+      primaryItem.transform.parent = null;
+      Item item = primaryItem.GetComponent<Item>();
+      if(item){ item.Drop(); }
+      if(item.displayName == inventory[primaryIndex].displayName){
+        if(secondaryIndex > primaryIndex){ inventory.Remove(inventory[secondaryIndex]); }
+        inventory.Remove(inventory[primaryIndex]); 
+        if(secondaryIndex > primaryIndex){
+          Item secondary = secondaryItem.GetComponent<Item>();
+          inventory.Add(secondary.GetData());
+        }
+      }
+      primaryItem = null;
+      primaryIndex = -1;
     }
-    primaryItem = null;
-    primaryIndex = -1;
+    else if(secondaryItem){
+      secondaryItem.transform.parent = null;
+      Item item = secondaryItem.GetComponent<Item>();
+      if(item){ item.Drop(); }
+      if(item.displayName == inventory[secondaryIndex].displayName){
+        if(primaryIndex < primaryIndex){ inventory.Remove(inventory[primaryIndex]); }
+        inventory.Remove(inventory[secondaryIndex]);
+        if(secondaryIndex < primaryIndex){
+          Item primary = primaryItem.GetComponent<Item>();
+          inventory.Add(primary.GetData());
+        }
+      }
+      secondaryItem = null;
+      secondaryIndex = -1;
+    }
   }
   
   /* Selects an item in inventory to equip. */
@@ -597,7 +612,7 @@ public class Actor : MonoBehaviour{
     if(!itemGO){print("GameObject null:" + dat.displayName); return; }
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
-    itemGO.transform.parent = hand.transform;
+    itemGO.transform.parent = offHand.transform;
     item.Hold(this);
     secondaryItem = itemGO;
     secondaryIndex = itemIndex;
