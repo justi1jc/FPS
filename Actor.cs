@@ -114,7 +114,7 @@ public class Actor : MonoBehaviour{
   int xp    = 0;
   
   // abilities availability
-  public bool[] abilities = {true, true, true, true, true};
+  public bool[] abilities = {true, false, false, false, false};
   
   
   //Speech
@@ -559,14 +559,32 @@ public class Actor : MonoBehaviour{
       case 0:
         print("You punched!");
         break;
+      case 1:
+        print("AbilityA");
+        break;
+      case 2:
+        print("AbilityB");
+        break;
+      case 3:
+        print("AbilityC");
+        break;
+      case 4:
+        print("AbilityD");
+        break;
+      case 5:
+        print("AbilityE");
+        break;
+      case 6:
+        print("AbilityF");
+        break;
       
     }
   }
   
   public void EquipAbility( int ability){
     if(primaryItem){ StorePrimary(); rightAbility = ability; return; }
-    if(rightAbility == 0){ rightAbility = ability; return; }
     if(rightAbility == ability){ rightAbility = 0; return; }
+    rightAbility = ability;
   }
   
   public void EquipAbilitySecondary(int ability){
