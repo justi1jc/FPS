@@ -534,7 +534,17 @@ public class Actor : MonoBehaviour{
   
   /* Use primary or secondary item */
   void Use(int use){
-    
+    Item primary, secondary;
+    primary = secondary = null;
+    if(primaryItem){ primary = primaryItem.GetComponent<Item>(); }
+    if(secondaryItem){ secondary = secondaryItem.GetComponent<Item>(); }
+    if(primary && secondary){
+      if(use==0){ primary.Use(0); }
+      if(use==1){ secondary.Use(0); }
+      if(use==2){ primary.Use(2); secondary.Use(2); }
+    }
+    else if(primary){ primary.Use(use); }
+    else if(secondary){ secondary.Use(use); }
   }
   
   /* Drops active item from hand */
