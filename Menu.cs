@@ -41,12 +41,14 @@ public class Menu : MonoBehaviour{
   public bool right;
   int px, py; // Primary focus (ie which table or is selected.)
   int pxMax, pyMax, pxMin, pyMin; // Primary focus boundaries.
-  public int sx, sy; // secondary focus (ie which item in a table is selected.)
+  int sx, sy; // secondary focus (ie which item in a table is selected.)
   int sxMax, syMax, sxMin, syMin; // Secondary focus boundaries.  
+  List<int> selections = null; // What selections are available.
   public Vector2 scrollPosition = Vector2.zero;
   
   public void Change(int menu){
     if(!actor){ activeMenu = NONE; }
+    if(menu == ABILITY){ AbilitySetup(); }
     if(menu <= ABILITY && menu >= NONE){
       activeMenu = menu;
       px = py = sx = sy = 0;
@@ -55,6 +57,15 @@ public class Menu : MonoBehaviour{
     }
   }
   
+  /* Populates selection with available abilities */
+  void AbilitySetup(){
+    selections = new List<int>();
+    for(int i = 0; i < actor.abilities.Length; i++){
+      if(actor.abilities[i]){
+        selections.Add(i);
+      }
+    }
+  }
   
   void OnGUI(){
     switch(activeMenu){
@@ -148,7 +159,9 @@ public class Menu : MonoBehaviour{
     int ih = Height()/20;
     
     scrollPosition = GUI.BeginScrollView(
-      new Rect(XOffset() +iw, Height()/2, Width()-iw, Height()), scrollPosition, new Rect(0, 0, 200, 200)
+      new Rect(XOffset() +iw, Height()/2, Width()-iw, Height()),
+      scrollPosition,
+      new Rect(0, 0, 200, 200)
     );
     
     List<Data> inv = actor.inventory;
@@ -200,7 +213,59 @@ public class Menu : MonoBehaviour{
   void RenderSpeech(){}
   void RenderTrade(){}
   void RenderQuest(){}
-  void RenderAbility(){}
+  void RenderAbility(){
+    GUI.Box(
+      new Rect(XOffset(), 0, Width(), Height()),
+      ""
+    );
+    
+    int iw = Width()/4;
+    int ih = Height()/20;
+    
+    scrollPosition = GUI.BeginScrollView(
+      new Rect(XOffset() +iw, Height()/2, Width()-iw, Height()),
+      scrollPosition,
+      new Rect(0, 0, 200, 200)
+    );
+    
+    List<Data> inv = actor.inventory;
+    
+    for(int i = 0; i < selections.Count; i++){
+      GUI.color = Color.blue; 
+      int ability = selections[i];
+      string selected ="";
+      if(i == actor.rightAbility){ selected += "Right Hand "; }
+      if(i == actor.leftAbility){ selected += "Left Hand "; }
+      string name = actor.AbilityInfo(ability);
+      if(i == sy && sx == 0){ GUI.color = Color.yellow; }
+      if(GUI.Button(
+        new Rect(0, ih * i, 2 * iw, ih),
+        selected + name
+      )){
+        actor.EquipAbility(ability);
+      }
+      if(i == sy && sx == 0){ GUI.color = Color.blue; }
+    }
+    GUI.EndScrollView();
+    
+    if(sx == 1){ GUI.color = Color.yellow; }
+    if(GUI.Button(
+        new Rect(Width()-iw, Height()/2, iw, ih),
+        "Quests"
+      )){
+        print("Quests not implemented");
+    }
+    if(sx == 1){ GUI.color = Color.blue; }
+    
+    if(sx == -1){ GUI.color = Color.yellow; }
+    if(GUI.Button(
+        new Rect(XOffset(), Height()/2, iw, ih),
+        "Inventory"
+      )){
+        Change(INVENTORY);
+    }
+    if(sx == -1){ GUI.color = Color.blue; }
+  }
 
   /* Call appropriate menu's focus update handler. */
   void UpdateFocus(){
@@ -249,7 +314,15 @@ public class Menu : MonoBehaviour{
   void SpeechFocus(){}
   void TradeFocus(){}
   void QuestFocus(){}
-  void AbilityFocus(){}
+  void AbilityFocus(){
+    if(selections != null){ syMax = selections.Count - 1; }
+    else{ syMax = 0; }
+    syMin = 0;
+    sxMax = 1;
+    sxMin = -1;
+    if(sx != 0){ sy = 0; }
+    SecondaryBounds();
+  }
  
   /* Receives button press from Actor. */
   public void Press( int button){
@@ -318,7 +391,7 @@ public class Menu : MonoBehaviour{
       if(button == LT && sy < actor.inventory.Count){ actor.EquipSecondary(sy); return; }
     }
     if(sx == 1){
-      if(button == A){ print("Abiltiies not implemented."); }//Change(ABILITY); return; }
+      if(button == A){ Change(ABILITY); return; }
     }
     
   }
@@ -326,5 +399,20 @@ public class Menu : MonoBehaviour{
   void SpeechInput(int button){}
   void TradeInput(int button){}
   void QuestInput(int button){}
-  void AbilityInput(int button){}
+  void AbilityInput(int button){
+    if(button == B || button == Y){ // Exit menu
+      Change(HUD);
+      actor.SetMenuOpen(false);
+      return;
+    }
+    if(sx == -1){
+      if(button == A){ Change(INVENTORY); return; }
+    }
+    if(sx == 0){
+      if(button == A){ actor.EquipAbility(selections[sy]); return; }
+    }
+    if(sx == 1){
+      if(button == A){ print("Quests not implemented"); return; }
+    }
+  }
 }

@@ -114,7 +114,7 @@ public class Actor : MonoBehaviour{
   int xp    = 0;
   
   // abilities availability
-  static bool[] abilities = new bool[5];
+  public bool[] abilities = {true, true, true, true, true};
   
   
   //Speech
@@ -536,17 +536,28 @@ public class Actor : MonoBehaviour{
     //TODO
   }
   
-  /* Returns a string describing a given ability */
+  /* Returns a string describing a given special ability */
   public string AbilityInfo(int ability){
-    return "An ability";
+    switch(ability){
+      case 0:
+        return "The fist: humanity's first weapon.";
+      case 1:
+        return "AbilityB";
+      case 2:
+        return "AbilityC";
+      case 3:
+        return "AbilityD";
+      case 4:
+        return "AbilityE";
+    }
+    return "";
   }
   
   /* Performs a given ability. */
   void Ability(int ability){
-    print(ability);
     switch(ability){
       case 0:
-        print("Melee!");
+        print("You punched!");
         break;
       
     }
@@ -554,13 +565,16 @@ public class Actor : MonoBehaviour{
   
   public void EquipAbility( int ability){
     if(primaryItem){ StorePrimary(); rightAbility = ability; return; }
-    if(rightAbility == -1){ rightAbility = ability; return; }
-    if(leftAbility == -1){ EquipAbilitySecondary(ability); return;}
+    if(rightAbility == 0){ rightAbility = ability; return; }
+    if(rightAbility == ability){ rightAbility = 0; return; }
+    EquipAbilitySecondary(ability);
+    
   }
   
   public void EquipAbilitySecondary(int ability){
     if(secondaryItem){ StoreSecondary(); leftAbility = ability; return; }
-    if(leftAbility == -1){ leftAbility = ability; return; }
+    if(leftAbility == 0){ leftAbility = ability; return; }
+    if(leftAbility == ability){ leftAbility = 0; print("Hey"); return; }
   }
   
   /* Use primary or secondary item */
@@ -619,6 +633,7 @@ public class Actor : MonoBehaviour{
       primaryItem = null;
       primaryIndex = -1;
     }
+    else if( rightAbility > 0){ rightAbility = 0; }
     else if(secondaryItem){
       secondaryItem.transform.parent = null;
       Item item = secondaryItem.GetComponent<Item>();
@@ -638,6 +653,7 @@ public class Actor : MonoBehaviour{
       secondaryItem = null;
       secondaryIndex = -1;
     }
+    else if(leftAbility > 0){ leftAbility = 0;}
   }
   
   /* Selects an item in inventory to equip. */
@@ -662,6 +678,7 @@ public class Actor : MonoBehaviour{
     item.Hold(this);
     primaryItem = itemGO;
     primaryIndex = itemIndex;
+    rightAbility = 0;
   }
   
   /* Selects an item in the inventory to equip to the off-hand. */
@@ -685,6 +702,7 @@ public class Actor : MonoBehaviour{
     item.Hold(this);
     secondaryItem = itemGO;
     secondaryIndex = itemIndex;
+    leftAbility = 0;
   }
   
   /* Removes number of available ammo, up to max, and returns that number*/
@@ -729,7 +747,6 @@ public class Actor : MonoBehaviour{
   }
   /* Adds item data to inventory */
   public void StoreItem(Data item){
-    print("Storing " + item.displayName);
     if(item.stack == 0){ return; }
     for(int i = 0; i < inventory.Count; i++){
       if(item.stack < 1){ return; }
