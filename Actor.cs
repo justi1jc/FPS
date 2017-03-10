@@ -567,14 +567,12 @@ public class Actor : MonoBehaviour{
     if(primaryItem){ StorePrimary(); rightAbility = ability; return; }
     if(rightAbility == 0){ rightAbility = ability; return; }
     if(rightAbility == ability){ rightAbility = 0; return; }
-    EquipAbilitySecondary(ability);
-    
   }
   
   public void EquipAbilitySecondary(int ability){
     if(secondaryItem){ StoreSecondary(); leftAbility = ability; return; }
-    if(leftAbility == 0){ leftAbility = ability; return; }
-    if(leftAbility == ability){ leftAbility = 0; print("Hey"); return; }
+    if(leftAbility == ability){ leftAbility = 0; return; }
+    leftAbility = ability; return;
   }
   
   /* Use primary or secondary item */

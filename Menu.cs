@@ -239,10 +239,16 @@ public class Menu : MonoBehaviour{
       string name = actor.AbilityInfo(ability);
       if(i == sy && sx == 0){ GUI.color = Color.yellow; }
       if(GUI.Button(
-        new Rect(0, ih * i, 2 * iw, ih),
+        new Rect(0, ih * i, iw, ih),
         selected + name
       )){
         actor.EquipAbility(ability);
+      }
+      if(GUI.Button(
+        new Rect(iw, ih * i, iw, ih),
+          "EquipLeft"
+      )){
+        actor.EquipAbilitySecondary(ability);
       }
       if(i == sy && sx == 0){ GUI.color = Color.blue; }
     }
@@ -409,7 +415,8 @@ public class Menu : MonoBehaviour{
       if(button == A){ Change(INVENTORY); return; }
     }
     if(sx == 0){
-      if(button == A){ actor.EquipAbility(selections[sy]); return; }
+      if(button == A || button == RT){ actor.EquipAbility(selections[sy]); return; }
+      if(button == LT){ actor.EquipAbilitySecondary(selections[sy]); return;}
     }
     if(sx == 1){
       if(button == A){ print("Quests not implemented"); return; }
