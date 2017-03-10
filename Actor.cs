@@ -696,19 +696,19 @@ public class Actor : MonoBehaviour{
   /* Drops item onto ground from inventory. */
   public void DiscardItem(int itemIndex){
     if(itemIndex < 0 || itemIndex > inventory.Count){ return; }
-    print("Was" + primaryIndex);
     if(itemIndex == primaryIndex){ StorePrimary(); }
     if(itemIndex == secondaryIndex){ StoreSecondary(); }
-    print("Now" + primaryIndex);
     Data dat = inventory[itemIndex];
     GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
     GameObject itemGO = (GameObject)GameObject.Instantiate(
       prefab,
-      transform.position,
+      hand.transform.position,
       Quaternion.identity
     );
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
+    item.stack = 1;
+    itemGO.transform.position = hand.transform.position;
     dat.stack--;
     if(dat.stack < 1){ inventory.Remove(dat); }
   }
