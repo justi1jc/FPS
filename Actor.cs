@@ -76,6 +76,8 @@ public class Actor : MonoBehaviour{
   bool menuOpen;
   public GameObject primaryItem;
   public GameObject secondaryItem;
+  public int primaryIndex = -1;
+  public int secondaryIndex = -1;
   public GameObject itemInReach;
   public string itemInReachName;
   public List<Data> inventory = new List<Data>();
@@ -557,23 +559,43 @@ public class Actor : MonoBehaviour{
       anim.SetBool(aimRifleHash, false);
       anim.SetBool(holdRifleHash, false);
     }
-    StoreActive();
+    StorePrimary();
     Data dat = inventory[itemIndex];
     GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
-    if(prefab == null){ print("Prefab null:" + dat.displayName); return;}
+    if(!prefab){ print("Prefab null:" + dat.displayName); return;}
     GameObject itemGO = (GameObject)GameObject.Instantiate(
       prefab,
       transform.position,
       Quaternion.identity
     );
-    if(itemGO == null){print("GameObject null:" + dat.displayName); return; }
+    if(!itemGO){print("GameObject null:" + dat.displayName); return; }
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
     itemGO.transform.parent = hand.transform;
     item.Hold(this);
     primaryItem = itemGO;
-    inventory.Remove(inventory[itemIndex]);
-    if(item.ConsumesAmmo()){ item.Reload(); }
+    primaryIndex = itemIndex;
+  }
+  
+  /* Selects an item in the inventory to equip to the off-hand. */
+  public void EquipSecondary(int itemIndex){
+    if(itemIndex < 0 || itemIndex >= inventory.Count){ return; }
+    StoreSecondary();
+    Data dat = inventory[itemIndex];
+    GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
+    if(!prefab){ print("Prefab null:" + dat.displayName); return;}
+    GameObject itemGO = (GameObject)GameObject.Instantiate(
+      prefab,
+      transform.position,
+      Quaternion.identity
+    );
+    if(!itemGO){print("GameObject null:" + dat.displayName); return; }
+    Item item = itemGO.GetComponent<Item>();
+    item.LoadData(dat);
+    itemGO.transform.parent = hand.transform;
+    item.Hold(this);
+    secondaryItem = itemGO;
+    secondaryIndex = itemIndex;
   }
   
   /* Removes number of available ammo, up to max, and returns that number*/
@@ -595,15 +617,27 @@ public class Actor : MonoBehaviour{
     return 0;
   }
   
-  /* Stores the active item in the inventory */
-  public void StoreActive(){
+  /* Stores the primary item into the inventory. */
+  public void StorePrimary(){
     if(!primaryItem){ return; }
     Item item = primaryItem.GetComponent<Item>();
-    StoreItem(item.GetData());
+    if(primaryIndex == -1){ StoreItem(item.GetData()); }
+    else{ inventory[primaryIndex] = item.GetData(); }
     Destroy(primaryItem);
     primaryItem = null;
+    primaryIndex = -1;
   }
   
+  /* Stores the secondary item into the inventory. */
+  public void StoreSecondary(){
+    if(!secondaryItem){ return; }
+    Item item = secondaryItem.GetComponent<Item>();
+    if(secondaryIndex == -1){ StoreItem(item.GetData()); }
+    else{ inventory[secondaryIndex] = item.GetData(); }
+    Destroy(secondaryItem);
+    secondaryItem = null;
+    secondaryIndex = -1;
+  }
   /* Adds item data to inventory */
   public void StoreItem(Data item){
     if(item.stack == 0){ return; }
