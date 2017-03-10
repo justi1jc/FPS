@@ -553,12 +553,10 @@ public class Actor : MonoBehaviour{
   
   /* Selects an item in inventory to equip. */
   public void Equip(int itemIndex){
-  //TODO: Ensure animations are correct
     if(itemIndex < 0 || itemIndex >= inventory.Count){ return; }
-    if(anim){
-      anim.SetBool(aimRifleHash, false);
-      anim.SetBool(holdRifleHash, false);
-    }
+    if(itemIndex == primaryIndex){ StorePrimary(); return; }
+    if(itemIndex == secondaryIndex){ StoreSecondary(); return;}
+    if(primaryIndex != -1 && secondaryIndex == -1){ EquipSecondary(itemIndex); return; }
     StorePrimary();
     Data dat = inventory[itemIndex];
     GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
@@ -580,6 +578,9 @@ public class Actor : MonoBehaviour{
   /* Selects an item in the inventory to equip to the off-hand. */
   public void EquipSecondary(int itemIndex){
     if(itemIndex < 0 || itemIndex >= inventory.Count){ return; }
+    if(itemIndex == primaryIndex){ StorePrimary(); return; }
+    if(itemIndex == secondaryIndex){ StoreSecondary(); return;}
+    if(secondaryIndex != -1 && primaryIndex == -1){ Equip(itemIndex); return; }
     StoreSecondary();
     Data dat = inventory[itemIndex];
     GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
