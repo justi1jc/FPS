@@ -9,10 +9,11 @@
           |
           |spine| // Pivot point for torso
           |     | Head| // Contains Camera
-          |     |     | Hand| // Mount point for held items.
-          |     |     |     |Fist // Default weapon
-          |     |     |     |activeItem // Item in current use, if applicable.
-          
+          |     |     |RHand| // Mount points for held items.
+          |     |     |     |primaryItem
+          |     |     |     | // Need trigger box for punching
+          |     |     |LHand|
+          |     |     |     |secondaryItem
       Variables that must be set in animator or prefab
       head, hand, spine
       Speed
@@ -33,10 +34,11 @@ public class Actor : MonoBehaviour{
   public int playerNumber; // 1 for keyboard, 3-4 for controller, 5 for NPC
   
   //Body parts
-  public GameObject head;  // Gameobject containing the camera.
-  public GameObject hand;  // GameObject where items are attached.
-  public GameObject spine; // Pivot point of toros
-  GameObject body;  // The base gameobject of the actor
+  public GameObject head;    // Gameobject containing the camera.
+  public GameObject hand;    // GameObject where items are attached.
+  public GameObject offHand; // Secondary hand where items are attached.
+  public GameObject spine;   // Pivot point of toros
+  GameObject body;           // The base gameobject of the actor
   
   //UI
   public Menu menu;
@@ -73,13 +75,45 @@ public class Actor : MonoBehaviour{
   //Inventory
   bool menuOpen;
   public GameObject defaultItem;
-  public GameObject activeItem;
+  public GameObject primaryItem;
+  public GameObject secondaryItem;
   public GameObject itemInReach;
   public string itemInReachName;
   public List<Data> inventory = new List<Data>();
+  public int weight = 0;
+  public int weightMax = 100;
   
-  //Player stats
-  public int health = 100;
+  //Player vitals
+  public int health     = 100;
+  public int mana       = 100;
+  public int stamina    = 100;
+  public int healthMax  = 100;
+  public int manaMax    = 100;
+  public int staminaMax = 100;
+  
+  // ICEPAWS attributes, max 10
+  int intelligence = 5; // Max mana
+  int charisma     = 5; //
+  int endurance    = 5; // Stamina, health regen
+  int perception   = 5; // accuracy
+  int agility      = 5; // speed, jump height
+  int willpower    = 5; // mana regen
+  int strength     = 5; // maxweight, 
+  
+  // Skill levels, max 100
+  int ranged  = 0;
+  int melee   = 0;
+  int unarmed = 0;
+  int magic   = 0;
+  
+  // Leveling
+  int level = 0;
+  int xp    = 0;
+  
+  // ability availability
+  bool PUNCH      = true;
+  bool FIREBALL   = true;
+  
   
   //Speech
   public Actor interlocutor; // Actor with whom you are speaking
@@ -143,8 +177,12 @@ public class Actor : MonoBehaviour{
   /* Returns an empty string or the info of the active item. */
   public string ItemInfo(){
     string info = "";
-    if(activeItem){
-      Item item = activeItem.GetComponent<Item>();
+    if(primaryItem){
+      Item item = primaryItem.GetComponent<Item>();
+      if(item){ info = item.GetInfo(); }
+    }
+    if(secondaryItem){
+      Item item = secondaryItem.GetComponent<Item>();
       if(item){ info = item.GetInfo(); }
     }
     return info;
@@ -478,7 +516,7 @@ public class Actor : MonoBehaviour{
   
   /* Applies damage from attack. Ignores active weapon. */
   public void ReceiveDamage(int damage, GameObject weapon){
-    if(health < 0 || (weapon == activeItem && damage > 0)){ return; }
+    if(health < 0 || (weapon == primaryItem && damage > 0)){ return; }
     health -= damage;
     if(health < 1){
       health = 0;
@@ -495,19 +533,22 @@ public class Actor : MonoBehaviour{
   
   /* Use active item according to its type */
   void Use(int use){
-    if(activeItem == null){ return; }
-    Item item = activeItem.GetComponent<Item>();
-    if(item == null){ print("Item missing:" + activeItem.name); return; }
-    item.Use(use);
+    if(!primaryItem){ return; }
+    Item primary = primaryItem.GetComponent<Item>();
+    if(!primary){ return; }
+    if(!secondaryItem){ primary.Use(use); return; }
+    Item secondary = secondaryItem.GetComponent<Item>();
+    if(use == 0 || !secondary){ primary.Use(use); return; }
+    secondary.Use(use);
   }
   
   /* Drops active item from hand */
   public void Drop(){
-    if(activeItem == defaultItem || activeItem == null){ return; }
-    activeItem.transform.parent = null;
-    Item item = activeItem.GetComponent<Item>();
+    if(primaryItem == defaultItem || primaryItem == null){ return; }
+    primaryItem.transform.parent = null;
+    Item item = primaryItem.GetComponent<Item>();
     if(item){ item.Drop(); }
-    activeItem = defaultItem;
+    primaryItem = defaultItem;
   }
   
   /* Selects an item in inventory to equip. */
@@ -532,7 +573,7 @@ public class Actor : MonoBehaviour{
     item.LoadData(dat);
     itemGO.transform.parent = hand.transform;
     item.Hold(this);
-    activeItem = itemGO;
+    primaryItem = itemGO;
     inventory.Remove(inventory[itemIndex]);
     if(item.ConsumesAmmo()){ item.Reload(); }
   }
@@ -558,11 +599,11 @@ public class Actor : MonoBehaviour{
   
   /* Stores the active item in the inventory */
   public void StoreActive(){
-    if(!activeItem){ return; }
-    Item item = activeItem.GetComponent<Item>();
+    if(!primaryItem){ return; }
+    Item item = primaryItem.GetComponent<Item>();
     StoreItem(item.GetData());
-    Destroy(activeItem);
-    activeItem = null;
+    Destroy(primaryItem);
+    primaryItem = null;
   }
   
   /* Adds item data to inventory */
@@ -612,7 +653,7 @@ public class Actor : MonoBehaviour{
     Data dat = item.GetData();
     Destroy(item.gameObject);
     StoreItem(dat);
-    if(activeItem == defaultItem){ Equip(inventory.Count - 1); }
+    if(primaryItem == defaultItem){ Equip(inventory.Count - 1); }
     Destroy(item.gameObject);
   }
   
@@ -644,5 +685,7 @@ public class Actor : MonoBehaviour{
   public void ReceiveSpeech(int option = -1){
     //TODO Make one response for NPC, one for Player
   }
+  
+  
      
 }
