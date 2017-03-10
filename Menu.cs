@@ -232,7 +232,7 @@ public class Menu : MonoBehaviour{
   void SecondaryBounds(){
     if(sy > syMax){ sy = syMax; }
     if(sy < syMin){ sy = syMin; }
-    if(sx > sxMax){ print(sx); sx = sxMax; }
+    if(sx > sxMax){ sx = sxMax; }
     if(sx < sxMin){ sx = sxMin; }
   }
   void MainFocus(){}

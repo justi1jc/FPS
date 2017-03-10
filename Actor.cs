@@ -76,6 +76,8 @@ public class Actor : MonoBehaviour{
   bool menuOpen;
   public GameObject primaryItem;
   public GameObject secondaryItem;
+  public int rightAbility = 1;
+  public int leftAbility  = 1;
   public int primaryIndex = -1;
   public int secondaryIndex = -1;
   public GameObject itemInReach;
@@ -535,19 +537,40 @@ public class Actor : MonoBehaviour{
     //TODO
   }
   
+  void Ability(int ability){
+    print(ability);
+  }
+  
   /* Use primary or secondary item */
   void Use(int use){
     Item primary, secondary;
     primary = secondary = null;
     if(primaryItem){ primary = primaryItem.GetComponent<Item>(); }
     if(secondaryItem){ secondary = secondaryItem.GetComponent<Item>(); }
-    if(primary && secondary){
-      if(use==0){ primary.Use(0); }
-      if(use==1){ secondary.Use(0); }
-      if(use==2){ primary.Use(2); secondary.Use(2); }
+    bool right = (rightAbility > -1) || primary;
+    bool left  = (leftAbility > -1) || secondary;
+    if(right && left){
+      if(use==0){
+       if(primary){primary.Use(0); return; }
+       if(rightAbility > -1){ Ability(rightAbility); }
+      }
+      if(use==1){
+        if(secondary){secondary.Use(0); return; }
+        if(leftAbility > -1){ Ability(leftAbility); }
+      }
+      if(use==2){
+        if(primary){ primary.Use(2); }
+        if(secondary){ secondary.Use(2); }
+      }
     }
-    else if(primary){ primary.Use(use); }
-    else if(secondary){ secondary.Use(use); }
+    else if(right){
+      if(primary){ primary.Use(use); return; }
+      if(rightAbility > -1){ Ability(rightAbility); }
+    }
+    else if(left){
+      if(secondary){ secondary.Use(use); return; }
+      if(leftAbility > -1){ Ability(leftAbility); return; } 
+    }
   }
   
   /* Drops active item from hand */
