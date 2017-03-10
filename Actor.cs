@@ -317,7 +317,6 @@ public class Actor : MonoBehaviour{
     if(lt == 0){ lt_down = false; }
     if(Input.GetKeyDown(Session.LSC)){ ToggleCrouch(); }
     if(Input.GetKeyDown(Session.LB)){ Drop(); }
-    
   }
   
   /* Handles pause menu controller input. */
@@ -330,11 +329,15 @@ public class Actor : MonoBehaviour{
     
     float xl = Input.GetAxis(Session.XL);
     float yl = -Input.GetAxis(Session.YL);
+    float rt = Input.GetAxis(Session.RT);
+    float lt = Input.GetAxis(Session.LT);
     
     if(menuMove && xl > 0f){ menu.Press(Menu.RIGHT); StartCoroutine(MenuCooldown()); }
     else if(menuMove && xl < 0f){ menu.Press(Menu.LEFT); StartCoroutine(MenuCooldown()); }
     if(menuMove && yl > 0f){ menu.Press(Menu.UP); StartCoroutine(MenuCooldown()); }
     else if(menuMove && yl < 0f){ menu.Press(Menu.DOWN); StartCoroutine(MenuCooldown()); }
+    if(menuMove && rt > 0){ menu.Press(Menu.RT); StartCoroutine(MenuCooldown()); }
+    if(menuMove && lt > 0){ menu.Press(Menu.LT); StartCoroutine(MenuCooldown()); }
     
   }
   

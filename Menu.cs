@@ -14,13 +14,14 @@ public class Menu : MonoBehaviour{
 
   // Menu constants
   public const int NONE      =-1; // Do nothing
-  public const int HUD       = 0; // just HUD
+  public const int HUD       = 0; // in-game HUD
   public const int MAIN      = 1; // main menu
-  public const int INVENTORY = 2; // inventory/abilities 
+  public const int INVENTORY = 2; // inventory
   public const int OPTIONS   = 3; // pause menu
   public const int SPEECH    = 4; // speech menu
   public const int TRADE     = 5; // trading menu
   public const int QUEST     = 6; // quest menu
+  public const int ABILITY   = 7; // abilities menu
   
   // Button constants
   public const int UP    = 0;
@@ -31,7 +32,8 @@ public class Menu : MonoBehaviour{
   public const int B     = 5;
   public const int X     = 6;
   public const int Y     = 7;
-  
+  public const int RT    = 8;
+  public const int LT    = 9;
   
   public Actor actor;
   public int activeMenu = NONE;
@@ -39,13 +41,13 @@ public class Menu : MonoBehaviour{
   public bool right;
   int px, py; // Primary focus (ie which table or is selected.)
   int pxMax, pyMax, pxMin, pyMin; // Primary focus boundaries.
-  int sx, sy; // secondary focus (ie which item in a table is selected.)
+  public int sx, sy; // secondary focus (ie which item in a table is selected.)
   int sxMax, syMax, sxMin, syMin; // Secondary focus boundaries.  
   public Vector2 scrollPosition = Vector2.zero;
   
   public void Change(int menu){
     if(!actor){ activeMenu = NONE; }
-    if(menu <= QUEST && menu >= NONE){
+    if(menu <= ABILITY && menu >= NONE){
       activeMenu = menu;
       px = py = sx = sy = 0;
       UpdateFocus();
@@ -76,6 +78,9 @@ public class Menu : MonoBehaviour{
         break;
       case QUEST:
         RenderQuest();
+        break;
+      case ABILITY:
+        RenderAbility();
         break;
     }
   }
@@ -139,22 +144,24 @@ public class Menu : MonoBehaviour{
       ""
     );
     
-    //Display Items
-    int iw = Width()/2;
+    int iw = Width()/4;
     int ih = Height()/20;
+    
     scrollPosition = GUI.BeginScrollView(
-      new Rect(XOffset(), Height()/2, Width(), Height()), scrollPosition, new Rect(0, 0, 200, 200)
+      new Rect(XOffset() +iw, Height()/2, Width()-iw, Height()), scrollPosition, new Rect(0, 0, 200, 200)
     );
     
     List<Data> inv = actor.inventory;
     
     for(int i = 0; i < inv.Count; i++){
+      GUI.color = Color.blue; 
       Data item = inv[i];
-      string selected = i==sy ? ">" : "";
+      string selected ="";
       if(i == actor.primaryIndex){ selected += "Right Hand "; }
       if(i == actor.secondaryIndex){ selected += "Left Hand "; }
       string name = item.displayName;
       string info = " " + item.stack + "/" + item.stackSize;
+      if(i == sy && sx == 0){ GUI.color = Color.yellow; }
       if(GUI.Button(
         new Rect(0, ih * i, iw, ih),
         selected + name + info
@@ -165,10 +172,27 @@ public class Menu : MonoBehaviour{
         new Rect(iw, ih * i, iw, ih),
         "DROP"
       )){ actor.DiscardItem(i); }
+      if(i == sy && sx == 0){ GUI.color = Color.blue; }
     }
     GUI.EndScrollView();
     
+    if(sx == 1){ GUI.color = Color.yellow; }
+    if(GUI.Button(
+        new Rect(Width()-iw, Height()/2, iw, ih),
+        "Abilities"
+      )){
+        Change(ABILITY);
+    }
+    if(sx == 1){ GUI.color = Color.blue; }
     
+    if(sx == -1){ GUI.color = Color.yellow; }
+    if(GUI.Button(
+        new Rect(XOffset(), Height()/2, iw, ih),
+        "Quests"
+      )){
+        print("Quests not implemented.");
+    }
+    if(sx == -1){ GUI.color = Color.blue; }
   }
   
   
@@ -176,6 +200,7 @@ public class Menu : MonoBehaviour{
   void RenderSpeech(){}
   void RenderTrade(){}
   void RenderQuest(){}
+  void RenderAbility(){}
 
   /* Call appropriate menu's focus update handler. */
   void UpdateFocus(){
@@ -198,25 +223,33 @@ public class Menu : MonoBehaviour{
       case QUEST:
         QuestFocus();
         break;
+      case ABILITY:
+        AbilityFocus();
+        break;
     }
   }
   
+  void SecondaryBounds(){
+    if(sy > syMax){ sy = syMax; }
+    if(sy < syMin){ sy = syMin; }
+    if(sx > sxMax){ print(sx); sx = sxMax; }
+    if(sx < sxMin){ sx = sxMin; }
+  }
   void MainFocus(){}
   
   void InventoryFocus(){
     syMax = actor.inventory.Count-1;
     syMin = 0;
-    if(sy > syMax){ sy = syMax; }
-    if(sy < syMin){ sy = 0; }
-    sxMax = 0;
-    sxMin = 0;
-    if(sx > syMax){ sx = sxMax; }
-    if(sx < syMin){ sx = sxMin; }
+    sxMax = 1;
+    sxMin = -1;
+    if(sx != 0){ sy = 0; }
+    SecondaryBounds();
   }
   void OptionsFocus(){}
   void SpeechFocus(){}
   void TradeFocus(){}
   void QuestFocus(){}
+  void AbilityFocus(){}
  
   /* Receives button press from Actor. */
   public void Press( int button){
@@ -238,7 +271,7 @@ public class Menu : MonoBehaviour{
         UpdateFocus();
         break;
     }
-    if(button <= Y && button >= A){ MenuInput(button); }
+    if(button <= LT && button >= A){ MenuInput(button); }
   }
  
   /* Call appropriate menu's input handler. */
@@ -262,6 +295,9 @@ public class Menu : MonoBehaviour{
       case QUEST:
         QuestInput(button);
         break;
+      case ABILITY:
+        AbilityInput(button);
+        break;
     }
   }
   
@@ -272,12 +308,23 @@ public class Menu : MonoBehaviour{
       actor.SetMenuOpen(false);
       return;
     }
-    if(button == A){ actor.Equip(sy); return; }
-    if(button == X){ actor.DiscardItem(sy); return; }
+    if(sx == -1){
+      if(button == A){ print("Quests not implemented"); return; }
+    }
+    if(sx == 0){ // Hovering over inventory list.
+      if(button == A && sy < actor.inventory.Count){ actor.Equip(sy); return; }
+      if(button == X && sy < actor.inventory.Count){ actor.DiscardItem(sy); return; }
+      if(button == RT && sy < actor.inventory.Count){ actor.Equip(sy); return; }
+      if(button == LT && sy < actor.inventory.Count){ actor.EquipSecondary(sy); return; }
+    }
+    if(sx == 1){
+      if(button == A){ print("Abiltiies not implemented."); }//Change(ABILITY); return; }
+    }
     
   }
   void OptionsInput(int button){}
   void SpeechInput(int button){}
   void TradeInput(int button){}
   void QuestInput(int button){}
+  void AbilityInput(int button){}
 }
