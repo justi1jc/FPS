@@ -113,9 +113,8 @@ public class Actor : MonoBehaviour{
   int level = 0;
   int xp    = 0;
   
-  // ability availability
-  bool PUNCH      = true;
-  bool FIREBALL   = true;
+  // abilities availability
+  static bool[] abilities = new bool[5];
   
   
   //Speech
@@ -537,8 +536,31 @@ public class Actor : MonoBehaviour{
     //TODO
   }
   
+  /* Returns a string describing a given ability */
+  public string AbilityInfo(int ability){
+    return "An ability";
+  }
+  
+  /* Performs a given ability. */
   void Ability(int ability){
     print(ability);
+    switch(ability){
+      case 0:
+        print("Melee!");
+        break;
+      
+    }
+  }
+  
+  public void EquipAbility( int ability){
+    if(primaryItem){ StorePrimary(); rightAbility = ability; return; }
+    if(rightAbility == -1){ rightAbility = ability; return; }
+    if(leftAbility == -1){ EquipAbilitySecondary(ability); return;}
+  }
+  
+  public void EquipAbilitySecondary(int ability){
+    if(secondaryItem){ StoreSecondary(); leftAbility = ability; return; }
+    if(leftAbility == -1){ leftAbility = ability; return; }
   }
   
   /* Use primary or secondary item */
@@ -581,7 +603,10 @@ public class Actor : MonoBehaviour{
       if(item){ item.Drop(); }
       if( primaryIndex > -1 && primaryIndex < inventory.Count &&
           item.displayName == inventory[primaryIndex].displayName){
-        if(secondaryIndex > primaryIndex){ inventory.Remove(inventory[secondaryIndex]); }
+        if( secondaryIndex > primaryIndex &&
+            secondaryIndex > -1 && secondaryIndex < inventory.Count){
+          inventory.Remove(inventory[secondaryIndex]);
+        }
         inventory.Remove(inventory[primaryIndex]); 
         if(secondaryIndex > primaryIndex){
           Item secondary = secondaryItem.GetComponent<Item>();
