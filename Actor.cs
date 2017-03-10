@@ -74,7 +74,6 @@ public class Actor : MonoBehaviour{
   
   //Inventory
   bool menuOpen;
-  public GameObject defaultItem;
   public GameObject primaryItem;
   public GameObject secondaryItem;
   public GameObject itemInReach;
@@ -544,11 +543,10 @@ public class Actor : MonoBehaviour{
   
   /* Drops active item from hand */
   public void Drop(){
-    if(primaryItem == defaultItem || primaryItem == null){ return; }
+    if(primaryItem == null){ return; }
     primaryItem.transform.parent = null;
     Item item = primaryItem.GetComponent<Item>();
     if(item){ item.Drop(); }
-    primaryItem = defaultItem;
   }
   
   /* Selects an item in inventory to equip. */
@@ -653,7 +651,7 @@ public class Actor : MonoBehaviour{
     Data dat = item.GetData();
     Destroy(item.gameObject);
     StoreItem(dat);
-    if(primaryItem == defaultItem){ Equip(inventory.Count - 1); }
+    if(!primaryItem){ Equip(inventory.Count - 1); }
     Destroy(item.gameObject);
   }
   
