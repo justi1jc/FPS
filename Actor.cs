@@ -549,13 +549,18 @@ public class Actor : MonoBehaviour{
     primaryItem.transform.parent = null;
     Item item = primaryItem.GetComponent<Item>();
     if(item){ item.Drop(); }
+    if(item.displayName == inventory[primaryIndex].displayName){
+      inventory.Remove(inventory[primaryIndex]); 
+    }
+    primaryItem = null;
+    primaryIndex = -1;
   }
   
   /* Selects an item in inventory to equip. */
   public void Equip(int itemIndex){
     if(itemIndex < 0 || itemIndex >= inventory.Count){ return; }
     if(itemIndex == primaryIndex){ StorePrimary(); return; }
-    if(itemIndex == secondaryIndex){ StoreSecondary(); return;}
+    if(itemIndex == secondaryIndex){ StoreSecondary(); return;  }
     if(primaryIndex != -1 && secondaryIndex == -1){ EquipSecondary(itemIndex); return; }
     StorePrimary();
     Data dat = inventory[itemIndex];
@@ -578,10 +583,9 @@ public class Actor : MonoBehaviour{
   /* Selects an item in the inventory to equip to the off-hand. */
   public void EquipSecondary(int itemIndex){
     if(itemIndex < 0 || itemIndex >= inventory.Count){ return; }
-    if(itemIndex == primaryIndex){ StorePrimary(); return; }
+    if(itemIndex == primaryIndex){ StorePrimary(); }
     if(itemIndex == secondaryIndex){ StoreSecondary(); return;}
-    if(secondaryIndex != -1 && primaryIndex == -1){ Equip(itemIndex); return; }
-    StoreSecondary();
+    if(secondaryIndex != -1){ StoreSecondary(); }
     Data dat = inventory[itemIndex];
     GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
     if(!prefab){ print("Prefab null:" + dat.displayName); return;}
@@ -641,6 +645,7 @@ public class Actor : MonoBehaviour{
   }
   /* Adds item data to inventory */
   public void StoreItem(Data item){
+    print("Storing " + item.displayName);
     if(item.stack == 0){ return; }
     for(int i = 0; i < inventory.Count; i++){
       if(item.stack < 1){ return; }
@@ -658,6 +663,10 @@ public class Actor : MonoBehaviour{
   /* Drops item onto ground from inventory. */
   public void DiscardItem(int itemIndex){
     if(itemIndex < 0 || itemIndex > inventory.Count){ return; }
+    print("Was" + primaryIndex);
+    if(itemIndex == primaryIndex){ StorePrimary(); }
+    if(itemIndex == secondaryIndex){ StoreSecondary(); }
+    print("Now" + primaryIndex);
     Data dat = inventory[itemIndex];
     GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
     GameObject itemGO = (GameObject)GameObject.Instantiate(

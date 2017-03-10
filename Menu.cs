@@ -151,6 +151,8 @@ public class Menu : MonoBehaviour{
     for(int i = 0; i < inv.Count; i++){
       Data item = inv[i];
       string selected = i==sy ? ">" : "";
+      if(i == actor.primaryIndex){ selected += "Right Hand "; }
+      if(i == actor.secondaryIndex){ selected += "Left Hand "; }
       string name = item.displayName;
       string info = " " + item.stack + "/" + item.stackSize;
       if(GUI.Button(
