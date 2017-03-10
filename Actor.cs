@@ -553,12 +553,16 @@ public class Actor : MonoBehaviour{
       primaryItem.transform.parent = null;
       Item item = primaryItem.GetComponent<Item>();
       if(item){ item.Drop(); }
-      if(item.displayName == inventory[primaryIndex].displayName){
+      if( primaryIndex > -1 && primaryIndex < inventory.Count &&
+          item.displayName == inventory[primaryIndex].displayName){
         if(secondaryIndex > primaryIndex){ inventory.Remove(inventory[secondaryIndex]); }
         inventory.Remove(inventory[primaryIndex]); 
         if(secondaryIndex > primaryIndex){
           Item secondary = secondaryItem.GetComponent<Item>();
           inventory.Add(secondary.GetData());
+          Destroy(secondaryItem);
+          secondaryIndex = -1;
+          EquipSecondary(inventory.Count -1);
         }
       }
       primaryItem = null;
@@ -568,12 +572,16 @@ public class Actor : MonoBehaviour{
       secondaryItem.transform.parent = null;
       Item item = secondaryItem.GetComponent<Item>();
       if(item){ item.Drop(); }
-      if(item.displayName == inventory[secondaryIndex].displayName){
+      if( secondaryIndex > -1 && secondaryIndex < inventory.Count &&
+          item.displayName == inventory[secondaryIndex].displayName){
         if(primaryIndex < primaryIndex){ inventory.Remove(inventory[primaryIndex]); }
         inventory.Remove(inventory[secondaryIndex]);
         if(secondaryIndex < primaryIndex){
           Item primary = primaryItem.GetComponent<Item>();
           inventory.Add(primary.GetData());
+          Destroy(primaryItem);
+          primaryIndex = -1;
+          Equip(inventory.Count -1);
         }
       }
       secondaryItem = null;
