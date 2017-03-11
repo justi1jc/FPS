@@ -12,7 +12,7 @@ Actor(Movement, Item Interaction, condition(health))
 Items(pickup, drop, use)
 Inventory(store)
 
-    Pending features for 1.0
+    Pending features for 1.0.0
 Menus(Main, Inventory, Save&Load, Options, Speech, Trade, Quest)
 Input(Menu)
 Actor(XP/RPG Stats, Combat AI, Ambient AI, condition(fatigue, mana, stat mods, effects&perks))
