@@ -115,7 +115,7 @@ public class Actor : MonoBehaviour{
   
   // abilities
   public bool[] abilities = {true, false, false, false, false};
-  float punchDelay = 0.0f;
+  float punchDelay = 0.5f;
   bool punchReady = true;
   
   //Speech
@@ -585,7 +585,6 @@ public class Actor : MonoBehaviour{
   /* Causes Melee Damage. TODO: Trigger animation */
   IEnumerator Punch(){
     punchReady = false;
-    yield return new WaitForSeconds(punchDelay);
     for(int i = 0; i < 25; i++){
       yield return new WaitForSeconds(0.001f);
       Transform trans = head.transform;
@@ -596,7 +595,6 @@ public class Actor : MonoBehaviour{
       float distance = 2f; 
       int layerMask = ~(1 << 8);
       RaycastHit hit;
-      //trans.position += trans.forward;
       if(Physics.BoxCast(
         center,
         halfExtents,
@@ -613,14 +611,13 @@ public class Actor : MonoBehaviour{
           i = 26;
           hb.ReceiveDamage(damage, gameObject);
           Rigidbody rb = hit.collider.gameObject.GetComponent<Rigidbody>();
-          if(rb){ rb.AddForce(trans.forward * 1000); }
+          if(rb){ rb.AddForce(body.transform.forward * strength * 15); }
         }
         else{
           Rigidbody rb = hit.collider.gameObject.GetComponent<Rigidbody>();
-          if(rb){ rb.AddForce(trans.forward * 1000); }
+          if(rb){ rb.AddForce(body.transform.forward * strength * 15); }
         }
       }
-      else{ print("Missed"); }
     }
     yield return new WaitForSeconds(punchDelay);
     punchReady = true;
