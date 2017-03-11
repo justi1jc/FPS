@@ -113,9 +113,10 @@ public class Actor : MonoBehaviour{
   int level = 0;
   int xp    = 0;
   
-  // abilities availability
+  // abilities
   public bool[] abilities = {true, false, false, false, false};
-  
+  float punchDelay = 0.0f;
+  bool punchReady = true;
   
   //Speech
   public Actor interlocutor; // Actor with whom you are speaking
@@ -554,10 +555,10 @@ public class Actor : MonoBehaviour{
   }
   
   /* Performs a given ability. */
-  void Ability(int ability){
+  void Ability(int ability, bool right){
     switch(ability){
       case 0:
-        print("You punched!");
+        if(punchReady){ StartCoroutine(Punch()); }
         break;
       case 1:
         print("AbilityA");
@@ -579,6 +580,50 @@ public class Actor : MonoBehaviour{
         break;
       
     }
+  }
+  
+  /* Causes Melee Damage. TODO: Trigger animation */
+  IEnumerator Punch(){
+    punchReady = false;
+    yield return new WaitForSeconds(punchDelay);
+    for(int i = 0; i < 25; i++){
+      yield return new WaitForSeconds(0.001f);
+      Transform trans = head.transform;
+      Vector3 center = trans.position;
+      Vector3 halfExtents = trans.localScale;
+      Quaternion orientation = trans.rotation;
+      Vector3 direction = trans.forward;
+      float distance = 2f; 
+      int layerMask = ~(1 << 8);
+      RaycastHit hit;
+      //trans.position += trans.forward;
+      if(Physics.BoxCast(
+        center,
+        halfExtents,
+        direction,
+        out hit,
+        orientation,
+        distance,
+        layerMask,
+        QueryTriggerInteraction.Ignore
+      )){
+        HitBox hb = hit.collider.gameObject.GetComponent<HitBox>();
+        int damage = strength * (unarmed/10 + 1);
+        if(hb){
+          i = 26;
+          hb.ReceiveDamage(damage, gameObject);
+          Rigidbody rb = hit.collider.gameObject.GetComponent<Rigidbody>();
+          if(rb){ rb.AddForce(trans.forward * 1000); }
+        }
+        else{
+          Rigidbody rb = hit.collider.gameObject.GetComponent<Rigidbody>();
+          if(rb){ rb.AddForce(trans.forward * 1000); }
+        }
+      }
+      else{ print("Missed"); }
+    }
+    yield return new WaitForSeconds(punchDelay);
+    punchReady = true;
   }
   
   public void EquipAbility( int ability){
@@ -604,11 +649,11 @@ public class Actor : MonoBehaviour{
     if(right && left){
       if(use==0){
        if(primary){primary.Use(0); return; }
-       if(rightAbility > -1){ Ability(rightAbility); }
+       if(rightAbility > -1){ Ability(rightAbility, true); }
       }
       if(use==1){
         if(secondary){secondary.Use(0); return; }
-        if(leftAbility > -1){ Ability(leftAbility); }
+        if(leftAbility > -1){ Ability(leftAbility, false); }
       }
       if(use==2){
         if(primary){ primary.Use(2); }
@@ -617,11 +662,11 @@ public class Actor : MonoBehaviour{
     }
     else if(right){
       if(primary){ primary.Use(use); return; }
-      if(rightAbility > -1){ Ability(rightAbility); }
+      if(rightAbility > -1){ Ability(rightAbility, true); }
     }
     else if(left){
       if(secondary){ secondary.Use(use); return; }
-      if(leftAbility > -1){ Ability(leftAbility); return; } 
+      if(leftAbility > -1){ Ability(leftAbility, false); return; } 
     }
   }
   
