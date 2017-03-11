@@ -176,13 +176,13 @@ public class Menu : MonoBehaviour{
       string info = " " + item.stack + "/" + item.stackSize;
       if(i == sy && sx == 0){ GUI.color = Color.yellow; }
       if(GUI.Button(
-        new Rect(0, ih * i, iw, ih),
+        new Rect(0, ih * i, iw + iw/2, ih),
         selected + name + info
       )){
         actor.Equip(i);
       }
       if(GUI.Button(
-        new Rect(iw, ih * i, iw, ih),
+        new Rect(iw + iw/2, ih * i, iw/2, ih),
         "DROP"
       )){ actor.DiscardItem(i); }
       if(i == sy && sx == 0){ GUI.color = Color.blue; }
@@ -191,7 +191,7 @@ public class Menu : MonoBehaviour{
     
     if(sx == 1){ GUI.color = Color.yellow; }
     if(GUI.Button(
-        new Rect(Width()-iw, Height()/2, iw, ih),
+        new Rect(XOffset() + Width() - iw, Height()/2, iw, ih),
         "Abilities"
       )){
         Change(ABILITY);
@@ -223,7 +223,7 @@ public class Menu : MonoBehaviour{
     int ih = Height()/20;
     
     scrollPosition = GUI.BeginScrollView(
-      new Rect(XOffset() +iw, Height()/2, Width()-iw, Height()),
+      new Rect(XOffset() + iw, Height()/2, Width()-iw, Height()),
       scrollPosition,
       new Rect(0, 0, 200, 200)
     );
@@ -233,7 +233,7 @@ public class Menu : MonoBehaviour{
     for(int i = 0; i < selections.Count; i++){
       GUI.color = Color.blue; 
       int ability = selections[i];
-      string selected ="";
+      string selected = "";
       if(i == actor.rightAbility){ selected += "Right Hand "; }
       if(i == actor.leftAbility){ selected += "Left Hand "; }
       string name = actor.AbilityInfo(ability);
@@ -256,7 +256,7 @@ public class Menu : MonoBehaviour{
     
     if(sx == 1){ GUI.color = Color.yellow; }
     if(GUI.Button(
-        new Rect(Width()-iw, Height()/2, iw, ih),
+        new Rect(XOffset() + Width() - iw, Height()/2, iw, ih),
         "Quests"
       )){
         print("Quests not implemented");

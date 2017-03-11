@@ -540,7 +540,7 @@ public class Actor : MonoBehaviour{
   public string AbilityInfo(int ability){
     switch(ability){
       case 0:
-        return "The fist: humanity's first weapon.";
+        return "Unarmed";
       case 1:
         return "AbilityB";
       case 2:
