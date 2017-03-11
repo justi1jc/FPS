@@ -34,14 +34,14 @@ public class Item : MonoBehaviour{
 
 
   // Item Types
-  const int SCENERY   = 0; // Can't be picked up.
-  const int MISC      = 1; // No inherent use
-  const int FOOD      = 2; // Restore health
-  const int MELEE     = 3; // Melee weapon
-  const int RANGED    = 4; // Ranged weapon
-  const int WARP      = 5; // Warps player to new area.
-  const int CONTAINER = 6; // Access contents, but not pick up.
-  const int PROJECTILE= 7; // Flies forward when used.
+  public const int SCENERY   = 0; // Can't be picked up.
+  public const int MISC      = 1; // No inherent use
+  public const int FOOD      = 2; // Restore health
+  public const int MELEE     = 3; // Melee weapon
+  public const int RANGED    = 4; // Ranged weapon
+  public const int WARP      = 5; // Warps player to new area.
+  public const int CONTAINER = 6; // Access contents, but not pick up.
+  public const int PROJECTILE= 7; // Flies forward when used.
   
   // Ranged weapon types
   const int RIFLE  = 0; // Two-handed firearm.
@@ -77,6 +77,7 @@ public class Item : MonoBehaviour{
   public bool damageActive;
   public string swingString;
   public int swingHash;
+  public float knockBack;
   
   //Ranged weapon variables 
   public int ammo;
@@ -214,35 +215,34 @@ public class Item : MonoBehaviour{
   
   /* handle trigger collision */
   void OnTriggerEnter(Collider col){
-    if(itemType == MELEE && damageActive && ready){
+    if(itemType == MELEE && damageActive){
       HitBox hb = col.gameObject.GetComponent<HitBox>();
       if(hb){
         StartCoroutine(CoolDown());
         hb.ReceiveDamage(damage, gameObject);
-        
       }
+      Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
+      if(rb){ rb.AddForce(transform.forward * knockBack); }
     }
     else if(
         itemType == PROJECTILE
         && damageActive
         && weaponOfOrigin != col.gameObject
       ){
-      HitBox hb = col.gameObject.GetComponent<HitBox>();
-      if(hb){ hb.ReceiveDamage(damage, gameObject); }
-      Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
-      if(rb){ rb.AddForce(transform.forward * impactForce); }
       Destroy(this.gameObject);
     }
   }
   
   /* handle continuing trigger collision */
   void OnTriggerStay(Collider col){
-    if(itemType == MELEE && damageActive && ready){
+    if(itemType == MELEE && damageActive){
       HitBox hb = col.gameObject.GetComponent<HitBox>();
       if(hb){
         StartCoroutine(CoolDown());
         hb.ReceiveDamage(damage, gameObject);
       }
+      Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
+      if(rb){ rb.AddForce(transform.forward * knockBack); }
     }
   }
   
@@ -255,6 +255,7 @@ public class Item : MonoBehaviour{
   
   /* Swings melee weapon. */
   public IEnumerator Swing(){
+    ready = false;
     if(holder.anim){ holder.anim.SetTrigger(swingHash); }
     if(sounds.Length > 0){
       float vol = 0f;//Session.controller.masterVolume *
@@ -268,13 +269,17 @@ public class Item : MonoBehaviour{
     damageActive = false;
     yield return new WaitForSeconds(damageStart);
     damageActive = true;
+    transform.position += transform.forward; // TODO: Remove when adding animations.
     yield return new WaitForSeconds(damageEnd);
     damageActive = false;
+    ready = true;
+    transform.position -= transform.forward; // TODO: Remove when adding animations.
   }
   
   /* Sets weapon to ready after cooldown duration. */
   public IEnumerator CoolDown(){
     ready = false;
+    damageActive = false;
     yield return new WaitForSeconds(cooldown);
     ready = true;
   } 

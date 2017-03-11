@@ -9,11 +9,12 @@
           |
           |spine| // Pivot point for torso
           |     | Head| // Contains Camera
-          |     |     |RHand| // Mount points for held items.
+          |     |     |RHand| // Mount points for held items. 
           |     |     |     |primaryItem
-          |     |     |     | // Need trigger box for punching
+          |     |     |     | // Need trigger box and Item for abilities
           |     |     |LHand|
           |     |     |     |secondaryItem
+          |     |     |     | // Need trigger box and Ttem for abilities
       Variables that must be set in animator or prefab
       head, hand, spine
       Speed
@@ -76,8 +77,6 @@ public class Actor : MonoBehaviour{
   bool menuOpen;
   public GameObject primaryItem;
   public GameObject secondaryItem;
-  public int rightAbility = 1;
-  public int leftAbility  = 1;
   public int primaryIndex = -1;
   public int secondaryIndex = -1;
   public GameObject itemInReach;
@@ -115,9 +114,12 @@ public class Actor : MonoBehaviour{
   
   // abilities
   public bool[] abilities = {true, false, false, false, false};
-  float punchDelay = 0.5f;
-  bool punchReady = true;
-  
+  public int rightAbility = 1;   // Ability in right hand.
+  public int leftAbility  = 1;   // Ability in left hand.
+  public Item raItem = null;     // Ability Item in right hand.
+  public Item laItem = null;     // Ability item in left hand.
+  public bool raReady = true;    // Is right hand busy?
+  public bool laReady = true;    // Is left hand busy?
   //Speech
   public Actor interlocutor; // Actor with whom you are speaking
   
@@ -134,6 +136,10 @@ public class Actor : MonoBehaviour{
   /* Before rest of code */
   void Start(){
     body = gameObject;
+    raItem = hand.GetComponent<Item>(); 
+    laItem = offHand.GetComponent<Item>();
+    raItem.holder = this;
+    laItem.holder = this;
     AssignPlayer(playerNumber);
   }
   
@@ -558,7 +564,7 @@ public class Actor : MonoBehaviour{
   void Ability(int ability, bool right){
     switch(ability){
       case 0:
-        if(punchReady){ StartCoroutine(Punch()); }
+          Punch(right);
         break;
       case 1:
         print("AbilityA");
@@ -578,49 +584,19 @@ public class Actor : MonoBehaviour{
       case 6:
         print("AbilityF");
         break;
-      
     }
   }
   
-  /* Causes Melee Damage. TODO: Trigger animation */
-  IEnumerator Punch(){
-    punchReady = false;
-    for(int i = 0; i < 25; i++){
-      yield return new WaitForSeconds(0.001f);
-      Transform trans = head.transform;
-      Vector3 center = trans.position;
-      Vector3 halfExtents = trans.localScale;
-      Quaternion orientation = trans.rotation;
-      Vector3 direction = trans.forward;
-      float distance = 2f; 
-      int layerMask = ~(1 << 8);
-      RaycastHit hit;
-      if(Physics.BoxCast(
-        center,
-        halfExtents,
-        direction,
-        out hit,
-        orientation,
-        distance,
-        layerMask,
-        QueryTriggerInteraction.Ignore
-      )){
-        HitBox hb = hit.collider.gameObject.GetComponent<HitBox>();
-        int damage = strength * (unarmed/10 + 1);
-        if(hb){
-          i = 26;
-          hb.ReceiveDamage(damage, gameObject);
-          Rigidbody rb = hit.collider.gameObject.GetComponent<Rigidbody>();
-          if(rb){ rb.AddForce(body.transform.forward * strength * 15); }
-        }
-        else{
-          Rigidbody rb = hit.collider.gameObject.GetComponent<Rigidbody>();
-          if(rb){ rb.AddForce(body.transform.forward * strength * 15); }
-        }
-      }
-    }
-    yield return new WaitForSeconds(punchDelay);
-    punchReady = true;
+  /* Triggers melee attack */
+  void Punch(bool right){
+    Item item = right ? raItem : laItem;
+    item.cooldown = 0.5f;
+    item.damageStart = 0f;
+    item.damageEnd = 0.25f;
+    item.knockBack = strength * 50;
+    item.itemType = Item.MELEE;
+    item.damage = strength * (unarmed / 10 + 1);
+    item.Use(0);
   }
   
   public void EquipAbility( int ability){
