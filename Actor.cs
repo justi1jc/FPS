@@ -253,6 +253,10 @@ public class Actor : MonoBehaviour{
     //Mouse controls
     if(Input.GetMouseButtonDown(0)){ Use(0); }
     if(Input.GetMouseButtonDown(1)){ Use(1); }
+    if(Input.GetMouseButton(0)){ Use(3); } // Charge Left
+    if(Input.GetMouseButton(1)){ Use(4); } // Charge right
+    if(Input.GetMouseButtonUp(0)){ Use(5); } // Release left
+    if(Input.GetMouseButtonUp(1)){ Use(6); } // Release right
     float rotx = -Input.GetAxis("Mouse Y") * sensitivityX;
     float roty = Input.GetAxis("Mouse X") * sensitivityY;
     Turn(new Vector3(rotx, roty, 0f));
@@ -320,9 +324,12 @@ public class Actor : MonoBehaviour{
     else if(Input.GetKeyDown(Session.X)){ Use(2); }
     if(Input.GetKeyDown(Session.Y)){ SetMenuOpen(true); if(menu){ menu.Change(Menu.INVENTORY); } }
     if(rt > 0 && !rt_down){ Use(0); rt_down = true;}
-    if(rt == 0){ rt_down = false; }
+    else if(rt > 0){ Use(3); }
+    if(rt == 0 && rt_down){ rt_down = false; Use(5); }
     if(lt > 0 && !lt_down){ Use(1); lt_down = true;}
-    if(lt == 0){ lt_down = false; }
+    else if(lt > 0){ Use(4); }
+    if(lt == 0 && lt_down){ lt_down = false; Use(6); }
+    
     if(Input.GetKeyDown(Session.LSC)){ ToggleCrouch(); }
     if(Input.GetKeyDown(Session.LB)){ Drop(); }
   }
@@ -561,10 +568,10 @@ public class Actor : MonoBehaviour{
   }
   
   /* Performs a given ability. */
-  void Ability(int ability, bool right){
+  void Ability(int ability, bool right, int use = 0){
     switch(ability){
       case 0:
-          Punch(right);
+          Punch(right, use);
         break;
       case 1:
         print("AbilityA");
@@ -587,16 +594,25 @@ public class Actor : MonoBehaviour{
     }
   }
   
-  /* Triggers melee attack */
-  void Punch(bool right){
+  /* Melee attack
+     0 Charges punch.
+     1 executes punch.
+  */
+  void Punch(bool right, int use){
     Item item = right ? raItem : laItem;
-    item.cooldown = 0.5f;
-    item.damageStart = 0f;
-    item.damageEnd = 0.25f;
-    item.knockBack = strength * 50;
-    item.itemType = Item.MELEE;
-    item.damage = strength * (unarmed / 10 + 1);
-    item.Use(0);
+    if(item.itemType != Item.MELEE){
+      item.cooldown = 0.5f;
+      item.damageStart = 0f;
+      item.damageEnd = 0.25f;
+      item.knockBack = strength * 50;
+      item.itemType = Item.MELEE;
+      item.chargeable = true;
+      item.executeOnCharge = true;
+      item.charge = 0;
+      item.chargeMax = 25;
+      item.damage = strength * (unarmed / 5 + 1);
+    }
+    item.Use(use);
   }
   
   public void EquipAbility( int ability){
@@ -632,14 +648,47 @@ public class Actor : MonoBehaviour{
         if(primary){ primary.Use(2); }
         if(secondary){ secondary.Use(2); }
       }
+      if(use==3){
+        if(primary){ primary.Use(3); return; }
+        if(rightAbility > -1){ Ability(rightAbility, true, 3); return; }
+      }
+      if(use==4){
+        if(secondary){ secondary.Use(3); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false, 3); return; }
+      }
+      if(use==5){
+        if(primary){ primary.Use(4); return; }
+        if(rightAbility > -1){ Ability(rightAbility, true, 4); return; }
+      }
+      if(use==6){
+        if(secondary){ secondary.Use(4); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false, 4); return; }
+      }
+      
     }
     else if(right){
+      if(use==3){
+        if(primary){ primary.Use(3); return; }
+        if(rightAbility > -1){ Ability(rightAbility, true, 3); return; }
+      }
+      if(use==5){
+        if(primary){ primary.Use(4); return; }
+        if(rightAbility > -1){ Ability(rightAbility, true, 4); return; }
+      }
       if(primary){ primary.Use(use); return; }
-      if(rightAbility > -1){ Ability(rightAbility, true); }
+      if(rightAbility > -1){ Ability(rightAbility, true); return;}
     }
     else if(left){
+      if(use==4){
+        if(secondary){ secondary.Use(3); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false, 3); return; }
+      }
+      if(use==6){
+        if(secondary){ secondary.Use(4); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false, 4); return; }
+      }
       if(secondary){ secondary.Use(use); return; }
-      if(leftAbility > -1){ Ability(leftAbility, false); return; } 
+      if(leftAbility > -1){ Ability(leftAbility, false); return;}
     }
   }
   

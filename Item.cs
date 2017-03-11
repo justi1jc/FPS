@@ -71,7 +71,7 @@ public class Item : MonoBehaviour{
   public float cooldown;
   public bool ready = true;
   
-  //Melee variables
+  // Melee variables
   public float damageStart;
   public float damageEnd;
   public bool damageActive;
@@ -79,7 +79,14 @@ public class Item : MonoBehaviour{
   public int swingHash;
   public float knockBack;
   
-  //Ranged weapon variables 
+  // Charging
+  public bool chargeable = false;
+  public int charge;
+  public int chargeMax;
+  public bool executeOnCharge = false;
+  public int effectiveDamage = 0;
+  
+  // Ranged weapon variables 
   public int ammo;
   public int maxAmmo;
   public int activeAmmoType;
@@ -96,15 +103,15 @@ public class Item : MonoBehaviour{
   public float muzzleVelocity;
   public float impactForce;
   
-  //WARP variables
+  // WARP variables
   public string destName;
   public Vector3 destPos;
   public Vector3 destRot;
   
-  //projectile variables
+  // projectile variables
   GameObject weaponOfOrigin;
   
-  //Container variables
+  // Container variables
   public Data[] contents;
   
   public void Start(){
@@ -112,6 +119,8 @@ public class Item : MonoBehaviour{
       case MELEE:
         swingHash = Animator.StringToHash(swingString);
         aimHash = Animator.StringToHash(aimString);
+        chargeable = true;
+        executeOnCharge = true;
         break;
       case RANGED:
         fireHash = Animator.StringToHash(fireString);
@@ -122,14 +131,14 @@ public class Item : MonoBehaviour{
   }
   
   public void Use(int action){
-    //Left mouse
+    // Main
     if(action == 0){
       switch(itemType){
         case FOOD:
           Consume();
           break;
         case MELEE:
-          if(ready){ StartCoroutine(Swing()); }
+          chargeable = true;
           break;
         case RANGED:
           Fire();
@@ -141,7 +150,7 @@ public class Item : MonoBehaviour{
           break;
       }
     }
-    //Right mouse
+    // Secondary
     else if (action == 1){
       switch(itemType){
         case RANGED:
@@ -151,13 +160,33 @@ public class Item : MonoBehaviour{
           break;
       }
     }
-    //R key
+    // Tertiary
     else if (action == 2){
       switch(itemType){
         case RANGED:
           StartCoroutine(Reload());
           break;
         default:
+          break;
+      }
+    }
+    // Charge
+    else if (action == 3){
+      switch(itemType){
+        case MELEE:
+          if(chargeable){ ChargeSwing(); };
+          break;
+      }
+    }
+    // Charge release
+    else if(action == 4){
+      switch(itemType){
+        case MELEE:
+          if(chargeable && ready){
+            charge = 0;
+            chargeable = false;
+            StartCoroutine(Swing()); 
+          }
           break;
       }
     }
@@ -172,13 +201,16 @@ public class Item : MonoBehaviour{
       case RANGED:
         info += " " + ammo + "/" + maxAmmo;
         break;
+      case MELEE:
+        info += " " + effectiveDamage + "DMG";
+        break;
     }
     return info;
   }
   
   /* Response to interaction from non-holder Actor */
   public void Interact(Actor a, int mode = -1, string message = ""){
-    //TODO: Account for other interaction modes.
+    // TODO: Account for other interaction modes.
     if(itemType != SCENERY && holder == null){ a.PickUp(this); };
   }
   
@@ -219,7 +251,9 @@ public class Item : MonoBehaviour{
       HitBox hb = col.gameObject.GetComponent<HitBox>();
       if(hb){
         StartCoroutine(CoolDown());
-        hb.ReceiveDamage(damage, gameObject);
+        hb.ReceiveDamage(effectiveDamage, gameObject);
+        chargeable = false;
+        effectiveDamage = 0;
       }
       Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
       if(rb){ rb.AddForce(transform.forward * knockBack); }
@@ -239,7 +273,9 @@ public class Item : MonoBehaviour{
       HitBox hb = col.gameObject.GetComponent<HitBox>();
       if(hb){
         StartCoroutine(CoolDown());
-        hb.ReceiveDamage(damage, gameObject);
+        hb.ReceiveDamage(effectiveDamage, gameObject);
+        chargeable = false;
+        effectiveDamage = 0;
       }
       Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
       if(rb){ rb.AddForce(transform.forward * knockBack); }
@@ -253,27 +289,29 @@ public class Item : MonoBehaviour{
     Destroy(this.gameObject);
   }
   
+  public void ChargeSwing(){
+    if(chargeable && charge < chargeMax){
+      charge++;
+      effectiveDamage = (damage * charge) / chargeMax;
+    }
+    if(chargeable && executeOnCharge && (charge >= chargeMax) && ready){
+      charge = 0;
+      chargeable = false;
+      StartCoroutine(Swing());
+    }
+  }
+  
   /* Swings melee weapon. */
   public IEnumerator Swing(){
     ready = false;
-    if(holder.anim){ holder.anim.SetTrigger(swingHash); }
-    if(sounds.Length > 0){
-      float vol = 0f;//Session.controller.masterVolume *
-                  //Session.controller.effectsVolume;
-      AudioSource.PlayClipAtPoint(
-                                  sounds[0],
-                                  transform.position,
-                                  vol
-                                  );
-    }
     damageActive = false;
     yield return new WaitForSeconds(damageStart);
     damageActive = true;
-    transform.position += transform.forward; // TODO: Remove when adding animations.
+    transform.position += transform.forward;
     yield return new WaitForSeconds(damageEnd);
     damageActive = false;
     ready = true;
-    transform.position -= transform.forward; // TODO: Remove when adding animations.
+    transform.position -= transform.forward;
   }
   
   /* Sets weapon to ready after cooldown duration. */
@@ -343,20 +381,7 @@ public class Item : MonoBehaviour{
   
   /* Adds ammo to weapon externally */
   public void LoadAmmo(){
-    /* TODO: Implement multiple ammo types
-    string desired = ammoTypes[activeAmmoType];
-    int available = holder.RequestAmmo(desired, (maxAmmo - ammo));
-    if(available > 0){ ammo = ammo + available; return; }
-    for(int i = 0; i < ammoTypes.Length; i++){
-      desired  = ammoTypes[i];
-      available = holder.RequestAmmo(desired, (maxAmmo - ammo));
-      if(available > 0){ 
-        ammo = ammo + available;
-        activeAmmoType = i;
-        return;
-      }
-    }
-    */
+    /* TODO: Impliment multiple ammo types*/
     int available = holder.RequestAmmo(projectile, (maxAmmo - ammo));
     if(available > 0){ ammo = ammo + available; return; }
   }
