@@ -17,8 +17,7 @@ public class Item : MonoBehaviour{
 *   Ranged Weapon
 *   Item|(ItemController)
 *       |Model|(rigidbody, collider, meshrenderer)
-*             |MuzzlePoint//Forward position of barrel
-*             |RearPoint  //Rear position of barrel
+*             
 *
 *   Variables that must be set for each instance
 *   displayName
@@ -28,7 +27,7 @@ public class Item : MonoBehaviour{
 *   stackSize
 *   For food: healing
 *   For Melee weapon: damage, cooldown, damageStart, damageEnd, chargeMax, knockback
-*   For ranged weapon: damage, maxAmmo, projectile, rangeType, cooldown, muzzlePoint, rearPoint
+*   For ranged weapon: damage, maxAmmo, projectile, rangeType, cooldown
 *     reloadDelay, muzzleVelocity, impactForce
 */
 
@@ -98,8 +97,6 @@ public class Item : MonoBehaviour{
   public int rangedType;
   public int fireHash;
   public float reloadDelay;
-  public GameObject muzzlePoint;
-  public GameObject rearPoint;
   public float muzzleVelocity;
   public float impactForce;
   
@@ -139,7 +136,8 @@ public class Item : MonoBehaviour{
           chargeable = true;
           break;
         case RANGED:
-          Fire();
+          if(chargeable){ ChargeFire(); }
+          else{ Fire(); }
           break;
         case WARP:
           Warp();
@@ -267,6 +265,11 @@ public class Item : MonoBehaviour{
         && damageActive
         && weaponOfOrigin != col.gameObject
       ){
+      damageActive = false;
+      HitBox hb = col.gameObject.GetComponent<HitBox>();
+      if(hb){ hb.ReceiveDamage(damage, weaponOfOrigin);}
+      Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
+      if(rb) rb.AddForce(transform.forward * impactForce);
       Destroy(this.gameObject);
     }
   }
@@ -283,6 +286,13 @@ public class Item : MonoBehaviour{
       }
       Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
       if(rb){ rb.AddForce(transform.forward * knockBack); }
+    }
+    if(itemType == PROJECTILE && damageActive){
+      damageActive = false;
+      HitBox hb = col.gameObject.GetComponent<HitBox>();
+      if(hb){ hb.ReceiveDamage(damage, weaponOfOrigin);}
+      Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
+      if(rb) rb.AddForce(transform.forward * impactForce);
     }
   }
   
@@ -328,7 +338,6 @@ public class Item : MonoBehaviour{
   
   /* Charges projectile */
   void ChargeFire(){
-  print("ChargeFire");
     if(chargeable && charge < chargeMax){
       charge++;
       effectiveDamage = (damage * charge) / chargeMax;
@@ -343,17 +352,9 @@ public class Item : MonoBehaviour{
   void Fire(){
     if(ammo < 1){ return; }
     ready = false;
-    if(holder && holder.anim){ holder.anim.SetTrigger(fireHash); }
     ammo--;
     Vector3 relPos = transform.forward;
-    Vector3 spawnPos = transform.forward + transform.position;
-    print("Rel1" + relPos);
-    if(muzzlePoint && rearPoint){
-      spawnPos = muzzlePoint.transform.position;
-      Vector3 rearPos = rearPoint.transform.position;
-      relPos = spawnPos - rearPos;
-      print("Rel2" + relPos);
-    }
+    Vector3 spawnPos = transform.position + transform.forward;
     Quaternion projRot = Quaternion.LookRotation(relPos);
     GameObject pref = (GameObject)Resources.Load(
       projectile,
@@ -369,6 +370,18 @@ public class Item : MonoBehaviour{
       item.impactForce = impactForce;
       item.damageActive = true;
       item.damage = damage;
+      if(chargeable){
+        item.damage = effectiveDamage;
+        print(item.damage + "," + charge);
+        effectiveDamage = 0;
+        charge = 0;
+        Light light = item.gameObject.GetComponent<Light>();
+        if(light){
+          light.intensity = ((float)item.damage)/10f;
+          light.range = item.damage;
+        }
+      }
+      
     }
     proj.GetComponent<Rigidbody>().velocity = relPos * muzzleVelocity;
     StartCoroutine(CoolDown());

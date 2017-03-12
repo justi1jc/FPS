@@ -618,17 +618,20 @@ public class Actor : MonoBehaviour{
   /* Charges a fireball, then launches it. */
   void FireBall(bool right, int use){
     Item item = right ? raItem : laItem;
-    if(item.itemType != Item.MELEE){
-      item.cooldown = 1f;
-      item.knockBack = intelligence * 50;
+    if(item.itemType != Item.RANGED){
+      item.cooldown = 1.1f - (float)(willpower/10f);
       item.itemType = Item.RANGED;
       item.chargeable = true;
       item.executeOnCharge = false;
       item.projectile = "FireBall";
       item.charge = 0;
-      item.chargeMax = 50;
+      item.chargeMax = 200 / willpower;
+      item.muzzleVelocity = 50;
+      item.impactForce = willpower * 50;
       item.damage = intelligence * (magic / 10 + 1);
+      item.effectiveDamage = 0;
     }
+    item.ammo = 1;
     item.Use(use);
   }
   
