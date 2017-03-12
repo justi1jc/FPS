@@ -27,7 +27,7 @@ public class Item : MonoBehaviour{
 *   stack
 *   stackSize
 *   For food: healing
-*   For Melee weapon: damage, cooldown, damageStart, damageEnd
+*   For Melee weapon: damage, cooldown, damageStart, damageEnd, chargeMax, knockback
 *   For ranged weapon: damage, maxAmmo, projectile, rangeType, cooldown, muzzlePoint, rearPoint
 *     reloadDelay, muzzleVelocity, impactForce
 */
@@ -117,8 +117,6 @@ public class Item : MonoBehaviour{
   public void Start(){
     switch(itemType){
       case MELEE:
-        swingHash = Animator.StringToHash(swingString);
-        aimHash = Animator.StringToHash(aimString);
         chargeable = true;
         executeOnCharge = true;
         break;
@@ -174,7 +172,10 @@ public class Item : MonoBehaviour{
     else if (action == 3){
       switch(itemType){
         case MELEE:
-          if(chargeable){ ChargeSwing(); };
+          if(chargeable){ ChargeSwing(); }
+          break;
+        case RANGED:
+          if(chargeable){ ChargeFire(); }
           break;
       }
     }
@@ -187,6 +188,9 @@ public class Item : MonoBehaviour{
             chargeable = false;
             StartCoroutine(Swing()); 
           }
+          break;
+        case RANGED:
+          if(chargeable && ready){ Fire(); }
           break;
       }
     }
@@ -322,30 +326,41 @@ public class Item : MonoBehaviour{
     ready = true;
   } 
   
-  /* Fires ranged weapon. */
-  public void Fire(){
-  if(!muzzlePoint || !rearPoint || ammo < 1){ return; }
-    if(sounds.Length > 0){
-      float vol = 1f;
-      AudioSource.PlayClipAtPoint(
-        sounds[0],
-        transform.position,
-        vol
-      );
+  /* Charges projectile */
+  void ChargeFire(){
+  print("ChargeFire");
+    if(chargeable && charge < chargeMax){
+      charge++;
+      effectiveDamage = (damage * charge) / chargeMax;
     }
+    if(chargeable && executeOnCharge && (charge >- chargeMax) && ready){
+      charge = 0;
+      Fire();
+    }
+  }
+  
+  /* Fires ranged weapon. */
+  void Fire(){
+    if(ammo < 1){ return; }
     ready = false;
     if(holder && holder.anim){ holder.anim.SetTrigger(fireHash); }
     ammo--;
-    Vector3 muzzlePos = muzzlePoint.transform.position;
-    Vector3 rearPos = rearPoint.transform.position;
-    Vector3 relPos = muzzlePos - rearPos;
+    Vector3 relPos = transform.forward;
+    Vector3 spawnPos = transform.forward + transform.position;
+    print("Rel1" + relPos);
+    if(muzzlePoint && rearPoint){
+      spawnPos = muzzlePoint.transform.position;
+      Vector3 rearPos = rearPoint.transform.position;
+      relPos = spawnPos - rearPos;
+      print("Rel2" + relPos);
+    }
     Quaternion projRot = Quaternion.LookRotation(relPos);
     GameObject pref = (GameObject)Resources.Load(
       projectile,
       typeof(GameObject));
     GameObject proj = (GameObject)GameObject.Instantiate(
       pref,
-      muzzlePos,
+      spawnPos,
       projRot);
     proj.GetComponent<Collider>().isTrigger = true;
     Item item = proj.GetComponent<Item>();

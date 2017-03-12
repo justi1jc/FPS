@@ -556,7 +556,7 @@ public class Actor : MonoBehaviour{
       case 0:
         return "Unarmed";
       case 1:
-        return "AbilityB";
+        return "Fireball";
       case 2:
         return "AbilityC";
       case 3:
@@ -574,7 +574,7 @@ public class Actor : MonoBehaviour{
           Punch(right, use);
         break;
       case 1:
-        print("AbilityA");
+        FireBall(right, use);
         break;
       case 2:
         print("AbilityB");
@@ -611,6 +611,23 @@ public class Actor : MonoBehaviour{
       item.charge = 0;
       item.chargeMax = 25;
       item.damage = strength * (unarmed / 10 + 1);
+    }
+    item.Use(use);
+  }
+  
+  /* Charges a fireball, then launches it. */
+  void FireBall(bool right, int use){
+    Item item = right ? raItem : laItem;
+    if(item.itemType != Item.MELEE){
+      item.cooldown = 1f;
+      item.knockBack = intelligence * 50;
+      item.itemType = Item.RANGED;
+      item.chargeable = true;
+      item.executeOnCharge = false;
+      item.projectile = "FireBall";
+      item.charge = 0;
+      item.chargeMax = 50;
+      item.damage = intelligence * (magic / 10 + 1);
     }
     item.Use(use);
   }
