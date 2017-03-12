@@ -543,7 +543,6 @@ public class Actor : MonoBehaviour{
       rb.constraints = RigidbodyConstraints.FreezePositionX |
                       RigidbodyConstraints.FreezePositionY |
                       RigidbodyConstraints.FreezePositionZ;
-     
     }
     else{
      rb.constraints = RigidbodyConstraints.None; 

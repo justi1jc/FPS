@@ -115,17 +115,17 @@ public class AI: MonoBehaviour{
     Quaternion desiredRot = host.head.transform.rotation;
     float angle = Quaternion.Angle(realRot, desiredRot);
     while(angle > aimMargin && !paused){
+    
       Vector3 realEulers = realRot.eulerAngles;
       Vector3 desiredEulers = desiredRot.eulerAngles;
-      Vector3 turnRot = new Vector3(
-        realEulers.x - desiredEulers.x,
-        realEulers.y - desiredEulers.y,
-        0f
-      );
-      
-      host.Turn(turnRot.normalized);
+      float x = realEulers.x - desiredEulers.x;
+      float y = realEulers.y - desiredEulers.y;
+      if(Mathf.Abs(y) > 180){ y *= -1f; }
+      print(new Vector3(x, y, 0f));
+      host.Turn(new Vector3(x, y, 0f).normalized);
       
       yield return new WaitForSeconds(turnSpeed);
+      
       relRot = (target.body.transform.position - host.head.transform.position).normalized;
       realRot = Quaternion.LookRotation(relRot, host.head.transform.up);
       desiredRot = host.head.transform.rotation;
