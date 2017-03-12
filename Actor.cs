@@ -60,6 +60,7 @@ public class Actor : MonoBehaviour{
   public float speed;
   bool walking = false;
   bool sprinting = false;
+  bool crouched = false;
 
   //Jumping
   public bool jumpReady = true;
@@ -69,9 +70,6 @@ public class Actor : MonoBehaviour{
 
   //Animation
   public Animator anim;
-  int aliveHash, crouchedHash, walkingHash, holdRifleHash, aimRifleHash;
-  public string aliveString, crouchedString, walkingString;
-  public string holdRifleString, aimRifleString;
   
   //Inventory
   bool menuOpen;
@@ -94,19 +92,20 @@ public class Actor : MonoBehaviour{
   public int staminaMax = 100;
   
   // ICEPAWS attributes, max 10
-  int intelligence = 5; // Max mana
-  int charisma     = 5; //
-  int endurance    = 5; // Stamina, health regen
-  int perception   = 5; // accuracy
-  int agility      = 5; // speed, jump height
-  int willpower    = 5; // mana regen
-  int strength     = 5; // maxweight, 
+  public int intelligence = 5; // Max mana
+  public int charisma     = 5; //
+  public int endurance    = 5; // Stamina, health regen
+  public int perception   = 5; // accuracy
+  public int agility      = 5; // speed, jump height
+  public int willpower    = 5; // mana regen
+  public int strength     = 5; // maxweight, 
   
   // Skill levels, max 100
   int ranged  = 50;
   int melee   = 50;
   int unarmed = 50;
   int magic   = 50;
+  int stealth = 50;
   
   // Leveling
   int level = 0;
@@ -121,19 +120,13 @@ public class Actor : MonoBehaviour{
   public bool raReady = true;    // Is right hand busy?
   public bool laReady = true;    // Is left hand busy?
   // Speech
-  public Actor interlocutor; // Actor with whom you are speaking
+  public Actor interlocutor; // Conversation partner
   
   // AI
   public AI ai;
   
   /* Before Start */
   void Awake(){
-    //TODO
-    aliveHash = Animator.StringToHash(aliveString);
-    crouchedHash = Animator.StringToHash(crouchedString);
-    walkingHash = Animator.StringToHash(walkingString);
-    holdRifleHash = Animator.StringToHash(holdRifleString);
-    aimRifleHash = Animator.StringToHash(aimRifleString);
     body = gameObject;
   }
   
@@ -243,7 +236,6 @@ public class Actor : MonoBehaviour{
     //Basic movement
     bool shift = Input.GetKey(KeyCode.LeftShift);
     bool walk = false;
-    //TODO: if(shift != sprinting && anim){ anim.SetBool(sprintingHash, shift)}
     sprinting = shift;
     if(Input.GetKey(KeyCode.W)){ Move(0); walk = true; }
     if(Input.GetKey(KeyCode.S)){ Move(1); walk = true; }
@@ -252,7 +244,6 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(KeyCode.LeftControl)){ToggleCrouch(); }
     if(Input.GetKeyUp(KeyCode.LeftControl)){ToggleCrouch(); }
-    if(walk != walking && anim){ anim.SetBool(walkingHash, walking); }
     
     //Mouse controls
     if(Input.GetMouseButtonDown(0)){ Use(0); }
@@ -316,11 +307,9 @@ public class Actor : MonoBehaviour{
     // Basic movement
     bool shift = Input.GetKey(Session.RB);
     bool walk = xl != 0f || yl != 0;
-    //TODO: if(shift != sprinting && anim){ anim.SetBool(sprintingHash, shift)}
     sprinting = shift;
     AxisMove(xl, yl);
     Turn(new Vector3(yr, xr, 0f));
-    if(walk != walking && anim){ anim.SetBool(walkingHash, walking); }
     
     //Buttons
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
@@ -531,8 +520,7 @@ public class Actor : MonoBehaviour{
   
   /* Toggles model's crouch */
   void ToggleCrouch(){
-    if(!anim){ return; }
-    anim.SetBool(crouchedHash, !anim.GetBool(crouchedHash));
+    crouched = !crouched;
   }
   
   /* Applies damage from attack. Ignores active weapon. */
@@ -542,7 +530,6 @@ public class Actor : MonoBehaviour{
     if(health < 1){
       health = 0;
       StopAllCoroutines();
-      if(anim){ anim.SetBool(aliveHash, false); }
       Ragdoll(true);
     }
     if(health > healthMax){ health = healthMax; }
@@ -586,13 +573,13 @@ public class Actor : MonoBehaviour{
         HealOther(right, use);
         break;
       case 4:
-        print("AbilityD");
-        break;
-      case 5:
         print("AbilityE");
         break;
-      case 6:
+      case 5:
         print("AbilityF");
+        break;
+      case 6:
+        print("AbilityG");
         break;
     }
   }
@@ -978,6 +965,11 @@ public class Actor : MonoBehaviour{
     //TODO Make one response for NPC, one for Player
   }
   
+  /* Returns true if player passes stealth check.
+  */
+  public bool StealthCheck(int _perception = 0){
+    return false;
+  }
   
      
 }

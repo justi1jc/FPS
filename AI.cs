@@ -63,7 +63,7 @@ public class AI: MonoBehaviour{
       Actor actor = found[i].collider.gameObject.GetComponent<Actor>();
       if(actor && actor != host){
         if(!actor.head){ print(actor + " missing body"); }
-        else if(CanSee(actor.body)){
+        else if(CanSee(actor.body) && !actor.StealthCheck(host.perception)){
           return actor;
         }
         else{
