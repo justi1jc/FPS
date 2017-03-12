@@ -39,7 +39,7 @@ public class Actor : MonoBehaviour{
   public GameObject hand;    // GameObject where items are attached.
   public GameObject offHand; // Secondary hand where items are attached.
   public GameObject spine;   // Pivot point of toros
-  GameObject body;           // The base gameobject of the actor
+  public GameObject body;           // The base gameobject of the actor
   
   //UI
   public Menu menu;
@@ -120,8 +120,11 @@ public class Actor : MonoBehaviour{
   public Item laItem = null;     // Ability item in left hand.
   public bool raReady = true;    // Is right hand busy?
   public bool laReady = true;    // Is left hand busy?
-  //Speech
+  // Speech
   public Actor interlocutor; // Actor with whom you are speaking
+  
+  // AI
+  public AI ai;
   
   /* Before Start */
   void Awake(){
@@ -131,11 +134,11 @@ public class Actor : MonoBehaviour{
     walkingHash = Animator.StringToHash(walkingString);
     holdRifleHash = Animator.StringToHash(holdRifleString);
     aimRifleHash = Animator.StringToHash(aimRifleString);
+    body = gameObject;
   }
   
   /* Before rest of code */
   void Start(){
-    body = gameObject;
     raItem = hand.GetComponent<Item>(); 
     laItem = offHand.GetComponent<Item>();
     raItem.holder = this;
@@ -179,7 +182,8 @@ public class Actor : MonoBehaviour{
       else{StartCoroutine(ControllerInputRoutine()); }
     }
     else if(player == 5){
-      //TODO assign ai
+      ai = gameObject.GetComponent<AI>();
+      if(ai){ ai.Begin(this); }
     }
   }
   
