@@ -965,9 +965,19 @@ public class Actor : MonoBehaviour{
     //TODO Make one response for NPC, one for Player
   }
   
-  /* Returns true if player passes stealth check.
-  */
-  public bool StealthCheck(int _perception = 0){
+  /* Returns true if player passes stealth check. */
+  public bool StealthCheck(int viewerPerception = 0, int viewerDistance = 3){
+    int sneakBonus = crouched ? 25 : 0;     // Max 25
+    int sprintPenalty = sprinting ? -25 : 0;
+    int skillBonus = stealth / 4;           // Max: 25
+    int agilityBonus = agility * 2;         // Max: 20
+    int distanceBonus = viewerDistance < 3 ? -1 : viewerDistance; 
+    int viewerPenalty = viewerPerception * -1;
+    int successSpace = sneakBonus + skillBonus + agilityBonus + distanceBonus;
+    successSpace += sprintPenalty + viewerPenalty; // Penalties
+    int roll = Random.Range(0, 100);
+    if(roll <= successSpace){ return true; }
+
     return false;
   }
   

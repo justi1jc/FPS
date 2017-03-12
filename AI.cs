@@ -62,12 +62,13 @@ public class AI: MonoBehaviour{
     for(int i = 0; i < found.Length; i++){
       Actor actor = found[i].collider.gameObject.GetComponent<Actor>();
       if(actor && actor != host){
-        if(!actor.head){ print(actor + " missing body"); }
-        else if(CanSee(actor.body) && !actor.StealthCheck(host.perception)){
-          return actor;
-        }
-        else{
-          print(actor + " hidden.");
+        int dist = (int)Vector3.Distance(
+          host.body.transform.position,
+          actor.body.transform.position
+        );
+        if(actor.head && CanSee(actor.body)){
+          bool check = !actor.StealthCheck(host.perception, dist);
+          if(check){ return actor; }
         }
          
       }
