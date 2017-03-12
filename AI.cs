@@ -19,11 +19,11 @@ public class AI: MonoBehaviour{
   bool paused;
   Actor host;
   float sightDistance = 20f;
-  float aimMargin = 1f; // Acceptable deviation in aim.
-  float turnSpeed = 0.1f; // Delay between turning
-  public int profile; // What sort of AI is this?
+  float aimMargin = 1f;   // Acceptable deviation in aim.
+  float turnSpeed = 0.01f; // Delay between turning
+  public int profile;     // What sort of AI is this?
   List<Actor> sighted;
-  List<Vector3> lastKnownPos;
+  Vector3 lastKnownPosition;
   
   /* Initial setup. */
   public void Begin(Actor _host){
@@ -57,7 +57,7 @@ public class AI: MonoBehaviour{
           break;
         }
       }
-      yield return new WaitForSeconds(1f);
+      yield return new WaitForSeconds(0f);
     }
   }
   
@@ -69,9 +69,10 @@ public class AI: MonoBehaviour{
   /* Decision logic for hostile AI */
   IEnumerator ThinkHostile(){
     if(paused){ yield break; }
-    UpdateEnemies();
+    UpdateSighted();
     for(int i = 0; i < sighted.Count; i++){
       if(sighted[i]){
+        lastKnownPosition = sighted[i].body.transform.position;
         yield return StartCoroutine(Fight(sighted[i]));
       }
     }
@@ -79,26 +80,28 @@ public class AI: MonoBehaviour{
   }
   
   /* Gather sighted hostiles. */
-  void UpdateEnemies(){
-    Actor enemy = ScanForActor();
+  void UpdateSighted(){
+    Actor actor = ScanForActor();
     sighted = new List<Actor>();
-    lastKnownPos = new List<Vector3>();
-    if(enemy){
-      sighted.Add(enemy);
-      lastKnownPos.Add(enemy.body.transform.position);
+    if(actor){
+      sighted.Add(actor);
     }
   }
   
   
   /* Engages enemy in combat. */
   IEnumerator Fight(Actor enemy){
-    if(paused){ yield break;}
-    if(!CanSee(enemy.body)){ StartCoroutine(SearchFor(enemy)); yield break; }
+    if(paused){ yield break; }
+    if(!CanSee(enemy.body)){ 
+      yield return StartCoroutine(SearchFor(enemy));
+      if(!CanSee(enemy.body)){ yield break;}
+    }
     yield return StartCoroutine(AimAt(enemy));
     print("Aimed at " + enemy);
     yield return new WaitForSeconds(0f);
   }
   
+  /* Moves to last-known position and does a 360 sweep*/
   IEnumerator SearchFor(Actor target){
     print("Searching for " + target);
     yield return new WaitForSeconds(0f);
@@ -111,7 +114,7 @@ public class AI: MonoBehaviour{
     Quaternion realRot = Quaternion.LookRotation(relRot, host.head.transform.up);
     Quaternion desiredRot = host.head.transform.rotation;
     float angle = Quaternion.Angle(realRot, desiredRot);
-    while(angle > aimMargin){
+    while(angle > aimMargin && !paused){
       Vector3 realEulers = realRot.eulerAngles;
       Vector3 desiredEulers = desiredRot.eulerAngles;
       Vector3 turnRot = new Vector3(

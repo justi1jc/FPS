@@ -531,13 +531,23 @@ public class Actor : MonoBehaviour{
       health = 0;
       StopAllCoroutines();
       Ragdoll(true);
+      if(ai){ ai.Pause(); }
     }
     if(health > healthMax){ health = healthMax; }
   }
   
   /* Adds or removes the ragdoll effect on the actor. */
   void Ragdoll(bool state){
-    //TODO
+    Rigidbody rb = body.GetComponent<Rigidbody>();
+    if(state){
+      rb.constraints = RigidbodyConstraints.FreezePositionX |
+                      RigidbodyConstraints.FreezePositionY |
+                      RigidbodyConstraints.FreezePositionZ;
+     
+    }
+    else{
+     rb.constraints = RigidbodyConstraints.None; 
+    }
   }
   
   /* Returns a string describing a given special ability */
