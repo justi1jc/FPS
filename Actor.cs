@@ -103,10 +103,10 @@ public class Actor : MonoBehaviour{
   int strength     = 5; // maxweight, 
   
   // Skill levels, max 100
-  int ranged  = 0;
-  int melee   = 0;
-  int unarmed = 0;
-  int magic   = 0;
+  int ranged  = 50;
+  int melee   = 50;
+  int unarmed = 50;
+  int magic   = 50;
   
   // Leveling
   int level = 0;
@@ -610,7 +610,7 @@ public class Actor : MonoBehaviour{
       item.executeOnCharge = true;
       item.charge = 0;
       item.chargeMax = 25;
-      item.damage = strength * (unarmed / 5 + 1);
+      item.damage = strength * (unarmed / 10 + 1);
     }
     item.Use(use);
   }
