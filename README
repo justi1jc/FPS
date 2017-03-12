@@ -12,7 +12,7 @@ Input(In-Game)
 Actor(Movement, Item Interaction, condition(health))
 Items(charging, pickup, drop, use)
 Inventory(store)
-Abilities(Dual-wield, Unarmed)
+Abilities(Dual-wield, Unarmed, fireball)
 
     Pending features for 1.0.0
 Menus(Main, Save&Load, Options, Speech, Trade, Quest)
@@ -29,4 +29,4 @@ What needs to be done for 0.1.0 (Base FPS Gameplay)
 
 Actor(Combat AI)
 Items(shield type, thrown type, ranged melee)
-Abilities(fireball, heal)
+Abilities(heal)

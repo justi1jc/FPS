@@ -120,6 +120,7 @@ public class Item : MonoBehaviour{
       case RANGED:
         fireHash = Animator.StringToHash(fireString);
         break;
+        
       default:
         break;
     }
@@ -130,7 +131,7 @@ public class Item : MonoBehaviour{
     if(action == 0){
       switch(itemType){
         case FOOD:
-          Consume();
+          if(ready){ Consume(); }
           break;
         case MELEE:
           chargeable = true;
@@ -299,8 +300,12 @@ public class Item : MonoBehaviour{
   /* Consume food. */
   public void Consume(){
     holder.ReceiveDamage(-healing, gameObject);
-    holder.Drop();
-    Destroy(this.gameObject);
+    this.stack--;
+    if(stack < 1){
+      holder.Drop();
+      Destroy(this.gameObject);
+    }
+    StartCoroutine(CoolDown());
   }
   
   public void ChargeSwing(){

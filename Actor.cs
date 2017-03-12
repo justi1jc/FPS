@@ -543,6 +543,7 @@ public class Actor : MonoBehaviour{
       if(anim){ anim.SetBool(aliveHash, false); }
       Ragdoll(true);
     }
+    if(health > healthMax){ health = healthMax; }
   }
   
   /* Adds or removes the ragdoll effect on the actor. */
@@ -558,9 +559,9 @@ public class Actor : MonoBehaviour{
       case 1:
         return "Fireball";
       case 2:
-        return "AbilityC";
+        return "Heal Self";
       case 3:
-        return "AbilityD";
+        return "Heal Other";
       case 4:
         return "AbilityE";
     }
@@ -577,10 +578,10 @@ public class Actor : MonoBehaviour{
         FireBall(right, use);
         break;
       case 2:
-        print("AbilityB");
+        HealSelf(right, use);
         break;
       case 3:
-        print("AbilityC");
+        HealOther(right, use);
         break;
       case 4:
         print("AbilityD");
@@ -633,6 +634,49 @@ public class Actor : MonoBehaviour{
     }
     item.ammo = 1;
     item.Use(use);
+  }
+  
+  /* Instant health boost. */
+  void HealSelf(bool right, int use){
+    if(use != 0){ return; }
+    Item item = right ? raItem : laItem;
+    if(item.itemType != Item.FOOD){
+      item.itemType = Item.FOOD;
+      item.healing = intelligence * (magic / 10 + 1);
+      item.cooldown = 1f;
+    }
+    Light l = item.gameObject.GetComponent<Light>();
+    if(l){StartCoroutine(Glow(0.25f, Color.blue, l)); }
+    item.stack = 2;
+    item.Use(0);
+  }
+  
+  void HealOther(bool right, int use){
+    Item item = right ? raItem : laItem;
+    if(item.itemType != Item.RANGED){
+      item.cooldown = 1.1f - (float)(willpower/10f);
+      item.itemType = Item.RANGED;
+      item.chargeable = true;
+      item.executeOnCharge = false;
+      item.projectile = "HealBall";
+      item.charge = 0;
+      item.chargeMax = 200 / willpower;
+      item.muzzleVelocity = 50;
+      item.impactForce = willpower * 50;
+      item.damage = -(intelligence * (magic / 10 + 1));
+      item.effectiveDamage = 0;
+    }
+    item.ammo = 1;
+    item.Use(use);
+  }
+  
+  IEnumerator Glow(float time, Color color, Light light){
+    light.intensity = 2f;
+    light.range = 10f;
+    light.color = color;
+    yield return new WaitForSeconds(time);
+    light.intensity = 0f;
+    light.range = 0f;
   }
   
   public void EquipAbility( int ability){
