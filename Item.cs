@@ -17,8 +17,7 @@ public class Item : MonoBehaviour{
 *   Ranged Weapon
 *   Item|(ItemController)
 *       |Model|(rigidbody, collider, meshrenderer)
-*             |MuzzlePoint//Forward position of barrel
-*             |RearPoint  //Rear position of barrel
+*             
 *
 *   Variables that must be set for each instance
 *   displayName
@@ -27,21 +26,21 @@ public class Item : MonoBehaviour{
 *   stack
 *   stackSize
 *   For food: healing
-*   For Melee weapon: damage, cooldown, damageStart, damageEnd
-*   For ranged weapon: damage, maxAmmo, projectile, rangeType, cooldown, muzzlePoint, rearPoint
+*   For Melee weapon: damage, cooldown, damageStart, damageEnd, chargeMax, knockback
+*   For ranged weapon: damage, maxAmmo, projectile, rangeType, cooldown
 *     reloadDelay, muzzleVelocity, impactForce
 */
 
 
   // Item Types
-  const int SCENERY   = 0; // Can't be picked up.
-  const int MISC      = 1; // No inherent use
-  const int FOOD      = 2; // Restore health
-  const int MELEE     = 3; // Melee weapon
-  const int RANGED    = 4; // Ranged weapon
-  const int WARP      = 5; // Warps player to new area.
-  const int CONTAINER = 6; // Access contents, but not pick up.
-  const int PROJECTILE= 7; // Flies forward when used.
+  public const int SCENERY   = 0; // Can't be picked up.
+  public const int MISC      = 1; // No inherent use
+  public const int FOOD      = 2; // Restore health
+  public const int MELEE     = 3; // Melee weapon
+  public const int RANGED    = 4; // Ranged weapon
+  public const int WARP      = 5; // Warps player to new area.
+  public const int CONTAINER = 6; // Access contents, but not pick up.
+  public const int PROJECTILE= 7; // Flies forward when used.
   
   // Ranged weapon types
   const int RIFLE  = 0; // Two-handed firearm.
@@ -71,14 +70,22 @@ public class Item : MonoBehaviour{
   public float cooldown;
   public bool ready = true;
   
-  //Melee variables
+  // Melee variables
   public float damageStart;
   public float damageEnd;
   public bool damageActive;
   public string swingString;
   public int swingHash;
+  public float knockBack;
   
-  //Ranged weapon variables 
+  // Charging
+  public bool chargeable = false;
+  public int charge;
+  public int chargeMax;
+  public bool executeOnCharge = false;
+  public int effectiveDamage = 0;
+  
+  // Ranged weapon variables 
   public int ammo;
   public int maxAmmo;
   public int activeAmmoType;
@@ -90,48 +97,48 @@ public class Item : MonoBehaviour{
   public int rangedType;
   public int fireHash;
   public float reloadDelay;
-  public GameObject muzzlePoint;
-  public GameObject rearPoint;
   public float muzzleVelocity;
   public float impactForce;
   
-  //WARP variables
+  // WARP variables
   public string destName;
   public Vector3 destPos;
   public Vector3 destRot;
   
-  //projectile variables
+  // projectile variables
   GameObject weaponOfOrigin;
   
-  //Container variables
+  // Container variables
   public Data[] contents;
   
   public void Start(){
     switch(itemType){
       case MELEE:
-        swingHash = Animator.StringToHash(swingString);
-        aimHash = Animator.StringToHash(aimString);
+        chargeable = true;
+        executeOnCharge = true;
         break;
       case RANGED:
         fireHash = Animator.StringToHash(fireString);
         break;
+        
       default:
         break;
     }
   }
   
   public void Use(int action){
-    //Left mouse
+    // Main
     if(action == 0){
       switch(itemType){
         case FOOD:
-          Consume();
+          if(ready){ Consume(); }
           break;
         case MELEE:
-          if(ready){ StartCoroutine(Swing()); }
+          chargeable = true;
           break;
         case RANGED:
-          Fire();
+          if(chargeable){ ChargeFire(); }
+          else{ Fire(); }
           break;
         case WARP:
           Warp();
@@ -140,7 +147,7 @@ public class Item : MonoBehaviour{
           break;
       }
     }
-    //Right mouse
+    // Secondary
     else if (action == 1){
       switch(itemType){
         case RANGED:
@@ -150,13 +157,39 @@ public class Item : MonoBehaviour{
           break;
       }
     }
-    //R key
+    // Tertiary
     else if (action == 2){
       switch(itemType){
         case RANGED:
           StartCoroutine(Reload());
           break;
         default:
+          break;
+      }
+    }
+    // Charge
+    else if (action == 3){
+      switch(itemType){
+        case MELEE:
+          if(chargeable){ ChargeSwing(); }
+          break;
+        case RANGED:
+          if(chargeable){ ChargeFire(); }
+          break;
+      }
+    }
+    // Charge release
+    else if(action == 4){
+      switch(itemType){
+        case MELEE:
+          if(chargeable && ready){
+            charge = 0;
+            chargeable = false;
+            StartCoroutine(Swing()); 
+          }
+          break;
+        case RANGED:
+          if(chargeable && ready){ Fire(); }
           break;
       }
     }
@@ -171,13 +204,16 @@ public class Item : MonoBehaviour{
       case RANGED:
         info += " " + ammo + "/" + maxAmmo;
         break;
+      case MELEE:
+        info += " " + effectiveDamage + "DMG";
+        break;
     }
     return info;
   }
   
   /* Response to interaction from non-holder Actor */
   public void Interact(Actor a, int mode = -1, string message = ""){
-    //TODO: Account for other interaction modes.
+    // TODO: Account for other interaction modes.
     if(itemType != SCENERY && holder == null){ a.PickUp(this); };
   }
   
@@ -214,95 +250,123 @@ public class Item : MonoBehaviour{
   
   /* handle trigger collision */
   void OnTriggerEnter(Collider col){
-    if(itemType == MELEE && damageActive && ready){
+    if(itemType == MELEE && damageActive){
       HitBox hb = col.gameObject.GetComponent<HitBox>();
       if(hb){
         StartCoroutine(CoolDown());
-        hb.ReceiveDamage(damage, gameObject);
-        
+        hb.ReceiveDamage(effectiveDamage, gameObject);
+        chargeable = false;
+        effectiveDamage = 0;
       }
+      Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
+      if(rb){ rb.AddForce(transform.forward * knockBack); }
     }
     else if(
         itemType == PROJECTILE
         && damageActive
         && weaponOfOrigin != col.gameObject
       ){
+      damageActive = false;
       HitBox hb = col.gameObject.GetComponent<HitBox>();
-      if(hb){ hb.ReceiveDamage(damage, gameObject); }
+      if(hb){ hb.ReceiveDamage(damage, weaponOfOrigin);}
       Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
-      if(rb){ rb.AddForce(transform.forward * impactForce); }
+      if(rb) rb.AddForce(transform.forward * impactForce);
       Destroy(this.gameObject);
     }
   }
   
   /* handle continuing trigger collision */
   void OnTriggerStay(Collider col){
-    if(itemType == MELEE && damageActive && ready){
+    if(itemType == MELEE && damageActive){
       HitBox hb = col.gameObject.GetComponent<HitBox>();
       if(hb){
         StartCoroutine(CoolDown());
-        hb.ReceiveDamage(damage, gameObject);
+        hb.ReceiveDamage(effectiveDamage, gameObject);
+        chargeable = false;
+        effectiveDamage = 0;
       }
+      Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
+      if(rb){ rb.AddForce(transform.forward * knockBack); }
+    }
+    if(itemType == PROJECTILE && damageActive){
+      damageActive = false;
+      HitBox hb = col.gameObject.GetComponent<HitBox>();
+      if(hb){ hb.ReceiveDamage(damage, weaponOfOrigin);}
+      Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
+      if(rb) rb.AddForce(transform.forward * impactForce);
     }
   }
   
   /* Consume food. */
   public void Consume(){
     holder.ReceiveDamage(-healing, gameObject);
-    holder.Drop();
-    Destroy(this.gameObject);
+    this.stack--;
+    if(stack < 1){
+      holder.Drop();
+      Destroy(this.gameObject);
+    }
+    StartCoroutine(CoolDown());
+  }
+  
+  public void ChargeSwing(){
+    if(chargeable && charge < chargeMax){
+      charge++;
+      effectiveDamage = (damage * charge) / chargeMax;
+    }
+    if(chargeable && executeOnCharge && (charge >= chargeMax) && ready){
+      charge = 0;
+      chargeable = false;
+      StartCoroutine(Swing());
+    }
   }
   
   /* Swings melee weapon. */
   public IEnumerator Swing(){
-    if(holder.anim){ holder.anim.SetTrigger(swingHash); }
-    if(sounds.Length > 0){
-      float vol = 0f;//Session.controller.masterVolume *
-                  //Session.controller.effectsVolume;
-      AudioSource.PlayClipAtPoint(
-                                  sounds[0],
-                                  transform.position,
-                                  vol
-                                  );
-    }
+    ready = false;
     damageActive = false;
     yield return new WaitForSeconds(damageStart);
     damageActive = true;
+    transform.position += transform.forward;
     yield return new WaitForSeconds(damageEnd);
     damageActive = false;
+    ready = true;
+    transform.position -= transform.forward;
   }
   
   /* Sets weapon to ready after cooldown duration. */
   public IEnumerator CoolDown(){
     ready = false;
+    damageActive = false;
     yield return new WaitForSeconds(cooldown);
     ready = true;
   } 
   
-  /* Fires ranged weapon. */
-  public void Fire(){
-  if(!muzzlePoint || !rearPoint || ammo < 1){ return; }
-    if(sounds.Length > 0){
-      float vol = 1f;
-      AudioSource.PlayClipAtPoint(
-        sounds[0],
-        transform.position,
-        vol
-      );
+  /* Charges projectile */
+  void ChargeFire(){
+    if(chargeable && charge < chargeMax){
+      charge++;
+      effectiveDamage = (damage * charge) / chargeMax;
     }
+    if(chargeable && executeOnCharge && (charge >- chargeMax) && ready){
+      charge = 0;
+      Fire();
+    }
+  }
+  
+  /* Fires ranged weapon. */
+  void Fire(){
+    if(ammo < 1){ return; }
     ready = false;
-    if(holder && holder.anim){ holder.anim.SetTrigger(fireHash); }
     ammo--;
-    Vector3 muzzlePos = muzzlePoint.transform.position;
-    Vector3 rearPos = rearPoint.transform.position;
-    Vector3 relPos = muzzlePos - rearPos;
+    Vector3 relPos = transform.forward;
+    Vector3 spawnPos = transform.position + transform.forward;
     Quaternion projRot = Quaternion.LookRotation(relPos);
     GameObject pref = (GameObject)Resources.Load(
       projectile,
       typeof(GameObject));
     GameObject proj = (GameObject)GameObject.Instantiate(
       pref,
-      muzzlePos,
+      spawnPos,
       projRot);
     proj.GetComponent<Collider>().isTrigger = true;
     Item item = proj.GetComponent<Item>();
@@ -311,6 +375,18 @@ public class Item : MonoBehaviour{
       item.impactForce = impactForce;
       item.damageActive = true;
       item.damage = damage;
+      if(chargeable){
+        item.damage = effectiveDamage;
+        print(item.damage + "," + charge);
+        effectiveDamage = 0;
+        charge = 0;
+        Light light = item.gameObject.GetComponent<Light>();
+        if(light){
+          light.intensity = ((float)item.damage)/10f;
+          light.range = item.damage;
+        }
+      }
+      
     }
     proj.GetComponent<Rigidbody>().velocity = relPos * muzzleVelocity;
     StartCoroutine(CoolDown());
@@ -338,20 +414,7 @@ public class Item : MonoBehaviour{
   
   /* Adds ammo to weapon externally */
   public void LoadAmmo(){
-    /* TODO: Implement multiple ammo types
-    string desired = ammoTypes[activeAmmoType];
-    int available = holder.RequestAmmo(desired, (maxAmmo - ammo));
-    if(available > 0){ ammo = ammo + available; return; }
-    for(int i = 0; i < ammoTypes.Length; i++){
-      desired  = ammoTypes[i];
-      available = holder.RequestAmmo(desired, (maxAmmo - ammo));
-      if(available > 0){ 
-        ammo = ammo + available;
-        activeAmmoType = i;
-        return;
-      }
-    }
-    */
+    /* TODO: Impliment multiple ammo types*/
     int available = holder.RequestAmmo(projectile, (maxAmmo - ammo));
     if(available > 0){ ammo = ammo + available; return; }
   }
