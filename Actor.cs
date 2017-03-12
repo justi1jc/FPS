@@ -475,7 +475,7 @@ public class Actor : MonoBehaviour{
   }
   
   /* Rotates head along xyz, torso over x axis*/
-  void Turn(Vector3 direction){
+  public void Turn(Vector3 direction){
     headRotx += direction.x;
     headRoty += direction.y;
     bodyRoty += direction.y;

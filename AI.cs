@@ -19,7 +19,8 @@ public class AI: MonoBehaviour{
   bool paused;
   Actor host;
   float sightDistance = 20f;
-  float accuracy = 1f;
+  float aimMargin = 1f; // Acceptable deviation in aim.
+  float turnSpeed = 0.1f; // Delay between turning
   public int profile; // What sort of AI is this?
   List<Actor> sighted;
   List<Vector3> lastKnownPos;
@@ -77,7 +78,7 @@ public class AI: MonoBehaviour{
     yield return new WaitForSeconds(0f);
   }
   
-  /* Gather sighted hostiles */
+  /* Gather sighted hostiles. */
   void UpdateEnemies(){
     Actor enemy = ScanForActor();
     sighted = new List<Actor>();
@@ -89,19 +90,49 @@ public class AI: MonoBehaviour{
   }
   
   
-  /* Engages enemy in combat */
+  /* Engages enemy in combat. */
   IEnumerator Fight(Actor enemy){
     if(paused){ yield break;}
-    if(!CanSee(enemy.head)){ StartCoroutine(SearchFor(enemy)); yield break;}
+    if(!CanSee(enemy.body)){ StartCoroutine(SearchFor(enemy)); yield break; }
+    yield return StartCoroutine(AimAt(enemy));
+    print("Aimed at " + enemy);
     yield return new WaitForSeconds(0f);
   }
   
   IEnumerator SearchFor(Actor target){
+    print("Searching for " + target);
     yield return new WaitForSeconds(0f);
   }
   
+  
   /* Aim at the target */
-  IEnumerator AimAt(){
+  IEnumerator AimAt(Actor target){
+    Vector3 relRot = (target.body.transform.position - host.head.transform.position).normalized;
+    Quaternion realRot = Quaternion.LookRotation(relRot, host.head.transform.up);
+    Quaternion desiredRot = host.head.transform.rotation;
+    float angle = Quaternion.Angle(realRot, desiredRot);
+    while(angle > aimMargin){
+      Vector3 realEulers = realRot.eulerAngles;
+      Vector3 desiredEulers = desiredRot.eulerAngles;
+      Vector3 turnRot = new Vector3(
+        realEulers.x - desiredEulers.x,
+        realEulers.y - desiredEulers.y,
+        0f
+      );
+      
+      host.Turn(turnRot.normalized);
+      
+      yield return new WaitForSeconds(turnSpeed);
+      relRot = (target.body.transform.position - host.head.transform.position).normalized;
+      realRot = Quaternion.LookRotation(relRot, host.head.transform.up);
+      desiredRot = host.head.transform.rotation;
+      angle = Quaternion.Angle(realRot, desiredRot);
+    }
+    yield break;
+  }
+  
+  /* Moves in straight line to a destination. */
+  IEnumerator MoveTo(Vector3 destination){
     yield return new WaitForSeconds(0f);
   }
   
@@ -133,14 +164,12 @@ public class AI: MonoBehaviour{
           bool check = !actor.StealthCheck(host.perception, dist);
           if(check){ return actor; }
         }
-         
       }
-      
     }
     return null;
   }
   
-  /* Returns true if one of five raycasts reaches the target */
+  /* Returns true if one of five raycasts reaches the target's collider */
   bool CanSee(GameObject target){
     Transform trans = host.head.transform;
     Vector3[] origins = {
