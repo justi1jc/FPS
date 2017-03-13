@@ -31,7 +31,7 @@ public class Session : MonoBehaviour {
   public static string LT = "LT"; // "3rd Axis" DeadZone: 0.1
   public static string DX = "DX";  // "7th Axis" for wired controllers
   public static string DY = "DY";  // "8th Axis"
-  public static string RB = "joystick button 4"; // 5
+  public static string RB = "joystick button 5"; // 5
   public static string LB = "joystick button 4"; // 4
   public static string A = "joystick button 0"; // 0
   public static string B = "joystick button 1"; // 1
@@ -44,7 +44,7 @@ public class Session : MonoBehaviour {
   public static string DRB = "joystick button 11"; // 11
   public static string DLB = "joystick button 12"; // 12
   public static string RSC = "joystick button 10"; // 10
-  public static string LSC = "joystick button 9"; // 9
+  public static string LSC = "joystick button 9";  // 9
   
   Camera cam1;
   Camera cam2;
@@ -77,6 +77,8 @@ public class Session : MonoBehaviour {
     UpdateCameras();
   }
   
+  
+  /* Sets up each player's Menu */
   void UpdateCameras(){
     bool split = cam1 && cam2;
     if(split){
@@ -97,6 +99,11 @@ public class Session : MonoBehaviour {
       Menu menu = cam2.gameObject.GetComponent<Menu>();
       if(menu){ menu.split = false; menu.right = false; }
     }   
+  }
+  
+  /* Instantiates gameObject of a specific prefab  */
+  GameObject Spawn(string prefab, Vector3 pos){
+    return gameObject;
   }
   
 }

@@ -4,7 +4,7 @@ Vision: Provide first-person shooter roleplaying gameplay similar to the recent
 installments of The Elder Scrolls and Fallout series, albeit with the addition of 
 couch-multiplayer coop.
 
-Current version: 0.1.0(Demo pending)
+Current version: 0.1.0(Demo and push to master pending)
 
     Current features
 Menus(Inventory)
@@ -30,3 +30,4 @@ Menus(Speech, Trade, Loot, level-up)
 Items(shield type, damage&repair, containers)
 Inventory(Looting)
 Speech(Speech tree, trade system)
+Session(SpawnEntity);

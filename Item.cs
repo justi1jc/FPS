@@ -403,6 +403,7 @@ public class Item : MonoBehaviour{
       item.impactForce = impactForce;
       item.damageActive = true;
       item.damage = damage;
+      item.Despawn();
       if(chargeable){
         item.damage = effectiveDamage;
         effectiveDamage = 0;
@@ -417,6 +418,18 @@ public class Item : MonoBehaviour{
     }
     proj.GetComponent<Rigidbody>().velocity = relPos * muzzleVelocity;
     StartCoroutine(CoolDown());
+  }
+  
+  
+  /* Triggers destruction of self. */
+  public void Despawn(){
+    StartCoroutine(DespawnTime());
+  }
+  
+  /* Destroy self on timer. */
+  public IEnumerator DespawnTime(){
+    yield return new WaitForSeconds(20f);
+    if(gameObject){ Destroy(gameObject); }
   }
  
   

@@ -311,7 +311,7 @@ public class Actor : MonoBehaviour{
     float lt = Input.GetAxis(Session.LT);
     
     // Basic movement
-    bool shift = Input.GetKey(Session.RB);
+    bool shift = Input.GetKey(Session.LB);
     bool walk = xl != 0f || yl != 0;
     sprinting = shift;
     StickMove(xl, -yl);
@@ -331,7 +331,7 @@ public class Actor : MonoBehaviour{
     if(lt == 0 && lt_down){ lt_down = false; Use(6); }
     
     if(Input.GetKeyDown(Session.LSC)){ ToggleCrouch(); }
-    if(Input.GetKeyDown(Session.LB)){ Drop(); }
+    if(Input.GetKeyDown(Session.RB)){ Drop(); }
   }
   
   /* Handles pause menu controller input. */
