@@ -9,7 +9,7 @@ Current version: 0.0.2
     Current features
 Menus(Inventory)
 Input(In-Game)
-Actor(Movement, Item Interaction, condition(health))
+Actor(Movement, Item Interaction, condition(health), combat ai)
 Items(charging, pickup, drop, use)
 Inventory(store)
 Abilities(Dual-wield, Unarmed, fireball, heal)
@@ -27,5 +27,4 @@ Quest(Quest)
 
 What needs to be done for 0.1.0 (Base FPS Gameplay)
 
-Actor(Combat AI)
 Items(shield type, thrown type, ranged melee)
