@@ -133,10 +133,12 @@ public class Item : MonoBehaviour{
         case FOOD:
           if(ready){ Consume(); }
           break;
+        case MISC:
+          Throw();
+          break;
         case MELEE:
           chargeable = true;
           ChargeSwing();
-
           break;
         case RANGED:
           if(chargeable){ ChargeFire(); }
@@ -241,12 +243,15 @@ public class Item : MonoBehaviour{
   /* Drop the item. */
   public void Drop(){
     Rigidbody rb = transform.GetComponent<Rigidbody>();
-    if(rb != null){
+    if(rb){
       rb.isKinematic = false;
       rb.useGravity = true;
+      rb.constraints = RigidbodyConstraints.None;
     }
     Collider c = transform.GetComponent<Collider>();
     c.isTrigger = false;
+    if(gameObject == holder.primaryItem){ holder.primaryItem = null; }
+    if(gameObject == holder.secondaryItem){ holder.secondaryItem = null; }
     holder = null;
   }
   
@@ -296,6 +301,16 @@ public class Item : MonoBehaviour{
       if(hb){ hb.ReceiveDamage(damage, weaponOfOrigin);}
       Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
       if(rb) rb.AddForce(transform.forward * impactForce);
+    }
+  }
+  
+  /* Throws the item forward. */
+  void Throw(){
+    int strength = holder.strength;
+    Rigidbody rb = gameObject.transform.GetComponent<Rigidbody>();
+    Drop();
+    if(rb){
+      rb.AddForce(transform.forward * 20 * strength);
     }
   }
   
