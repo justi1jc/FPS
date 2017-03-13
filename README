@@ -10,7 +10,7 @@ Current version: 0.0.3
 Menus(Inventory)
 Input(In-Game)
 Actor(Movement, Item Interaction, condition(health), combat ai)
-Items(charging, pickup, drop, use, thrown type)
+Items(charging, pickup, drop, use, thrown type, ranged melee)
 Inventory(store)
 Abilities(Dual-wield, Unarmed, fireball, heal)
 
@@ -26,4 +26,4 @@ Speech(speech tree, Trade system)
 Quest(Quest)
 
     What needs to be done for 0.1.0 (Base FPS Gameplay)
-Items(shield type, ranged melee)
+Items(shield type)

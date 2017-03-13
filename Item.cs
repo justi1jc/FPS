@@ -46,7 +46,6 @@ public class Item : MonoBehaviour{
   const int RIFLE  = 0; // Two-handed firearm.
   const int PISTOL = 1; // One-handed firearm.
   const int BOW    = 2; // Drawn back on click, then fired on release.
-  const int THROWN = 4; // Requires no ammo, destroyed on use.
  
   
   // General item variables
@@ -165,7 +164,7 @@ public class Item : MonoBehaviour{
     else if (action == 2){
       switch(itemType){
         case RANGED:
-          StartCoroutine(Reload());
+          if(ready){ StartCoroutine(Reload()); }
           break;
         default:
           break;
@@ -197,6 +196,15 @@ public class Item : MonoBehaviour{
           break;
       }
     }
+     // Tertiary
+     else if (action == 5){
+       switch(itemType){
+         case RANGED:
+           if(ready){ print("Swing!"); StartCoroutine(Swing());}
+           break;
+       }
+     
+     }
   }
   
   public string GetInfo(){
@@ -262,6 +270,9 @@ public class Item : MonoBehaviour{
       if(hb){
         StartCoroutine(CoolDown());
         hb.ReceiveDamage(effectiveDamage, gameObject);
+        if(itemType == RANGED){ 
+          effectiveDamage = holder.strength * (holder.melee / 4 +1);
+        }
         chargeable = false;
         effectiveDamage = 0;
       }
