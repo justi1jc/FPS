@@ -9,7 +9,9 @@ Current version: 0.0.2
     Current features
 Menus(Inventory)
 Input(In-Game)
-Actor(Movement, Item Interaction, condition(health))
+
+Actor(Movement, Item Interaction, condition(health), combat ai)
+
 Items(charging, pickup, drop, use)
 Inventory(store)
 Abilities(Dual-wield, Unarmed, fireball, heal)
@@ -18,13 +20,12 @@ Abilities(Dual-wield, Unarmed, fireball, heal)
 Menus(Main, Save&Load, Options, Speech, Trade, Quest)
 Input(Menu)
 Actor(XP/RPG Stats, Combat AI, Ambient AI, condition(fatigue, mana, stat mods, effects&perks))
-Items(Warp door, shield type, thrown type, damage&repair, ranged melee)
+Items(Warp door, shield type, thrown type, damage&repair, ranged melee, containers)
+Inventory(Looting);
 Save&Load(Starting Map, interior cells, exterior cells , PlayerData)
 World(Interior cells, exterior cells, NPC placement)
 Speech(speech tree, Trade system)
 Quest(Quest)
 
-What needs to be done for 0.1.0 (Base FPS Gameplay)
-
-Actor(Combat AI)
+    What needs to be done for 0.1.0 (Base FPS Gameplay)
 Items(shield type, thrown type, ranged melee)

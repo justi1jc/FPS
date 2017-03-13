@@ -135,6 +135,8 @@ public class Item : MonoBehaviour{
           break;
         case MELEE:
           chargeable = true;
+          ChargeSwing();
+
           break;
         case RANGED:
           if(chargeable){ ChargeFire(); }
@@ -377,7 +379,6 @@ public class Item : MonoBehaviour{
       item.damage = damage;
       if(chargeable){
         item.damage = effectiveDamage;
-        print(item.damage + "," + charge);
         effectiveDamage = 0;
         charge = 0;
         Light light = item.gameObject.GetComponent<Light>();

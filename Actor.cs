@@ -39,7 +39,8 @@ public class Actor : MonoBehaviour{
   public GameObject hand;    // GameObject where items are attached.
   public GameObject offHand; // Secondary hand where items are attached.
   public GameObject spine;   // Pivot point of toros
-  GameObject body;           // The base gameobject of the actor
+  public GameObject body;           // The base gameobject of the actor
+
   
   //UI
   public Menu menu;
@@ -60,6 +61,7 @@ public class Actor : MonoBehaviour{
   public float speed;
   bool walking = false;
   bool sprinting = false;
+  bool crouched = false;
 
   //Jumping
   public bool jumpReady = true;
@@ -69,9 +71,6 @@ public class Actor : MonoBehaviour{
 
   //Animation
   public Animator anim;
-  int aliveHash, crouchedHash, walkingHash, holdRifleHash, aimRifleHash;
-  public string aliveString, crouchedString, walkingString;
-  public string holdRifleString, aimRifleString;
   
   //Inventory
   bool menuOpen;
@@ -94,19 +93,22 @@ public class Actor : MonoBehaviour{
   public int staminaMax = 100;
   
   // ICEPAWS attributes, max 10
-  int intelligence = 5; // Max mana
-  int charisma     = 5; //
-  int endurance    = 5; // Stamina, health regen
-  int perception   = 5; // accuracy
-  int agility      = 5; // speed, jump height
-  int willpower    = 5; // mana regen
-  int strength     = 5; // maxweight, 
+  public int intelligence = 5; // Max mana
+  public int charisma     = 5; //
+  public int endurance    = 5; // Stamina, health regen
+  public int perception   = 5; // accuracy
+  public int agility      = 5; // speed, jump height
+  public int willpower    = 5; // mana regen
+  public int strength     = 5; // maxweight, 
+
   
   // Skill levels, max 100
   int ranged  = 50;
   int melee   = 50;
   int unarmed = 50;
   int magic   = 50;
+  int stealth = 50;
+
   
   // Leveling
   int level = 0;
@@ -120,22 +122,21 @@ public class Actor : MonoBehaviour{
   public Item laItem = null;     // Ability item in left hand.
   public bool raReady = true;    // Is right hand busy?
   public bool laReady = true;    // Is left hand busy?
-  //Speech
-  public Actor interlocutor; // Actor with whom you are speaking
+  
+  // Speech
+  public Actor interlocutor; // Conversation partner
+  
+  // AI
+  public AI ai;
+
   
   /* Before Start */
   void Awake(){
-    //TODO
-    aliveHash = Animator.StringToHash(aliveString);
-    crouchedHash = Animator.StringToHash(crouchedString);
-    walkingHash = Animator.StringToHash(walkingString);
-    holdRifleHash = Animator.StringToHash(holdRifleString);
-    aimRifleHash = Animator.StringToHash(aimRifleString);
+    body = gameObject;
   }
   
   /* Before rest of code */
   void Start(){
-    body = gameObject;
     raItem = hand.GetComponent<Item>(); 
     laItem = offHand.GetComponent<Item>();
     raItem.holder = this;
@@ -179,7 +180,8 @@ public class Actor : MonoBehaviour{
       else{StartCoroutine(ControllerInputRoutine()); }
     }
     else if(player == 5){
-      //TODO assign ai
+      ai = gameObject.GetComponent<AI>();
+      if(ai){ ai.Begin(this); }
     }
   }
   
@@ -239,7 +241,6 @@ public class Actor : MonoBehaviour{
     //Basic movement
     bool shift = Input.GetKey(KeyCode.LeftShift);
     bool walk = false;
-    //TODO: if(shift != sprinting && anim){ anim.SetBool(sprintingHash, shift)}
     sprinting = shift;
     if(Input.GetKey(KeyCode.W)){ Move(0); walk = true; }
     if(Input.GetKey(KeyCode.S)){ Move(1); walk = true; }
@@ -248,7 +249,6 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(KeyCode.LeftControl)){ToggleCrouch(); }
     if(Input.GetKeyUp(KeyCode.LeftControl)){ToggleCrouch(); }
-    if(walk != walking && anim){ anim.SetBool(walkingHash, walking); }
     
     //Mouse controls
     if(Input.GetMouseButtonDown(0)){ Use(0); }
@@ -312,11 +312,9 @@ public class Actor : MonoBehaviour{
     // Basic movement
     bool shift = Input.GetKey(Session.RB);
     bool walk = xl != 0f || yl != 0;
-    //TODO: if(shift != sprinting && anim){ anim.SetBool(sprintingHash, shift)}
     sprinting = shift;
-    AxisMove(xl, yl);
+    StickMove(xl, -yl);
     Turn(new Vector3(yr, xr, 0f));
-    if(walk != walking && anim){ anim.SetBool(walkingHash, walking); }
     
     //Buttons
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
@@ -399,15 +397,26 @@ public class Actor : MonoBehaviour{
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
   }
   
-  /* Move according to x and y axes. */
-  public void AxisMove(float x, float y){
+  /* Move relative to transform.forward and transform.right */
+  public void StickMove(float x, float y){
     Vector3 xdir = x * body.transform.right;
-    Vector3 ydir = -y * body.transform.forward;
-    Vector3 dir = xdir + ydir;
+    Vector3 ydir = y * body.transform.forward;
+    Vector3 dir = (xdir + ydir).normalized;
     Rigidbody rb =  body.GetComponent<Rigidbody>();
     float pace = speed;
     if(sprinting){ pace *= 1.75f; }
     if(!jumpReady){ pace *= 0.75f; } 
+    Vector3 dest = body.transform.position + (pace * dir);
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
+  }
+  
+  /* Move relative to x and z positions.(Used for thumbstick motion) */
+  public void AxisMove(float x, float z){
+    Vector3 dir = new Vector3(x, 0f, z).normalized;
+    Rigidbody rb = body.GetComponent<Rigidbody>();
+    float pace = speed;
+    if(sprinting){ pace *= 1.75f; }
+    if(!jumpReady){ pace *= 0.75f; }
     Vector3 dest = body.transform.position + (pace * dir);
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
   }
@@ -435,7 +444,6 @@ public class Actor : MonoBehaviour{
   /* Boxcasts to find the current item in reach, updating itemInReach if they
     do not match. */
   void UpdateReach(){
-    if(!hand){ print(gameObject.name + " hand missing"); return; }
     Vector3 center = hand.transform.position;
     Vector3 halfExtents = hand.transform.localScale / 2;
     Vector3 direction = hand.transform.forward;
@@ -483,7 +491,7 @@ public class Actor : MonoBehaviour{
   }
   
   /* Rotates head along xyz, torso over x axis*/
-  void Turn(Vector3 direction){
+  public void Turn(Vector3 direction){
     headRotx += direction.x;
     headRoty += direction.y;
     bodyRoty += direction.y;
@@ -516,6 +524,11 @@ public class Actor : MonoBehaviour{
     if(falling){ Land(fallOrigin - transform.position.y); }
   }
   
+  /* Restores jump upon standing still. */
+  void OnCollisionStay(Collision col){
+    if(falling){ Land(fallOrigin - transform.position.y); }
+  }
+  
   /* Replenishes Jump and applies fall damage. */
   void Land(float distanceFallen){
     falling = false;
@@ -528,9 +541,7 @@ public class Actor : MonoBehaviour{
   
   /* Toggles model's crouch */
   void ToggleCrouch(){
-    print("Crouch!");
-    if(!anim){ return; }
-    anim.SetBool(crouchedHash, !anim.GetBool(crouchedHash));
+    crouched = !crouched;
   }
   
   /* Applies damage from attack. Ignores active weapon. */
@@ -540,15 +551,23 @@ public class Actor : MonoBehaviour{
     if(health < 1){
       health = 0;
       StopAllCoroutines();
-      if(anim){ anim.SetBool(aliveHash, false); }
       Ragdoll(true);
+      if(ai){ ai.Pause(); }
     }
     if(health > healthMax){ health = healthMax; }
   }
   
   /* Adds or removes the ragdoll effect on the actor. */
   void Ragdoll(bool state){
-    //TODO
+    Rigidbody rb = body.GetComponent<Rigidbody>();
+    if(state){
+      rb.constraints = RigidbodyConstraints.FreezePositionX |
+                      RigidbodyConstraints.FreezePositionY |
+                      RigidbodyConstraints.FreezePositionZ;
+    }
+    else{
+     rb.constraints = RigidbodyConstraints.None; 
+    }
   }
   
   /* Returns a string describing a given special ability */
@@ -584,13 +603,15 @@ public class Actor : MonoBehaviour{
         HealOther(right, use);
         break;
       case 4:
-        print("AbilityD");
-        break;
-      case 5:
+
         print("AbilityE");
         break;
-      case 6:
+      case 5:
         print("AbilityF");
+        break;
+      case 6:
+        print("AbilityG");
+
         break;
     }
   }
@@ -692,7 +713,7 @@ public class Actor : MonoBehaviour{
   }
   
   /* Use primary or secondary item */
-  void Use(int use){
+  public void Use(int use){
     Item primary, secondary;
     primary = secondary = null;
     if(primaryItem){ primary = primaryItem.GetComponent<Item>(); }
@@ -976,6 +997,21 @@ public class Actor : MonoBehaviour{
     //TODO Make one response for NPC, one for Player
   }
   
+  /* Returns true if player passes stealth check. */
+  public bool StealthCheck(int viewerPerception = 0, int viewerDistance = 3){
+    int sneakBonus = crouched ? 25 : 0;     // Max 25
+    int sprintPenalty = sprinting ? -25 : 0;
+    int skillBonus = stealth / 4;           // Max: 25
+    int agilityBonus = agility * 2;         // Max: 20
+    int distanceBonus = viewerDistance < 3 ? -1 : viewerDistance; 
+    int viewerPenalty = viewerPerception * -1;
+    int successSpace = sneakBonus + skillBonus + agilityBonus + distanceBonus;
+    successSpace += sprintPenalty + viewerPenalty; // Penalties
+    int roll = Random.Range(0, 100);
+    if(roll <= successSpace){ return true; }
+
+    return false;
+  }
   
      
 }
