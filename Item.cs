@@ -46,7 +46,6 @@ public class Item : MonoBehaviour{
   const int RIFLE  = 0; // Two-handed firearm.
   const int PISTOL = 1; // One-handed firearm.
   const int BOW    = 2; // Drawn back on click, then fired on release.
-  const int THROWN = 4; // Requires no ammo, destroyed on use.
  
   
   // General item variables
@@ -133,10 +132,12 @@ public class Item : MonoBehaviour{
         case FOOD:
           if(ready){ Consume(); }
           break;
+        case MISC:
+          Throw();
+          break;
         case MELEE:
           chargeable = true;
           ChargeSwing();
-
           break;
         case RANGED:
           if(chargeable){ ChargeFire(); }
@@ -163,7 +164,7 @@ public class Item : MonoBehaviour{
     else if (action == 2){
       switch(itemType){
         case RANGED:
-          StartCoroutine(Reload());
+          if(ready){ StartCoroutine(Reload()); }
           break;
         default:
           break;
@@ -195,6 +196,15 @@ public class Item : MonoBehaviour{
           break;
       }
     }
+     // Tertiary
+     else if (action == 5){
+       switch(itemType){
+         case RANGED:
+           if(ready){ print("Swing!"); StartCoroutine(Swing());}
+           break;
+       }
+     
+     }
   }
   
   public string GetInfo(){
@@ -241,12 +251,15 @@ public class Item : MonoBehaviour{
   /* Drop the item. */
   public void Drop(){
     Rigidbody rb = transform.GetComponent<Rigidbody>();
-    if(rb != null){
+    if(rb){
       rb.isKinematic = false;
       rb.useGravity = true;
+      rb.constraints = RigidbodyConstraints.None;
     }
     Collider c = transform.GetComponent<Collider>();
     c.isTrigger = false;
+    if(gameObject == holder.primaryItem){ holder.primaryItem = null; }
+    if(gameObject == holder.secondaryItem){ holder.secondaryItem = null; }
     holder = null;
   }
   
@@ -257,6 +270,9 @@ public class Item : MonoBehaviour{
       if(hb){
         StartCoroutine(CoolDown());
         hb.ReceiveDamage(effectiveDamage, gameObject);
+        if(itemType == RANGED){ 
+          effectiveDamage = holder.strength * (holder.melee / 4 +1);
+        }
         chargeable = false;
         effectiveDamage = 0;
       }
@@ -296,6 +312,16 @@ public class Item : MonoBehaviour{
       if(hb){ hb.ReceiveDamage(damage, weaponOfOrigin);}
       Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
       if(rb) rb.AddForce(transform.forward * impactForce);
+    }
+  }
+  
+  /* Throws the item forward. */
+  void Throw(){
+    int strength = holder.strength;
+    Rigidbody rb = gameObject.transform.GetComponent<Rigidbody>();
+    Drop();
+    if(rb){
+      rb.AddForce(transform.forward * 20 * strength);
     }
   }
   

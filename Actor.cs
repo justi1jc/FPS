@@ -103,11 +103,11 @@ public class Actor : MonoBehaviour{
 
   
   // Skill levels, max 100
-  int ranged  = 50;
-  int melee   = 50;
-  int unarmed = 50;
-  int magic   = 50;
-  int stealth = 50;
+  public int ranged  = 50;
+  public int melee   = 50;
+  public int unarmed = 50;
+  public int magic   = 50;
+  public int stealth = 50;
 
   
   // Leveling
@@ -269,6 +269,7 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(KeyCode.RightArrow)){ Interact(2); }
     if(Input.GetKeyDown(KeyCode.DownArrow)){ Interact(3); }
     if(Input.GetKeyDown(KeyCode.Backspace)){ Interact(4); }
+    if(Input.GetKeyDown(KeyCode.F)){ Use(7); }
     if(Input.GetKeyDown(KeyCode.Tab)){ 
       SetMenuOpen(true);
       if(menu){ menu.Change(Menu.INVENTORY); }
@@ -318,6 +319,7 @@ public class Actor : MonoBehaviour{
     
     //Buttons
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
+    if(Input.GetKeyDown(Session.B)){ Use(7); }
     if(Input.GetKeyDown(Session.X) && itemInReach){ Interact(); }
     else if(Input.GetKeyDown(Session.X)){ Use(2); }
     if(Input.GetKeyDown(Session.Y)){ SetMenuOpen(true); if(menu){ menu.Change(Menu.INVENTORY); } }
@@ -749,6 +751,7 @@ public class Actor : MonoBehaviour{
         if(secondary){ secondary.Use(4); return; }
         if(leftAbility > -1){ Ability(leftAbility, false, 4); return; }
       }
+      if(use==7 && primary){ primary.Use(5); }
       
     }
     else if(right){
