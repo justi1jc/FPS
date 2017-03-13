@@ -49,6 +49,7 @@ public class AI: MonoBehaviour{
     paused = false;
   }
   
+  /* Switch for different */
   IEnumerator Think(){
     while(true){
       if(!paused){
@@ -102,14 +103,14 @@ public class AI: MonoBehaviour{
       yield return StartCoroutine(SearchFor(enemy));
       if(!CanSee(enemy.body)){ yield break;}
     }
-    while(CanSee(enemy.body) && enemy.health > 0){
-      if(!pursuing){ print("Started pursuing"); StartCoroutine(Pursue(enemy)); }
-      if(!aiming){ print("StartedAiming"); StartCoroutine(AimAt(enemy)); }
+    while(!paused && CanSee(enemy.body) && enemy.health > 0){
+      if(!pursuing){ StartCoroutine(Pursue(enemy)); }
+      if(!aiming){ StartCoroutine(AimAt(enemy)); }
       Vector3 pos = host.body.transform.position;
       Vector3 targetPos = enemy.body.transform.position;
       if(Vector3.Distance(pos, targetPos) < 4f){
         host.Use(0);
-        print("Within Combat Range!");
+        
       }
       yield return new WaitForSeconds(0.1f);
     }
