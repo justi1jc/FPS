@@ -40,6 +40,7 @@ public class Actor : MonoBehaviour{
   public GameObject offHand; // Secondary hand where items are attached.
   public GameObject spine;   // Pivot point of toros
   public GameObject body;           // The base gameobject of the actor
+
   
   //UI
   public Menu menu;
@@ -99,6 +100,7 @@ public class Actor : MonoBehaviour{
   public int agility      = 5; // speed, jump height
   public int willpower    = 5; // mana regen
   public int strength     = 5; // maxweight, 
+
   
   // Skill levels, max 100
   int ranged  = 50;
@@ -106,6 +108,7 @@ public class Actor : MonoBehaviour{
   int unarmed = 50;
   int magic   = 50;
   int stealth = 50;
+
   
   // Leveling
   int level = 0;
@@ -119,11 +122,13 @@ public class Actor : MonoBehaviour{
   public Item laItem = null;     // Ability item in left hand.
   public bool raReady = true;    // Is right hand busy?
   public bool laReady = true;    // Is left hand busy?
+  
   // Speech
   public Actor interlocutor; // Conversation partner
   
   // AI
   public AI ai;
+
   
   /* Before Start */
   void Awake(){
@@ -598,6 +603,7 @@ public class Actor : MonoBehaviour{
         HealOther(right, use);
         break;
       case 4:
+
         print("AbilityE");
         break;
       case 5:
@@ -605,6 +611,7 @@ public class Actor : MonoBehaviour{
         break;
       case 6:
         print("AbilityG");
+
         break;
     }
   }

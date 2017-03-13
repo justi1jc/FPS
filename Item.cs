@@ -136,6 +136,7 @@ public class Item : MonoBehaviour{
         case MELEE:
           chargeable = true;
           ChargeSwing();
+
           break;
         case RANGED:
           if(chargeable){ ChargeFire(); }
