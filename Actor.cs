@@ -308,7 +308,7 @@ public class Actor : MonoBehaviour{
     bool shift = Input.GetKey(Session.RB);
     bool walk = xl != 0f || yl != 0;
     sprinting = shift;
-    AxisMove(xl, yl);
+    StickMove(xl, -yl);
     Turn(new Vector3(yr, xr, 0f));
     
     //Buttons
@@ -392,15 +392,26 @@ public class Actor : MonoBehaviour{
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
   }
   
-  /* Move according to x and y axes. */
-  public void AxisMove(float x, float y){
+  /* Move relative to transform.forward and transform.right */
+  public void StickMove(float x, float y){
     Vector3 xdir = x * body.transform.right;
-    Vector3 ydir = -y * body.transform.forward;
-    Vector3 dir = xdir + ydir;
+    Vector3 ydir = y * body.transform.forward;
+    Vector3 dir = (xdir + ydir).normalized;
     Rigidbody rb =  body.GetComponent<Rigidbody>();
     float pace = speed;
     if(sprinting){ pace *= 1.75f; }
     if(!jumpReady){ pace *= 0.75f; } 
+    Vector3 dest = body.transform.position + (pace * dir);
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
+  }
+  
+  /* Move relative to x and z positions.(Used for thumbstick motion) */
+  public void AxisMove(float x, float z){
+    Vector3 dir = new Vector3(x, 0f, z).normalized;
+    Rigidbody rb = body.GetComponent<Rigidbody>();
+    float pace = speed;
+    if(sprinting){ pace *= 1.75f; }
+    if(!jumpReady){ pace *= 0.75f; }
     Vector3 dest = body.transform.position + (pace * dir);
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
   }
@@ -505,6 +516,11 @@ public class Actor : MonoBehaviour{
   
   /* Restores Jump upon landing. */
   void OnCollisionEnter(Collision col){
+    if(falling){ Land(fallOrigin - transform.position.y); }
+  }
+  
+  /* Restores jump upon standing still. */
+  void OnCollisionStay(Collision col){
     if(falling){ Land(fallOrigin - transform.position.y); }
   }
   
@@ -690,7 +706,7 @@ public class Actor : MonoBehaviour{
   }
   
   /* Use primary or secondary item */
-  void Use(int use){
+  public void Use(int use){
     Item primary, secondary;
     primary = secondary = null;
     if(primaryItem){ primary = primaryItem.GetComponent<Item>(); }

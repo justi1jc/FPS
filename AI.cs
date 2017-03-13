@@ -16,8 +16,14 @@ public class AI: MonoBehaviour{
   public const int HOSTILE = 1; // fight when possible
   public const int NEUTRAL = 2; // fight selectively
   
+  // active tasks
+  bool aiming;
+  bool pursuing;
+  bool moving;
+  
   bool paused;
   Actor host;
+  float pace = 0.01f;
   float sightDistance = 20f;
   float aimMargin = 1f;   // Acceptable deviation in aim.
   float turnSpeed = 0.01f; // Delay between turning
@@ -96,23 +102,34 @@ public class AI: MonoBehaviour{
       yield return StartCoroutine(SearchFor(enemy));
       if(!CanSee(enemy.body)){ yield break;}
     }
-    yield return StartCoroutine(AimAt(enemy));
-    print("Aimed at " + enemy);
-    yield return new WaitForSeconds(0f);
+    while(CanSee(enemy.body)){
+      if(!pursuing){ print("Started pursuing"); StartCoroutine(Pursue(enemy)); }
+      if(!aiming){ print("StartedAiming"); StartCoroutine(AimAt(enemy)); }
+      Vector3 pos = host.body.transform.position;
+      Vector3 targetPos = enemy.body.transform.position;
+      if(Vector3.Distance(pos, targetPos) < 4f){
+        host.Use(0);
+        print("Within Combat Range!");
+      }
+      yield return new WaitForSeconds(0.1f);
+    }
+    yield break;
   }
   
   /* Moves to last-known position and does a 360 sweep*/
   IEnumerator SearchFor(Actor target){
-    print("Searching for " + target);
-    yield return new WaitForSeconds(0f);
+    
+    yield break;
   }
   
   
   /* Aim at the target */
   IEnumerator AimAt(Actor target){
-    Vector3 relRot = (target.body.transform.position - host.head.transform.position).normalized;
-    Quaternion realRot = Quaternion.LookRotation(relRot, host.head.transform.up);
-    Quaternion desiredRot = host.head.transform.rotation;
+    if(paused){ yield break; }
+    aiming = true;
+    Vector3 relRot = (target.head.transform.position - host.hand.transform.position).normalized;
+    Quaternion realRot = Quaternion.LookRotation(relRot, host.hand.transform.up);
+    Quaternion desiredRot = host.hand.transform.rotation;
     float angle = Quaternion.Angle(realRot, desiredRot);
     while(angle > aimMargin && !paused && CanSee(target.body)){
     
@@ -123,20 +140,51 @@ public class AI: MonoBehaviour{
       if(Mathf.Abs(x) > 180){ x *= -1f; }
       if(Mathf.Abs(y) > 180){ y *= -1f; }
       host.Turn(new Vector3(x, y, 0f).normalized);
-      
       yield return new WaitForSeconds(turnSpeed);
-      
-      relRot = (target.body.transform.position - host.head.transform.position).normalized;
-      realRot = Quaternion.LookRotation(relRot, host.head.transform.up);
-      desiredRot = host.head.transform.rotation;
+      relRot = (target.head.transform.position - host.hand.transform.position).normalized;
+      realRot = Quaternion.LookRotation(relRot, host.hand.transform.up);
+      desiredRot = host.hand.transform.rotation;
       angle = Quaternion.Angle(realRot, desiredRot);
     }
+    aiming = false;
+    yield break;
+  }
+  
+  /* Move directly at target. */
+  IEnumerator Pursue(Actor target){
+    pursuing = true;
+    Vector3 pos = host.body.transform.position;
+    pos = new Vector3(pos.x, 0f, pos.z);
+    Vector3 dest = target.body.transform.position;
+    dest = new Vector3(dest.x, 0f, dest.z); 
+    while(Vector3.Distance(dest, pos) > 3f && CanSee(target.body) && !paused){
+      Vector3 move = dest - pos;
+      host.AxisMove(move.x, move.z);
+      yield return new WaitForSeconds(0.01f);
+      pos = host.body.transform.position;
+      pos = new Vector3(pos.x, 0f, pos.z);
+      dest = target.body.transform.position;
+      dest = new Vector3(dest.x, 0f, dest.z);
+    }
+    pursuing = false;
     yield break;
   }
   
   /* Moves in straight line to a destination. */
   IEnumerator MoveTo(Vector3 destination){
-    yield return new WaitForSeconds(0f);
+    moving = true;
+    Vector3 dest = new Vector3(destination.x, 0f, destination.z);
+    Vector3 pos = host.body.transform.position;
+    pos = new Vector3(pos.x, 0f, pos.z);
+    while(Vector3.Distance(pos, dest) > 2f && !paused){
+      Vector3 move = dest - pos;
+      host.AxisMove(move.x, move.z);
+      yield return new WaitForSeconds(0.01f);
+      pos = host.body.transform.position;
+      pos = new Vector3(pos.x, 0f, pos.z);
+    }
+    moving = false;
+    yield break;
   }
   
   /* Returns an Actor in sight, or null.  */
