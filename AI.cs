@@ -102,7 +102,7 @@ public class AI: MonoBehaviour{
       yield return StartCoroutine(SearchFor(enemy));
       if(!CanSee(enemy.body)){ yield break;}
     }
-    while(CanSee(enemy.body)){
+    while(CanSee(enemy.body) && enemy.health > 0){
       if(!pursuing){ print("Started pursuing"); StartCoroutine(Pursue(enemy)); }
       if(!aiming){ print("StartedAiming"); StartCoroutine(AimAt(enemy)); }
       Vector3 pos = host.body.transform.position;
