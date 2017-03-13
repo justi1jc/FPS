@@ -398,8 +398,9 @@ public class Actor : MonoBehaviour{
         break;
     }
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
-    dir += body.transform.up * 10f;
+    dir += body.transform.up * 45f;
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    
   }
   
   /* Move relative to transform.forward and transform.right */
@@ -415,7 +416,8 @@ public class Actor : MonoBehaviour{
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
     dir += body.transform.up * 10f;
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
-    
+    body.transform.position +=  body.transform.up * 45f;
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
   }
   
   /* Move relative to x and z positions.(Used for thumbstick motion) */
@@ -427,7 +429,7 @@ public class Actor : MonoBehaviour{
     if(!jumpReady){ pace *= 0.75f; }
     Vector3 dest = body.transform.position + (pace * dir);
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
-    dir += body.transform.up * 10f;
+    dir += body.transform.up * 45f;
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
   }
   
