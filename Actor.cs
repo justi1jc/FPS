@@ -322,7 +322,8 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(Session.B)){ Use(7); }
     if(Input.GetKeyDown(Session.X) && itemInReach){ Interact(); }
     else if(Input.GetKeyDown(Session.X)){ Use(2); }
-    if(Input.GetKeyDown(Session.Y)){ SetMenuOpen(true); if(menu){ menu.Change(Menu.INVENTORY); } }
+    if(Input.GetKeyDown(Session.Y)){ SetMenuOpen(true);
+    if(menu){ menu.Change(Menu.INVENTORY); } }
     if(rt > 0 && !rt_down){ Use(0); rt_down = true;}
     else if(rt > 0){ Use(3); }
     if(rt == 0 && rt_down){ rt_down = false; Use(5); }
@@ -396,7 +397,9 @@ public class Actor : MonoBehaviour{
         dir = body.transform.right;
         break;
     }
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    dir += body.transform.up * 10f;
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
   }
   
   /* Move relative to transform.forward and transform.right */
@@ -409,7 +412,10 @@ public class Actor : MonoBehaviour{
     if(sprinting){ pace *= 1.75f; }
     if(!jumpReady){ pace *= 0.75f; } 
     Vector3 dest = body.transform.position + (pace * dir);
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    dir += body.transform.up * 10f;
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    
   }
   
   /* Move relative to x and z positions.(Used for thumbstick motion) */
@@ -420,7 +426,9 @@ public class Actor : MonoBehaviour{
     if(sprinting){ pace *= 1.75f; }
     if(!jumpReady){ pace *= 0.75f; }
     Vector3 dest = body.transform.position + (pace * dir);
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    dir += body.transform.up * 10f;
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
   }
   
   /* Returns true if the Actor has clearance to move in a particular direction
