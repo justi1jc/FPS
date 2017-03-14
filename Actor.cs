@@ -9,10 +9,12 @@
           |
           |spine| // Pivot point for torso
           |     | Head| // Contains Camera
-          |     |     | Hand| // Mount point for held items.
-          |     |     |     |Fist // Default weapon
-          |     |     |     |activeItem // Item in current use, if applicable.
-          
+          |     |     |RHand| // Mount points for held items. 
+          |     |     |     |primaryItem
+          |     |     |     | // Need trigger box and Item for abilities
+          |     |     |LHand|
+          |     |     |     |secondaryItem
+          |     |     |     | // Need trigger box and Ttem for abilities
       Variables that must be set in animator or prefab
       head, hand, spine
       Speed
@@ -33,10 +35,17 @@ public class Actor : MonoBehaviour{
   public int playerNumber; // 1 for keyboard, 3-4 for controller, 5 for NPC
   
   //Body parts
-  public GameObject head;  // Gameobject containing the camera.
-  public GameObject hand;  // GameObject where items are attached.
-  public GameObject spine; // Pivot point of toros
-  GameObject body;  // The base gameobject of the actor
+  public GameObject head;    // Gameobject containing the camera.
+  public GameObject hand;    // GameObject where items are attached.
+  public GameObject offHand; // Secondary hand where items are attached.
+  public GameObject spine;   // Pivot point of toros
+  public GameObject body;           // The base gameobject of the actor
+
+  
+  //UI
+  public Menu menu;
+  bool menuMove = true;// Used to govern joystick menu inputs.
+  float menuMovementDelay = 0.15f; // How long to delay between menu movements
   
   //Looking
   public bool rt_down = false;
@@ -52,6 +61,7 @@ public class Actor : MonoBehaviour{
   public float speed;
   bool walking = false;
   bool sprinting = false;
+  bool crouched = false;
 
   //Jumping
   public bool jumpReady = true;
@@ -61,37 +71,76 @@ public class Actor : MonoBehaviour{
 
   //Animation
   public Animator anim;
-  int aliveHash, crouchedHash, walkingHash, holdRifleHash, aimRifleHash;
-  public string aliveString, crouchedString, walkingString;
-  public string holdRifleString, aimRifleString;
   
   //Inventory
   bool menuOpen;
-  public GameObject defaultItem;
-  public GameObject activeItem;
+  public GameObject primaryItem;
+  public GameObject secondaryItem;
+  public int primaryIndex = -1;
+  public int secondaryIndex = -1;
   public GameObject itemInReach;
   public string itemInReachName;
   public List<Data> inventory = new List<Data>();
+  public int weight = 0;
+  public int weightMax = 100;
   
-  //Player stats
-  public int health = 100;
+  //Player vitals
+  public int health     = 100;
+  public int mana       = 100;
+  public int stamina    = 100;
+  public int healthMax  = 100;
+  public int manaMax    = 100;
+  public int staminaMax = 100;
   
-  //Speech
-  public Actor interlocutor; // Actor with whom you are speaking
+  // ICEPAWS attributes, max 10
+  public int intelligence = 5; // Max mana
+  public int charisma     = 5; //
+  public int endurance    = 5; // Stamina, health regen
+  public int perception   = 5; // accuracy
+  public int agility      = 5; // speed, jump height
+  public int willpower    = 5; // mana regen
+  public int strength     = 5; // maxweight, 
+
+  
+  // Skill levels, max 100
+  public int ranged  = 50;
+  public int melee   = 50;
+  public int unarmed = 50;
+  public int magic   = 50;
+  public int stealth = 50;
+
+  
+  // Leveling
+  int level = 0;
+  int xp    = 0;
+  
+  // abilities
+  public bool[] abilities = {true, false, false, false, false};
+  public int rightAbility = 1;   // Ability in right hand.
+  public int leftAbility  = 1;   // Ability in left hand.
+  public Item raItem = null;     // Ability Item in right hand.
+  public Item laItem = null;     // Ability item in left hand.
+  public bool raReady = true;    // Is right hand busy?
+  public bool laReady = true;    // Is left hand busy?
+  
+  // Speech
+  public Actor interlocutor; // Conversation partner
+  
+  // AI
+  public AI ai;
+
   
   /* Before Start */
   void Awake(){
-    //TODO
-    aliveHash = Animator.StringToHash(aliveString);
-    crouchedHash = Animator.StringToHash(crouchedString);
-    walkingHash = Animator.StringToHash(walkingString);
-    holdRifleHash = Animator.StringToHash(holdRifleString);
-    aimRifleHash = Animator.StringToHash(aimRifleString);
+    body = gameObject;
   }
   
   /* Before rest of code */
   void Start(){
-    body = gameObject;
+    raItem = hand.GetComponent<Item>(); 
+    laItem = offHand.GetComponent<Item>();
+    raItem.holder = this;
+    laItem.holder = this;
     AssignPlayer(playerNumber);
   }
   
@@ -121,25 +170,43 @@ public class Actor : MonoBehaviour{
   *  >4 Initialize AI module
   */
   void AssignPlayer(int player){
-    if(player == 1){
-      SetMenuControls(false);
-      StartCoroutine(KeyboardInputRoutine()); 
+    playerNumber = player;
+    if(player <5 && player > 0){
+      SetMenuOpen(false);
+      if(head){ menu = head.GetComponent<Menu>(); }
+      if(menu){ menu.Change(Menu.HUD);  menu.actor = this; }
       if(Session.session){ Session.session.RegisterPlayer(player, head.GetComponent<Camera>()); }
-    }
-    if(player <5 && player > 1){
-      if(Session.session){ Session.session.RegisterPlayer(player, head.GetComponent<Camera>()); }
-      StartCoroutine(ControllerInputRoutine());
+      if(player == 1){ StartCoroutine(KeyboardInputRoutine()); }
+      else{StartCoroutine(ControllerInputRoutine()); }
     }
     else if(player == 5){
-      //TODO assign ai
+      ai = gameObject.GetComponent<AI>();
+      if(ai){ ai.Begin(this); }
     }
   }
   
+  /* Returns an empty string or the info of the active item. */
+  public string ItemInfo(){
+    string info = "";
+    if(primaryItem){
+      Item item = primaryItem.GetComponent<Item>();
+      if(item){ info = item.GetInfo(); }
+    }
+    if(secondaryItem){
+      Item item = secondaryItem.GetComponent<Item>();
+      if(item){ info = item.GetInfo(); }
+    }
+    return info;
+  }
+  
   /* Sets controls between menu and in-game contexts. */
-  void SetMenuControls(bool val){
-    Cursor.visible = !val;
-    if(!val){ Cursor.lockState = CursorLockMode.Locked; }
-    else{ Cursor.lockState = CursorLockMode.None; }
+  public void SetMenuOpen(bool val){
+    menuOpen = val;
+    if(playerNumber == 1){
+      Cursor.visible = !val;
+      if(!val){ Cursor.lockState = CursorLockMode.Locked; }
+      else{ Cursor.lockState = CursorLockMode.None; }
+    }
   }
   
   
@@ -174,7 +241,6 @@ public class Actor : MonoBehaviour{
     //Basic movement
     bool shift = Input.GetKey(KeyCode.LeftShift);
     bool walk = false;
-    //TODO: if(shift != sprinting && anim){ anim.SetBool(sprintingHash, shift)}
     sprinting = shift;
     if(Input.GetKey(KeyCode.W)){ Move(0); walk = true; }
     if(Input.GetKey(KeyCode.S)){ Move(1); walk = true; }
@@ -183,11 +249,14 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(KeyCode.LeftControl)){ToggleCrouch(); }
     if(Input.GetKeyUp(KeyCode.LeftControl)){ToggleCrouch(); }
-    if(walk != walking && anim){ anim.SetBool(walkingHash, walking); }
     
     //Mouse controls
     if(Input.GetMouseButtonDown(0)){ Use(0); }
     if(Input.GetMouseButtonDown(1)){ Use(1); }
+    if(Input.GetMouseButton(0)){ Use(3); } // Charge Left
+    if(Input.GetMouseButton(1)){ Use(4); } // Charge right
+    if(Input.GetMouseButtonUp(0)){ Use(5); } // Release left
+    if(Input.GetMouseButtonUp(1)){ Use(6); } // Release right
     float rotx = -Input.GetAxis("Mouse Y") * sensitivityX;
     float roty = Input.GetAxis("Mouse X") * sensitivityY;
     Turn(new Vector3(rotx, roty, 0f));
@@ -200,11 +269,35 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(KeyCode.RightArrow)){ Interact(2); }
     if(Input.GetKeyDown(KeyCode.DownArrow)){ Interact(3); }
     if(Input.GetKeyDown(KeyCode.Backspace)){ Interact(4); }
+    if(Input.GetKeyDown(KeyCode.F)){ Use(7); }
+    if(Input.GetKeyDown(KeyCode.Tab)){ 
+      SetMenuOpen(true);
+      if(menu){ menu.Change(Menu.INVENTORY); }
+    }
   }
   
   /* Handles pause menu keyboard input. */
   void KeyboardMenuInput(){
-    
+    if(!menu){ SetMenuOpen(false); } // Return control if menu not available
+    if(Input.GetKeyDown(KeyCode.Tab)){ menu.Press(Menu.B); };
+    if(Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)){
+      menu.Press(Menu.UP);
+    }
+    if(Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)){
+      menu.Press(Menu.DOWN);
+    }
+    if(Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)){
+      menu.Press(Menu.RIGHT);
+    }
+    if(Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow)){
+      menu.Press(Menu.LEFT);
+    }
+    if(Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.E)){
+      menu.Press(Menu.A);
+    }
+    if(Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.RightShift)){
+      menu.Press(Menu.X);
+    }
   }
   
   /* Handles controller input when not paused. */
@@ -218,28 +311,57 @@ public class Actor : MonoBehaviour{
     float lt = Input.GetAxis(Session.LT);
     
     // Basic movement
-    bool shift = Input.GetKey(Session.RB);
+    bool shift = Input.GetKey(Session.LB);
     bool walk = xl != 0f || yl != 0;
-    //TODO: if(shift != sprinting && anim){ anim.SetBool(sprintingHash, shift)}
     sprinting = shift;
-    AxisMove(xl, yl);
+    StickMove(xl, -yl);
     Turn(new Vector3(yr, xr, 0f));
-    if(walk != walking && anim){ anim.SetBool(walkingHash, walking); }
     
     //Buttons
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
+    if(Input.GetKeyDown(Session.B)){ Use(7); }
     if(Input.GetKeyDown(Session.X) && itemInReach){ Interact(); }
     else if(Input.GetKeyDown(Session.X)){ Use(2); }
+    if(Input.GetKeyDown(Session.Y)){ SetMenuOpen(true);
+    if(menu){ menu.Change(Menu.INVENTORY); } }
     if(rt > 0 && !rt_down){ Use(0); rt_down = true;}
-    if(rt == 0){ rt_down = false; }
+    else if(rt > 0){ Use(3); }
+    if(rt == 0 && rt_down){ rt_down = false; Use(5); }
     if(lt > 0 && !lt_down){ Use(1); lt_down = true;}
-    if(lt == 0){ lt_down = false; }
+    else if(lt > 0){ Use(4); }
+    if(lt == 0 && lt_down){ lt_down = false; Use(6); }
+    
     if(Input.GetKeyDown(Session.LSC)){ ToggleCrouch(); }
+    if(Input.GetKeyDown(Session.RB)){ Drop(); }
   }
   
   /* Handles pause menu controller input. */
   void ControllerMenuInput(){
+    if(!menu){ SetMenuOpen(false); } // Return control if menu not available
+    if(Input.GetKeyDown(Session.A)){ menu.Press(Menu.A); }
+    if(Input.GetKeyDown(Session.B)){ menu.Press(Menu.B); }
+    if(Input.GetKeyDown(Session.X)){ menu.Press(Menu.X); }
+    if(Input.GetKeyDown(Session.Y)){ menu.Press(Menu.Y); }
     
+    float xl = Input.GetAxis(Session.XL);
+    float yl = -Input.GetAxis(Session.YL);
+    float rt = Input.GetAxis(Session.RT);
+    float lt = Input.GetAxis(Session.LT);
+    
+    if(menuMove && xl > 0f){ menu.Press(Menu.RIGHT); StartCoroutine(MenuCooldown()); }
+    else if(menuMove && xl < 0f){ menu.Press(Menu.LEFT); StartCoroutine(MenuCooldown()); }
+    if(menuMove && yl > 0f){ menu.Press(Menu.UP); StartCoroutine(MenuCooldown()); }
+    else if(menuMove && yl < 0f){ menu.Press(Menu.DOWN); StartCoroutine(MenuCooldown()); }
+    if(menuMove && rt > 0){ menu.Press(Menu.RT); StartCoroutine(MenuCooldown()); }
+    if(menuMove && lt > 0){ menu.Press(Menu.LT); StartCoroutine(MenuCooldown()); }
+    
+  }
+  
+  /* Cooldown for joystick menu movement */
+  IEnumerator MenuCooldown(){
+    menuMove = false;
+    yield return new WaitForSeconds(menuMovementDelay);
+    menuMove = true;
   }
   
   /* Move in a direction 
@@ -275,20 +397,37 @@ public class Actor : MonoBehaviour{
         dir = body.transform.right;
         break;
     }
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    dir += body.transform.up * 45f;
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
   }
   
-  /* Move according to x and y axes. */
-  public void AxisMove(float x, float y){
+  /* Move relative to transform.forward and transform.right */
+  public void StickMove(float x, float y){
     Vector3 xdir = x * body.transform.right;
-    Vector3 ydir = -y * body.transform.forward;
-    Vector3 dir = xdir + ydir;
+    Vector3 ydir = y * body.transform.forward;
+    Vector3 dir = (xdir + ydir).normalized;
     Rigidbody rb =  body.GetComponent<Rigidbody>();
     float pace = speed;
     if(sprinting){ pace *= 1.75f; }
     if(!jumpReady){ pace *= 0.75f; } 
     Vector3 dest = body.transform.position + (pace * dir);
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); }
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    dir += body.transform.up * 45f;
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+  }
+  
+  /* Move relative to x and z positions.(Used for thumbstick motion) */
+  public void AxisMove(float x, float z){
+    Vector3 dir = new Vector3(x, 0f, z).normalized;
+    Rigidbody rb = body.GetComponent<Rigidbody>();
+    float pace = speed;
+    if(sprinting){ pace *= 1.75f; }
+    if(!jumpReady){ pace *= 0.75f; }
+    Vector3 dest = body.transform.position + (pace * dir);
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    dir += body.transform.up * 45f;
+    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
   }
   
   /* Returns true if the Actor has clearance to move in a particular direction
@@ -314,7 +453,6 @@ public class Actor : MonoBehaviour{
   /* Boxcasts to find the current item in reach, updating itemInReach if they
     do not match. */
   void UpdateReach(){
-    if(!hand){ print(gameObject.name + " hand missing"); return; }
     Vector3 center = hand.transform.position;
     Vector3 halfExtents = hand.transform.localScale / 2;
     Vector3 direction = hand.transform.forward;
@@ -362,7 +500,7 @@ public class Actor : MonoBehaviour{
   }
   
   /* Rotates head along xyz, torso over x axis*/
-  void Turn(Vector3 direction){
+  public void Turn(Vector3 direction){
     headRotx += direction.x;
     headRoty += direction.y;
     bodyRoty += direction.y;
@@ -390,8 +528,13 @@ public class Actor : MonoBehaviour{
     yield return new WaitForSeconds(0f);
   }
   
-  /* Refreshes Jump upon landing. */
+  /* Restores Jump upon landing. */
   void OnCollisionEnter(Collision col){
+    if(falling){ Land(fallOrigin - transform.position.y); }
+  }
+  
+  /* Restores jump upon standing still. */
+  void OnCollisionStay(Collision col){
     if(falling){ Land(fallOrigin - transform.position.y); }
   }
   
@@ -407,69 +550,349 @@ public class Actor : MonoBehaviour{
   
   /* Toggles model's crouch */
   void ToggleCrouch(){
-    print("Crouch!");
-    if(!anim){ return; }
-    anim.SetBool(crouchedHash, !anim.GetBool(crouchedHash));
+    crouched = !crouched;
   }
   
   /* Applies damage from attack. Ignores active weapon. */
   public void ReceiveDamage(int damage, GameObject weapon){
-    if(health < 0 || (weapon == activeItem && damage > 0)){ return; }
+    if(health < 0 || (weapon == primaryItem && damage > 0)){ return; }
     health -= damage;
     if(health < 1){
       health = 0;
       StopAllCoroutines();
-      if(anim){ anim.SetBool(aliveHash, false); }
       Ragdoll(true);
+      if(ai){ ai.Pause(); }
     }
+    if(health > healthMax){ health = healthMax; }
   }
   
   /* Adds or removes the ragdoll effect on the actor. */
   void Ragdoll(bool state){
-    //TODO
+    Rigidbody rb = body.GetComponent<Rigidbody>();
+    if(state){
+      rb.constraints = RigidbodyConstraints.FreezePositionX |
+                      RigidbodyConstraints.FreezePositionY |
+                      RigidbodyConstraints.FreezePositionZ;
+    }
+    else{
+     rb.constraints = RigidbodyConstraints.None; 
+    }
   }
   
-  /* Use active item according to its type */
-  void Use(int use){
-    if(activeItem == null){ return; }
-    Item item = activeItem.GetComponent<Item>();
-    if(item == null){ print("Item missing:" + activeItem.name); return; }
+  /* Returns a string describing a given special ability */
+  public string AbilityInfo(int ability){
+    switch(ability){
+      case 0:
+        return "Unarmed";
+      case 1:
+        return "Fireball";
+      case 2:
+        return "Heal Self";
+      case 3:
+        return "Heal Other";
+      case 4:
+        return "AbilityE";
+    }
+    return "";
+  }
+  
+  /* Performs a given ability. */
+  void Ability(int ability, bool right, int use = 0){
+    switch(ability){
+      case 0:
+          Punch(right, use);
+        break;
+      case 1:
+        FireBall(right, use);
+        break;
+      case 2:
+        HealSelf(right, use);
+        break;
+      case 3:
+        HealOther(right, use);
+        break;
+      case 4:
+        print("AbilityE");
+        break;
+      case 5:
+        print("AbilityF");
+        break;
+      case 6:
+        print("AbilityG");
+
+        break;
+    }
+  }
+  
+  /* Melee attack
+     0 Charges punch.
+     1 executes punch.
+  */
+  void Punch(bool right, int use){
+    Item item = right ? raItem : laItem;
+    if(item.itemType != Item.MELEE){
+      item.cooldown = 0.5f;
+      item.damageStart = 0f;
+      item.damageEnd = 0.25f;
+      item.knockBack = strength * 50;
+      item.itemType = Item.MELEE;
+      item.chargeable = true;
+      item.executeOnCharge = true;
+      item.charge = 0;
+      item.chargeMax = 25;
+      item.damage = strength * (unarmed / 10 + 1);
+    }
     item.Use(use);
   }
   
+  /* Charges a fireball, then launches it. */
+  void FireBall(bool right, int use){
+    Item item = right ? raItem : laItem;
+    if(item.itemType != Item.RANGED){
+      item.cooldown = 1.1f - (float)(willpower/10f);
+      item.itemType = Item.RANGED;
+      item.chargeable = true;
+      item.executeOnCharge = false;
+      item.projectile = "FireBall";
+      item.charge = 0;
+      item.chargeMax = 200 / willpower;
+      item.muzzleVelocity = 50;
+      item.impactForce = willpower * 50;
+      item.damage = intelligence * (magic / 10 + 1);
+      item.effectiveDamage = 0;
+    }
+    item.ammo = 1;
+    item.Use(use);
+  }
+  
+  /* Instant health boost. */
+  void HealSelf(bool right, int use){
+    if(use != 0){ return; }
+    Item item = right ? raItem : laItem;
+    if(item.itemType != Item.FOOD){
+      item.itemType = Item.FOOD;
+      item.healing = intelligence * (magic / 10 + 1);
+      item.cooldown = 1f;
+    }
+    Light l = item.gameObject.GetComponent<Light>();
+    if(l){StartCoroutine(Glow(0.25f, Color.blue, l)); }
+    item.stack = 2;
+    item.Use(0);
+  }
+  
+  void HealOther(bool right, int use){
+    Item item = right ? raItem : laItem;
+    if(item.itemType != Item.RANGED){
+      item.cooldown = 1.1f - (float)(willpower/10f);
+      item.itemType = Item.RANGED;
+      item.chargeable = true;
+      item.executeOnCharge = false;
+      item.projectile = "HealBall";
+      item.charge = 0;
+      item.chargeMax = 200 / willpower;
+      item.muzzleVelocity = 50;
+      item.impactForce = willpower * 50;
+      item.damage = -(intelligence * (magic / 10 + 1));
+      item.effectiveDamage = 0;
+    }
+    item.ammo = 1;
+    item.Use(use);
+  }
+  
+  IEnumerator Glow(float time, Color color, Light light){
+    light.intensity = 2f;
+    light.range = 10f;
+    light.color = color;
+    yield return new WaitForSeconds(time);
+    light.intensity = 0f;
+    light.range = 0f;
+  }
+  
+  public void EquipAbility( int ability){
+    if(primaryItem){ StorePrimary(); rightAbility = ability; return; }
+    if(rightAbility == ability){ rightAbility = 0; return; }
+    rightAbility = ability;
+  }
+  
+  public void EquipAbilitySecondary(int ability){
+    if(secondaryItem){ StoreSecondary(); leftAbility = ability; return; }
+    if(leftAbility == ability){ leftAbility = 0; return; }
+    leftAbility = ability; return;
+  }
+  
+  /* Use primary or secondary item */
+  public void Use(int use){
+    Item primary, secondary;
+    primary = secondary = null;
+    if(primaryItem){ primary = primaryItem.GetComponent<Item>(); }
+    if(secondaryItem){ secondary = secondaryItem.GetComponent<Item>(); }
+    bool right = (rightAbility > -1) || primary;
+    bool left  = (leftAbility > -1) || secondary;
+    if(right && left){
+      if(use==0){
+       if(primary){primary.Use(0); return; }
+       if(rightAbility > -1){ Ability(rightAbility, true); }
+      }
+      if(use==1){
+        if(secondary){secondary.Use(0); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false); }
+      }
+      if(use==2){
+        if(primary){ primary.Use(2); }
+        if(secondary){ secondary.Use(2); }
+      }
+      if(use==3){
+        if(primary){ primary.Use(3); return; }
+        if(rightAbility > -1){ Ability(rightAbility, true, 3); return; }
+      }
+      if(use==4){
+        if(secondary){ secondary.Use(3); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false, 3); return; }
+      }
+      if(use==5){
+        if(primary){ primary.Use(4); return; }
+        if(rightAbility > -1){ Ability(rightAbility, true, 4); return; }
+      }
+      if(use==6){
+        if(secondary){ secondary.Use(4); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false, 4); return; }
+      }
+      if(use==7 && primary){ primary.Use(5); }
+      
+    }
+    else if(right){
+      if(use==3){
+        if(primary){ primary.Use(3); return; }
+        if(rightAbility > -1){ Ability(rightAbility, true, 3); return; }
+      }
+      if(use==5){
+        if(primary){ primary.Use(4); return; }
+        if(rightAbility > -1){ Ability(rightAbility, true, 4); return; }
+      }
+      if(primary){ primary.Use(use); return; }
+      if(rightAbility > -1){ Ability(rightAbility, true); return;}
+    }
+    else if(left){
+      if(use==4){
+        if(secondary){ secondary.Use(3); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false, 3); return; }
+      }
+      if(use==6){
+        if(secondary){ secondary.Use(4); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false, 4); return; }
+      }
+      if(secondary){ secondary.Use(use); return; }
+      if(leftAbility > -1){ Ability(leftAbility, false); return;}
+    }
+  }
+  
   /* Drops active item from hand */
-  public void Drop(){
-    if(activeItem == defaultItem || activeItem == null){ return; }
-    activeItem.transform.parent = null;
-    Item item = activeItem.GetComponent<Item>();
-    if(item){ item.Drop(); }
-    activeItem = defaultItem;
+  public void Drop(bool right = true){
+    if(!right){
+      if(secondaryItem){
+        inventory.Remove(inventory[secondaryIndex]);
+        if(secondaryIndex < primaryIndex){
+          Item primary = primaryItem.GetComponent<Item>();
+          inventory.Add(primary.GetData());
+          Destroy(primaryItem);
+          primaryIndex = -1;
+          Equip(inventory.Count -1);
+        }
+        secondaryIndex = -1;
+      }
+    }
+    if(primaryItem){ 
+      primaryItem.transform.parent = null;
+      Item item = primaryItem.GetComponent<Item>();
+      if(item){ item.Drop(); }
+      if( primaryIndex > -1 && primaryIndex < inventory.Count &&
+          item.displayName == inventory[primaryIndex].displayName){
+        if( secondaryIndex > primaryIndex &&
+            secondaryIndex > -1 && secondaryIndex < inventory.Count){
+          inventory.Remove(inventory[secondaryIndex]);
+        }
+        inventory.Remove(inventory[primaryIndex]); 
+        if(secondaryIndex > primaryIndex){
+          Item secondary = secondaryItem.GetComponent<Item>();
+          inventory.Add(secondary.GetData());
+          Destroy(secondaryItem);
+          secondaryIndex = -1;
+          EquipSecondary(inventory.Count -1);
+        }
+      }
+      primaryItem = null;
+      primaryIndex = -1;
+    }
+    else if( rightAbility > 0){ rightAbility = 0; }
+    else if(secondaryItem){
+      secondaryItem.transform.parent = null;
+      Item item = secondaryItem.GetComponent<Item>();
+      if(item){ item.Drop(); }
+      if( secondaryIndex > -1 && secondaryIndex < inventory.Count &&
+          item.displayName == inventory[secondaryIndex].displayName){
+        if(primaryIndex < primaryIndex){ inventory.Remove(inventory[primaryIndex]); }
+        inventory.Remove(inventory[secondaryIndex]);
+        if(secondaryIndex < primaryIndex){
+          Item primary = primaryItem.GetComponent<Item>();
+          inventory.Add(primary.GetData());
+          Destroy(primaryItem);
+          primaryIndex = -1;
+          Equip(inventory.Count -1);
+        }
+      }
+      secondaryItem = null;
+      secondaryIndex = -1;
+    }
+    else if(leftAbility > 0){ leftAbility = 0;}
   }
   
   /* Selects an item in inventory to equip. */
   public void Equip(int itemIndex){
-  //TODO: Ensure animations are correct
     if(itemIndex < 0 || itemIndex >= inventory.Count){ return; }
-    if(anim){
-      anim.SetBool(aimRifleHash, false);
-      anim.SetBool(holdRifleHash, false);
-    }
+    if(itemIndex == primaryIndex){ StorePrimary(); return; }
+    if(itemIndex == secondaryIndex){ StoreSecondary(); return;  }
+    if(primaryIndex != -1 && secondaryIndex == -1){ EquipSecondary(itemIndex); return; }
+    StorePrimary();
     Data dat = inventory[itemIndex];
     GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
-    if(prefab == null){ print("Prefab null:" + dat.displayName); return;}
+    if(!prefab){ print("Prefab null:" + dat.displayName); return;}
     GameObject itemGO = (GameObject)GameObject.Instantiate(
       prefab,
       transform.position,
       Quaternion.identity
     );
-    if(itemGO == null){print("GameObject null:" + dat.displayName); return; }
+    if(!itemGO){print("GameObject null:" + dat.displayName); return; }
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
     itemGO.transform.parent = hand.transform;
     item.Hold(this);
-    activeItem = itemGO;
-    inventory.Remove(inventory[itemIndex]);
-    if(item.ConsumesAmmo()){ item.Reload(); }
+    primaryItem = itemGO;
+    primaryIndex = itemIndex;
+    rightAbility = 0;
+  }
+  
+  /* Selects an item in the inventory to equip to the off-hand. */
+  public void EquipSecondary(int itemIndex){
+    if(itemIndex < 0 || itemIndex >= inventory.Count){ return; }
+    if(itemIndex == primaryIndex){ StorePrimary(); }
+    if(itemIndex == secondaryIndex){ StoreSecondary(); return;}
+    if(secondaryIndex != -1){ StoreSecondary(); }
+    Data dat = inventory[itemIndex];
+    GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
+    if(!prefab){ print("Prefab null:" + dat.displayName); return;}
+    GameObject itemGO = (GameObject)GameObject.Instantiate(
+      prefab,
+      transform.position,
+      Quaternion.identity
+    );
+    if(!itemGO){print("GameObject null:" + dat.displayName); return; }
+    Item item = itemGO.GetComponent<Item>();
+    item.LoadData(dat);
+    itemGO.transform.parent = offHand.transform;
+    item.Hold(this);
+    secondaryItem = itemGO;
+    secondaryIndex = itemIndex;
+    leftAbility = 0;
   }
   
   /* Removes number of available ammo, up to max, and returns that number*/
@@ -491,6 +914,27 @@ public class Actor : MonoBehaviour{
     return 0;
   }
   
+  /* Stores the primary item into the inventory. */
+  public void StorePrimary(){
+    if(!primaryItem){ return; }
+    Item item = primaryItem.GetComponent<Item>();
+    if(primaryIndex == -1){ StoreItem(item.GetData()); }
+    else{ inventory[primaryIndex] = item.GetData(); }
+    Destroy(primaryItem);
+    primaryItem = null;
+    primaryIndex = -1;
+  }
+  
+  /* Stores the secondary item into the inventory. */
+  public void StoreSecondary(){
+    if(!secondaryItem){ return; }
+    Item item = secondaryItem.GetComponent<Item>();
+    if(secondaryIndex == -1){ StoreItem(item.GetData()); }
+    else{ inventory[secondaryIndex] = item.GetData(); }
+    Destroy(secondaryItem);
+    secondaryItem = null;
+    secondaryIndex = -1;
+  }
   /* Adds item data to inventory */
   public void StoreItem(Data item){
     if(item.stack == 0){ return; }
@@ -510,15 +954,19 @@ public class Actor : MonoBehaviour{
   /* Drops item onto ground from inventory. */
   public void DiscardItem(int itemIndex){
     if(itemIndex < 0 || itemIndex > inventory.Count){ return; }
+    if(itemIndex == primaryIndex){ StorePrimary(); }
+    if(itemIndex == secondaryIndex){ StoreSecondary(); }
     Data dat = inventory[itemIndex];
     GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
     GameObject itemGO = (GameObject)GameObject.Instantiate(
       prefab,
-      transform.position,
+      hand.transform.position,
       Quaternion.identity
     );
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
+    item.stack = 1;
+    itemGO.transform.position = hand.transform.position;
     dat.stack--;
     if(dat.stack < 1){ inventory.Remove(dat); }
   }
@@ -538,7 +986,6 @@ public class Actor : MonoBehaviour{
     Data dat = item.GetData();
     Destroy(item.gameObject);
     StoreItem(dat);
-    if(activeItem == defaultItem){ Equip(inventory.Count - 1); }
     Destroy(item.gameObject);
   }
   
@@ -570,5 +1017,22 @@ public class Actor : MonoBehaviour{
   public void ReceiveSpeech(int option = -1){
     //TODO Make one response for NPC, one for Player
   }
+  
+  /* Returns true if player passes stealth check. */
+  public bool StealthCheck(int viewerPerception = 0, int viewerDistance = 3){
+    int sneakBonus = crouched ? 25 : 0;     // Max 25
+    int sprintPenalty = sprinting ? -25 : 0;
+    int skillBonus = stealth / 4;           // Max: 25
+    int agilityBonus = agility * 2;         // Max: 20
+    int distanceBonus = viewerDistance < 3 ? -1 : viewerDistance; 
+    int viewerPenalty = viewerPerception * -1;
+    int successSpace = sneakBonus + skillBonus + agilityBonus + distanceBonus;
+    successSpace += sprintPenalty + viewerPenalty; // Penalties
+    int roll = Random.Range(0, 100);
+    if(roll <= successSpace){ return true; }
+
+    return false;
+  }
+  
      
 }

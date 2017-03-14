@@ -31,7 +31,7 @@ public class Session : MonoBehaviour {
   public static string LT = "LT"; // "3rd Axis" DeadZone: 0.1
   public static string DX = "DX";  // "7th Axis" for wired controllers
   public static string DY = "DY";  // "8th Axis"
-  public static string RB = "joystick button 4"; // 5
+  public static string RB = "joystick button 5"; // 5
   public static string LB = "joystick button 4"; // 4
   public static string A = "joystick button 0"; // 0
   public static string B = "joystick button 1"; // 1
@@ -44,7 +44,7 @@ public class Session : MonoBehaviour {
   public static string DRB = "joystick button 11"; // 11
   public static string DLB = "joystick button 12"; // 12
   public static string RSC = "joystick button 10"; // 10
-  public static string LSC = "joystick button 9"; // 9
+  public static string LSC = "joystick button 9";  // 9
   
   Camera cam1;
   Camera cam2;
@@ -59,6 +59,7 @@ public class Session : MonoBehaviour {
     if(Input.GetKey(KeyCode.Escape) || Input.GetKey(Session.START)){
       Application.Quit();
     }
+
   }
   
   Data GatherInterior(){
@@ -71,15 +72,106 @@ public class Session : MonoBehaviour {
     UpdateCameras();
   }
   
+  public void UnregisterPlayer(int player){
+    if(player == 1){ cam1 = null; }
+    else if(player == 2){ cam2 = null; }
+    UpdateCameras();
+  }
+  
+  
+  /* Sets up each player's Menu */
   void UpdateCameras(){
     bool split = cam1 && cam2;
     if(split){
       cam1.rect = new Rect(0f, 0f, 0.5f, 1f);
       cam2.rect = new Rect(0.5f, 0, 0.5f, 1f);
+      Menu menu = cam1.gameObject.GetComponent<Menu>();
+      if(menu){ menu.split = true; menu.right = false; }
+      menu = cam2.gameObject.GetComponent<Menu>();
+      if(menu){ menu.split = true; menu.right = true; }
     }
-    else if(cam1){ cam1.rect = new Rect(0f, 0f, 1f, 1f); }
-    
-   
+    else if(cam1){
+      cam1.rect = new Rect(0f, 0f, 1f, 1f);
+      Menu menu = cam1.gameObject.GetComponent<Menu>();
+      if(menu){ menu.split = false; menu.right = false; }
+    }
+    else if(cam2){
+      cam2.rect = new Rect(0f, 0f, 1f, 1f);
+      Menu menu = cam2.gameObject.GetComponent<Menu>();
+      if(menu){ menu.split = false; menu.right = false; }
+    }   
+  }
+  
+  /* Instantiates gameObject of a specific prefab  
+     as close to the desired location as possible.
+     will spawn gameObject directly on top of map if
+     there's no space large enough for the movecheck. */
+  public GameObject Spawn(string prefab, Vector3 pos){
+    GameObject go = null;
+    GameObject pref = (GameObject)Resources.Load(
+      prefab,
+      typeof(GameObject)
+    );
+    if(!pref){ print("Prefab null:" + prefab); return go; }
+    Vector3[] candidates = GroundedColumn(pos, pref.transform.localScale);
+    int min = 0;
+    float minDist, dist;
+    for(int i = 0; i < candidates.Length; i++){
+      minDist = Vector3.Distance(candidates[min], pos);
+      dist = Vector3.Distance(candidates[i], pos);
+      if(minDist > dist){
+        min = i;
+      }
+    }
+    go = (GameObject)GameObject.Instantiate(
+      pref,
+      candidates[min],
+      Quaternion.identity
+    );
+    return go;
+  }
+  
+  /* Returns an array of viable positions full of empty space directly
+     above colliders, This is like surveying how many stories a building
+     has to it. */
+  Vector3[] GroundedColumn(Vector3 pos, Vector3 scale,
+                           float max=100f, float min=-100f){
+    Vector3 origin = pos;
+    List<Vector3> grounded = new List<Vector3>();
+    pos = new Vector3( pos.x, max, pos.z);
+    Vector3 last = pos;
+    bool lastPlace = true;
+    while(pos.y > min){
+      bool check = PlacementCheck(pos, scale);
+      if(!check && lastPlace){ grounded.Add(last + Vector3.up); }
+      last = pos;
+      pos = new Vector3(pos.x, pos.y-scale.y, pos.z);
+      lastPlace = check;
+    }
+    if(grounded.Count == 0){ grounded.Add(origin); } // Don't return an empty array.
+    return grounded.ToArray();
+  }
+  
+  /* Performs a boxcast at a certain point and scale. Returns true on collison. */
+  bool PlacementCheck(Vector3 pos, Vector3 scale){
+    Vector3 direction = Vector3.up;
+    float distance = scale.y;
+    Vector3 center = pos;
+    Vector3 halfExtents = scale / 2;
+    Quaternion orientation = Quaternion.identity;
+    int layerMask = ~(1 << 8);
+    RaycastHit hit;
+    bool check = !Physics.BoxCast(
+      center,
+      halfExtents,
+      direction,
+      out hit,
+      orientation,
+      distance,
+      layerMask,
+      QueryTriggerInteraction.Ignore
+    );
+    return check;
   }
   
 }
