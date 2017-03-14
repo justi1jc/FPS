@@ -59,9 +59,7 @@ public class Session : MonoBehaviour {
     if(Input.GetKey(KeyCode.Escape) || Input.GetKey(Session.START)){
       Application.Quit();
     }
-    if(Input.GetKeyDown(KeyCode.I)){ 
-      Spawn("Brick", new Vector3(0f, 0f, 0f)); 
-    }
+
   }
   
   Data GatherInterior(){
@@ -108,7 +106,7 @@ public class Session : MonoBehaviour {
      as close to the desired location as possible.
      will spawn gameObject directly on top of map if
      there's no space large enough for the movecheck. */
-  GameObject Spawn(string prefab, Vector3 pos){
+  public GameObject Spawn(string prefab, Vector3 pos){
     GameObject go = null;
     GameObject pref = (GameObject)Resources.Load(
       prefab,
@@ -130,7 +128,6 @@ public class Session : MonoBehaviour {
       candidates[min],
       Quaternion.identity
     );
-    print("Spawned at " + go.transform.position);
     return go;
   }
   
@@ -174,7 +171,6 @@ public class Session : MonoBehaviour {
       layerMask,
       QueryTriggerInteraction.Ignore
     );
-    if(!check){ print("Collided with " + hit.collider.gameObject); }
     return check;
   }
   

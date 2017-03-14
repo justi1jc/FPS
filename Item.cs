@@ -261,16 +261,19 @@ public class Item : MonoBehaviour{
     transform.parent = null;
     if(gameObject == holder.primaryItem){
       holder.primaryItem = null;
-      if(holder.primaryIndex > -1){ 
+      if(holder.primaryIndex > -1 && holder.primaryIndex < holder.inventory.Count){ 
+        if(holder.primaryIndex < holder.secondaryIndex){ holder.secondaryIndex--; }
         holder.inventory.Remove(holder.inventory[holder.primaryIndex]);
-        holder.primaryIndex = -1; 
+        
       }
+      holder.primaryIndex = -1; 
     }
     if(gameObject == holder.secondaryItem){
       holder.secondaryItem = null;
       if(holder.secondaryIndex > -1){ 
         holder.inventory.Remove(holder.inventory[holder.secondaryIndex]);
-        holder.secondaryIndex = -1; 
+        if(holder.secondaryIndex < holder.primaryIndex){ holder.primaryIndex++; }
+        holder.secondaryIndex = -1;
       }
     }
     holder = null;

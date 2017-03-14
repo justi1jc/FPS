@@ -54,6 +54,7 @@ public class Menu : MonoBehaviour{
       px = py = sx = sy = 0;
       UpdateFocus();
       if(menu == HUD && actor){ actor.SetMenuOpen(false); }
+      else if(actor){actor.SetMenuOpen(true); }
     }
   }
   

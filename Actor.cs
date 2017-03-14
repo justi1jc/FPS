@@ -612,7 +612,6 @@ public class Actor : MonoBehaviour{
         HealOther(right, use);
         break;
       case 4:
-
         print("AbilityE");
         break;
       case 5:
@@ -987,7 +986,6 @@ public class Actor : MonoBehaviour{
     Data dat = item.GetData();
     Destroy(item.gameObject);
     StoreItem(dat);
-    if(!primaryItem){ Equip(inventory.Count - 1); }
     Destroy(item.gameObject);
   }
   
