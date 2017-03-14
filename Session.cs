@@ -59,6 +59,9 @@ public class Session : MonoBehaviour {
     if(Input.GetKey(KeyCode.Escape) || Input.GetKey(Session.START)){
       Application.Quit();
     }
+    if(Input.GetKeyDown(KeyCode.I)){ 
+      Spawn("Brick", new Vector3(0f, 0f, 0f)); 
+    }
   }
   
   Data GatherInterior(){
@@ -101,9 +104,78 @@ public class Session : MonoBehaviour {
     }   
   }
   
-  /* Instantiates gameObject of a specific prefab  */
+  /* Instantiates gameObject of a specific prefab  
+     as close to the desired location as possible.
+     will spawn gameObject directly on top of map if
+     there's no space large enough for the movecheck. */
   GameObject Spawn(string prefab, Vector3 pos){
-    return gameObject;
+    GameObject go = null;
+    GameObject pref = (GameObject)Resources.Load(
+      prefab,
+      typeof(GameObject)
+    );
+    if(!pref){ print("Prefab null:" + prefab); return go; }
+    Vector3[] candidates = GroundedColumn(pos, pref.transform.localScale);
+    int min = 0;
+    float minDist, dist;
+    for(int i = 0; i < candidates.Length; i++){
+      minDist = Vector3.Distance(candidates[min], pos);
+      dist = Vector3.Distance(candidates[i], pos);
+      if(minDist > dist){
+        min = i;
+      }
+    }
+    go = (GameObject)GameObject.Instantiate(
+      pref,
+      candidates[min],
+      Quaternion.identity
+    );
+    print("Spawned at " + go.transform.position);
+    return go;
+  }
+  
+  /* Returns an array of viable positions full of empty space directly
+     above colliders, This is like surveying how many stories a building
+     has to it. */
+  Vector3[] GroundedColumn(Vector3 pos, Vector3 scale,
+                           float max=100f, float min=-100f){
+    Vector3 origin = pos;
+    List<Vector3> grounded = new List<Vector3>();
+    pos = new Vector3( pos.x, max, pos.z);
+    Vector3 last = pos;
+    bool lastPlace = true;
+    while(pos.y > min){
+      bool check = PlacementCheck(pos, scale);
+      if(!check && lastPlace){ grounded.Add(last + Vector3.up); }
+      last = pos;
+      pos = new Vector3(pos.x, pos.y-scale.y, pos.z);
+      lastPlace = check;
+    }
+    if(grounded.Count == 0){ grounded.Add(origin); } // Don't return an empty array.
+    return grounded.ToArray();
+  }
+  
+  /* Performs a boxcast at a certain point and scale. Returns true on collison. */
+  bool PlacementCheck(Vector3 pos, Vector3 scale){
+    Vector3 direction = Vector3.up;
+    float distance = scale.y;
+    Vector3 center = pos;
+    Vector3 halfExtents = scale / 2;
+    Quaternion orientation = Quaternion.identity;
+    int layerMask = ~(1 << 8);
+    RaycastHit hit;
+    bool check = !Physics.BoxCast(
+      center,
+      halfExtents,
+      direction,
+      out hit,
+      orientation,
+      distance,
+      layerMask,
+      QueryTriggerInteraction.Ignore
+    );
+    if(!check){ print("Collided with " + hit.collider.gameObject); }
+    return check;
   }
   
 }

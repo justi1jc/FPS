@@ -400,7 +400,6 @@ public class Actor : MonoBehaviour{
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
     dir += body.transform.up * 45f;
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
-    
   }
   
   /* Move relative to transform.forward and transform.right */
@@ -414,9 +413,7 @@ public class Actor : MonoBehaviour{
     if(!jumpReady){ pace *= 0.75f; } 
     Vector3 dest = body.transform.position + (pace * dir);
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
-    dir += body.transform.up * 10f;
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
-    body.transform.position +=  body.transform.up * 45f;
+    dir += body.transform.up * 45f;
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
   }
   
@@ -791,7 +788,20 @@ public class Actor : MonoBehaviour{
   }
   
   /* Drops active item from hand */
-  public void Drop(){
+  public void Drop(bool right = true){
+    if(!right){
+      if(secondaryItem){
+        inventory.Remove(inventory[secondaryIndex]);
+        if(secondaryIndex < primaryIndex){
+          Item primary = primaryItem.GetComponent<Item>();
+          inventory.Add(primary.GetData());
+          Destroy(primaryItem);
+          primaryIndex = -1;
+          Equip(inventory.Count -1);
+        }
+        secondaryIndex = -1;
+      }
+    }
     if(primaryItem){ 
       primaryItem.transform.parent = null;
       Item item = primaryItem.GetComponent<Item>();

@@ -258,8 +258,21 @@ public class Item : MonoBehaviour{
     }
     Collider c = transform.GetComponent<Collider>();
     c.isTrigger = false;
-    if(gameObject == holder.primaryItem){ holder.primaryItem = null; }
-    if(gameObject == holder.secondaryItem){ holder.secondaryItem = null; }
+    transform.parent = null;
+    if(gameObject == holder.primaryItem){
+      holder.primaryItem = null;
+      if(holder.primaryIndex > -1){ 
+        holder.inventory.Remove(holder.inventory[holder.primaryIndex]);
+        holder.primaryIndex = -1; 
+      }
+    }
+    if(gameObject == holder.secondaryItem){
+      holder.secondaryItem = null;
+      if(holder.secondaryIndex > -1){ 
+        holder.inventory.Remove(holder.inventory[holder.secondaryIndex]);
+        holder.secondaryIndex = -1; 
+      }
+    }
     holder = null;
   }
   
@@ -395,7 +408,8 @@ public class Item : MonoBehaviour{
     GameObject proj = (GameObject)GameObject.Instantiate(
       pref,
       spawnPos,
-      projRot);
+      projRot
+    );
     proj.GetComponent<Collider>().isTrigger = true;
     Item item = proj.GetComponent<Item>();
     if(item){
