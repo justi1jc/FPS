@@ -200,7 +200,7 @@ public class Item : MonoBehaviour{
      else if (action == 5){
        switch(itemType){
          case RANGED:
-           if(ready){ print("Swing!"); StartCoroutine(Swing());}
+           if(ready){ StartCoroutine(Swing());}
            break;
        }
      

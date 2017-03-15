@@ -57,7 +57,8 @@ public class Actor : MonoBehaviour{
   public float headRoty= 0f;
   float bodyRoty = 0f;
 
-  //Walking 
+  //Movement
+  public bool ragdoll = false;
   public float speed;
   bool walking = false;
   bool sprinting = false;
@@ -73,7 +74,7 @@ public class Actor : MonoBehaviour{
   public Animator anim;
   
   //Inventory
-  bool menuOpen;
+  public bool menuOpen;
   public GameObject primaryItem;
   public GameObject secondaryItem;
   public int primaryIndex = -1;
@@ -157,7 +158,7 @@ public class Actor : MonoBehaviour{
   
   /* Late-cycle loop. Orients the model before render.*/
   void LateUpdate(){
-    if(spine){
+    if(spine && !ragdoll){
       spine.transform.rotation = Quaternion.Euler(new Vector3(
         headRotx,
         headRoty,
@@ -371,6 +372,7 @@ public class Actor : MonoBehaviour{
     3 = Right
   */
   public void Move(int direction){
+    if(ragdoll){ return; }
     Rigidbody rb = body.GetComponent<Rigidbody>();
     if(rb == null){ return; }
     float pace = speed;
@@ -404,6 +406,7 @@ public class Actor : MonoBehaviour{
   
   /* Move relative to transform.forward and transform.right */
   public void StickMove(float x, float y){
+    if(ragdoll){  return; }
     Vector3 xdir = x * body.transform.right;
     Vector3 ydir = y * body.transform.forward;
     Vector3 dir = (xdir + ydir).normalized;
@@ -419,6 +422,7 @@ public class Actor : MonoBehaviour{
   
   /* Move relative to x and z positions.(Used for thumbstick motion) */
   public void AxisMove(float x, float z){
+    if(ragdoll){  return; }
     Vector3 dir = new Vector3(x, 0f, z).normalized;
     Rigidbody rb = body.GetComponent<Rigidbody>();
     float pace = speed;
@@ -438,7 +442,7 @@ public class Actor : MonoBehaviour{
     Quaternion orientation = body.transform.rotation;
     int layerMask = ~(1 << 8);
     RaycastHit hit;
-    return !Physics.BoxCast(
+    bool check = !Physics.BoxCast(
       center,
       halfExtents,
       direction,
@@ -448,6 +452,7 @@ public class Actor : MonoBehaviour{
       layerMask,
       QueryTriggerInteraction.Ignore
     );
+    return check;
   }
   
   /* Boxcasts to find the current item in reach, updating itemInReach if they
@@ -475,32 +480,11 @@ public class Actor : MonoBehaviour{
     itemInReach = null;
     return;
   }  
-  /* Two-axis movement. used by AI
-   0 = no motion on axis
-   1 = motion in positive direction
-  -1 = motion in negative direction */
-  void Move(int x, int z){
-  //TODO
-    switch(x){
-      case -1:
-        Move(1);
-        break;
-      case 1:
-        Move(0);
-        break;
-    }
-    switch(z){
-      case -1:
-        Move(3);
-        break;
-      case 1:
-        Move(2);
-        break;
-    }
-  }
+
   
   /* Rotates head along xyz, torso over x axis*/
   public void Turn(Vector3 direction){
+    if(ragdoll){ return; }
     headRotx += direction.x;
     headRoty += direction.y;
     bodyRoty += direction.y;
@@ -562,20 +546,76 @@ public class Actor : MonoBehaviour{
       StopAllCoroutines();
       Ragdoll(true);
       if(ai){ ai.Pause(); }
+      if(playerNumber < 5 && playerNumber > 0){
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+      }
+    }
+    else{
+      bool check = EnduranceCheck(damage);
+      if(check){ StartCoroutine(Stagger()); }
+      else{ StartCoroutine(FallDown()); }
     }
     if(health > healthMax){ health = healthMax; }
+    
+    
+    
+  }
+  
+  /* Actor rocks a bit. */
+  IEnumerator Stagger(){
+    Vector3 rot = body.transform.rotation.eulerAngles;
+    body.transform.rotation = Quaternion.Euler(rot.x+10, rot.y, rot.z);
+    speed -= 0.1f;
+    yield return new WaitForSeconds(0.1f);
+    speed += 0.1f;
+    rot = body.transform.rotation.eulerAngles;
+    body.transform.rotation = Quaternion.Euler(rot.x+10, rot.y, rot.z);
+  }
+  
+  /* Actor is knocked over */
+  IEnumerator FallDown(){
+    Ragdoll(true);
+    int delay = 100 - health - Random.Range(0, (endurance * agility));
+    if(delay < 3){ delay = 3; }
+    yield return new WaitForSeconds(Random.Range(0, (float)delay));
+    float x = Mathf.Abs(body.transform.rotation.eulerAngles.x);
+    float z = Mathf.Abs(body.transform.rotation.eulerAngles.z);
+    Vector3 rot = new Vector3();
+    while(z > 0 && x > 0){
+      rot = body.transform.rotation.eulerAngles;
+      if(rot.x > 0f){ x = -1f; }
+      else if(rot.x < 0f){ x = 1f; }
+      if(rot.z > 0f){ z = -1f; }
+      else if(rot.z < 0f){ z = 1f; }
+      body.transform.rotation = Quaternion.Euler(rot.x+x, rot.y, rot.z+z);
+      rot = body.transform.rotation.eulerAngles;      
+      x = Mathf.Abs(rot.x);
+      z = Mathf.Abs(rot.y);
+      if(x < 1f || z < 1f){
+        body.transform.rotation = Quaternion.Euler(0f, rot.y, 0f);
+        x = 0f;
+        z = 0f;
+      }
+      yield return new WaitForSeconds(0.01f);
+    }
+    Vector3 pos = body.transform.position;
+    body.transform.position = new Vector3( pos.x, pos.y+1f, pos.z);
+    Ragdoll(false);
   }
   
   /* Adds or removes the ragdoll effect on the actor. */
   void Ragdoll(bool state){
+    ragdoll = state;
     Rigidbody rb = body.GetComponent<Rigidbody>();
     if(state){
-      rb.constraints = RigidbodyConstraints.FreezePositionX |
-                      RigidbodyConstraints.FreezePositionY |
-                      RigidbodyConstraints.FreezePositionZ;
+      if(ai){ ai.Pause(); }
+      rb.constraints = RigidbodyConstraints.None; 
     }
     else{
-     rb.constraints = RigidbodyConstraints.None; 
+      if(ai){ ai.Resume(); }
+      rb.constraints = RigidbodyConstraints.FreezeRotationX |
+                      RigidbodyConstraints.FreezeRotationY |
+                      RigidbodyConstraints.FreezeRotationZ;
     }
   }
   
@@ -989,7 +1029,7 @@ public class Actor : MonoBehaviour{
     Destroy(item.gameObject);
   }
   
-  /* Returns data not found in prefab for this Actor */
+  /* Returns data not stored in prefab for this Actor */
   public Data GetData(){
   //TODO
     return new Data();
@@ -1030,9 +1070,16 @@ public class Actor : MonoBehaviour{
     successSpace += sprintPenalty + viewerPenalty; // Penalties
     int roll = Random.Range(0, 100);
     if(roll <= successSpace){ return true; }
-
     return false;
   }
   
+  /* Returns true if player passes endurance check. */
+  public bool EnduranceCheck(int damage = 5){
+    int enduranceBonus = health +  endurance * 5;
+    int successSpace = enduranceBonus - damage; // Max 95
+    int roll = Random.Range(0, 100);
+    if(roll <= successSpace){ return true; }
+    return false;
+  }
      
 }

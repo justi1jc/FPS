@@ -52,6 +52,7 @@ public class AI: MonoBehaviour{
   /* Switch for different */
   IEnumerator Think(){
     while(true){
+      if(host.ragdoll){ yield return new WaitForSeconds(1f); }
       if(!paused){
         switch(profile){
           case PASSIVE:
