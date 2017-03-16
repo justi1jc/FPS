@@ -79,6 +79,8 @@ public class Actor : MonoBehaviour{
   public GameObject secondaryItem;
   public int primaryIndex = -1;
   public int secondaryIndex = -1;
+  public GameObject actorInReach;
+  public string actorInReachName;
   public GameObject itemInReach;
   public string itemInReachName;
   public List<Data> inventory = new List<Data>();
@@ -200,6 +202,16 @@ public class Actor : MonoBehaviour{
     return info;
   }
   
+  /* Returns an empty string, or info about interacting with the actor in reach */
+  public string ActorInteractionText(){
+    string text = "";
+    if(crouched){ text += "Steal from "; }
+    else{ text += "Talk to "; }
+    text += actorInReachName;
+    return text;
+  }
+  
+  
   /* Sets controls between menu and in-game contexts. */
   public void SetMenuOpen(bool val){
     menuOpen = val;
@@ -252,12 +264,12 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyUp(KeyCode.LeftControl)){ToggleCrouch(); }
     
     //Mouse controls
-    if(Input.GetMouseButtonDown(0)){ Use(0); }
-    if(Input.GetMouseButtonDown(1)){ Use(1); }
-    if(Input.GetMouseButton(0)){ Use(3); } // Charge Left
-    if(Input.GetMouseButton(1)){ Use(4); } // Charge right
-    if(Input.GetMouseButtonUp(0)){ Use(5); } // Release left
-    if(Input.GetMouseButtonUp(1)){ Use(6); } // Release right
+    if(Input.GetMouseButtonDown(0)){ Use(1); }
+    if(Input.GetMouseButtonDown(1)){ Use(0); }
+    if(Input.GetMouseButton(0)){ Use(4); } // Charge Left
+    if(Input.GetMouseButton(1)){ Use(3); } // Charge right
+    if(Input.GetMouseButtonUp(0)){ Use(6); } // Release left
+    if(Input.GetMouseButtonUp(1)){ Use(5); } // Release right
     float rotx = -Input.GetAxis("Mouse Y") * sensitivityX;
     float roty = Input.GetAxis("Mouse X") * sensitivityY;
     Turn(new Vector3(rotx, roty, 0f));
@@ -266,6 +278,7 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(KeyCode.R)){ Use(2); }
     if(Input.GetKeyDown(KeyCode.Q)){ Drop(); }
     if(Input.GetKeyDown(KeyCode.E)){ Interact(); }
+    if(shift && Input.GetKeyDown(KeyCode.E)){ Interact(0); }
     if(Input.GetKeyDown(KeyCode.LeftArrow)){ Interact(1); }
     if(Input.GetKeyDown(KeyCode.RightArrow)){ Interact(2); }
     if(Input.GetKeyDown(KeyCode.DownArrow)){ Interact(3); }
@@ -321,16 +334,16 @@ public class Actor : MonoBehaviour{
     //Buttons
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(Session.B)){ Use(7); }
-    if(Input.GetKeyDown(Session.X) && itemInReach){ Interact(); }
+    if(Input.GetKeyDown(Session.X)){ Interact(); }
     else if(Input.GetKeyDown(Session.X)){ Use(2); }
     if(Input.GetKeyDown(Session.Y)){ SetMenuOpen(true);
     if(menu){ menu.Change(Menu.INVENTORY); } }
-    if(rt > 0 && !rt_down){ Use(0); rt_down = true;}
-    else if(rt > 0){ Use(3); }
-    if(rt == 0 && rt_down){ rt_down = false; Use(5); }
-    if(lt > 0 && !lt_down){ Use(1); lt_down = true;}
-    else if(lt > 0){ Use(4); }
-    if(lt == 0 && lt_down){ lt_down = false; Use(6); }
+    if(rt > 0 && !rt_down){ Use(0); rt_down = true;}    // Use right
+    else if(rt > 0){ Use(3); }                          // Hold right
+    if(rt == 0 && rt_down){ rt_down = false; Use(5); }  // Release right
+    if(lt > 0 && !lt_down){ Use(1); lt_down = true;}    // Use left
+    else if(lt > 0){ Use(4); }                          // Hold left
+    if(lt == 0 && lt_down){ lt_down = false; Use(6); }  // Release left
     
     if(Input.GetKeyDown(Session.LSC)){ ToggleCrouch(); }
     if(Input.GetKeyDown(Session.RB)){ Drop(); }
@@ -473,11 +486,23 @@ public class Actor : MonoBehaviour{
       layerMask,
       QueryTriggerInteraction.Ignore
     );
+    bool itemFound = false;
     for(int i = 0; i < found.Length; i++){
       Item item = found[i].collider.gameObject.GetComponent<Item>();
-      if(item){ itemInReach = item.gameObject; return; }
+      if(item){ itemInReach = item.gameObject; itemFound = true; break; }
     }
-    itemInReach = null;
+    if(!itemFound){ itemInReach = null; }
+    bool actorFound = false;
+    for(int i = 0; i < found.Length; i++){
+      Actor other = found[i].collider.gameObject.GetComponent<Actor>();
+      if(other && other != this){
+        actorInReach = other.gameObject;
+        actorInReachName = other.displayName;
+        actorFound = true;
+        break;
+      }
+    }
+    if(!actorFound){ actorInReach = null; }
     return;
   }  
 
@@ -563,13 +588,14 @@ public class Actor : MonoBehaviour{
   
   /* Actor rocks a bit. */
   IEnumerator Stagger(){
+    float sa = 10; // Stagger angle
     Vector3 rot = body.transform.rotation.eulerAngles;
-    body.transform.rotation = Quaternion.Euler(rot.x+10, rot.y, rot.z);
+    body.transform.rotation = Quaternion.Euler(rot.x+ sa, rot.y, rot.z);
     speed -= 0.1f;
     yield return new WaitForSeconds(0.1f);
     speed += 0.1f;
     rot = body.transform.rotation.eulerAngles;
-    body.transform.rotation = Quaternion.Euler(rot.x+10, rot.y, rot.z);
+    body.transform.rotation = Quaternion.Euler(rot.x- sa, rot.y, rot.z);
   }
   
   /* Actor is knocked over */
@@ -1014,10 +1040,19 @@ public class Actor : MonoBehaviour{
   /* Interact with item in reach.
      i is the argument for the interaction, if relevant */
   public void Interact(int mode = -1){
-    if(itemInReach == null){ return; }
-    Item item = itemInReach.GetComponent<Item>();
-    if(item == null){ return; }
-    item.Interact(this, mode);
+    if(itemInReach){
+      Item item = itemInReach.GetComponent<Item>();
+      if(item){ item.Interact(this, mode); }
+    }
+    if(actorInReach){
+      Actor actor = actorInReach.GetComponent<Actor>();
+      if(actor && mode == -1){
+        print("Talking to" + actor.gameObject.name);
+      }
+      else if(actor && mode == 0){
+        print("Steal from " + actor.gameObject.name);
+      }
+    }
   }
   
   /* Pick up item in world. */

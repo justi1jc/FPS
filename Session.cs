@@ -31,20 +31,20 @@ public class Session : MonoBehaviour {
   public static string LT = "LT"; // "3rd Axis" DeadZone: 0.1
   public static string DX = "DX";  // "7th Axis" for wired controllers
   public static string DY = "DY";  // "8th Axis"
-  public static string RB = "joystick button 5"; // 5
-  public static string LB = "joystick button 4"; // 4
+  public static string RB = "joystick button 5"; // 5 Right bumper
+  public static string LB = "joystick button 4"; // 4 Left bumper
   public static string A = "joystick button 0"; // 0
   public static string B = "joystick button 1"; // 1
   public static string X = "joystick button 2"; // 2
   public static string Y = "joystick button 3"; // 3
   public static string START = "joystick button 7"; // 7
   public static string SELECT = "joystick button 6"; // 6
-  public static string DUB = "joystick button 13"; // 13   For wireless controllers
-  public static string DDB = "joystick button 14"; // 14
-  public static string DRB = "joystick button 11"; // 11
-  public static string DLB = "joystick button 12"; // 12
-  public static string RSC = "joystick button 10"; // 10
-  public static string LSC = "joystick button 9";  // 9
+  public static string DUB = "joystick button 13"; // 13  D-pad Up For wireless controllers
+  public static string DDB = "joystick button 14"; // 14  D-pad down
+  public static string DRB = "joystick button 11"; // 11  D-pad right
+  public static string DLB = "joystick button 12"; // 12  D-pad left
+  public static string RSC = "joystick button 10"; // 10  Right stick click
+  public static string LSC = "joystick button 9";  // 9   left stick click
   
   Camera cam1;
   Camera cam2;

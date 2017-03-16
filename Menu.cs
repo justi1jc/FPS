@@ -120,6 +120,7 @@ public class Menu : MonoBehaviour{
       ("HP: " + actor.health)
     );
     
+    
     // Display Item info
     GUI.Box(
       new Rect(
@@ -132,18 +133,30 @@ public class Menu : MonoBehaviour{
     );
     
     // Display item in reach, if it exists.
-    if(!actor.itemInReach){ return; }
-    Item inReach = actor.itemInReach.GetComponent<Item>(); 
-    GUI.Box(
-      new Rect(
-            XOffset() + Width() - (2* Width()/cbsx),
-            (9 * Height()/cbsy),
-            Width()/cbsx,
-            Height()/cbsy
-          ),
-      inReach.displayName
-    );
-  }
+    if(actor.itemInReach){
+      Item inReach = actor.itemInReach.GetComponent<Item>(); 
+      GUI.Box(
+        new Rect(
+              XOffset() + Width() - (2* Width()/cbsx),
+              (9 * Height()/cbsy),
+              Width()/cbsx,
+              Height()/cbsy
+            ),
+        inReach.displayName
+      );
+    }
+    else if(actor.actorInReach){ 
+        GUI.Box(
+          new Rect(
+                XOffset() + Width() - (2* Width()/cbsx),
+                (9 * Height()/cbsy),
+                Width()/cbsx,
+                Height()/cbsy
+              ),
+          actor.ActorInteractionText()
+        );
+      }
+    }
   
   
   void RenderMain(){}
