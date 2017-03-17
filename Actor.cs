@@ -128,6 +128,8 @@ public class Actor : MonoBehaviour{
   
   // Speech
   public Actor interlocutor; // Conversation partner
+  public string speechTreeFile; // File for speech tree to use.
+  public SpeechTree speechTree; // Speech tree if this is an NPC Actor
   
   // AI
   public AI ai;
@@ -185,6 +187,7 @@ public class Actor : MonoBehaviour{
     else if(player == 5){
       ai = gameObject.GetComponent<AI>();
       if(ai){ ai.Begin(this); }
+      if(speechTreeFile != ""){ speechTree = new SpeechTree(speechTreeFile); }
     }
   }
   

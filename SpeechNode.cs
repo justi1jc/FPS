@@ -18,9 +18,8 @@ public class SpeechNode{
   public int[] children;         // Speech node to go to.
   public int[] actions;          // The action to perform upon selecting an option.
   public int[] targetNodes;      // Speech node to be edited.
-  public int[] targetChildren;   // Target Node's 
+  public int[] targetOptions;   // Target Node's option to be edited
   public int[] actionIntArgs;    // Int argument used for the action
-  public int[] actionStringArgs; // String argument used for the action
   
   public SpeechNode(
     int _id,
@@ -29,19 +28,17 @@ public class SpeechNode{
     int[] _children = null,
     int[] _actions = null,
     int[] _targetNodes = null,
-    int[] _targetChildren = null,
-    int[] _actionIntArgs = null,
-    int[] _actionStringArgs = null
+    int[] _targetOptions = null,
+    int[] _actionIntArgs = null
   ){
     id = _id;
-    prompt = _prompt;    
+    prompt = _prompt;
     options  = _options ?? new string[] {"", "", "", ""};
     children = _children ?? new int[] {-1, -1, -1, -1};
     actions = _actions ?? new int[] {NONE, NONE, NONE, NONE};
     targetNodes = _targetNodes ?? new int[] {-1, -1, -1, -1};
-    targetChildren = _targetChildren ?? new int[] {-1, -1, -1, -1};
+    targetOptions = _targetOptions ?? new int[] {-1, -1, -1, -1};
     actionIntArgs = _actionIntArgs ?? new int[] {-1, -1, -1, -1};
-    actionStringArgs = _actionStringArgs;
   }
   
   public void SetVisible(int option, bool val){
