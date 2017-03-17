@@ -67,10 +67,20 @@ public class SpeechTree{
     }
   }
   
+  /* Prints out some debug ingo */
+  void DebugPrint(){
+    for(int i = 0; i < nodes.Count; i++){
+      MonoBehaviour.print("Node " + i +nodes[i].prompt);
+      for(int j = 0; j < 4; j++){
+        MonoBehaviour.print("Node " + i + " option "+ j + nodes[i].options[j]);
+      }
+    }
+  }
+  
   
   /* Reads data in from file. */
   void ParseFile(){
-    MonoBehaviour.print("Starting to parse.");
+    
     try{
         string location  = Application.dataPath + "/Resources/"; 
         using (StreamReader sr = new StreamReader(location+fileName)){
@@ -84,15 +94,11 @@ public class SpeechTree{
         }
     }
     catch (Exception e){ MonoBehaviour.print("Exception:" + e); }
-    MonoBehaviour.print("Finished Parsing " + nodes.Count + " nodes."); 
   }
   
   /* Creates a node.*/
   bool ParseNode(StreamReader sr){
 
-    
-    
-    //Parse ID
     string line = sr.ReadLine(); lineCount++;
     int id = int.TryParse(line, out id) ? id : -1;
     if(id == -1){ MonoBehaviour.print("Missing ID. Line " + lineCount); return false;}
@@ -190,6 +196,7 @@ public class SpeechTree{
     SpeechNode node = new SpeechNode(
       id = id,
       prompt = prompt,
+      hidden = hidden,
       options = options,
       children = children,
       actions = actions,

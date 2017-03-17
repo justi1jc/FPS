@@ -21,6 +21,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine.SceneManagement;
 public class Session : MonoBehaviour {
   public static Session session;
+  
   /* Controller one linux values */
   public static string C1 = "Joystick 1"; //Controller 1
   public static string XL = "XL"; // "X Axis" DeadZone: 0.2 Accuracy: 1
@@ -45,6 +46,8 @@ public class Session : MonoBehaviour {
   public static string DLB = "joystick button 12"; // 12  D-pad left
   public static string RSC = "joystick button 10"; // 10  Right stick click
   public static string LSC = "joystick button 9";  // 9   left stick click
+  
+  // Environment constants.
   
   Camera cam1;
   Camera cam2;

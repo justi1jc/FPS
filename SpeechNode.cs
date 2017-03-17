@@ -24,6 +24,7 @@ public class SpeechNode{
   public SpeechNode(
     int _id,
     string _prompt = "",
+    bool[] _hidden = null,
     string[] _options = null,
     int[] _children = null,
     int[] _actions = null,
@@ -33,6 +34,7 @@ public class SpeechNode{
   ){
     id = _id;
     prompt = _prompt;
+    hidden = _hidden ?? new bool[]{false, false, false, false};
     options  = _options ?? new string[] {"", "", "", ""};
     children = _children ?? new int[] {-1, -1, -1, -1};
     actions = _actions ?? new int[] {NONE, NONE, NONE, NONE};
