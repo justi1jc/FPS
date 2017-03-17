@@ -1050,8 +1050,8 @@ public class Actor : MonoBehaviour{
     if(actorInReach){
       Actor actor = actorInReach.GetComponent<Actor>();
       if(actor && mode == -1){
-        menu.Change(Menu.SPEECH);
         interlocutor = actor;
+        menu.Change(Menu.SPEECH);
       }
       else if(actor && mode == 0){
         print("Steal from " + actor.gameObject.name);

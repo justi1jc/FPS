@@ -36,4 +36,5 @@ Speech(Speech tree, trade system)
 
 
 Fixes/tweaks
-Allow moving diagonally. 
+Allow moving diagonally.
+Add environment variable to Session and use it to determine file location.

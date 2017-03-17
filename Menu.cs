@@ -41,7 +41,7 @@ public class Menu : MonoBehaviour{
   public bool right;
   int px, py; // Primary focus (ie which table or is selected.)
   int pxMax, pyMax, pxMin, pyMin; // Primary focus boundaries.
-  int sx, sy; // secondary focus (ie which item in a table is selected.)
+  public int sx, sy; // secondary focus (ie which item in a table is selected.)
   int sxMax, syMax, sxMin, syMin; // Secondary focus boundaries.  
   List<int> selections = null; // What selections are available.
   public Vector2 scrollPosition = Vector2.zero;
@@ -409,7 +409,17 @@ public class Menu : MonoBehaviour{
     SecondaryBounds();
   }
   void OptionsFocus(){}
-  void SpeechFocus(){}
+  
+  void SpeechFocus(){
+    syMax = 3;
+    syMin = 0;
+    sxMax = 0;
+    sxMin = 0;
+    SecondaryBounds();
+    SpeechTree st = actor.interlocutor.speechTree;
+    if(st.ActiveNode().hidden[sy]){ sy--; }
+  }
+  
   void TradeFocus(){}
   void QuestFocus(){}
   void AbilityFocus(){
@@ -500,6 +510,25 @@ public class Menu : MonoBehaviour{
       Change(HUD);
       actor.SetMenuOpen(false);
       return;
+    }
+    SpeechTree st = actor.interlocutor.speechTree;
+    if(button == A){
+      if(st.ActiveNode().hidden[sy]){ return; }
+      switch(sy){
+        case 0:
+          st.SelectOption(0);
+          break;
+        case 1:
+          st.SelectOption(1);
+          break;
+        case 2:
+          st.SelectOption(2);
+          break;
+        case 3:
+          st.SelectOption(3);
+          break;
+      }
+      sy = 0;
     }
   }
   
