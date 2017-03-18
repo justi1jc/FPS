@@ -1,0 +1,40 @@
+This is boiler-plate code for an open-world first-person shooter game.
+
+Vision: Provide first-person shooter roleplaying gameplay similar to the recent
+installments of The Elder Scrolls and Fallout series, albeit with the addition of 
+couch-multiplayer coop.
+
+Current version: 0.1.0
+
+    Current features
+Menus(Inventory)
+Input(In-Game)
+Actor(Movement, Item Interaction, condition(health), combat ai)
+Items(charging, pickup, drop, use, thrown type, ranged melee)
+Inventory(store)
+Abilities(Dual-wield, Unarmed, fireball, heal)
+Session(SpawnEntity);
+
+    Pending features for 1.0.0
+
+Menus(Main, Save&Load, Options, Speech, Trade, Loot, Quest, level-up/stats, reticle)
+Input(Menu)
+Actor(XP/RPG Stats, Combat AI, Ambient AI, condition(fatigue, mana, stat mods, effects&perks))
+Items(Warp door, shield type, damage&repair, containers, two-handed items)
+Inventory(Looting);
+Save&Load(Starting Map, interior cells, exterior cells , PlayerData)
+World(Interior cells, exterior cells, NPC placement)
+Speech(speech tree, Trade system)
+Quest(Quest)
+
+    What needs to be done for 0.2.0 (Basic RPG gameplay)
+Menus(Speech, Trade, Loot, level-up/stats)
+Items(shield type, damage&repair, containers)
+Inventory(Looting)
+Speech(Speech tree, trade system)
+
+
+
+Fixes/tweaks
+Allow moving diagonally.
+Add environment variable to Session and use it to determine file location.
