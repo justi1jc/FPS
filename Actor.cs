@@ -258,10 +258,13 @@ public class Actor : MonoBehaviour{
     bool shift = Input.GetKey(KeyCode.LeftShift);
     bool walk = false;
     sprinting = shift;
-    if(Input.GetKey(KeyCode.W)){ Move(0); walk = true; }
-    if(Input.GetKey(KeyCode.S)){ Move(1); walk = true; }
-    if(Input.GetKey(KeyCode.A)){ Move(2); walk = true; }
-    if(Input.GetKey(KeyCode.D)){ Move(3); walk = true; }
+    float x = 0f;
+    float z = 0f;
+    if(Input.GetKey(KeyCode.W)){ z = 1f; walk = true; }
+    else if(Input.GetKey(KeyCode.S)){ z = -1f; walk = true; }
+    if(Input.GetKey(KeyCode.A)){ x = -1f; walk = true; }
+    else if(Input.GetKey(KeyCode.D)){ x = 1f; walk = true; }
+    StickMove(x, z);
     if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(KeyCode.LeftControl)){ToggleCrouch(); }
     if(Input.GetKeyUp(KeyCode.LeftControl)){ToggleCrouch(); }
@@ -415,6 +418,7 @@ public class Actor : MonoBehaviour{
         dir = body.transform.right;
         break;
     }
+    print("Direction: " + direction + "Good?" + MoveCheck(dir, 3 * pace));
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
     dir += body.transform.up * 45f;
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
@@ -436,7 +440,7 @@ public class Actor : MonoBehaviour{
     if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
   }
   
-  /* Move relative to x and z positions.(Used for thumbstick motion) */
+  /* Move relative to x and z positions.(Used for AI) */
   public void AxisMove(float x, float z){
     if(ragdoll){  return; }
     Vector3 dir = new Vector3(x, 0f, z).normalized;
