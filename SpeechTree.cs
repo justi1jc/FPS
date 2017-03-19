@@ -85,20 +85,7 @@ public class SpeechTree{
   /* Reads data in from file. */
   void ParseFile(){
   
-    string location = "";
-    switch(Application.platform){
-      case RuntimePlatform.LinuxEditor:
-        location = Application.dataPath + "/Resources/";
-        break;
-      case RuntimePlatform.LinuxPlayer:
-        location = Application.dataPath + "/Resources/";
-        break;
-      case RuntimePlatform.OSXPlayer:
-        break;
-      case RuntimePlatform.WindowsPlayer:
-        location = Application.dataPath + "/Resources/";
-        break;
-    }
+    string location = Application.dataPath + "/Resources/";
     try{ 
         using (StreamReader sr = new StreamReader(location+fileName)){
             String line = sr.ReadLine(); lineCount++;
