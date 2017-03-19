@@ -41,7 +41,7 @@ public class Menu : MonoBehaviour{
   public bool right;
   int px, py; // Primary focus (ie which table or is selected.)
   int pxMax, pyMax, pxMin, pyMin; // Primary focus boundaries.
-  int sx, sy; // secondary focus (ie which item in a table is selected.)
+  public int sx, sy; // secondary focus (ie which item in a table is selected.)
   int sxMax, syMax, sxMin, syMin; // Secondary focus boundaries.  
   List<int> selections = null; // What selections are available.
   public Vector2 scrollPosition = Vector2.zero;
@@ -120,6 +120,7 @@ public class Menu : MonoBehaviour{
       ("HP: " + actor.health)
     );
     
+    
     // Display Item info
     GUI.Box(
       new Rect(
@@ -132,18 +133,30 @@ public class Menu : MonoBehaviour{
     );
     
     // Display item in reach, if it exists.
-    if(!actor.itemInReach){ return; }
-    Item inReach = actor.itemInReach.GetComponent<Item>(); 
-    GUI.Box(
-      new Rect(
-            XOffset() + Width() - (2* Width()/cbsx),
-            (9 * Height()/cbsy),
-            Width()/cbsx,
-            Height()/cbsy
-          ),
-      inReach.displayName
-    );
-  }
+    if(actor.itemInReach){
+      Item inReach = actor.itemInReach.GetComponent<Item>(); 
+      GUI.Box(
+        new Rect(
+              XOffset() + Width() - (2* Width()/cbsx),
+              (9 * Height()/cbsy),
+              Width()/cbsx,
+              Height()/cbsy
+            ),
+        inReach.displayName
+      );
+    }
+    else if(actor.actorInReach){ 
+        GUI.Box(
+          new Rect(
+                XOffset() + Width() - (2* Width()/cbsx),
+                (9 * Height()/cbsy),
+                Width()/cbsx,
+                Height()/cbsy
+              ),
+          actor.ActorInteractionText()
+        );
+      }
+    }
   
   
   void RenderMain(){}
@@ -168,7 +181,7 @@ public class Menu : MonoBehaviour{
     List<Data> inv = actor.inventory;
     
     for(int i = 0; i < inv.Count; i++){
-      GUI.color = Color.blue; 
+      GUI.color = Color.green; 
       Data item = inv[i];
       string selected ="";
       if(i == actor.primaryIndex){ selected += "Right Hand "; }
@@ -186,7 +199,7 @@ public class Menu : MonoBehaviour{
         new Rect(iw + iw/2, ih * i, iw/2, ih),
         "DROP"
       )){ actor.DiscardItem(i); }
-      if(i == sy && sx == 0){ GUI.color = Color.blue; }
+      if(i == sy && sx == 0){ GUI.color = Color.green; }
     }
     GUI.EndScrollView();
     
@@ -197,7 +210,7 @@ public class Menu : MonoBehaviour{
       )){
         Change(ABILITY);
     }
-    if(sx == 1){ GUI.color = Color.blue; }
+    if(sx == 1){ GUI.color = Color.green; }
     
     if(sx == -1){ GUI.color = Color.yellow; }
     if(GUI.Button(
@@ -206,12 +219,90 @@ public class Menu : MonoBehaviour{
       )){
         print("Quests not implemented.");
     }
-    if(sx == -1){ GUI.color = Color.blue; }
+    if(sx == -1){ GUI.color = Color.green; }
   }
   
   
   void RenderOptions(){}
-  void RenderSpeech(){}
+
+  /* Render the dialogue screen. */
+  void RenderSpeech(){
+    if(!actor){ return; }
+    if(!actor.interlocutor){print("Interlocutor missing"); return;}
+    GUI.skin.button.wordWrap = true; // Make sure text wraps in buttons.
+    GUI.skin.box.wordWrap = true; // Make sure text wraps in boxes.
+    GUI.Box(
+      new Rect(XOffset(), 0, Width(), Height()),
+      ""
+    );
+    SpeechTree st = actor.interlocutor.speechTree;
+    if(st == null){ print("Interlocutor lacks speech tree"); return; }
+    GUI.color = Color.green;
+    int iw = Width()/6;
+    int ih = Height()/15;
+    int mid = Height()/2;
+    string text = "";
+    
+    // Render Prompt
+    GUI.Box(
+      new Rect(XOffset()+(2*iw), 0, 4*iw, 7*ih),
+        st.ActiveNode().prompt
+    );
+    
+    // Render Option 0
+    if(!st.ActiveNode().hidden[0]){
+      if(sy==0 && sx == 0){ GUI.color = Color.yellow; }
+      text = st.ActiveNode().options[0];
+      if(GUI.Button(
+        new Rect(XOffset()+(2*iw), ih*7, 4*iw, 2*ih),
+          text
+      )){
+        st.SelectOption(0);
+      }
+      if(sy==0 && sx == 0){ GUI.color = Color.green; }
+    }
+    
+    // Render Option 1
+    if(!st.ActiveNode().hidden[1]){
+      if(sy==1 && sx == 0){ GUI.color = Color.yellow; }
+      text = st.ActiveNode().options[1];
+      if(GUI.Button(
+        new Rect(XOffset()+(2*iw), ih*9, 4*iw, 2*ih),
+          text
+      )){
+        st.SelectOption(1);
+      }
+      if(sy==1 && sx == 0){ GUI.color = Color.green; }
+    }
+    
+    // Render Option 2
+    if(!st.ActiveNode().hidden[2]){
+      if(sy==2 && sx == 0){ GUI.color = Color.yellow; }
+      text = st.ActiveNode().options[2];
+      if(GUI.Button(
+        new Rect(XOffset()+(2*iw), ih*11, 4*iw, 2*ih),
+          text
+      )){
+        st.SelectOption(2);
+      }
+      if(sy==2 && sx == 0){ GUI.color = Color.green; }
+    }
+    
+    // Render Option 3
+    if(!st.ActiveNode().hidden[3]){
+      if(sy==3 && sx == 0){ GUI.color = Color.yellow; }
+      text = st.ActiveNode().options[3];
+      if(GUI.Button(
+        new Rect(XOffset()+(2*iw), ih*13, 4*iw, 2*ih),
+          text
+      )){
+        st.SelectOption(3);
+      }
+      if(sy==3 && sx == 0){ GUI.color = Color.green; }
+    }
+  }
+  
+  
   void RenderTrade(){}
   void RenderQuest(){}
   void RenderAbility(){
@@ -232,7 +323,7 @@ public class Menu : MonoBehaviour{
     List<Data> inv = actor.inventory;
     
     for(int i = 0; i < selections.Count; i++){
-      GUI.color = Color.blue; 
+      GUI.color = Color.green; 
       int ability = selections[i];
       string selected = "";
       if(i == actor.rightAbility){ selected += "Right Hand "; }
@@ -251,7 +342,7 @@ public class Menu : MonoBehaviour{
       )){
         actor.EquipAbilitySecondary(ability);
       }
-      if(i == sy && sx == 0){ GUI.color = Color.blue; }
+      if(i == sy && sx == 0){ GUI.color = Color.green; }
     }
     GUI.EndScrollView();
     
@@ -262,7 +353,7 @@ public class Menu : MonoBehaviour{
       )){
         print("Quests not implemented");
     }
-    if(sx == 1){ GUI.color = Color.blue; }
+    if(sx == 1){ GUI.color = Color.green; }
     
     if(sx == -1){ GUI.color = Color.yellow; }
     if(GUI.Button(
@@ -271,7 +362,7 @@ public class Menu : MonoBehaviour{
       )){
         Change(INVENTORY);
     }
-    if(sx == -1){ GUI.color = Color.blue; }
+    if(sx == -1){ GUI.color = Color.green; }
   }
 
   /* Call appropriate menu's focus update handler. */
@@ -318,7 +409,17 @@ public class Menu : MonoBehaviour{
     SecondaryBounds();
   }
   void OptionsFocus(){}
-  void SpeechFocus(){}
+  
+  void SpeechFocus(){
+    syMax = 3;
+    syMin = 0;
+    sxMax = 0;
+    sxMin = 0;
+    SecondaryBounds();
+    SpeechTree st = actor.interlocutor.speechTree;
+    if(st.ActiveNode().hidden[sy]){ sy--; }
+  }
+  
   void TradeFocus(){}
   void QuestFocus(){}
   void AbilityFocus(){
@@ -403,7 +504,34 @@ public class Menu : MonoBehaviour{
     
   }
   void OptionsInput(int button){}
-  void SpeechInput(int button){}
+  
+  void SpeechInput(int button){
+    if(button == B || button == Y){ // Exit menu
+      Change(HUD);
+      actor.SetMenuOpen(false);
+      return;
+    }
+    SpeechTree st = actor.interlocutor.speechTree;
+    if(button == A){
+      if(st.ActiveNode().hidden[sy]){ return; }
+      switch(sy){
+        case 0:
+          st.SelectOption(0);
+          break;
+        case 1:
+          st.SelectOption(1);
+          break;
+        case 2:
+          st.SelectOption(2);
+          break;
+        case 3:
+          st.SelectOption(3);
+          break;
+      }
+      sy = 0;
+    }
+  }
+  
   void TradeInput(int button){}
   void QuestInput(int button){}
   void AbilityInput(int button){

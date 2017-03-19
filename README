@@ -9,19 +9,18 @@ Current version: 0.1.0
     Current features
 Menus(Inventory)
 Input(In-Game)
-Actor(Movement, Item Interaction, condition(health), combat ai)
+Actor(Movement, Item Interaction, condition(health), Combat AI)
 Items(charging, pickup, drop, use, thrown type, ranged melee)
 Inventory(store)
 Abilities(Dual-wield, Unarmed, fireball, heal)
-
+Session(SpawnEntity);
+Speech(Speech tree)
     Pending features for 1.0.0
 
-Menus(Main, Save&Load, Options, Speech, Trade, Loot, Quest, level-up)
-=======
-
+Menus(Main, Save&Load, Options, Speech, Trade, Loot, Quest, level-up/stats, reticle)
 Input(Menu)
-Actor(XP/RPG Stats, Combat AI, Ambient AI, condition(fatigue, mana, stat mods, effects&perks))
-Items(Warp door, shield type, damage&repair, containers)
+Actor(XP/RPG Stats, Ambient AI, condition(fatigue, mana, stat mods, effects&perks))
+Items(Warp door, shield type, damage&repair, containers, two-handed items)
 Inventory(Looting);
 Save&Load(Starting Map, interior cells, exterior cells , PlayerData)
 World(Interior cells, exterior cells, NPC placement)
@@ -29,8 +28,12 @@ Speech(speech tree, Trade system)
 Quest(Quest)
 
     What needs to be done for 0.2.0 (Basic RPG gameplay)
-Menus(Speech, Trade, Loot, level-up)
-Items(shield type, damage&repair, containers)
+Menus(Speech, Trade, Loot, level-up/stats)
 Inventory(Looting)
-Speech(Speech tree, trade system)
-Session(SpawnEntity);
+Speech(trade system)
+
+
+
+Fixes/tweaks
+Allow moving diagonally.
+Add environment variable to Session and use it to determine file location.
