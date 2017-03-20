@@ -149,7 +149,7 @@ public class Actor : MonoBehaviour{
     raItem.holder = this;
     laItem.holder = this;
     AssignPlayer(playerNumber);
-    if(level == 0){ LevelUp(); }
+    if(level == 0){ LevelUp(); xp = 50; }
   }
   
   
@@ -587,13 +587,16 @@ public class Actor : MonoBehaviour{
   
   /* Applies damage from attack. Ignores active weapon. */
   public void ReceiveDamage(int damage, GameObject weapon){
-    if(health < 0 || (weapon == primaryItem && damage > 0)){ return; }
+    
+    if(health < 1 || (weapon == primaryItem && damage > 0)){ return; }
     health -= damage;
     if(health < 1){
       health = 0;
       StopAllCoroutines();
       Ragdoll(true);
       if(ai){ ai.Pause(); }
+      Item item = weapon.GetComponent<Item>();
+      if(item && item.holder){ item.holder.ReceiveXp(xp); }
       if(playerNumber < 5 && playerNumber > 0){
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
       }
