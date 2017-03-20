@@ -50,7 +50,7 @@ public class Menu : MonoBehaviour{
   public void Change(int menu){
     if(!actor){ activeMenu = NONE; }
     if(menu == ABILITY){ AbilitySetup(); }
-    if(menu <= ABILITY && menu >= NONE){
+    if(menu <= STATS && menu >= NONE){
       activeMenu = menu;
       px = py = sx = sy = 0;
       UpdateFocus();
@@ -172,6 +172,7 @@ public class Menu : MonoBehaviour{
       new Rect(XOffset(), 0, Width(), Height()),
       ""
     );
+    GUI.color = Color.green;
     
     int iw = Width()/4;
     int ih = Height()/20;
@@ -353,9 +354,9 @@ public class Menu : MonoBehaviour{
     if(sx == 1){ GUI.color = Color.yellow; }
     if(GUI.Button(
         new Rect(XOffset() + Width() - iw, Height()/2, iw, ih),
-        "Quests"
+        "Stats"
       )){
-        print("Quests not implemented");
+        Change(STATS);
     }
     if(sx == 1){ GUI.color = Color.green; }
     
@@ -371,6 +372,104 @@ public class Menu : MonoBehaviour{
   
   /* Render menu for viewing/editing stats. */
   void RenderStats(){
+    int ah = Height()/7; // Attribute height
+    int aw = Width()/4;  // Attribute width
+    int sh = Height()/5; // Skill height
+    int sw = Height()/4; // Skill width
+    
+    // Render background
+    GUI.Box(
+      new Rect(XOffset(), 0, Width(), Height()),
+      ""
+    );
+    GUI.color = Color.green; // Set color to green as default.
+    
+    // Render attribute column 
+    if(sx == 0 && sy == 0){ GUI.color = Color.yellow; }
+    if(GUI.Button(
+        new Rect(XOffset()+aw, 0, aw, ah),
+        "Intelligence: " + actor.intelligence
+      )){
+        print("Yup, that's an attribute.");
+    }
+    if(sx == 0 && sy == 0){ GUI.color = Color.green; }
+    
+    if(sx == 0 && sy == 1){ GUI.color = Color.yellow; }
+    if(GUI.Button(
+        new Rect(XOffset()+aw, ah, aw, ah),
+        "Charisma: " + actor.charisma
+      )){
+        print("Yup, that's an attribute.");
+    }
+    if(sx == 0 && sy == 1){ GUI.color = Color.green; }
+
+    if(sx == 0 && sy == 2){ GUI.color = Color.yellow; }
+    if(GUI.Button(
+        new Rect(XOffset()+aw, 2*ah, aw, ah),
+        "Endurance: " + actor.endurance
+      )){
+        print("Yup, that's an attribute.");
+    }
+    if(sx == 0 && sy == 2){ GUI.color = Color.green; }
+    
+    if(sx == 0 && sy == 3){ GUI.color = Color.yellow; }
+    if(GUI.Button(
+        new Rect(XOffset()+aw, 3*ah, aw, ah),
+        "Perception: " + actor.perception
+      )){
+        print("Yup, that's an attribute.");
+    }
+    if(sx == 0 && sy == 3){ GUI.color = Color.green; }
+    
+    if(sx == 0 && sy == 4){ GUI.color = Color.yellow; }
+    if(GUI.Button(
+        new Rect(XOffset()+aw, 4*ah, aw, ah),
+        "Willpower: " + actor.willpower
+      )){
+        print("Yup, that's an attribute.");
+    }
+    if(sx == 0 && sy == 4){ GUI.color = Color.green; }
+    
+    if(sx == 0 && sy == 5){ GUI.color = Color.yellow; }
+    if(GUI.Button(
+        new Rect(XOffset()+aw, 5*ah, aw, ah),
+        "Agility: " + actor.agility
+      )){
+        print("Yup, that's an attribute.");
+    }
+    if(sx == 0 && sy == 5){ GUI.color = Color.green; }
+    
+    if(sx == 0 && sy == 6){ GUI.color = Color.yellow; }
+    if(GUI.Button(
+        new Rect(XOffset()+aw, 6*ah, aw, ah),
+        "Strength: " + actor.strength
+      )){
+        print("Yup, that's an attribute.");
+    }
+    if(sx == 0 && sy == 6){ GUI.color = Color.green; }
+    
+    // Render Skills
+    
+    
+    // Render Ability navigation button.
+    if(sx == -1){ GUI.color = Color.yellow; }
+    if(GUI.Button(
+        new Rect(XOffset(), Height()/4, aw, Height()/2),
+        "Abilities"
+      )){
+        Change(ABILITY);
+    }
+    if(sx == -1){ GUI.color = Color.green; }
+    
+    // Render Quest navigation button.
+    if(sx == 2){ GUI.color = Color.yellow; }
+    if(GUI.Button(
+        new Rect(XOffset()+ 3*aw, Height()/4, aw, Height()/2),
+        "Quests"
+      )){
+        print("Quests not implemented");
+    }
+    if(sx == 2){ GUI.color = Color.green; }
     
   }
 
@@ -570,5 +669,10 @@ public class Menu : MonoBehaviour{
   }
   
   void StatsInput(int button){
+    if(button == B || button == Y){ // Exit menu
+      Change(HUD);
+      actor.SetMenuOpen(false);
+      return;
+    }
   }
 }
