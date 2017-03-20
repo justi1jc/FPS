@@ -801,6 +801,7 @@ public class Actor : MonoBehaviour{
       item.healing = intelligence * (magic / 10 + 1);
       item.cooldown = 1f;
     }
+    if(!ManaCheck(item.healing)){ return; }
     Light l = item.gameObject.GetComponent<Light>();
     if(l){StartCoroutine(Glow(0.25f, Color.blue, l)); }
     item.stack = 2;
