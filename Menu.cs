@@ -22,6 +22,7 @@ public class Menu : MonoBehaviour{
   public const int TRADE     = 5; // trading menu
   public const int QUEST     = 6; // quest menu
   public const int ABILITY   = 7; // abilities menu
+  public const int STATS      = 8; // rpg stats menu
   
   // Button constants
   public const int UP    = 0;
@@ -93,6 +94,9 @@ public class Menu : MonoBehaviour{
         break;
       case ABILITY:
         RenderAbility();
+        break;
+      case STATS:
+        RenderStats();
         break;
     }
   }
@@ -364,6 +368,11 @@ public class Menu : MonoBehaviour{
     }
     if(sx == -1){ GUI.color = Color.green; }
   }
+  
+  /* Render menu for viewing/editing stats. */
+  void RenderStats(){
+    
+  }
 
   /* Call appropriate menu's focus update handler. */
   void UpdateFocus(){
@@ -388,6 +397,9 @@ public class Menu : MonoBehaviour{
         break;
       case ABILITY:
         AbilityFocus();
+        break;
+      case STATS:
+        StatsFocus();
         break;
     }
   }
@@ -430,6 +442,8 @@ public class Menu : MonoBehaviour{
     sxMin = -1;
     if(sx != 0){ sy = 0; }
     SecondaryBounds();
+  }
+  void StatsFocus(){
   }
  
   /* Receives button press from Actor. */
@@ -478,6 +492,9 @@ public class Menu : MonoBehaviour{
         break;
       case ABILITY:
         AbilityInput(button);
+        break;
+      case STATS:
+        StatsInput(button);
         break;
     }
   }
@@ -550,5 +567,8 @@ public class Menu : MonoBehaviour{
     if(sx == 1){
       if(button == A){ print("Quests not implemented"); return; }
     }
+  }
+  
+  void StatsInput(int button){
   }
 }
