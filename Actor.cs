@@ -757,6 +757,12 @@ public class Actor : MonoBehaviour{
       item.chargeMax = 25;
       item.damage = strength * (unarmed / 10 + 1);
     }
+    if(item.charge == item.chargeMax -1 || use == 4){
+      int dmg = (item.damage * item.charge) / item.chargeMax;
+      if(StaminaCheck(dmg)){ item.Use(use); }
+      else{ item.charge = 0; }
+      return;
+    }
     item.Use(use);
   }
   
