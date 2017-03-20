@@ -160,16 +160,10 @@ public class Menu : MonoBehaviour{
     str = "Mana: " + actor.mana;
     Box(str, XOffset(), 14 * ch, cw, ch);
     
+    
     // Display Item info
-    GUI.Box(
-      new Rect(
-            XOffset() + Width() - Width()/cbsx,
-            (9 * Height()/cbsy),
-            Width()/cbsx,
-            Height()/cbsy
-          ),
-      actor.ItemInfo()
-    );
+    str = actor.ItemInfo();
+    Box(str, XOffset() + 2*cw, 14*ch, cw, ch);
     
     // Display item in reach, if it exists.
     if(actor.itemInReach){

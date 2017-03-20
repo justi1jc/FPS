@@ -179,6 +179,7 @@ public class Actor : MonoBehaviour{
   */
   void AssignPlayer(int player){
     playerNumber = player;
+    StartCoroutine(RegenRoutine());
     if(player <5 && player > 0){
       SetMenuOpen(false);
       if(head){ menu = head.GetComponent<Menu>(); }
@@ -228,6 +229,12 @@ public class Actor : MonoBehaviour{
     }
   }
   
+  IEnumerator RegenRoutine(){
+    while(health >= 0){
+      RegenCondition();
+      yield return new WaitForSeconds(0.2f);
+    }
+  }
   
   /* Handles input from keyboard. */
   IEnumerator KeyboardInputRoutine(){
@@ -1171,6 +1178,24 @@ public class Actor : MonoBehaviour{
     return false;
   }
   
+  /* Rolls to regenerate different conditions */
+  public void RegenCondition(){
+    if(Random.Range(0, 100) <= health && health != 0){
+      health++;
+      if(health > 100){ health = 100; }
+    }
+    
+    if(EnduranceCheck(20)){
+      stamina++;
+      if(stamina > 100){ stamina = 100; }
+    }
+    
+    if(MagicCheck(25)){
+      mana++;
+      if(mana > 100){ mana = 100; }
+    }
+  }
+  
   /* Returns true and subtracts mana if sufficient. */
   public bool ManaCheck(int cost){
     if(mana == 0){ return false; }
@@ -1197,6 +1222,15 @@ public class Actor : MonoBehaviour{
   public bool EnduranceCheck(int damage = 5){
     int enduranceBonus = health +  endurance * 5;
     int successSpace = enduranceBonus - damage; // Max 95
+    int roll = Random.Range(0, 100);
+    if(roll <= successSpace){ return true; }
+    return false;
+  }
+  
+  /* Returns true if player passes magic test.  */
+  public bool MagicCheck(int difficulty = 0){
+    int successSpace = willpower * magic;
+    successSpace -= difficulty;
     int roll = Random.Range(0, 100);
     if(roll <= successSpace){ return true; }
     return false;
