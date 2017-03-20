@@ -399,32 +399,24 @@ public class Actor : MonoBehaviour{
     if(rb == null){ return; }
     float pace = speed;
     Vector3 pos = body.transform.position;
-    Vector3 dest = new Vector3();
     Vector3 dir  = new Vector3();
     if(sprinting){ pace *= 1.75f; }
     if(!jumpReady){ pace *= 0.75f; }
     switch(direction){
       case 0:
-        dest = pos + body.transform.forward * pace;
         dir = body.transform.forward;
         break;
       case 1:
-        dest = pos + body.transform.forward * -pace;
         dir = -body.transform.forward;
         break;
       case 2:
-        dest = pos + body.transform.right * -pace;
         dir = -body.transform.right;
         break;
       case 3:
-        dest = pos + body.transform.right * pace;
         dir = body.transform.right;
         break;
     }
-    print("Direction: " + direction + "Good?" + MoveCheck(dir, 3 * pace));
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
-    dir += body.transform.up * 45f;
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    ExecuteMove(pace, dir);
   }
   
   /* Move relative to transform.forward and transform.right */
@@ -436,11 +428,8 @@ public class Actor : MonoBehaviour{
     Rigidbody rb =  body.GetComponent<Rigidbody>();
     float pace = speed;
     if(sprinting){ pace *= 1.75f; }
-    if(!jumpReady){ pace *= 0.75f; } 
-    Vector3 dest = body.transform.position + (pace * dir);
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
-    dir += body.transform.up * 45f;
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    if(!jumpReady){ pace *= 0.75f; }
+    ExecuteMove(pace, dir);
   }
   
   /* Move relative to x and z positions.(Used for AI) */
@@ -451,10 +440,34 @@ public class Actor : MonoBehaviour{
     float pace = speed;
     if(sprinting){ pace *= 1.75f; }
     if(!jumpReady){ pace *= 0.75f; }
-    Vector3 dest = body.transform.position + (pace * dir);
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    ExecuteMove(pace, dir);
+  }
+  
+  /* Attempts to move the Actor. Applies stamina limitations.
+     If cannot move, tries to move at 45 degree angle */
+  void ExecuteMove(float pace, Vector3 dir){
+    Vector3 dest = body.transform.position +  dir * pace;
+    Rigidbody rb = body.GetComponent<Rigidbody>();
+    int runCost = (int)Vector3.Magnitude(pace * dir * 6);
+    if(EnduranceCheck(50)){ runCost = 0; }
+    if(MoveCheck(dir, pace * 3)){
+      if(StaminaCheck(runCost)){ rb.MovePosition(dest); }
+      else{
+        dest = body.transform.position +  speed * dir;
+        rb.MovePosition(dest);
+      }
+      return;
+    }
     dir += body.transform.up * 45f;
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    if(MoveCheck(dir, pace * 3)){
+      pace = speed;
+      dest = body.transform.position +  dir * pace;
+      if(StaminaCheck(runCost)){ rb.MovePosition(dest); }
+      else{
+        dest = body.transform.position + dir * speed;
+        rb.MovePosition(dest);
+      }
+    }
   }
   
   /* Returns true if the Actor has clearance to move in a particular direction
@@ -585,6 +598,7 @@ public class Actor : MonoBehaviour{
     skillPoints += 25;
   }
   
+  
   /* Applies damage from attack. Ignores active weapon. */
   public void ReceiveDamage(int damage, GameObject weapon){
     
@@ -607,9 +621,18 @@ public class Actor : MonoBehaviour{
       else{ StartCoroutine(FallDown()); }
     }
     if(health > healthMax){ health = healthMax; }
-    
-    
-    
+  }
+  
+  /* Reduce stamina.*/
+  public void ReceiveFatigue(int amount){
+    stamina -= amount;
+    if(stamina < 0){ stamina = 0; }
+  }
+  
+  /* Reduces mana. */
+  public void ReceiveManaDrain(int amount){
+    mana -= amount;
+    if(mana < 0){ mana = 0; }
   }
   
   /* Actor rocks a bit. */
@@ -1120,6 +1143,21 @@ public class Actor : MonoBehaviour{
     //TODO Make one response for NPC, one for Player
   }
   
+  
+  /* Returns true and subtracts stamina if sufficient. */
+  public bool StaminaCheck(int cost){
+    if(stamina == 0){ return false; }
+    if(cost <= stamina){ stamina-= cost; return true; }
+    return false;
+  }
+  
+  /* Returns true and subtracts mana if sufficient. */
+  public bool ManaCheck(int cost){
+    if(mana == 0){ return false; }
+    if(cost <= mana){ mana-= cost; return true; }
+    return false;
+  }
+  
   /* Returns true if player passes stealth check. */
   public bool StealthCheck(int viewerPerception = 0, int viewerDistance = 3){
     int sneakBonus = crouched ? 25 : 0;     // Max 25
@@ -1143,5 +1181,7 @@ public class Actor : MonoBehaviour{
     if(roll <= successSpace){ return true; }
     return false;
   }
+  
+  
      
 }

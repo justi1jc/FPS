@@ -145,12 +145,20 @@ public class Menu : MonoBehaviour{
   void RenderHUD(){
     // Display Condition bars
     int cbsx = 3;  // condition bar width scale
-    int cbsy = 10; // condition bar height scale
-    GUI.Box( 
-      new Rect(XOffset(), (9 * Height()/cbsy), Width()/cbsx, Height()/cbsy),
-      ("HP: " + actor.health)
-    );
+    int cbsy = 20; // condition bar height scale
+    int ch = Height()/15; // Condition height
+    int cw = Width()/3;   // Condition width
     
+    string str;
+    
+    str = "Health: " + actor.health;
+    Box(str, XOffset(), 12 * ch, cw, ch);
+    
+    str = "Stamina: " + actor.stamina;
+    Box(str, XOffset(), 13 * ch, cw, ch);
+    
+    str = "Mana: " + actor.mana;
+    Box(str, XOffset(), 14 * ch, cw, ch);
     
     // Display Item info
     GUI.Box(
