@@ -4,10 +4,16 @@ Vision: Provide first-person shooter roleplaying gameplay similar to the recent
 installments of The Elder Scrolls and Fallout series, albeit with the addition of 
 couch-multiplayer coop.
 
+Strategy:
+I aim to assemble a minimally-viable feature-complete version of the game.
+I then aim to improve the user-experience by revisiting existing features.
+After this stage, my aim will be to provide compelling assets to immerse the
+player in a rich game world.
+
 Current version: 0.1.0
 
     Current features
-Menus(Inventory)
+Menus(Inventory, Ability, Speech)
 Input(In-Game)
 Actor(Movement, Item Interaction, condition(health), Combat AI)
 Items(charging, pickup, drop, use, thrown type, ranged melee)
@@ -17,7 +23,7 @@ Session(SpawnEntity);
 Speech(Speech tree)
     Pending features for 1.0.0
 
-Menus(Main, Save&Load, Options, Speech, Trade, Loot, Quest, level-up/stats, reticle)
+Menus(Main, Save&Load, Options, Trade, Loot, Quest, level-up/stats, reticle)
 Input(Menu)
 Actor(XP/RPG Stats, Ambient AI, condition(fatigue, mana, stat mods, effects&perks))
 Items(Warp door, shield type, damage&repair, containers, two-handed items)
@@ -28,7 +34,7 @@ Speech(speech tree, Trade system)
 Quest(Quest)
 
     What needs to be done for 0.2.0 (Basic RPG gameplay)
-Menus(Speech, Trade, Loot, level-up/stats)
+Menus(Trade, Loot, level-up/stats)
 Inventory(Looting)
 Speech(trade system)
 
