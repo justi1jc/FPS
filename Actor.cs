@@ -115,8 +115,9 @@ public class Actor : MonoBehaviour{
 
   
   // Leveling
-  int level = 0;
-  int xp    = 0;
+  public int nextLevel = 0;
+  public int level = 0;
+  public int xp    = 0;
   
   // abilities
   public bool[] abilities = {true, false, false, false, false};
@@ -148,6 +149,7 @@ public class Actor : MonoBehaviour{
     raItem.holder = this;
     laItem.holder = this;
     AssignPlayer(playerNumber);
+    if(level == 0){ LevelUp(); }
   }
   
   
@@ -568,6 +570,19 @@ public class Actor : MonoBehaviour{
   /* Toggles model's crouch */
   void ToggleCrouch(){
     crouched = !crouched;
+  }
+  
+  /* Add xp and check for levelup conditions. */
+  public void ReceiveXp(int amount){
+    xp += amount;
+    if(xp > nextLevel){ LevelUp(); }
+  }
+  
+  /* Apply skill points, calculate xp for next level. */
+  public void LevelUp(){
+    level++;
+    nextLevel = level * level * level * 100;
+    skillPoints += 25;
   }
   
   /* Applies damage from attack. Ignores active weapon. */

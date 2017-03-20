@@ -437,6 +437,16 @@ public class Menu : MonoBehaviour{
     str = "Strength: " + actor.strength;
     Box(str,XOffset()+aw, aOff+6*ah, aw, ah);
     
+    str = "Level: " + actor.level;
+    Box(str, XOffset()+aw, 0, aw, ah);
+    
+    str = "XP: " + actor.xp;
+    Box(str, XOffset()+aw, ah, aw, ah);
+    
+    str = "Next level: " + actor.nextLevel;
+    Box(str, XOffset()+aw, 2*ah, aw, ah);
+    
+    
     // Render Skills
     str = "Remaining Skill Points: " + actor.skillPoints;
     Box(str, sOff, 0, aw, sh);
