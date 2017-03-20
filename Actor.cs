@@ -823,6 +823,12 @@ public class Actor : MonoBehaviour{
       item.damage = -(intelligence * (magic / 10 + 1));
       item.effectiveDamage = 0;
     }
+    if(use == 4){
+      int hl = -1 * (item.damage * item.charge) / item.chargeMax;
+      if(ManaCheck(hl)){ item.ammo = 1; item.Use(use); }
+      else{ item.charge = 0; }
+      return;
+    }
     item.ammo = 1;
     item.Use(use);
   }
