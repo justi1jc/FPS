@@ -458,7 +458,8 @@ public class Actor : MonoBehaviour{
       }
       return;
     }
-    dir += body.transform.up * 45f;
+    dir += body.transform.up;
+    dir = dir.normalized;
     if(MoveCheck(dir, pace * 3)){
       pace = speed;
       dest = body.transform.position +  dir * pace;
