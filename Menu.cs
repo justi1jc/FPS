@@ -69,6 +69,33 @@ public class Menu : MonoBehaviour{
     }
   }
   
+  void Box(string text, int posx, int posy, int scalex, int scaley){
+    GUI.color = Color.green;
+    GUI.Box(new Rect(posx, posy, scalex, scaley), text);
+  }
+  
+  // Convenience method to render button and return if it's been clicked.
+  bool Button(
+    string text,
+    int posx,
+    int posy,
+    int scalex,
+    int scaley,
+    int x = -10000,
+    int y = -10000
+  ){
+    GUI.color = Color.green; 
+    if( (x == -10000 || sx == x ) && (y == -10000 || sy == y) ){
+      GUI.color = Color.yellow;
+    }
+    bool click = GUI.Button(new Rect(posx, posy, scalex, scaley), text);
+    if( (x == -10000 || sx == x ) && (y == -10000 || sy == y) ){
+      GUI.color = Color.green;
+    }
+    return click;
+  }
+  
+  
   void OnGUI(){
     switch(activeMenu){
       case HUD:
@@ -372,10 +399,11 @@ public class Menu : MonoBehaviour{
   
   /* Render menu for viewing/editing stats. */
   void RenderStats(){
-    int ah = Height()/7; // Attribute height
-    int aw = Width()/4;  // Attribute width
-    int sh = Height()/5; // Skill height
-    int sw = Height()/4; // Skill width
+    int ah = Height()/14; // Attribute height
+    int aw = Width()/6;  // Attribute width
+    int aOff = (int)(3.5 * ah); // y Offset for attributes
+    int sh = Height()/6; // Skill height
+    int sOff = 2 * aw + XOffset();// x offset for skills
     
     // Render background
     GUI.Box(
@@ -384,92 +412,77 @@ public class Menu : MonoBehaviour{
     );
     GUI.color = Color.green; // Set color to green as default.
     
+    
     // Render attribute column 
-    if(sx == 0 && sy == 0){ GUI.color = Color.yellow; }
-    if(GUI.Button(
-        new Rect(XOffset()+aw, 0, aw, ah),
-        "Intelligence: " + actor.intelligence
-      )){
-        print("Yup, that's an attribute.");
-    }
-    if(sx == 0 && sy == 0){ GUI.color = Color.green; }
+    string str = "";
     
-    if(sx == 0 && sy == 1){ GUI.color = Color.yellow; }
-    if(GUI.Button(
-        new Rect(XOffset()+aw, ah, aw, ah),
-        "Charisma: " + actor.charisma
-      )){
-        print("Yup, that's an attribute.");
-    }
-    if(sx == 0 && sy == 1){ GUI.color = Color.green; }
-
-    if(sx == 0 && sy == 2){ GUI.color = Color.yellow; }
-    if(GUI.Button(
-        new Rect(XOffset()+aw, 2*ah, aw, ah),
-        "Endurance: " + actor.endurance
-      )){
-        print("Yup, that's an attribute.");
-    }
-    if(sx == 0 && sy == 2){ GUI.color = Color.green; }
+    str = "Intelligence: " + actor.intelligence;
+    Box(str,XOffset()+aw, aOff+0, aw, ah);
     
-    if(sx == 0 && sy == 3){ GUI.color = Color.yellow; }
-    if(GUI.Button(
-        new Rect(XOffset()+aw, 3*ah, aw, ah),
-        "Perception: " + actor.perception
-      )){
-        print("Yup, that's an attribute.");
-    }
-    if(sx == 0 && sy == 3){ GUI.color = Color.green; }
+    str = "Charisma: " + actor.charisma;
+    Box(str,XOffset()+aw, aOff+ah, aw, ah);
     
-    if(sx == 0 && sy == 4){ GUI.color = Color.yellow; }
-    if(GUI.Button(
-        new Rect(XOffset()+aw, 4*ah, aw, ah),
-        "Willpower: " + actor.willpower
-      )){
-        print("Yup, that's an attribute.");
-    }
-    if(sx == 0 && sy == 4){ GUI.color = Color.green; }
+    str = "Endurance: " + actor.endurance;
+    Box(str,XOffset()+aw, aOff+2*ah, aw, ah);
     
-    if(sx == 0 && sy == 5){ GUI.color = Color.yellow; }
-    if(GUI.Button(
-        new Rect(XOffset()+aw, 5*ah, aw, ah),
-        "Agility: " + actor.agility
-      )){
-        print("Yup, that's an attribute.");
-    }
-    if(sx == 0 && sy == 5){ GUI.color = Color.green; }
+    str = "Perception: " + actor.perception;
+    Box(str,XOffset()+aw, aOff+3*ah, aw, ah);
     
-    if(sx == 0 && sy == 6){ GUI.color = Color.yellow; }
-    if(GUI.Button(
-        new Rect(XOffset()+aw, 6*ah, aw, ah),
-        "Strength: " + actor.strength
-      )){
-        print("Yup, that's an attribute.");
-    }
-    if(sx == 0 && sy == 6){ GUI.color = Color.green; }
+    str = "Agility: " + actor.agility;
+    Box(str,XOffset()+aw, aOff+4*ah, aw, ah);
+    
+    str = "Willpower: " + actor.willpower;
+    Box(str,XOffset()+aw, aOff+5*ah, aw, ah);
+    
+    str = "Strength: " + actor.strength;
+    Box(str,XOffset()+aw, aOff+6*ah, aw, ah);
     
     // Render Skills
+    str = "Remaining Skill Points: " + actor.skillPoints;
+    Box(str, sOff, 0, aw, sh);
     
+    str = "Ranged: " + actor.ranged;
+    if(Button(str, sOff, sh, aw, sh, 0, 0)){
+      if(actor.skillPoints > 0 && actor.ranged < 100){
+        actor.skillPoints--; actor.ranged++;
+      }
+    }
+    str = "Melee: " + actor.melee;
+    if(Button(str, sOff, 2*sh, aw, sh, 0, 1)){
+      if(actor.skillPoints > 0 && actor.melee < 100){
+        actor.skillPoints--; actor.melee++;
+      }
+    }
+    str = "Unarmed: " + actor.unarmed;
+    if(Button(str, sOff, 3*sh, aw, sh, 0, 2)){
+      if(actor.skillPoints > 0 && actor.unarmed < 100){
+        actor.skillPoints--; actor.unarmed++;
+      }
+    }
+    str = "Magic: " + actor.magic;
+    if(Button(str, sOff, 4*sh, aw, sh, 0, 3)){
+      if(actor.skillPoints > 0 && actor.magic < 100){
+        actor.skillPoints--; actor.magic++;
+      }
+    }
+    str = "Stealth: " + actor.stealth;
+    if(Button(str, sOff, 5*sh, aw, sh, 0, 4)){
+      if(actor.skillPoints > 0 && actor.stealth < 100){
+        actor.skillPoints--; actor.stealth++;
+      }
+    }
     
     // Render Ability navigation button.
-    if(sx == -1){ GUI.color = Color.yellow; }
-    if(GUI.Button(
-        new Rect(XOffset(), Height()/4, aw, Height()/2),
-        "Abilities"
-      )){
-        Change(ABILITY);
+    str = "Abilities";
+    if(Button(str, XOffset(), Height()/4, aw, Height()/2, -1 )){
+      Change(ABILITY);
     }
-    if(sx == -1){ GUI.color = Color.green; }
-    
+       
     // Render Quest navigation button.
-    if(sx == 2){ GUI.color = Color.yellow; }
-    if(GUI.Button(
-        new Rect(XOffset()+ 3*aw, Height()/4, aw, Height()/2),
-        "Quests"
-      )){
-        print("Quests not implemented");
+    str = "Quests";
+    if(Button(str, XOffset()+5*aw, Height()/4, aw, Height()/2, 1)){
+      print("Quests not implemented.");
     }
-    if(sx == 2){ GUI.color = Color.green; }
     
   }
 
@@ -543,6 +556,13 @@ public class Menu : MonoBehaviour{
     SecondaryBounds();
   }
   void StatsFocus(){
+    syMax = 4;
+    syMin = 0;
+    sxMax = 1;
+    sxMin = -1;
+    if(sx != 0){ sy = 0; }
+    SecondaryBounds();
+    
   }
  
   /* Receives button press from Actor. */
@@ -664,7 +684,7 @@ public class Menu : MonoBehaviour{
       if(button == LT){ actor.EquipAbilitySecondary(selections[sy]); return;}
     }
     if(sx == 1){
-      if(button == A){ print("Quests not implemented"); return; }
+      if(button == A){ Change(STATS); return; }
     }
   }
   
@@ -674,5 +694,38 @@ public class Menu : MonoBehaviour{
       actor.SetMenuOpen(false);
       return;
     }
+    
+    if(sx == -1){ if(button == A){ Change(ABILITY); return; } }
+    if(sx == 0 && button == A && actor.skillPoints > 0){
+      switch(sy){
+        case 0:
+          if(actor.ranged < 100){
+            actor.skillPoints--; actor.ranged++;
+          }
+          break;
+        case 1:
+          if(actor.melee < 100){
+            actor.skillPoints--; actor.melee++;
+          }
+          break;
+        case 2:
+          if(actor.unarmed < 100){
+            actor.skillPoints--; actor.unarmed++;
+          }
+          break;
+        case 3:
+          if(actor.magic < 100){
+            actor.skillPoints--; actor.magic++;
+          }
+          break;
+        case 4:
+          if(actor.stealth < 100){
+            actor.skillPoints--; actor.stealth++;
+          }
+          break;
+      }
+    }
+    if(sx == 1){ if(button == A){ print("Quests not implented."); return; } }
+    
   }
 }

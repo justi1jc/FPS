@@ -106,6 +106,7 @@ public class Actor : MonoBehaviour{
 
   
   // Skill levels, max 100
+  public int skillPoints = 100;
   public int ranged  = 50;
   public int melee   = 50;
   public int unarmed = 50;
