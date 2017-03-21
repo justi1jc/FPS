@@ -334,10 +334,58 @@ public class Menu : MonoBehaviour{
       }
       if(sy==3 && sx == 0){ GUI.color = Color.green; }
     }
+    
+    if(Button("Trade", XOffset(), Height()/2, iw, ih)){
+      Change(TRADE);
+    }
   }
   
   
-  void RenderTrade(){}
+  void RenderTrade(){
+    int x, y; // To set up positioning before Box/Button call.
+    string str; // To set up Box/Button call
+    Box("", XOffset(), 0, Width(), Height());
+    int iw = Width()/4;
+    int ih = Height()/20;
+    
+    scrollPosition = GUI.BeginScrollView(
+      new Rect(XOffset() +iw, Height()/2, Width()-iw, Height()),
+      scrollPosition,
+      new Rect(0, 0, 200, 200)
+    );
+    
+    List<Data> inv = actor.inventory;
+    
+    for(int i = 0; i < inv.Count; i++){
+      GUI.color = Color.green; 
+      Data item = inv[i];
+      str ="";
+      if(i == actor.primaryIndex){ str += "Right Hand "; }
+      if(i == actor.secondaryIndex){ str += "Left Hand "; }
+      string name = item.displayName;
+      string info = " " + item.stack + "/" + item.stackSize;
+      str += name + info;
+      if(Button(str, 0, ih * i, iw + iw/2, ih, 0, i)){
+        actor.Equip(i);
+      }
+      str = "DROP";
+      if(Button(str, iw + iw/2, ih * i, iw/2, ih, 0, i)){
+        actor.DiscardItem(i);
+      }
+      
+    }
+    GUI.EndScrollView();
+    
+    str = "Talk";
+    x = XOffset() + Width() - iw;
+    y = Height()/2;
+    if(Button(str, x, y, iw, ih, 1)){
+      Change(SPEECH);
+    }
+        
+  }
+  
+  
   void RenderQuest(){}
   void RenderAbility(){
     GUI.Box(
@@ -680,7 +728,14 @@ public class Menu : MonoBehaviour{
     }
   }
   
-  void TradeInput(int button){}
+  void TradeInput(int button){
+    if(button == B || button == Y){ // Exit menu
+      Change(HUD);
+      actor.SetMenuOpen(false);
+      return;
+    }
+  }
+  
   void QuestInput(int button){}
   void AbilityInput(int button){
     if(button == B || button == Y){ // Exit menu
