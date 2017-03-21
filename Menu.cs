@@ -22,6 +22,7 @@ public class Menu : MonoBehaviour{
   public const int TRADE     = 5; // trading menu
   public const int QUEST     = 6; // quest menu
   public const int ABILITY   = 7; // abilities menu
+  public const int STATS      = 8; // rpg stats menu
   
   // Button constants
   public const int UP    = 0;
@@ -49,7 +50,7 @@ public class Menu : MonoBehaviour{
   public void Change(int menu){
     if(!actor){ activeMenu = NONE; }
     if(menu == ABILITY){ AbilitySetup(); }
-    if(menu <= ABILITY && menu >= NONE){
+    if(menu <= STATS && menu >= NONE){
       activeMenu = menu;
       px = py = sx = sy = 0;
       UpdateFocus();
@@ -67,6 +68,33 @@ public class Menu : MonoBehaviour{
       }
     }
   }
+  
+  void Box(string text, int posx, int posy, int scalex, int scaley){
+    GUI.color = Color.green;
+    GUI.Box(new Rect(posx, posy, scalex, scaley), text);
+  }
+  
+  // Convenience method to render button and return if it's been clicked.
+  bool Button(
+    string text,
+    int posx,
+    int posy,
+    int scalex,
+    int scaley,
+    int x = -10000,
+    int y = -10000
+  ){
+    GUI.color = Color.green; 
+    if( (x == -10000 || sx == x ) && (y == -10000 || sy == y) ){
+      GUI.color = Color.yellow;
+    }
+    bool click = GUI.Button(new Rect(posx, posy, scalex, scaley), text);
+    if( (x == -10000 || sx == x ) && (y == -10000 || sy == y) ){
+      GUI.color = Color.green;
+    }
+    return click;
+  }
+  
   
   void OnGUI(){
     switch(activeMenu){
@@ -94,6 +122,9 @@ public class Menu : MonoBehaviour{
       case ABILITY:
         RenderAbility();
         break;
+      case STATS:
+        RenderStats();
+        break;
     }
   }
   int Height(){
@@ -114,23 +145,25 @@ public class Menu : MonoBehaviour{
   void RenderHUD(){
     // Display Condition bars
     int cbsx = 3;  // condition bar width scale
-    int cbsy = 10; // condition bar height scale
-    GUI.Box( 
-      new Rect(XOffset(), (9 * Height()/cbsy), Width()/cbsx, Height()/cbsy),
-      ("HP: " + actor.health)
-    );
+    int cbsy = 20; // condition bar height scale
+    int ch = Height()/15; // Condition height
+    int cw = Width()/3;   // Condition width
+    
+    string str;
+    
+    str = "Health: " + actor.health;
+    Box(str, XOffset(), 12 * ch, cw, ch);
+    
+    str = "Stamina: " + actor.stamina;
+    Box(str, XOffset(), 13 * ch, cw, ch);
+    
+    str = "Mana: " + actor.mana;
+    Box(str, XOffset(), 14 * ch, cw, ch);
     
     
     // Display Item info
-    GUI.Box(
-      new Rect(
-            XOffset() + Width() - Width()/cbsx,
-            (9 * Height()/cbsy),
-            Width()/cbsx,
-            Height()/cbsy
-          ),
-      actor.ItemInfo()
-    );
+    str = actor.ItemInfo();
+    Box(str, XOffset() + 2*cw, 14*ch, cw, ch);
     
     // Display item in reach, if it exists.
     if(actor.itemInReach){
@@ -168,6 +201,7 @@ public class Menu : MonoBehaviour{
       new Rect(XOffset(), 0, Width(), Height()),
       ""
     );
+    GUI.color = Color.green;
     
     int iw = Width()/4;
     int ih = Height()/20;
@@ -349,9 +383,9 @@ public class Menu : MonoBehaviour{
     if(sx == 1){ GUI.color = Color.yellow; }
     if(GUI.Button(
         new Rect(XOffset() + Width() - iw, Height()/2, iw, ih),
-        "Quests"
+        "Stats"
       )){
-        print("Quests not implemented");
+        Change(STATS);
     }
     if(sx == 1){ GUI.color = Color.green; }
     
@@ -363,6 +397,105 @@ public class Menu : MonoBehaviour{
         Change(INVENTORY);
     }
     if(sx == -1){ GUI.color = Color.green; }
+  }
+  
+  /* Render menu for viewing/editing stats. */
+  void RenderStats(){
+    int ah = Height()/14; // Attribute height
+    int aw = Width()/6;  // Attribute width
+    int aOff = (int)(3.5 * ah); // y Offset for attributes
+    int sh = Height()/6; // Skill height
+    int sOff = 2 * aw + XOffset();// x offset for skills
+    
+    // Render background
+    GUI.Box(
+      new Rect(XOffset(), 0, Width(), Height()),
+      ""
+    );
+    GUI.color = Color.green; // Set color to green as default.
+    
+    
+    // Render attribute column 
+    string str = "";
+    
+    str = "Intelligence: " + actor.intelligence;
+    Box(str,XOffset()+aw, aOff+0, aw, ah);
+    
+    str = "Charisma: " + actor.charisma;
+    Box(str,XOffset()+aw, aOff+ah, aw, ah);
+    
+    str = "Endurance: " + actor.endurance;
+    Box(str,XOffset()+aw, aOff+2*ah, aw, ah);
+    
+    str = "Perception: " + actor.perception;
+    Box(str,XOffset()+aw, aOff+3*ah, aw, ah);
+    
+    str = "Agility: " + actor.agility;
+    Box(str,XOffset()+aw, aOff+4*ah, aw, ah);
+    
+    str = "Willpower: " + actor.willpower;
+    Box(str,XOffset()+aw, aOff+5*ah, aw, ah);
+    
+    str = "Strength: " + actor.strength;
+    Box(str,XOffset()+aw, aOff+6*ah, aw, ah);
+    
+    str = "Level: " + actor.level;
+    Box(str, XOffset()+aw, 0, aw, ah);
+    
+    str = "XP: " + actor.xp;
+    Box(str, XOffset()+aw, ah, aw, ah);
+    
+    str = "Next level: " + actor.nextLevel;
+    Box(str, XOffset()+aw, 2*ah, aw, ah);
+    
+    
+    // Render Skills
+    str = "Remaining Skill Points: " + actor.skillPoints;
+    Box(str, sOff, 0, aw, sh);
+    
+    str = "Ranged: " + actor.ranged;
+    if(Button(str, sOff, sh, aw, sh, 0, 0)){
+      if(actor.skillPoints > 0 && actor.ranged < 100){
+        actor.skillPoints--; actor.ranged++;
+      }
+    }
+    str = "Melee: " + actor.melee;
+    if(Button(str, sOff, 2*sh, aw, sh, 0, 1)){
+      if(actor.skillPoints > 0 && actor.melee < 100){
+        actor.skillPoints--; actor.melee++;
+      }
+    }
+    str = "Unarmed: " + actor.unarmed;
+    if(Button(str, sOff, 3*sh, aw, sh, 0, 2)){
+      if(actor.skillPoints > 0 && actor.unarmed < 100){
+        actor.skillPoints--; actor.unarmed++;
+      }
+    }
+    str = "Magic: " + actor.magic;
+    if(Button(str, sOff, 4*sh, aw, sh, 0, 3)){
+      if(actor.skillPoints > 0 && actor.magic < 100){
+        actor.skillPoints--; actor.magic++;
+      }
+    }
+    str = "Stealth: " + actor.stealth;
+    if(Button(str, sOff, 5*sh, aw, sh, 0, 4)){
+      if(actor.skillPoints > 0 && actor.stealth < 100){
+        actor.skillPoints--; actor.stealth++;
+      }
+    }
+    
+    // Render Ability navigation button.
+    str = "Abilities";
+    if(Button(str, XOffset(), Height()/4, aw, Height()/2, -1 )){
+      Change(ABILITY);
+    }
+       
+    // Render Quest navigation button.
+    str = "Quests";
+    if(Button(str, XOffset()+5*aw, Height()/4, aw, Height()/2, 1)){
+      print("Quests not implemented.");
+    }
+    
   }
 
   /* Call appropriate menu's focus update handler. */
@@ -388,6 +521,9 @@ public class Menu : MonoBehaviour{
         break;
       case ABILITY:
         AbilityFocus();
+        break;
+      case STATS:
+        StatsFocus();
         break;
     }
   }
@@ -430,6 +566,15 @@ public class Menu : MonoBehaviour{
     sxMin = -1;
     if(sx != 0){ sy = 0; }
     SecondaryBounds();
+  }
+  void StatsFocus(){
+    syMax = 4;
+    syMin = 0;
+    sxMax = 1;
+    sxMin = -1;
+    if(sx != 0){ sy = 0; }
+    SecondaryBounds();
+    
   }
  
   /* Receives button press from Actor. */
@@ -478,6 +623,9 @@ public class Menu : MonoBehaviour{
         break;
       case ABILITY:
         AbilityInput(button);
+        break;
+      case STATS:
+        StatsInput(button);
         break;
     }
   }
@@ -548,7 +696,48 @@ public class Menu : MonoBehaviour{
       if(button == LT){ actor.EquipAbilitySecondary(selections[sy]); return;}
     }
     if(sx == 1){
-      if(button == A){ print("Quests not implemented"); return; }
+      if(button == A){ Change(STATS); return; }
     }
+  }
+  
+  void StatsInput(int button){
+    if(button == B || button == Y){ // Exit menu
+      Change(HUD);
+      actor.SetMenuOpen(false);
+      return;
+    }
+    
+    if(sx == -1){ if(button == A){ Change(ABILITY); return; } }
+    if(sx == 0 && button == A && actor.skillPoints > 0){
+      switch(sy){
+        case 0:
+          if(actor.ranged < 100){
+            actor.skillPoints--; actor.ranged++;
+          }
+          break;
+        case 1:
+          if(actor.melee < 100){
+            actor.skillPoints--; actor.melee++;
+          }
+          break;
+        case 2:
+          if(actor.unarmed < 100){
+            actor.skillPoints--; actor.unarmed++;
+          }
+          break;
+        case 3:
+          if(actor.magic < 100){
+            actor.skillPoints--; actor.magic++;
+          }
+          break;
+        case 4:
+          if(actor.stealth < 100){
+            actor.skillPoints--; actor.stealth++;
+          }
+          break;
+      }
+    }
+    if(sx == 1){ if(button == A){ print("Quests not implented."); return; } }
+    
   }
 }
