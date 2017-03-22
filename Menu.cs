@@ -62,6 +62,8 @@ public class Menu : MonoBehaviour{
       if(menu == TRADE && actor && actor.interlocutor){
         selling = new List<Data>(actor.inventory);
         buying = new List<Data>(actor.interlocutor.inventory);
+        sold = new List<Data>();
+        bought = new List<Data>();
         print("Selling count:"+ selling.Count);
         balance = 0;
       }
@@ -360,12 +362,11 @@ public class Menu : MonoBehaviour{
     int ih = Height()/20;
     
     scrollPosition = GUI.BeginScrollView(
-      new Rect(0, Height()/2, iw, Height()/2),
+      new Rect(iw, Height()/2, iw, Height()/2),
       scrollPosition,
       new Rect(0, 0, 200, 200)
     );
     GUI.color = Color.green;
-    //Button("Whee", 0, 0, iw, ih);    
 
     for(int i = 0; i < selling.Count; i++){
       y = i*ih;
@@ -374,6 +375,7 @@ public class Menu : MonoBehaviour{
       if(Button(str, 0, y, iw, ih, 0, i)){
         Data item = selling[i];
         selling.Remove(item);
+        sold.Add(item);
         buying.Add(item);
         balance -= 10;
       }
@@ -381,6 +383,25 @@ public class Menu : MonoBehaviour{
     
     GUI.EndScrollView();
     
+    scrollPositionB = GUI.BeginScrollView(
+      new Rect(2*iw, Height()/2, iw, Height()/2),
+      scrollPositionB,
+      new Rect(0, 0, 200, 200)
+    );
+
+    for(int i = 0; i < buying.Count; i++){
+      y = i*ih;
+      str = buying[i].displayName;
+      if(buying[i].stack > 1){ str += "(" + buying[i].stack + ")"; }
+      if(Button(str, 0, y, iw, ih, 0, i)){
+        Data item = buying[i];
+        buying.Remove(item);
+        selling.Add(item);
+        balance += 10;
+      }
+    }
+    
+    GUI.EndScrollView();
     
     
     
