@@ -401,9 +401,17 @@ public class Menu : MonoBehaviour{
       }
     }
     
+    
     GUI.EndScrollView();
     
-    
+    str = "" + balance + "=>";
+    if(balance < 0){
+      str = "" + (-1*balance);
+      str = "<= " + str;
+    }
+    x = iw + iw/2;
+    y = Height()/4;
+    Box(str, x, y, iw, ih);
     
     str = "Talk";
     x = XOffset() + Width() - iw;
