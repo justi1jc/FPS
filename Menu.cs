@@ -45,7 +45,11 @@ public class Menu : MonoBehaviour{
   public int sx, sy; // secondary focus (ie which item in a table is selected.)
   int sxMax, syMax, sxMin, syMin; // Secondary focus boundaries.  
   List<int> selections = null; // What selections are available.
-  public Vector2 scrollPosition = Vector2.zero;
+  public Vector2 scrollPosition = Vector2.zero; // primary Scroll position
+  public Vector2 scrollPositionB = Vector2.zero; // Secondayr scroll position
+  List<Data> selling, buying; // Items sold to NPC, bought from NPC.
+  
+  
   
   public void Change(int menu){
     if(!actor){ activeMenu = NONE; }

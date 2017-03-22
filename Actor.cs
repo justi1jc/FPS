@@ -1094,8 +1094,8 @@ public class Actor : MonoBehaviour{
   }
   
   /* Drops item onto ground from inventory. */
-  public void DiscardItem(int itemIndex){
-    if(itemIndex < 0 || itemIndex > inventory.Count){ return; }
+  public GameObject DiscardItem(int itemIndex){
+    if(itemIndex < 0 || itemIndex > inventory.Count){ return null; }
     if(itemIndex == primaryIndex){ StorePrimary(); }
     if(itemIndex == secondaryIndex){ StoreSecondary(); }
     Data dat = inventory[itemIndex];
@@ -1111,7 +1111,9 @@ public class Actor : MonoBehaviour{
     itemGO.transform.position = hand.transform.position;
     dat.stack--;
     if(dat.stack < 1){ inventory.Remove(dat); }
+    return itemGO;
   }
+  
   
   /* Interact with item in reach.
      i is the argument for the interaction, if relevant */
