@@ -404,10 +404,16 @@ public class Menu : MonoBehaviour{
     
     GUI.EndScrollView();
     
-    str = "" + balance + "=>";
+    
     if(balance < 0){
       str = "" + (-1*balance);
       str = "<= " + str;
+    }
+    else if(balance > 0){
+      str = "" + balance + "=>";
+    }
+    else{
+      str = "" + balance;
     }
     x = iw + iw/2;
     y = Height()/4;
