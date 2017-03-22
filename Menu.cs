@@ -22,7 +22,7 @@ public class Menu : MonoBehaviour{
   public const int TRADE     = 5; // trading menu
   public const int QUEST     = 6; // quest menu
   public const int ABILITY   = 7; // abilities menu
-  public const int STATS      = 8; // rpg stats menu
+  public const int STATS     = 8; // rpg stats menu
   
   // Button constants
   public const int UP    = 0;
@@ -48,7 +48,8 @@ public class Menu : MonoBehaviour{
   public Vector2 scrollPosition = Vector2.zero; // primary Scroll position
   public Vector2 scrollPositionB = Vector2.zero; // Secondayr scroll position
   List<Data> selling, buying; // Items sold to NPC, bought from NPC.
-  
+  List<Data> sold, bought;    // Items changing hands in trade.
+  int balance;            // Trade balance.
   
   
   public void Change(int menu){
@@ -58,6 +59,12 @@ public class Menu : MonoBehaviour{
       activeMenu = menu;
       px = py = sx = sy = 0;
       UpdateFocus();
+      if(menu == TRADE && actor && actor.interlocutor){
+        selling = new List<Data>(actor.inventory);
+        buying = new List<Data>(actor.interlocutor.inventory);
+        print("Selling count:"+ selling.Count);
+        balance = 0;
+      }
       if(menu == HUD && actor){ actor.SetMenuOpen(false); }
       else if(actor){actor.SetMenuOpen(true); }
     }
@@ -353,32 +360,29 @@ public class Menu : MonoBehaviour{
     int ih = Height()/20;
     
     scrollPosition = GUI.BeginScrollView(
-      new Rect(XOffset() +iw, Height()/2, Width()-iw, Height()),
+      new Rect(0, Height()/2, iw, Height()/2),
       scrollPosition,
       new Rect(0, 0, 200, 200)
     );
-    
-    List<Data> inv = actor.inventory;
-    
-    for(int i = 0; i < inv.Count; i++){
-      GUI.color = Color.green; 
-      Data item = inv[i];
-      str ="";
-      if(i == actor.primaryIndex){ str += "Right Hand "; }
-      if(i == actor.secondaryIndex){ str += "Left Hand "; }
-      string name = item.displayName;
-      string info = " " + item.stack + "/" + item.stackSize;
-      str += name + info;
-      if(Button(str, 0, ih * i, iw + iw/2, ih, 0, i)){
-        actor.Equip(i);
+    GUI.color = Color.green;
+    //Button("Whee", 0, 0, iw, ih);    
+
+    for(int i = 0; i < selling.Count; i++){
+      y = i*ih;
+      str = selling[i].displayName;
+      if(selling[i].stack > 1){ str += "(" + selling[i].stack + ")"; }
+      if(Button(str, 0, y, iw, ih, 0, i)){
+        Data item = selling[i];
+        selling.Remove(item);
+        buying.Add(item);
+        balance -= 10;
       }
-      str = "DROP";
-      if(Button(str, iw + iw/2, ih * i, iw/2, ih, 0, i)){
-        actor.DiscardItem(i);
-      }
-      
     }
+    
     GUI.EndScrollView();
+    
+    
+    
     
     str = "Talk";
     x = XOffset() + Width() - iw;

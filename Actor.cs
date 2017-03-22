@@ -1094,7 +1094,7 @@ public class Actor : MonoBehaviour{
   }
   
   /* Drops item onto ground from inventory. */
-  public GameObject DiscardItem(int itemIndex){
+  public Item DiscardItem(int itemIndex){
     if(itemIndex < 0 || itemIndex > inventory.Count){ return null; }
     if(itemIndex == primaryIndex){ StorePrimary(); }
     if(itemIndex == secondaryIndex){ StoreSecondary(); }
@@ -1111,7 +1111,7 @@ public class Actor : MonoBehaviour{
     itemGO.transform.position = hand.transform.position;
     dat.stack--;
     if(dat.stack < 1){ inventory.Remove(dat); }
-    return itemGO;
+    return item;
   }
   
   
@@ -1127,9 +1127,14 @@ public class Actor : MonoBehaviour{
       if(actor && actor.speechTree != null && mode == -1){
         interlocutor = actor;
         menu.Change(Menu.SPEECH);
+        print("Talking");
       }
       else if(actor && mode == 0){
         print("Steal from " + actor.gameObject.name);
+      }
+      else{
+        if(!actor){ print("Actor null"); }
+        if(actor && actor.speechTree == null){ print("Speech tree null"); }
       }
     }
   }
