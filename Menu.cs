@@ -415,9 +415,18 @@ public class Menu : MonoBehaviour{
     else{
       str = "" + balance;
     }
-    x = iw + iw/2;
+    x = XOffset() + iw + iw/2;
     y = Height()/4;
     Box(str, x, y, iw, ih);
+    
+    if(bought.Count > 0 || sold.Count > 0){
+      str = "Complete trade";
+      x = XOffset();
+      y = Height()/4;
+      if(Button(str, x, y, iw, ih, -1)){
+        print("Finish transaction");
+      }
+    }
     
     str = "Talk";
     x = XOffset() + Width() - iw;
@@ -428,7 +437,45 @@ public class Menu : MonoBehaviour{
         
   }
   
-  
+    /* Buy an item from npc. 
+    Add it to bought if player does not own it.
+  */
+  void Buy( int i){
+    Data item = buying[i];
+    balance -= 10;
+    selling.Add(item);
+    buying.Remove(item);
+    if(actor.inventory.IndexOf(item) == -1){
+      bought.Add(item);
+    }
+  }
+
+  /* Sell an item to npc. */
+  void Sell(int i){
+    Data item = selling[i];
+    balance += 10;
+    buying.Add(item);
+    selling.Remove(item);
+    if(actor.interlocutor.inventory.IndexOf(item) == -1){
+      sold.Add(item);
+    }
+  }
+
+    /* Distribute items that were bought and sold. */
+  void FinalizeTrade(){
+    for(int i = 0; i < bought.Count; i++){
+      Data item = bought[i];
+      actor.interlocutor.inventory.Remove(item);
+      actor.inventory.Add(item);
+    }
+    for(int i = 0; i < sold.Count; i++){
+      Data item = sold[i];
+      actor.inventory.Remove(item);
+      actor.interlocutor.inventory.Add(item);
+    }
+  }
+
+
   void RenderQuest(){}
   void RenderAbility(){
     GUI.Box(
@@ -489,7 +536,7 @@ public class Menu : MonoBehaviour{
     }
     if(sx == -1){ GUI.color = Color.green; }
   }
-  
+
   /* Render menu for viewing/editing stats. */
   void RenderStats(){
     int ah = Height()/14; // Attribute height
