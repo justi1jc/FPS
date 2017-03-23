@@ -74,6 +74,7 @@ public class Actor : MonoBehaviour{
   public Animator anim;
   
   //Inventory
+  public int currency;
   public bool menuOpen;
   public GameObject primaryItem;
   public GameObject secondaryItem;

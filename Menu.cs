@@ -210,14 +210,16 @@ public class Menu : MonoBehaviour{
   
   void RenderInventory(){
     //Draw Background
-    GUI.Box(
-      new Rect(XOffset(), 0, Width(), Height()),
-      ""
-    );
+    Box("", XOffset(), 0, Width(), Height());
+
     GUI.color = Color.green;
     
     int iw = Width()/4;
     int ih = Height()/20;
+    string str = "";
+    
+    str = "Currency: " + actor.currency; 
+    Box(str, XOffset(), 0, iw, 2*ih);
     
     scrollPosition = GUI.BeginScrollView(
       new Rect(XOffset() +iw, Height()/2, Width()-iw, Height()),
@@ -360,9 +362,19 @@ public class Menu : MonoBehaviour{
     Box("", XOffset(), 0, Width(), Height());
     int iw = Width()/4;
     int ih = Height()/20;
-    
+
+    str = actor.displayName + ": " + actor.currency;
+    x = XOffset() + iw;
+    y = (Height()/2) - (2*ih);
+    Box(str, x, y, iw, 2*ih);
+
+    str = actor.interlocutor.displayName + ": " + actor.interlocutor.currency;
+    x = XOffset() + 2* iw;
+    y = (Height()/2) - (2*ih);
+    Box(str, x, y, iw, 2*ih);
+
     scrollPosition = GUI.BeginScrollView(
-      new Rect(iw, Height()/2, iw, Height()/2),
+      new Rect(XOffset() + iw, Height()/2, iw, Height()/2),
       scrollPosition,
       new Rect(0, 0, 200, 200)
     );
@@ -380,7 +392,7 @@ public class Menu : MonoBehaviour{
     GUI.EndScrollView();
     
     scrollPositionB = GUI.BeginScrollView(
-      new Rect(2*iw, Height()/2, iw, Height()/2),
+      new Rect(XOffset() + 2*iw, Height()/2, iw, Height()/2),
       scrollPositionB,
       new Rect(0, 0, 200, 200)
     );
@@ -412,7 +424,7 @@ public class Menu : MonoBehaviour{
     y = Height()/4;
     Box(str, x, y, iw, ih);
     
-    if(balance >= 0 && (bought.Count > 0 || sold.Count > 0)){
+    if((balance > 0 || -balance <= actor.currency) && (bought.Count > 0 || sold.Count > 0)){
       str = "Complete trade";
       x = XOffset();
       y = Height()/4;
@@ -456,7 +468,6 @@ public class Menu : MonoBehaviour{
 
     /* Distribute items that were bought and sold. */
   void FinalizeTrade(){
-    if(balance < 0){ return; }
     for(int i = 0; i < bought.Count; i++){
       Data item = bought[i];
       actor.interlocutor.inventory.Remove(item);
@@ -467,6 +478,13 @@ public class Menu : MonoBehaviour{
       actor.inventory.Remove(item);
       actor.interlocutor.inventory.Add(item);
     }
+    if(balance > actor.interlocutor.currency){
+      balance = actor.interlocutor.currency;
+    }
+    actor.interlocutor.currency -= balance;
+    actor.currency += balance;
+    
+    
     balance = 0;
     sold = new List<Data>();
     bought = new List<Data>();
