@@ -373,11 +373,7 @@ public class Menu : MonoBehaviour{
       str = selling[i].displayName;
       if(selling[i].stack > 1){ str += "(" + selling[i].stack + ")"; }
       if(Button(str, 0, y, iw, ih, 0, i)){
-        Data item = selling[i];
-        selling.Remove(item);
-        sold.Add(item);
-        buying.Add(item);
-        balance -= 10;
+        Sell(i);
       }
     }
     
@@ -394,10 +390,7 @@ public class Menu : MonoBehaviour{
       str = buying[i].displayName;
       if(buying[i].stack > 1){ str += "(" + buying[i].stack + ")"; }
       if(Button(str, 0, y, iw, ih, 0, i)){
-        Data item = buying[i];
-        buying.Remove(item);
-        selling.Add(item);
-        balance += 10;
+        Buy(i);
       }
     }
     
@@ -407,10 +400,10 @@ public class Menu : MonoBehaviour{
     
     if(balance < 0){
       str = "" + (-1*balance);
-      str = "<= " + str;
+      str = str + "=> ";
     }
     else if(balance > 0){
-      str = "" + balance + "=>";
+      str = "<=" + balance;
     }
     else{
       str = "" + balance;
@@ -419,12 +412,12 @@ public class Menu : MonoBehaviour{
     y = Height()/4;
     Box(str, x, y, iw, ih);
     
-    if(bought.Count > 0 || sold.Count > 0){
+    if(balance >= 0 && (bought.Count > 0 || sold.Count > 0)){
       str = "Complete trade";
       x = XOffset();
       y = Height()/4;
       if(Button(str, x, y, iw, ih, -1)){
-        print("Finish transaction");
+        FinalizeTrade();
       }
     }
     
@@ -463,6 +456,7 @@ public class Menu : MonoBehaviour{
 
     /* Distribute items that were bought and sold. */
   void FinalizeTrade(){
+    if(balance < 0){ return; }
     for(int i = 0; i < bought.Count; i++){
       Data item = bought[i];
       actor.interlocutor.inventory.Remove(item);
@@ -473,6 +467,11 @@ public class Menu : MonoBehaviour{
       actor.inventory.Remove(item);
       actor.interlocutor.inventory.Add(item);
     }
+    balance = 0;
+    sold = new List<Data>();
+    bought = new List<Data>();
+    selling = new List<Data>(actor.inventory);
+    buying = new List<Data>(actor.interlocutor.inventory);
   }
 
 
