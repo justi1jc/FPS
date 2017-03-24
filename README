@@ -22,19 +22,22 @@ Inventory(store, Looting)
 Abilities(Dual-wield, Unarmed, fireball, heal)
 Session(SpawnEntity);
 Speech(Speech tree, trade system)
-    Pending features for 0.5.0
+
 
 Menus(Main, Save&Load, Options, Loot, Quest, reticle)
 Actor(Ambient AI, condition(stat mods, effects&perks))
 Items(Warp door, shield type, damage&repair, two-handed items)
 Save&Load(interior cells, exterior cells, Actor)
+
 World(Interior cells, exterior cells, NPC placement)
 Quest(Quest)
+
 
     What needs to be done for 0.3.0 (Interiors update):
 Save&Load(interior cells, Actor data)
 Items(Warp Door)
 World(Interior cells, NPC placement)
+
 
   Fixes/tweaks
 
