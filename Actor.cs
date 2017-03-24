@@ -74,6 +74,8 @@ public class Actor : MonoBehaviour{
   public Animator anim;
   
   //Inventory
+  public static readonly string[] currencies = {"Penny", "Nickel"};
+  public int currency;
   public bool menuOpen;
   public GameObject primaryItem;
   public GameObject secondaryItem;
@@ -622,6 +624,7 @@ public class Actor : MonoBehaviour{
       if(playerNumber < 5 && playerNumber > 0){
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
       }
+      PopulateCurrencyLoot();
     }
     else{
       bool check = EnduranceCheck(damage);
@@ -1079,7 +1082,8 @@ public class Actor : MonoBehaviour{
   }
   /* Adds item data to inventory */
   public void StoreItem(Data item){
-    if(item.stack == 0){ return; }
+    if(item.stack < 1){ return; }
+    if(StoreCurrency(item.displayName, item.stack, item.baseValue)){ return; }
     for(int i = 0; i < inventory.Count; i++){
       if(item.stack < 1){ return; }
       Data dat = inventory[i];
@@ -1093,9 +1097,39 @@ public class Actor : MonoBehaviour{
     inventory.Add(item);
   }
   
+  /* If provided currency, adds said currency and returns true.
+     otherwise returns false. */
+  public bool StoreCurrency(string displayName, int amount, int val){
+    int index = -1;
+    for(int i = 0; i < currencies.Length; i++){
+      if(displayName == currencies[i]){ index = i; break; }
+    }
+    if(index == -1){ return false; }
+    currency +=  amount * val;
+    return true;
+  }
+  
+  /* Adds currency items to inventory. */
+  public void PopulateCurrencyLoot(){
+    GameObject igo = Session.session.Spawn(currencies[0], Vector3.zero);
+    Data item = igo.GetComponent<Item>().GetData();
+    while(currency > 0){
+      if(item.stackSize <= currency){
+        item.stack = item.stackSize;
+        currency -= item.stack;
+        StoreItem(item);
+      }
+      else{
+        item.stack = currency;
+        currency = 0;
+        StoreItem(item);
+      }
+    }
+  }
+  
   /* Drops item onto ground from inventory. */
-  public void DiscardItem(int itemIndex){
-    if(itemIndex < 0 || itemIndex > inventory.Count){ return; }
+  public Item DiscardItem(int itemIndex){
+    if(itemIndex < 0 || itemIndex > inventory.Count){ return null; }
     if(itemIndex == primaryIndex){ StorePrimary(); }
     if(itemIndex == secondaryIndex){ StoreSecondary(); }
     Data dat = inventory[itemIndex];
@@ -1111,7 +1145,9 @@ public class Actor : MonoBehaviour{
     itemGO.transform.position = hand.transform.position;
     dat.stack--;
     if(dat.stack < 1){ inventory.Remove(dat); }
+    return item;
   }
+  
   
   /* Interact with item in reach.
      i is the argument for the interaction, if relevant */
@@ -1125,9 +1161,14 @@ public class Actor : MonoBehaviour{
       if(actor && actor.speechTree != null && mode == -1){
         interlocutor = actor;
         menu.Change(Menu.SPEECH);
+        print("Talking");
       }
       else if(actor && mode == 0){
         print("Steal from " + actor.gameObject.name);
+      }
+      else{
+        if(!actor){ print("Actor null"); }
+        if(actor && actor.speechTree == null){ print("Speech tree null"); }
       }
     }
   }

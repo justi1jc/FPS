@@ -56,6 +56,7 @@ public class Item : MonoBehaviour{
   public string itemDesc;
   public int stack;
   public int stackSize;
+  public int baseValue;
   public int itemType;
   public AudioClip[] sounds;
   public int weight;
@@ -517,6 +518,7 @@ public class Item : MonoBehaviour{
     dat.stack = stack;
     dat.stackSize = stackSize;
     dat.ints.Add(weight);
+    dat.baseValue = baseValue;
     switch(itemType){
       case FOOD:
         dat.ints.Add(healing);

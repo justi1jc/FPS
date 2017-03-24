@@ -22,7 +22,7 @@ public class Menu : MonoBehaviour{
   public const int TRADE     = 5; // trading menu
   public const int QUEST     = 6; // quest menu
   public const int ABILITY   = 7; // abilities menu
-  public const int STATS      = 8; // rpg stats menu
+  public const int STATS     = 8; // rpg stats menu
   
   // Button constants
   public const int UP    = 0;
@@ -45,7 +45,12 @@ public class Menu : MonoBehaviour{
   public int sx, sy; // secondary focus (ie which item in a table is selected.)
   int sxMax, syMax, sxMin, syMin; // Secondary focus boundaries.  
   List<int> selections = null; // What selections are available.
-  public Vector2 scrollPosition = Vector2.zero;
+  public Vector2 scrollPosition = Vector2.zero; // primary Scroll position
+  public Vector2 scrollPositionB = Vector2.zero; // Secondayr scroll position
+  List<Data> selling, buying; // Items sold to NPC, bought from NPC.
+  public List<Data> sold, bought;    // Items changing hands in trade.
+  int balance;            // Trade balance.
+  
   
   public void Change(int menu){
     if(!actor){ activeMenu = NONE; }
@@ -54,6 +59,14 @@ public class Menu : MonoBehaviour{
       activeMenu = menu;
       px = py = sx = sy = 0;
       UpdateFocus();
+      if(menu == TRADE && actor && actor.interlocutor){
+        selling = new List<Data>(actor.inventory);
+        buying = new List<Data>(actor.interlocutor.inventory);
+        sold = new List<Data>();
+        bought = new List<Data>();
+        print("Selling count:"+ selling.Count);
+        balance = 0;
+      }
       if(menu == HUD && actor){ actor.SetMenuOpen(false); }
       else if(actor){actor.SetMenuOpen(true); }
     }
@@ -197,14 +210,16 @@ public class Menu : MonoBehaviour{
   
   void RenderInventory(){
     //Draw Background
-    GUI.Box(
-      new Rect(XOffset(), 0, Width(), Height()),
-      ""
-    );
+    Box("", XOffset(), 0, Width(), Height());
+
     GUI.color = Color.green;
     
     int iw = Width()/4;
     int ih = Height()/20;
+    string str = "";
+    
+    str = "Currency: " + actor.currency; 
+    Box(str, XOffset(), 0, iw, 2*ih);
     
     scrollPosition = GUI.BeginScrollView(
       new Rect(XOffset() +iw, Height()/2, Width()-iw, Height()),
@@ -334,10 +349,151 @@ public class Menu : MonoBehaviour{
       }
       if(sy==3 && sx == 0){ GUI.color = Color.green; }
     }
+    
+    if(Button("Trade", XOffset(), Height()/2, iw, ih)){
+      Change(TRADE);
+    }
   }
   
   
-  void RenderTrade(){}
+  void RenderTrade(){
+    int x, y; // To set up positioning before Box/Button call.
+    string str; // To set up Box/Button call
+    Box("", XOffset(), 0, Width(), Height());
+    int iw = Width()/4;
+    int ih = Height()/20;
+
+    str = actor.displayName + ": " + actor.currency;
+    x = XOffset() + iw;
+    y = (Height()/2) - (2*ih);
+    Box(str, x, y, iw, 2*ih);
+
+    str = actor.interlocutor.displayName + ": " + actor.interlocutor.currency;
+    x = XOffset() + 2* iw;
+    y = (Height()/2) - (2*ih);
+    Box(str, x, y, iw, 2*ih);
+
+    scrollPosition = GUI.BeginScrollView(
+      new Rect(XOffset() + iw, Height()/2, iw, Height()/2),
+      scrollPosition,
+      new Rect(0, 0, 200, 200)
+    );
+    GUI.color = Color.green;
+
+    for(int i = 0; i < selling.Count; i++){
+      y = i*ih;
+      str = selling[i].displayName;
+      if(selling[i].stack > 1){ str += "(" + selling[i].stack + ")"; }
+      if(Button(str, 0, y, iw, ih, 0, i)){
+        Sell(i);
+      }
+    }
+    
+    GUI.EndScrollView();
+    
+    scrollPositionB = GUI.BeginScrollView(
+      new Rect(XOffset() + 2*iw, Height()/2, iw, Height()/2),
+      scrollPositionB,
+      new Rect(0, 0, 200, 200)
+    );
+
+    for(int i = 0; i < buying.Count; i++){
+      y = i*ih;
+      str = buying[i].displayName;
+      if(buying[i].stack > 1){ str += "(" + buying[i].stack + ")"; }
+      if(Button(str, 0, y, iw, ih, 0, i)){
+        Buy(i);
+      }
+    }
+    
+    
+    GUI.EndScrollView();
+    
+    
+    if(balance < 0){
+      str = "" + (-1*balance);
+      str = str + "=> ";
+    }
+    else if(balance > 0){
+      str = "<=" + balance;
+    }
+    else{
+      str = "" + balance;
+    }
+    x = XOffset() + iw + iw/2;
+    y = Height()/4;
+    Box(str, x, y, iw, ih);
+    
+    if((balance > 0 || -balance <= actor.currency) && (bought.Count > 0 || sold.Count > 0)){
+      str = "Complete trade";
+      x = XOffset();
+      y = Height()/4;
+      if(Button(str, x, y, iw, ih, -1)){
+        FinalizeTrade();
+      }
+    }
+    
+    str = "Talk";
+    x = XOffset() + Width() - iw;
+    y = Height()/2;
+    if(Button(str, x, y, iw, ih, 1)){
+      Change(SPEECH);
+    }
+        
+  }
+  
+    /* Buy an item from npc. 
+    Add it to bought if player does not own it.
+  */
+  void Buy( int i){
+    Data item = buying[i];
+    balance -= item.baseValue;
+    selling.Add(item);
+    buying.Remove(item);
+    sold.Remove(item);
+    if(actor.inventory.IndexOf(item) == -1){
+      bought.Add(item);
+    }
+  }
+
+  /* Sell an item to npc. */
+  void Sell(int i){
+    Data item = selling[i];
+    balance += item.baseValue;
+    buying.Add(item);
+    selling.Remove(item);
+    bought.Remove(item);
+    if(actor.interlocutor.inventory.IndexOf(item) == -1){
+      sold.Add(item);
+    }
+  }
+
+    /* Distribute items that were bought and sold. */
+  void FinalizeTrade(){
+    for(int i = 0; i < bought.Count; i++){
+      Data item = bought[i];
+      actor.interlocutor.inventory.Remove(item);
+      actor.inventory.Add(item);
+    }
+    for(int i = 0; i < sold.Count; i++){
+      Data item = sold[i];
+      actor.inventory.Remove(item);
+      actor.interlocutor.inventory.Add(item);
+    }
+    if(balance > actor.interlocutor.currency){
+      balance = actor.interlocutor.currency;
+    }
+    actor.interlocutor.currency -= balance;
+    actor.currency += balance;
+    
+    balance = 0;
+    sold = new List<Data>();
+    bought = new List<Data>();
+    selling = new List<Data>(actor.inventory);
+    buying = new List<Data>(actor.interlocutor.inventory);
+  }
+
+
   void RenderQuest(){}
   void RenderAbility(){
     GUI.Box(
@@ -398,7 +554,7 @@ public class Menu : MonoBehaviour{
     }
     if(sx == -1){ GUI.color = Color.green; }
   }
-  
+
   /* Render menu for viewing/editing stats. */
   void RenderStats(){
     int ah = Height()/14; // Attribute height
@@ -680,7 +836,14 @@ public class Menu : MonoBehaviour{
     }
   }
   
-  void TradeInput(int button){}
+  void TradeInput(int button){
+    if(button == B || button == Y){ // Exit menu
+      Change(HUD);
+      actor.SetMenuOpen(false);
+      return;
+    }
+  }
+  
   void QuestInput(int button){}
   void AbilityInput(int button){
     if(button == B || button == Y){ // Exit menu
