@@ -51,7 +51,7 @@ public class Menu : MonoBehaviour{
   List<Data> selling, buying; // Items sold to NPC, bought from NPC.
   List<Data> sold, bought;    // Items changing hands in trade.
   int balance;            // Trade balance.
-  public Item container; // Container to store/retrieve items from.
+  public List<Data> contents; // Contents of a container/npc inventory.
   
   
   /* Changes the active menu and sets up variables for it. */
@@ -662,6 +662,69 @@ public class Menu : MonoBehaviour{
   
   
   void RenderLoot(){
+    Box("", XOffset(), 0, Width(), Height());
+
+    GUI.color = Color.green;
+    
+    int iw = Width()/4;
+    int ih = Height()/20;
+    int y = 0;
+    string str = "";
+    
+    str = "Currency: " + actor.currency; 
+    Box(str, XOffset(), 0, iw, 2*ih);
+    
+    scrollPosition = GUI.BeginScrollView(
+      new Rect(XOffset() +iw, Height()/2, iw, Height()),
+      scrollPosition,
+      new Rect(0, 0, iw, 200)
+    );
+    
+    List<Data> inv = actor.inventory;
+    List<Data> invB = contents;
+    
+    for(int i = 0; i < inv.Count; i++){ 
+      Data item = inv[i];
+      string selected ="";
+      if(i == actor.primaryIndex){ selected += "Right Hand "; }
+      if(i == actor.secondaryIndex){ selected += "Left Hand "; }
+      string name = item.displayName;
+      string info = " " + item.stack + "/" + item.stackSize;
+      if(i == sy && sx == 0){ GUI.color = Color.yellow; }
+      str = selected + name + info;
+      y = ih * i;
+      if(Button(str, 0, y, iw, ih, 0, i)){
+        contents.Add(item);
+        inv.Remove(item);
+      }
+    }
+    GUI.EndScrollView();
+    
+    scrollPositionB = GUI.BeginScrollView(
+      new Rect(XOffset() + 2*iw, Height()/2, iw, Height()),
+      scrollPositionB,
+      new Rect(0, 0, iw, 200)
+    );
+    
+   
+    
+    for(int i = 0; i < invB.Count; i++){ 
+      Data item = invB[i];
+      string selected ="";
+      if(i == actor.primaryIndex){ selected += "Right Hand "; }
+      if(i == actor.secondaryIndex){ selected += "Left Hand "; }
+      string name = item.displayName;
+      string info = " " + item.stack + "/" + item.stackSize;
+      if(i == sy && sx == 0){ GUI.color = Color.yellow; }
+      str = selected + name + info;
+      y = ih * i;
+      if(Button(str, 0, y, iw, ih, 0, i)){
+        actor.StoreItem(item);
+        invB.Remove(item);
+      }
+    }
+    GUI.EndScrollView();
+    
   }
 
   /* Call appropriate menu's focus update handler. */
@@ -747,6 +810,13 @@ public class Menu : MonoBehaviour{
   }
   
   void LootFocus(){
+    syMax = 0;
+    syMin = 0;
+    sxMax = 1;
+    sxMin = 0;
+    if(sx == 0){ syMax = actor.inventory.Count -1; }
+    else if(sx == 1){ syMax = contents.Count -1; }
+    SecondaryBounds();
   }
  
   /* Receives button press from Actor. */

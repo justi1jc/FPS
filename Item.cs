@@ -231,7 +231,7 @@ public class Item : MonoBehaviour{
   public void Interact(Actor a, int mode = -1, string message = ""){
     // TODO: Account for other interaction modes.
     if(itemType == CONTAINER && a != null && a.menu != null){
-      a.menu.container = this;
+      a.menu.contents = contents;
       a.menu.Change(Menu.LOOT);
       return;
     }
