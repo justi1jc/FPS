@@ -37,6 +37,7 @@ public class Data
    public List<string> strings;
    public List<float> floats;
    public List<bool> bools;
+   public int baseValue;
    [System.NonSerialized]
    public List<Data> data;
 

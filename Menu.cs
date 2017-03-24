@@ -48,7 +48,7 @@ public class Menu : MonoBehaviour{
   public Vector2 scrollPosition = Vector2.zero; // primary Scroll position
   public Vector2 scrollPositionB = Vector2.zero; // Secondayr scroll position
   List<Data> selling, buying; // Items sold to NPC, bought from NPC.
-  List<Data> sold, bought;    // Items changing hands in trade.
+  public List<Data> sold, bought;    // Items changing hands in trade.
   int balance;            // Trade balance.
   
   
@@ -447,9 +447,10 @@ public class Menu : MonoBehaviour{
   */
   void Buy( int i){
     Data item = buying[i];
-    balance -= 10;
+    balance -= item.baseValue;
     selling.Add(item);
     buying.Remove(item);
+    sold.Remove(item);
     if(actor.inventory.IndexOf(item) == -1){
       bought.Add(item);
     }
@@ -458,9 +459,10 @@ public class Menu : MonoBehaviour{
   /* Sell an item to npc. */
   void Sell(int i){
     Data item = selling[i];
-    balance += 10;
+    balance += item.baseValue;
     buying.Add(item);
     selling.Remove(item);
+    bought.Remove(item);
     if(actor.interlocutor.inventory.IndexOf(item) == -1){
       sold.Add(item);
     }
@@ -483,7 +485,6 @@ public class Menu : MonoBehaviour{
     }
     actor.interlocutor.currency -= balance;
     actor.currency += balance;
-    
     
     balance = 0;
     sold = new List<Data>();
