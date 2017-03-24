@@ -10,30 +10,31 @@ I then aim to improve the user-experience by revisiting existing features.
 After this stage, my aim will be to provide compelling assets to immerse the
 player in a rich game world.
 
-Current version: 0.1.2
+Current version: 0.2.0
 
     Current features
-Menus(Inventory, Ability, Speech, Trade, level-up/stats)
-Input(In-Game. Menu)
-Actor(Movement, Item Interaction, condition(health), Combat AI)
-Items(charging, pickup, drop, use, thrown type, ranged melee)
-Inventory(store)
+Menus(Inventory, Ability, Speech, Trade, level-up/stats, Loot)
+Input(In-Game, Menu)
+Actor(XP/RPG Stats, Movement, Item Interaction, condition(health), Combat AI
+    condition(fatigue, mana ))
+Items(charging, pickup, drop, use, thrown type, ranged melee, containers)
+Inventory(store, Looting)
 Abilities(Dual-wield, Unarmed, fireball, heal)
 Session(SpawnEntity);
 Speech(Speech tree, trade system)
     Pending features for 0.5.0
 
 Menus(Main, Save&Load, Options, Loot, Quest, reticle)
-Actor(XP/RPG Stats, Ambient AI, condition(fatigue, mana, stat mods, effects&perks))
-Items(Warp door, shield type, damage&repair, containers, two-handed items)
-Inventory(Looting);
-Save&Load(interior cells, exterior cells, PlayerData)
+Actor(Ambient AI, condition(stat mods, effects&perks))
+Items(Warp door, shield type, damage&repair, two-handed items)
+Save&Load(interior cells, exterior cells, Actor)
 World(Interior cells, exterior cells, NPC placement)
 Quest(Quest)
 
-    What needs to be done for 0.2.0 (Basic RPG gameplay)
-Menus(Loot)
-Inventory(Looting)
-Items(containers)
-Fixes/tweaks
+    What needs to be done for 0.3.0 (Interiors update):
+Save&Load(interior cells, Actor data)
+Items(Warp Door)
+World(Interior cells, NPC placement)
+
+  Fixes/tweaks
 
