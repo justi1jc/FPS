@@ -1158,13 +1158,16 @@ public class Actor : MonoBehaviour{
     }
     if(actorInReach){
       Actor actor = actorInReach.GetComponent<Actor>();
-      if(actor && actor.speechTree != null && mode == -1){
+      if(actor && actor.speechTree != null && mode == -1 && actor.health > 0){
         interlocutor = actor;
         menu.Change(Menu.SPEECH);
-        print("Talking");
       }
-      else if(actor && mode == 0){
+      else if(actor && mode == 0 && actor.health > 0){
         print("Steal from " + actor.gameObject.name);
+      }
+      else if(actor && mode == -1){
+        menu.contents = actor.inventory;
+        menu.Change(Menu.LOOT);
       }
       else{
         if(!actor){ print("Actor null"); }
