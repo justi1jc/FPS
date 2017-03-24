@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Item : MonoBehaviour{
 /*
-*   You'll quickly realize I'm using switch statements in place of polymorphism.
-*   Unity3d doesn't support script polymorphism. Creating an Item interface
-*   in the absence of abstract classes or inheritence was unmanageable, so this 
-*   is my solution.
+*   You'll quickly realize I'm using switch statements in place of traditional 
+*   polymorphism. Unity3d doesn't support script polymorphism. Creating an Item
+*   interface in the absence of abstract classes or inheritence was unmanageable,
+*   so this is my solution.
 *
 *   GameObject structure
 *   
@@ -109,7 +110,7 @@ public class Item : MonoBehaviour{
   GameObject weaponOfOrigin;
   
   // Container variables
-  public Data[] contents;
+  public List<Data> contents;
   
   public void Start(){
     switch(itemType){
@@ -120,7 +121,9 @@ public class Item : MonoBehaviour{
       case RANGED:
         fireHash = Animator.StringToHash(fireString);
         break;
-        
+      case CONTAINER:
+        contents = new List<Data>();
+        break;
       default:
         break;
     }
@@ -227,6 +230,11 @@ public class Item : MonoBehaviour{
   /* Response to interaction from non-holder Actor */
   public void Interact(Actor a, int mode = -1, string message = ""){
     // TODO: Account for other interaction modes.
+    if(itemType == CONTAINER && a != null && a.menu != null){
+      a.menu.container = this;
+      a.menu.Change(Menu.LOOT);
+      return;
+    }
     if(itemType != SCENERY && holder == null){ a.PickUp(this); };
   }
   
@@ -546,7 +554,7 @@ public class Item : MonoBehaviour{
         dat.floats.Add(destRot.z);
         break;
       case CONTAINER:
-        for(int j = 0; j < contents.Length; j++){
+        for(int j = 0; j < contents.Count; j++){
           dat.data.Add(contents[j]);
         }
         break;
@@ -608,7 +616,7 @@ public class Item : MonoBehaviour{
         f+=3;
         break;
       case CONTAINER:
-        contents = dat.data.ToArray();
+        contents = new List<Data>(dat.data);
         break;
       default:
         break;

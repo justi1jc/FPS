@@ -23,6 +23,7 @@ public class Menu : MonoBehaviour{
   public const int QUEST     = 6; // quest menu
   public const int ABILITY   = 7; // abilities menu
   public const int STATS     = 8; // rpg stats menu
+  public const int LOOT      = 9; // looking in containers
   
   // Button constants
   public const int UP    = 0;
@@ -48,14 +49,16 @@ public class Menu : MonoBehaviour{
   public Vector2 scrollPosition = Vector2.zero; // primary Scroll position
   public Vector2 scrollPositionB = Vector2.zero; // Secondayr scroll position
   List<Data> selling, buying; // Items sold to NPC, bought from NPC.
-  public List<Data> sold, bought;    // Items changing hands in trade.
+  List<Data> sold, bought;    // Items changing hands in trade.
   int balance;            // Trade balance.
+  public Item container; // Container to store/retrieve items from.
   
   
+  /* Changes the active menu and sets up variables for it. */
   public void Change(int menu){
     if(!actor){ activeMenu = NONE; }
     if(menu == ABILITY){ AbilitySetup(); }
-    if(menu <= STATS && menu >= NONE){
+    if(menu <= LOOT && menu >= NONE){
       activeMenu = menu;
       px = py = sx = sy = 0;
       UpdateFocus();
@@ -137,6 +140,9 @@ public class Menu : MonoBehaviour{
         break;
       case STATS:
         RenderStats();
+        break;
+      case LOOT:
+        RenderLoot();
         break;
     }
   }
@@ -653,6 +659,10 @@ public class Menu : MonoBehaviour{
     }
     
   }
+  
+  
+  void RenderLoot(){
+  }
 
   /* Call appropriate menu's focus update handler. */
   void UpdateFocus(){
@@ -680,6 +690,9 @@ public class Menu : MonoBehaviour{
         break;
       case STATS:
         StatsFocus();
+        break;
+      case LOOT:
+        LootFocus();
         break;
     }
   }
@@ -732,6 +745,9 @@ public class Menu : MonoBehaviour{
     SecondaryBounds();
     
   }
+  
+  void LootFocus(){
+  }
  
   /* Receives button press from Actor. */
   public void Press( int button){
@@ -782,6 +798,9 @@ public class Menu : MonoBehaviour{
         break;
       case STATS:
         StatsInput(button);
+        break;
+      case LOOT:
+        LootInput(button);
         break;
     }
   }
@@ -900,7 +919,14 @@ public class Menu : MonoBehaviour{
           break;
       }
     }
-    if(sx == 1){ if(button == A){ print("Quests not implented."); return; } }
-    
+    if(sx == 1){ if(button == A){ print("Quests not implented."); return; } } 
+  }
+  
+  void LootInput(int button){
+    if(button == B || button == Y){ // Exit menu
+      Change(HUD);
+      actor.SetMenuOpen(false);
+      return;
+    }
   }
 }
