@@ -23,6 +23,7 @@ public class Menu : MonoBehaviour{
   public const int QUEST     = 6; // quest menu
   public const int ABILITY   = 7; // abilities menu
   public const int STATS     = 8; // rpg stats menu
+  public const int LOOT      = 9; // looking in containers
   
   // Button constants
   public const int UP    = 0;
@@ -48,14 +49,16 @@ public class Menu : MonoBehaviour{
   public Vector2 scrollPosition = Vector2.zero; // primary Scroll position
   public Vector2 scrollPositionB = Vector2.zero; // Secondayr scroll position
   List<Data> selling, buying; // Items sold to NPC, bought from NPC.
-  public List<Data> sold, bought;    // Items changing hands in trade.
+  List<Data> sold, bought;    // Items changing hands in trade.
   int balance;            // Trade balance.
+  public List<Data> contents; // Contents of a container/npc inventory.
   
   
+  /* Changes the active menu and sets up variables for it. */
   public void Change(int menu){
     if(!actor){ activeMenu = NONE; }
     if(menu == ABILITY){ AbilitySetup(); }
-    if(menu <= STATS && menu >= NONE){
+    if(menu <= LOOT && menu >= NONE){
       activeMenu = menu;
       px = py = sx = sy = 0;
       UpdateFocus();
@@ -137,6 +140,9 @@ public class Menu : MonoBehaviour{
         break;
       case STATS:
         RenderStats();
+        break;
+      case LOOT:
+        RenderLoot();
         break;
     }
   }
@@ -653,6 +659,73 @@ public class Menu : MonoBehaviour{
     }
     
   }
+  
+  
+  void RenderLoot(){
+    Box("", XOffset(), 0, Width(), Height());
+
+    GUI.color = Color.green;
+    
+    int iw = Width()/4;
+    int ih = Height()/20;
+    int y = 0;
+    string str = "";
+    
+    str = "Currency: " + actor.currency; 
+    Box(str, XOffset(), 0, iw, 2*ih);
+    
+    scrollPosition = GUI.BeginScrollView(
+      new Rect(XOffset() +iw, Height()/2, iw, Height()),
+      scrollPosition,
+      new Rect(0, 0, iw, 200)
+    );
+    
+    List<Data> inv = actor.inventory;
+    List<Data> invB = contents;
+    
+    for(int i = 0; i < inv.Count; i++){ 
+      Data item = inv[i];
+      string selected ="";
+      if(i == actor.primaryIndex){ selected += "Right Hand "; }
+      if(i == actor.secondaryIndex){ selected += "Left Hand "; }
+      string name = item.displayName;
+      string info = " " + item.stack + "/" + item.stackSize;
+      if(i == sy && sx == 0){ GUI.color = Color.yellow; }
+      str = selected + name + info;
+      y = ih * i;
+      if(Button(str, 0, y, iw, ih, 0, i)){
+        contents.Add(item);
+        inv.Remove(item);
+      }
+    }
+    GUI.EndScrollView();
+    
+    scrollPositionB = GUI.BeginScrollView(
+      new Rect(XOffset() + 2*iw, Height()/2, iw, Height()),
+      scrollPositionB,
+      new Rect(0, 0, iw, 200)
+    );
+    
+   
+    
+    for(int i = 0; i < invB.Count; i++){ 
+      Data item = invB[i];
+      string selected ="";
+      if(i == actor.primaryIndex){ selected += "Right Hand "; }
+      if(i == actor.secondaryIndex){ selected += "Left Hand "; }
+      string name = item.displayName;
+      string info = " " + item.stack + "/" + item.stackSize;
+      if(i == sy && sx == 0){ GUI.color = Color.yellow; }
+      str = selected + name + info;
+      y = ih * i;
+      if(Button(str, 0, y, iw, ih, 0, i)){
+        actor.StoreItem(item);
+        invB.Remove(item);
+      }
+    }
+    GUI.EndScrollView();
+    
+  }
 
   /* Call appropriate menu's focus update handler. */
   void UpdateFocus(){
@@ -680,6 +753,9 @@ public class Menu : MonoBehaviour{
         break;
       case STATS:
         StatsFocus();
+        break;
+      case LOOT:
+        LootFocus();
         break;
     }
   }
@@ -732,6 +808,16 @@ public class Menu : MonoBehaviour{
     SecondaryBounds();
     
   }
+  
+  void LootFocus(){
+    syMax = 0;
+    syMin = 0;
+    sxMax = 1;
+    sxMin = 0;
+    if(sx == 0){ syMax = actor.inventory.Count -1; }
+    else if(sx == 1){ syMax = contents.Count -1; }
+    SecondaryBounds();
+  }
  
   /* Receives button press from Actor. */
   public void Press( int button){
@@ -782,6 +868,9 @@ public class Menu : MonoBehaviour{
         break;
       case STATS:
         StatsInput(button);
+        break;
+      case LOOT:
+        LootInput(button);
         break;
     }
   }
@@ -900,7 +989,14 @@ public class Menu : MonoBehaviour{
           break;
       }
     }
-    if(sx == 1){ if(button == A){ print("Quests not implented."); return; } }
-    
+    if(sx == 1){ if(button == A){ print("Quests not implented."); return; } } 
+  }
+  
+  void LootInput(int button){
+    if(button == B || button == Y){ // Exit menu
+      Change(HUD);
+      actor.SetMenuOpen(false);
+      return;
+    }
   }
 }
