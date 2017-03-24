@@ -21,9 +21,9 @@ Inventory(store)
 Abilities(Dual-wield, Unarmed, fireball, heal)
 Session(SpawnEntity);
 Speech(Speech tree, trade system)
-    Pending features for 0.5.0
 
-Menus(Main, Save&Load, Options, Trade, Loot, Quest, level-up/stats, reticle)
+    Pending features for 0.5.0
+Menus(Main, Save&Load, Options, Quest reticle)
 Input(Menu)
 Actor(XP/RPG Stats, Ambient AI, condition(fatigue, mana, stat mods, effects&perks))
 Items(Warp door, shield type, damage&repair, containers, two-handed items)
@@ -33,7 +33,7 @@ World(Interior cells, exterior cells, NPC placement)
 Speech(speech tree, Trade system)
 Quest(Quest)
 
-    What needs to be done for 0.2.0 (Basic RPG gameplay)
+    What needs to be done for 0.3.0 ()
 Menus(Loot)
 Inventory(Looting)
 
