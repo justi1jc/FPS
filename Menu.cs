@@ -13,17 +13,19 @@ using System.Collections.Generic;
 public class Menu : MonoBehaviour{
 
   // Menu constants
-  public const int NONE      =-1; // Do nothing
-  public const int HUD       = 0; // in-game HUD
-  public const int MAIN      = 1; // main menu
-  public const int INVENTORY = 2; // inventory
-  public const int OPTIONS   = 3; // pause menu
-  public const int SPEECH    = 4; // speech menu
-  public const int TRADE     = 5; // trading menu
-  public const int QUEST     = 6; // quest menu
-  public const int ABILITY   = 7; // abilities menu
-  public const int STATS     = 8; // rpg stats menu
-  public const int LOOT      = 9; // looking in containers
+  public const int NONE      = -1; // Do nothing
+  public const int HUD       =  0; // in-game HUD
+  public const int MAIN      =  1; // main menu
+  public const int INVENTORY =  2; // inventory
+  public const int OPTIONS   =  3; // pause menu
+  public const int SPEECH    =  4; // speech menu
+  public const int TRADE     =  5; // trading menu
+  public const int QUEST     =  6; // quest menu
+  public const int ABILITY   =  7; // abilities menu
+  public const int STATS     =  8; // rpg stats menu
+  public const int LOOT      =  9; // looking in containers
+  public const int SAVE      = 10; // Save the game
+  public const int LOAD      = 11; // Load the game
   
   // Button constants
   public const int UP    = 0;
@@ -58,7 +60,7 @@ public class Menu : MonoBehaviour{
   public void Change(int menu){
     if(!actor){ activeMenu = NONE; }
     if(menu == ABILITY){ AbilitySetup(); }
-    if(menu <= LOOT && menu >= NONE){
+    if(menu <= LOAD && menu >= NONE){
       activeMenu = menu;
       px = py = sx = sy = 0;
       UpdateFocus();
@@ -143,6 +145,12 @@ public class Menu : MonoBehaviour{
         break;
       case LOOT:
         RenderLoot();
+        break;
+      case SAVE:
+        RenderSave();
+        break;
+      case LOAD:
+        RenderLoad();
         break;
     }
   }
@@ -704,10 +712,7 @@ public class Menu : MonoBehaviour{
       new Rect(XOffset() + 2*iw, Height()/2, iw, Height()),
       scrollPositionB,
       new Rect(0, 0, iw, 200)
-    );
-    
-   
-    
+    );    
     for(int i = 0; i < invB.Count; i++){ 
       Data item = invB[i];
       string selected ="";
@@ -724,8 +729,14 @@ public class Menu : MonoBehaviour{
       }
     }
     GUI.EndScrollView();
-    
   }
+  
+  void RenderSave(){
+  }
+  
+  void RenderLoad(){
+  }
+  
 
   /* Call appropriate menu's focus update handler. */
   void UpdateFocus(){
@@ -756,6 +767,12 @@ public class Menu : MonoBehaviour{
         break;
       case LOOT:
         LootFocus();
+        break;
+      case SAVE:
+        SaveFocus();
+        break;
+      case LOAD:
+        LoadFocus();
         break;
     }
   }
@@ -818,6 +835,12 @@ public class Menu : MonoBehaviour{
     else if(sx == 1){ syMax = contents.Count -1; }
     SecondaryBounds();
   }
+  
+  void SaveFocus(){
+  }
+  
+  void LoadFocus(){
+  }
  
   /* Receives button press from Actor. */
   public void Press( int button){
@@ -871,6 +894,12 @@ public class Menu : MonoBehaviour{
         break;
       case LOOT:
         LootInput(button);
+        break;
+      case SAVE:
+        SaveInput(button);
+        break;
+      case LOAD:
+        LoadInput(button);
         break;
     }
   }
@@ -998,5 +1027,12 @@ public class Menu : MonoBehaviour{
       actor.SetMenuOpen(false);
       return;
     }
+  }
+  
+
+  void SaveInput(int button){
+  }
+  
+  void LoadInput(int button){
   }
 }

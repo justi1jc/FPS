@@ -4,8 +4,7 @@
 *   
 *
 *
-*   Note: Controls are currently hard-coded in. They should be flexible
-*   in the future. Axes and buttons must be added manually in the editor to
+*   Note: Axes and buttons must be added manually in the editor to
 *   a specific project.
 *
 *
@@ -22,7 +21,7 @@ using UnityEngine.SceneManagement;
 public class Session : MonoBehaviour {
   public static Session session;
   
-  /* Controller one linux values */
+  // Controller one linux values
   public static string C1 = "Joystick 1"; //Controller 1
   public static string XL = "XL"; // "X Axis" DeadZone: 0.2 Accuracy: 1
   public static string YL = "YL"; // "Y Axis" DeadZone: 0.2 Accuracy: 1
@@ -47,14 +46,23 @@ public class Session : MonoBehaviour {
   public static string RSC = "joystick button 10"; // 10  Right stick click
   public static string LSC = "joystick button 9";  // 9   left stick click
   
-  // Environment constants.
-  
+  // players
   Camera cam1;
   Camera cam2;
+  List<Actor> players;
+  
+  //World data.
+  List<Data> interiors;
+  List<Data> exteriors;
+  
+  
   
   void Awake(){
     if(Session.session){ Destroy(this); }
     else{ Session.session = this; }
+    players = new List<Actor>();
+    interiors = new List<Data>();
+    exteriors = new List<Data>();
   }
   
   
@@ -69,10 +77,11 @@ public class Session : MonoBehaviour {
     return new Data();
   }
   
-  public void RegisterPlayer(int player, Camera cam){
+  public void RegisterPlayer(Actor actor, int player, Camera cam){
     if(player == 1){ cam1 = cam; }
     else if(player == 2){ cam2 = cam; }
     UpdateCameras();
+    players.Add(actor);
   }
   
   public void UnregisterPlayer(int player){
@@ -177,4 +186,22 @@ public class Session : MonoBehaviour {
     return check;
   }
   
+  /* Overwrite specific file with current session's game data. */
+  void SaveGame(string fileName){
+  }
+  
+  /* Load contents from a specific file. */
+  void LoadGame(string fileName){
+  
+  }
+  
+  /* Returns a GameRecord containing this Session's data. */
+  GameRecord GetData(){
+    return null;
+  }
+  
+  /* Returns a GameRecord containing data from a specified file, or null.*/
+  GameRecord LoadFile(string fileName){
+    return null;
+  }
 }

@@ -186,7 +186,7 @@ public class Actor : MonoBehaviour{
       SetMenuOpen(false);
       if(head){ menu = head.GetComponent<Menu>(); }
       if(menu){ menu.Change(Menu.HUD);  menu.actor = this; }
-      if(Session.session){ Session.session.RegisterPlayer(player, head.GetComponent<Camera>()); }
+      if(Session.session){ Session.session.RegisterPlayer(this, player, head.GetComponent<Camera>()); }
       if(player == 1){ StartCoroutine(KeyboardInputRoutine()); }
       else{StartCoroutine(ControllerInputRoutine()); }
     }

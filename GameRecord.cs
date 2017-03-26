@@ -16,7 +16,7 @@ public class GameRecord{
   public GameRecord(){
     interiors = new List<Data>();
     exteriors = new List<Data>();
-    quests = new List<Data>();
-    players = new List<Data>();
+    quests    = new List<Data>();
+    players   = new List<Data>();
   }
 } 
