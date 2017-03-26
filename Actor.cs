@@ -293,6 +293,7 @@ public class Actor : MonoBehaviour{
     Turn(new Vector3(rotx, roty, 0f));
     
     //Special use keys
+    if(Input.GetKeyDown(KeyCode.Escape)){ menu.Change(Menu.OPTIONS); }
     if(Input.GetKeyDown(KeyCode.R)){ Use(2); }
     if(Input.GetKeyDown(KeyCode.Q)){ Drop(); }
     if(Input.GetKeyDown(KeyCode.E)){ Interact(); }
@@ -311,7 +312,8 @@ public class Actor : MonoBehaviour{
   /* Handles pause menu keyboard input. */
   void KeyboardMenuInput(){
     if(!menu){ SetMenuOpen(false); } // Return control if menu not available
-    if(Input.GetKeyDown(KeyCode.Tab)){ menu.Press(Menu.B); };
+    if(Input.GetKeyDown(KeyCode.Tab)){ menu.Press(Menu.B); }
+    if(Input.GetKeyDown(KeyCode.Escape)){ menu.Press(Menu.B); }
     if(Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)){
       menu.Press(Menu.UP);
     }
@@ -350,6 +352,7 @@ public class Actor : MonoBehaviour{
     Turn(new Vector3(yr, xr, 0f));
     
     //Buttons
+    if(Input.GetKeyDown(Session.START)){ menu.Change(Menu.OPTIONS); }
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(Session.B)){ Use(7); }
     if(Input.GetKeyDown(Session.X)){ Interact(); }

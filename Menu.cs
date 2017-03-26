@@ -24,8 +24,7 @@ public class Menu : MonoBehaviour{
   public const int ABILITY   =  7; // abilities menu
   public const int STATS     =  8; // rpg stats menu
   public const int LOOT      =  9; // looking in containers
-  public const int SAVE      = 10; // Save the game
-  public const int LOAD      = 11; // Load the game
+  public const int LOAD      = 10; // Load the game
   
   // Button constants
   public const int UP    = 0;
@@ -145,9 +144,6 @@ public class Menu : MonoBehaviour{
         break;
       case LOOT:
         RenderLoot();
-        break;
-      case SAVE:
-        RenderSave();
         break;
       case LOAD:
         RenderLoad();
@@ -286,7 +282,42 @@ public class Menu : MonoBehaviour{
   }
   
   
-  void RenderOptions(){}
+  void RenderOptions(){
+    string str;
+    int iw = Width()/6;
+    int ih = Height()/6;
+    int x = XOffset() + iw;
+    
+    str = "Resume";
+    if(Button(str, x, 0, 2*iw, ih, 0, 0)){
+      Change(HUD);
+    }
+    
+    str = "Load";
+    if(Button(str, x, ih, 2*iw, ih, 0, 1)){
+      Change(LOAD);
+    }
+    
+    str = "Settings";
+    if(Button(str, x, 2*ih, 2*iw, ih, 0, 2)){
+      print("Settings");
+    }
+    
+    str = "Save";
+    if(Button(str, x, 3*ih, 2*iw, ih, 0, 3)){
+      print("Save!");
+    }
+    
+    str = "Save and Quit.";
+    if(Button(str, x, 4*ih, 2*iw, ih, 0, 4)){
+      print("Save and Quit!");
+    }
+    
+    str = "Quit.";
+    if(Button(str, x, 5*ih, 2*iw, ih, 0, 5)){
+      print("Quit!");
+    }
+  }
 
   /* Render the dialogue screen. */
   void RenderSpeech(){
@@ -731,10 +762,13 @@ public class Menu : MonoBehaviour{
     GUI.EndScrollView();
   }
   
-  void RenderSave(){
-  }
   
   void RenderLoad(){
+    string str;
+    int iw = Width()/6;
+    int ih = Height()/5;
+    int x = XOffset() + iw;  
+    Box("Load Menu", x, 0, iw, ih);
   }
   
 
@@ -767,9 +801,6 @@ public class Menu : MonoBehaviour{
         break;
       case LOOT:
         LootFocus();
-        break;
-      case SAVE:
-        SaveFocus();
         break;
       case LOAD:
         LoadFocus();
@@ -836,9 +867,6 @@ public class Menu : MonoBehaviour{
     SecondaryBounds();
   }
   
-  void SaveFocus(){
-  }
-  
   void LoadFocus(){
   }
  
@@ -895,22 +923,23 @@ public class Menu : MonoBehaviour{
       case LOOT:
         LootInput(button);
         break;
-      case SAVE:
-        SaveInput(button);
-        break;
       case LOAD:
         LoadInput(button);
         break;
     }
   }
   
-  void MainInput(int button){}
-  void InventoryInput(int button){
-    if(button == B || button == Y){ // Exit menu
+  void DefaultExit(int button){
+    if(button == B || button == Y){
       Change(HUD);
       actor.SetMenuOpen(false);
-      return;
     }
+  }
+  
+  void MainInput(int button){}
+  
+  void InventoryInput(int button){
+    DefaultExit(button);
     if(sx == -1){
       if(button == A){ print("Quests not implemented"); return; }
     }
@@ -925,14 +954,12 @@ public class Menu : MonoBehaviour{
     }
     
   }
-  void OptionsInput(int button){}
+  void OptionsInput(int button){
+    DefaultExit(button);
+  }
   
   void SpeechInput(int button){
-    if(button == B || button == Y){ // Exit menu
-      Change(HUD);
-      actor.SetMenuOpen(false);
-      return;
-    }
+    DefaultExit(button);
     SpeechTree st = actor.interlocutor.speechTree;
     if(button == A){
       if(st.ActiveNode().hidden[sy]){ return; }
@@ -955,20 +982,12 @@ public class Menu : MonoBehaviour{
   }
   
   void TradeInput(int button){
-    if(button == B || button == Y){ // Exit menu
-      Change(HUD);
-      actor.SetMenuOpen(false);
-      return;
-    }
+    DefaultExit(button);
   }
   
   void QuestInput(int button){}
   void AbilityInput(int button){
-    if(button == B || button == Y){ // Exit menu
-      Change(HUD);
-      actor.SetMenuOpen(false);
-      return;
-    }
+    DefaultExit(button);
     if(sx == -1){
       if(button == A){ Change(INVENTORY); return; }
     }
@@ -982,12 +1001,7 @@ public class Menu : MonoBehaviour{
   }
   
   void StatsInput(int button){
-    if(button == B || button == Y){ // Exit menu
-      Change(HUD);
-      actor.SetMenuOpen(false);
-      return;
-    }
-    
+    DefaultExit(button);
     if(sx == -1){ if(button == A){ Change(ABILITY); return; } }
     if(sx == 0 && button == A && actor.skillPoints > 0){
       switch(sy){
@@ -1022,17 +1036,10 @@ public class Menu : MonoBehaviour{
   }
   
   void LootInput(int button){
-    if(button == B || button == Y){ // Exit menu
-      Change(HUD);
-      actor.SetMenuOpen(false);
-      return;
-    }
-  }
-  
-
-  void SaveInput(int button){
+    DefaultExit(button);
   }
   
   void LoadInput(int button){
+    if(button == B || button == Y){ Change(OPTIONS); }
   }
 }

@@ -67,9 +67,10 @@ public class Session : MonoBehaviour {
   
   
   void Update(){
-    if(Input.GetKey(KeyCode.Escape) || Input.GetKey(Session.START)){
-      Application.Quit();
-    }
+    
+    //if(Input.GetKey(KeyCode.Escape) || Input.GetKey(Session.START)){
+    //  Application.Quit();
+    //}
 
   }
   
