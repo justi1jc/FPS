@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 [System.Serializable]
 public class GameRecord{
+  public string sessionName;
   public List<Data> interiors;
   public List<Data> exteriors;
   public bool interior;

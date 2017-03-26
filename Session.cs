@@ -20,6 +20,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine.SceneManagement;
 public class Session : MonoBehaviour {
   public static Session session;
+  public static bool fileAccess = false; //True if files are currently accessed
+  public string sessionName; //Name Used in save.
   
   // Controller one linux values
   public static string C1 = "Joystick 1"; //Controller 1
@@ -67,10 +69,6 @@ public class Session : MonoBehaviour {
   
   
   void Update(){
-    
-    //if(Input.GetKey(KeyCode.Escape) || Input.GetKey(Session.START)){
-    //  Application.Quit();
-    //}
 
   }
   
@@ -188,21 +186,63 @@ public class Session : MonoBehaviour {
   }
   
   /* Overwrite specific file with current session's game data. */
-  void SaveGame(string fileName){
+  public void SaveGame(string fileName){
+    if(fileAccess){ return; }
+    fileAccess = true;
+    BinaryFormatter bf = new BinaryFormatter();
+    string path = Application.persistentDataPath + "/" + fileName + ".save"; 
+    FileStream file = File.Create(path);
+    GameRecord record = GetData();
+    bf.Serialize(file, record);
+    file.Close();
+    fileAccess = false;
   }
   
   /* Load contents from a specific file. */
-  void LoadGame(string fileName){
-  
+  public void LoadGame(string fileName){
+    GameRecord record = LoadFile(fileName);
+    if(record == null){ return; }
+    record.sessionName = sessionName;
   }
   
   /* Returns a GameRecord containing this Session's data. */
   GameRecord GetData(){
-    return null;
+    GameRecord record = new GameRecord();
+    record.sessionName = sessionName;
+    return record;
   }
   
   /* Returns a GameRecord containing data from a specified file, or null.*/
   GameRecord LoadFile(string fileName){
-    return null;
+    
+    if(fileAccess){ return null; }
+    fileAccess = true;
+    BinaryFormatter bf = new BinaryFormatter();
+    string path = Application.persistentDataPath + "/" + fileName + ".save";
+    if(!File.Exists(path)){ fileAccess = false; return null; }
+    FileStream file = File.Open(path, FileMode.Open);
+    GameRecord record = (GameRecord)bf.Deserialize(file);
+    file.Close();
+    fileAccess = false;
+    return record;
+  }
+  
+  /* Returns an array of every valid GameRecord in the directory.*/
+  public List<GameRecord> LoadFiles(){
+    if(fileAccess){ return new List<GameRecord>(); }
+    fileAccess = true;
+    List<GameRecord> records = new List<GameRecord>();
+    string path = Application.persistentDataPath + "/";
+    DirectoryInfo dir = new DirectoryInfo(path);
+    FileInfo[] info = dir.GetFiles("*.save");
+    BinaryFormatter bf = new BinaryFormatter();
+    for(int i = 0; i < info.Length; i++){
+      FileStream file = File.Open(info[i].FullName, FileMode.Open);
+      GameRecord record = (GameRecord)bf.Deserialize(file);
+      records.Add(record);
+      print("Info:" + record.sessionName); 
+    }
+    fileAccess = false;
+    return records;
   }
 }

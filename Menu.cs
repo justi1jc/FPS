@@ -295,6 +295,7 @@ public class Menu : MonoBehaviour{
     
     str = "Load";
     if(Button(str, x, ih, 2*iw, ih, 0, 1)){
+      Session.session.LoadFiles();
       Change(LOAD);
     }
     
@@ -305,12 +306,14 @@ public class Menu : MonoBehaviour{
     
     str = "Save";
     if(Button(str, x, 3*ih, 2*iw, ih, 0, 3)){
-      print("Save!");
+      Session.session.SaveGame(Session.session.sessionName);
+      
     }
     
     str = "Save and Quit.";
     if(Button(str, x, 4*ih, 2*iw, ih, 0, 4)){
-      print("Save and Quit!");
+      Session.session.SaveGame(Session.session.sessionName);
+      Application.Quit();
     }
     
     str = "Quit.";
