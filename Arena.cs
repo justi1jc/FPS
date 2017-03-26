@@ -1,6 +1,7 @@
 /*
 *   The arena module will spawn waves of enemies growing in size for the purpose
-*   of demonstrating existing combat features..
+*   of demonstrating existing combat features. This script will be
+*   removed with the addition of functioning interiors.
 */
 
 using UnityEngine;
