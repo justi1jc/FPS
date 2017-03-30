@@ -53,7 +53,8 @@ public class Menu : MonoBehaviour{
   List<Data> sold, bought;    // Items changing hands in trade.
   int balance;            // Trade balance.
   public List<Data> contents; // Contents of a container/npc inventory.
-  
+  public int subMenu = 0; // To account for menus within a menu.
+  public string sesName = ""; // Name for new game.
   
   /* Changes the active menu and sets up variables for it. */
   public void Change(int menu){
@@ -63,6 +64,7 @@ public class Menu : MonoBehaviour{
       activeMenu = menu;
       px = py = sx = sy = 0;
       UpdateFocus();
+      if(menu == MAIN){ subMenu = 0; }
       if(menu == TRADE && actor && actor.interlocutor){
         selling = new List<Data>(actor.inventory);
         buying = new List<Data>(actor.interlocutor.inventory);
@@ -110,6 +112,10 @@ public class Menu : MonoBehaviour{
       GUI.color = Color.green;
     }
     return click;
+  }
+  
+  string TextField(string text, int posx, int posy, int scalex, int scaley){
+    return  GUI.TextField(new Rect(posx, posy, scalex, scaley), text, 25);
   }
   
   
@@ -215,7 +221,44 @@ public class Menu : MonoBehaviour{
     }
   
   
-  void RenderMain(){}
+  /* This menu renders in the absence of an Actor. */
+  void RenderMain(){
+    int iw = Width()/6;
+    int ih = Height()/4;
+    int x = XOffset() + iw;
+    string str;
+    
+    
+    str = "Continue";
+    if(Button(str, x, 0, 4*iw, ih, 0, 0 )){ 
+      print("Continue");
+    }
+    
+    switch(subMenu){
+      case 0:
+        str = "New Game";
+        if(Button(str, x, ih, 4*iw, ih, 0, 1 )){ 
+          subMenu = 1;
+        }
+        break;
+      case 1:
+        sesName = TextField(sesName, x, ih, 3*iw, ih);
+        if(Button("Start", x + 3*iw, ih, iw, ih)){
+          print("Starting game: " + sesName);
+        }
+        break;
+    }
+    str = "Load Game";
+    if(Button(str, x, 2*ih, 4*iw, ih, 0, 2 )){ 
+      Change(LOAD);
+    }
+    
+    str = "Quit";
+    if(Button(str, x, 3*ih, 4*iw, ih, 0, 3 )){ 
+      Application.Quit();
+    }
+    
+  }
   
   
   void RenderInventory(){
@@ -772,6 +815,12 @@ public class Menu : MonoBehaviour{
     int ih = Height()/5;
     int x = XOffset() + iw;  
     Box("Load Menu", x, 0, iw, ih);
+    
+    if(!actor){ // Loaded from main menu.
+      if(Button("Back", x, ih, iw, ih)){
+        Change(MAIN);
+      }
+    }
   }
   
 

@@ -53,11 +53,14 @@ public class Session : MonoBehaviour {
   Camera cam2;
   List<Actor> players;
   
-  //World data.
+  // World data.
   List<Data> interiors;
   List<Data> exteriors;
   
-  
+  // Main menu UI
+  bool mainMenu; // True when main menu is active. 
+  Camera sesCam;
+  Menu sesMenu;
   
   void Awake(){
     if(Session.session){ Destroy(this); }
@@ -65,6 +68,7 @@ public class Session : MonoBehaviour {
     players = new List<Actor>();
     interiors = new List<Data>();
     exteriors = new List<Data>();
+    CreateMenu();
   }
   
   
@@ -140,6 +144,23 @@ public class Session : MonoBehaviour {
       Quaternion.identity
     );
     return go;
+  }
+  
+  /* Adds Camera and Menu to gameObject, sets main menu. */
+  public void CreateMenu(){
+    mainMenu = true;
+    sesCam = gameObject.AddComponent(typeof(Camera)) as Camera;
+    sesMenu = gameObject.AddComponent(typeof(Menu)) as Menu;
+    sesMenu.Change(Menu.MAIN);
+  }
+  
+  /* Destroys Camera and Menu attached to gameObject */
+  public void DestroyMenu(){
+  }
+  
+  /* Loads a particular interior. */
+  public void LoadInterior(string displayName){
+  
   }
   
   /* Returns an array of viable positions full of empty space directly
