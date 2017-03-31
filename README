@@ -40,5 +40,12 @@ Items(Warp Door)
 World(Interior cells, NPC placement)
 
 
-  Fixes/tweaks
-
+  Tasks For Interiors update
+-Make Main menu
+-Save MASTER map file.
+-Load MASTER map file.
+-Use MASTER map file to generate a Session's world map.
+-Save session.
+-Load Session.
+-Change interior cells via warp door. 
+-Get/Load serialization data for Actor

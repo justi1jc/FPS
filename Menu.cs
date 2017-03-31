@@ -70,7 +70,6 @@ public class Menu : MonoBehaviour{
         buying = new List<Data>(actor.interlocutor.inventory);
         sold = new List<Data>();
         bought = new List<Data>();
-        print("Selling count:"+ selling.Count);
         balance = 0;
       }
       if(menu == HUD && actor){ actor.SetMenuOpen(false); }
@@ -93,7 +92,7 @@ public class Menu : MonoBehaviour{
     GUI.Box(new Rect(posx, posy, scalex, scaley), text);
   }
   
-  // Convenience method to render button and return if it's been clicked.
+  /* Convenience method to render button and return if it's been clicked. */
   bool Button(
     string text,
     int posx,
