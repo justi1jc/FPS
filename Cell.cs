@@ -27,6 +27,7 @@ public class Cell{
   
   // Interior
   public string building; // The name of the building this interior resides within.
+  public string displayName; // Base name for room.
   public Data[] doorData; // warp doors for interiors
   public bool[] edges;    // True if a door exists for this direction.
   

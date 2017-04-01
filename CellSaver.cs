@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
 public class CellSaver : MonoBehaviour {
-  public string displayName;   // This should be unique between all interior cells.
+  public string displayName;   // This should be unique between cells in a building.
   public const string masterFile = "world.master";    // File containing all the map's cell data.     
   public GameObject  max, min; // Corners of the area that will be saved.
   public bool interior; 
@@ -35,15 +35,24 @@ public class CellSaver : MonoBehaviour {
   public string building;    // The name of the building this interior resides within.
   public Data[] doorData;    // warp doors for interiors
   public GameObject[] doors; // For setting warp doors initially in editor.
-  public bool[] edges;       // True if a door exists for this direction.  
-
+  public bool[] edges;       // True if a door exists for this direction.
+  public MapRecord map;      // Contents of master map file.
+  public Cell packedData;    // The cell's data to populate or save with.
+  
   // Exterior
   public List<Data> buildings; // The buildings in this exterior. 
   
+  void Update(){
+    if(Input.GetKeyDown(KeyCode.L)){ LoadFromMaster(); }
+    if(Input.GetKeyDown(KeyCode.C)){ ClearCell(); }
     
+  }
   public void Start(){
     if(saverMode){
-      Cell c =  GetData();
+      PackData();
+      Cell c = packedData;
+      for(int i = 0; i < c.items.Count; i++){ print( "Item" + c.items[i].displayName); }
+      for(int i = 0; i < c.npcs.Count; i++){ print( "NPC"  + c.npcs[i].displayName); }
       LoadFromMaster();
       SaveToMaster(c);
       LoadNextScene();
@@ -51,10 +60,26 @@ public class CellSaver : MonoBehaviour {
   }
   
   
-  /* Returns a Cell containing data of contents between min and max. */
-  public Cell GetData(){
+  /* Assigns the data of contents between min and max to packedData. */
+  public void PackData(){
     Cell c = new Cell();
-    if(!min || !max){ return c; }
+    List<GameObject> found = GetContents();
+    if(interior){
+      c.items = GetItems(found);
+      c.building = building;
+      c.displayName = displayName;
+    }
+    else{
+      c.items = GetItems(found, false, true);
+      c.buildings = GetItems(found, true, false); 
+    }
+    c.npcs = GetNpcs(found);
+    packedData = c;
+  }
+  
+  /* Returns the gameObjects caught by boxcasting with min and max.*/
+  public List<GameObject> GetContents(){
+    if(!min || !max){ return new List<GameObject>(); }
     Vector3 center = Vector3.Lerp(min.transform.position, max.transform.position, 0.5f);
     Vector3 halfExtents = (max.transform.position - min.transform.position) / 2;
     Vector3 direction = transform.forward;
@@ -70,20 +95,63 @@ public class CellSaver : MonoBehaviour {
       layerMask,
       QueryTriggerInteraction.Ignore
     );
+    List<GameObject> contents = new List<GameObject>();
     for(int i = 0; i < found.Length; i++){
-      print(found[i].collider.gameObject.name);
+      contents.Add(found[i].collider.gameObject);
     }
-    return c;
+    return contents;
+  }
+  
+  /* Returns the items in a GameObject list.
+     if ignoreItems is true, only scenery will be returned.
+     if ignoreScenery is true, only items will be returned.
+  */
+  public List<Data> GetItems(List<GameObject> obs,
+    bool ignoreItems = false,
+    bool ignoreScenery = false
+  ){
+    List<Data> ret = new List<Data>();
+    for(int i = 0; i < obs.Count; i++){
+      Item item = obs[i].GetComponent<Item>();
+      if(item){
+        bool scenery = item.itemType == Item.SCENERY;
+        if(scenery && !ignoreScenery){ ret.Add(item.GetData()); }
+        if(!scenery && !ignoreItems){ ret.Add(item.GetData()); }
+      }
+    }
+    return ret;
+  }
+  
+  /* Returns NPCs within GameObject list. */
+  public List<Data> GetNpcs(List<GameObject> obs){
+    List<Data> ret = new List<Data>();
+    for(int i = 0; i < obs.Count; i++){
+      Actor actor = obs[i].GetComponent<Actor>();
+      if(actor){ ret.Add(actor.GetData()); }
+    }
+    return ret;
   }
   
   /* Destroys all gameObjecs within min and max. */
-  public void ClearScene(){
-    print("Cleared scene");
+  public void ClearCell(){
+    List<GameObject> contents = GetContents();
+    for(int i = 0; i < contents.Count; i++){
+      Destroy(contents[i]);
+    }
+    print("Cell cleared");
+  }
+  
+  /* Instantiates all gameObjects */
+  public void PopulateCell(){
+   print("Cell populated");
   }
   
   /* Instantiates the contents of a Cell. */
   public void LoadData(Cell c){
-    print("Loaded data");
+    bool fileFound = false;
+    if(!fileFound){
+      map = new MapRecord();
+    }
   }
   
   /* Saves a cell to master map file.  */

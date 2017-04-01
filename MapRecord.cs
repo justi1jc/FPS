@@ -11,4 +11,9 @@ public class MapRecord{
   List<string> buildingNames; // The name of each type of building.
   List<Cell> exteriors; // All possible exteriors.
   
+  public MapRecord(){
+    buildings = new List<Cell[]>();
+    buildingNames = new List<string>();
+    exteriors = new List<Cell>();
+  }
 }

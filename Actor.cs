@@ -1191,7 +1191,9 @@ public class Actor : MonoBehaviour{
   /* Returns data not stored in prefab for this Actor */
   public Data GetData(){
   //TODO
-    return new Data();
+    Data dat = new Data();
+    dat.displayName = displayName;
+    return dat;
   }
   
   /* Loads data not specified for this prefab for this Actor */
