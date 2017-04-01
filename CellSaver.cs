@@ -45,7 +45,7 @@ public class CellSaver : MonoBehaviour {
     if(saverMode){
       Cell c =  GetData();
       LoadFromMaster();
-      SaveToMaster(Cell c);
+      SaveToMaster(c);
       LoadNextScene();
     }
   }
@@ -54,26 +54,50 @@ public class CellSaver : MonoBehaviour {
   /* Returns a Cell containing data of contents between min and max. */
   public Cell GetData(){
     Cell c = new Cell();
+    if(!min || !max){ return c; }
+    Vector3 center = Vector3.Lerp(min.transform.position, max.transform.position, 0.5f);
+    Vector3 halfExtents = (max.transform.position - min.transform.position) / 2;
+    Vector3 direction = transform.forward;
+    Quaternion orientation = transform.rotation;
+    float distance = 1f;
+    int layerMask = ~(1 << 8);
+    RaycastHit[] found = Physics.BoxCastAll(
+      center,
+      halfExtents,
+      direction,
+      orientation,
+      distance,
+      layerMask,
+      QueryTriggerInteraction.Ignore
+    );
+    for(int i = 0; i < found.Length; i++){
+      print(found[i].collider.gameObject.name);
+    }
     return c;
   }
   
   /* Destroys all gameObjecs within min and max. */
   public void ClearScene(){
+    print("Cleared scene");
   }
   
   /* Instantiates the contents of a Cell. */
   public void LoadData(Cell c){
+    print("Loaded data");
   }
   
   /* Saves a cell to master map file.  */
   public void SaveToMaster(Cell c){
+    print("Saved to master");
   }
   
   /* Loads the master map file. */
   public void LoadFromMaster(){
+    print("Loaded from master");
   }
   
   /* Loads the next scene in the build order, if possible. */
   public void LoadNextScene(){
+    print("Loaded next scene");
   }
 }
