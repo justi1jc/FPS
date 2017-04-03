@@ -44,6 +44,7 @@ World(Interior cells, NPC placement)
 -Make Main menu
 -Save MASTER map file.
 -Load MASTER map file.
+-Load scene from MASTER map file
 -Use MASTER map file to generate a Session's world map.
 DONE-Save Cell contents
 DONE-Load Cell contents.

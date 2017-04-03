@@ -7,9 +7,9 @@ using System.Collections.Generic;
 
 public class MapRecord{
   
-  List<Cell[]> buildings; // The array of cells comprising each type of building.
-  List<string> buildingNames; // The name of each type of building.
-  List<Cell> exteriors; // All possible exteriors.
+  public List<Cell[]> buildings; // The array of cells comprising each type of building.
+  public List<string> buildingNames; // The name of each type of building.
+  public List<Cell> exteriors; // All possible exteriors.
   
   public MapRecord(){
     buildings = new List<Cell[]>();

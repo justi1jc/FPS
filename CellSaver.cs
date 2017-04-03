@@ -37,34 +37,37 @@ public class CellSaver : MonoBehaviour {
   public GameObject[] doors; // For setting warp doors initially in editor.
   public bool[] edges;       // True if a door exists for this direction.
   public MapRecord map;      // Contents of master map file.
-  public Cell packedData;    // The cell's data to populate or save with.
+  public Cell packedCell;    // The cell's data to populate or save with.
   
   // Exterior
   public List<Data> buildings; // The buildings in this exterior. 
   
   void Update(){
-    if(Input.GetKeyDown(KeyCode.S)){ SaveToMaster(packedData); }
-    if(Input.GetKeyDown(KeyCode.P)){ PackData(); }
-    if(Input.GetKeyDown(KeyCode.U)){ UnpackData(); }
-    if(Input.GetKeyDown(KeyCode.L)){ LoadFromMaster(); }
-    if(Input.GetKeyDown(KeyCode.C)){ ClearCell(); }
+    if(Input.GetKeyDown(KeyCode.Q)){ PackCell(); }
+    if(Input.GetKeyDown(KeyCode.W)){ ClearCell(); }
+    if(Input.GetKeyDown(KeyCode.E)){ UnpackCell(); }
+    
+    if(Input.GetKeyDown(KeyCode.Z)){ LoadMaster(); }
+    if(Input.GetKeyDown(KeyCode.X)){ UpdateMaster(); }
+    if(Input.GetKeyDown(KeyCode.C)){ SaveMaster(); }
+    if(Input.GetKeyDown(KeyCode.C)){ UnpackMasterInterior(building, 0); }
     
   }
   public void Start(){
     if(saverMode){
-      PackData();
-      Cell c = packedData;
+      PackCell();
+      Cell c = packedCell;
       for(int i = 0; i < c.items.Count; i++){ print( "Item" + c.items[i].displayName); }
       for(int i = 0; i < c.npcs.Count; i++){ print( "NPC"  + c.npcs[i].displayName); }
-      LoadFromMaster();
-      SaveToMaster(c);
+      LoadMaster();
+      SaveMaster();
       LoadNextScene();
     }
   }
   
   
-  /* Assigns the data of contents between min and max to packedData. */
-  public void PackData(){
+  /* Assigns the data of contents between min and max to packedCell. */
+  public void PackCell(){
     Cell c = new Cell();
     List<GameObject> found = GetContents();
     if(interior){
@@ -77,21 +80,21 @@ public class CellSaver : MonoBehaviour {
       c.buildings = GetItems(found, true, false); 
     }
     c.npcs = GetNpcs(found);
-    packedData = c;
+    packedCell = c;
   }
   
   /* Instantiates all gameObjects from current data. */
-  public void UnpackData(){
-    if(packedData == null){ print("No data present."); return; }
-    List<Data> buildings = packedData.buildings;
+  public void UnpackCell(){
+    if(packedCell == null){ print("No data present."); return; }
+    List<Data> buildings = packedCell.buildings;
     for(int i = 0; i < buildings.Count; i++){
       CreateItem(buildings[i]);
     }
-    List<Data> items = packedData.items;
+    List<Data> items = packedCell.items;
     for(int i = 0; i < items.Count; i++){
       CreateItem(items[i]);
     }
-    List<Data> npcs = packedData.npcs;
+    List<Data> npcs = packedCell.npcs;
     for(int i = 0; i < npcs.Count; i++){
       CreateNPC(npcs[i]);
     }
@@ -189,22 +192,64 @@ public class CellSaver : MonoBehaviour {
     print("Cell cleared");
   }
   
-  /* Instantiates the contents of a Cell. */
-  public void LoadData(Cell c){
-    bool fileFound = false;
-    if(!fileFound){
-      map = new MapRecord();
-    }
-  }
   
-  /* Saves a cell to master map file.  */
-  public void SaveToMaster(Cell c){
+  
+  /* Saves packedCell to map.  */
+  public void UpdateMaster(){
+    if(map == null){ print("Master not loaded"); return; }
+    if(interior){
+      int found = -1;
+      for(int i = 0; i < map.buildingNames.Count; i++){
+        if(map.buildingNames[i] == building){ found = i; break;}
+      }
+      if(found < 0){
+        map.buildingNames.Add(building);
+        Cell[] cells = new Cell[1];
+        cells[0] = packedCell;
+        map.buildings.Add(cells);
+      }
+      else{
+        List<Cell> cells = new List<Cell>(map.buildings[found]);
+        cells.Add(packedCell);
+        map.buildings[found] = cells.ToArray();
+      }
+    }
+    else{ print("Exteriors not implemented"); }
     print("Saved to master");
   }
   
-  /* Loads the master map file. */
-  public void LoadFromMaster(){
+  /* Saves map to master map file. */
+  public void SaveMaster(){
+    if(map == null){ print("Master not loaded"); return; }
+    for(int i = 0; i < map.buildingNames.Count; i++){
+      print(map.buildingNames[i]);
+    }
+    print("Master saved");
+  }
+  
+  /* Loads the master map file into map or creates new one. */
+  public void LoadMaster(){
+    map = new MapRecord();
     print("Loaded from master");
+  }
+  
+  /* unpacks a particular interior from master */
+  public void UnpackMasterInterior(string buildingName, int cellIndex){
+    if(map == null){ print("Master not loaded"); }
+    int found = -1;
+    for(int i = 0; i < map.buildingNames.Count; i++){
+      if(buildingName == map.buildingNames[i]){ found = i; break; }
+    }
+    if(found < 0){ print("Building not found."); return; }
+    if(cellIndex >= map.buildings[found].Length){ print("Cell not found"); return; }
+    packedCell = map.buildings[found][cellIndex];
+    UnpackCell();
+    print(buildingName + " " + cellIndex + " unpacked.");
+  }
+  
+  /* unpacks a particular exterior from master */
+  public void UnpackMasterExterior(string buildingName, int cellIndex){
+    print("Exteriors not implemented");
   }
   
   /* Loads the next scene in the build order, if possible. */
