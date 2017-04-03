@@ -1193,12 +1193,25 @@ public class Actor : MonoBehaviour{
   //TODO
     Data dat = new Data();
     dat.displayName = displayName;
+    dat.prefabName = prefabName;
+    dat.x = transform.position.x;
+    dat.y = transform.position.y;
+    dat.z = transform.position.z;
+    Vector3 rot = transform.rotation.eulerAngles;
+    dat.xr = rot.x;
+    dat.yr = rot.y;
+    dat.zr = rot.z;
+    dat.stack = 1;
+    dat.stackSize = 1;
     return dat;
   }
   
   /* Loads data not specified for this prefab for this Actor */
   public void LoadData(Data dat){
-  //TODO
+    //TODO
+    displayName = dat.displayName;
+    transform.position = new Vector3(dat.x, dat.y, dat.z);
+    transform.rotation = Quaternion.Euler(dat.xr, dat.yr, dat.zr);
   }
    
   /* Initiates conversation with other actor */

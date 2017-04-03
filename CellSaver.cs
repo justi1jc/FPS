@@ -43,6 +43,9 @@ public class CellSaver : MonoBehaviour {
   public List<Data> buildings; // The buildings in this exterior. 
   
   void Update(){
+    if(Input.GetKeyDown(KeyCode.S)){ SaveToMaster(packedData); }
+    if(Input.GetKeyDown(KeyCode.P)){ PackData(); }
+    if(Input.GetKeyDown(KeyCode.U)){ UnpackData(); }
     if(Input.GetKeyDown(KeyCode.L)){ LoadFromMaster(); }
     if(Input.GetKeyDown(KeyCode.C)){ ClearCell(); }
     
@@ -75,6 +78,49 @@ public class CellSaver : MonoBehaviour {
     }
     c.npcs = GetNpcs(found);
     packedData = c;
+  }
+  
+  /* Instantiates all gameObjects from current data. */
+  public void UnpackData(){
+    if(packedData == null){ print("No data present."); return; }
+    List<Data> buildings = packedData.buildings;
+    for(int i = 0; i < buildings.Count; i++){
+      CreateItem(buildings[i]);
+    }
+    List<Data> items = packedData.items;
+    for(int i = 0; i < items.Count; i++){
+      CreateItem(items[i]);
+    }
+    List<Data> npcs = packedData.npcs;
+    for(int i = 0; i < npcs.Count; i++){
+      CreateNPC(npcs[i]);
+    }
+  }
+  
+  void CreateItem(Data dat){
+    Vector3 spawnPos = new Vector3(dat.x, dat.y, dat.z);
+    Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
+    GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
+    GameObject go = (GameObject)GameObject.Instantiate(
+      pref,
+      spawnPos,
+      rot
+    );
+    Item item = go.GetComponent<Item>();
+    if(item){ item.LoadData(dat); }
+  }
+  
+  void CreateNPC(Data dat){
+    Vector3 spawnPos = new Vector3(dat.x, dat.y, dat.z);
+    Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
+    GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
+    GameObject go = (GameObject)GameObject.Instantiate(
+      pref,
+      spawnPos,
+      rot
+    );
+    Actor actor = go.GetComponent<Actor>();
+    if(actor){ actor.LoadData(dat); }
   }
   
   /* Returns the gameObjects caught by boxcasting with min and max.*/
@@ -139,11 +185,6 @@ public class CellSaver : MonoBehaviour {
       Destroy(contents[i]);
     }
     print("Cell cleared");
-  }
-  
-  /* Instantiates all gameObjects */
-  public void PopulateCell(){
-   print("Cell populated");
   }
   
   /* Instantiates the contents of a Cell. */

@@ -58,7 +58,7 @@ public class Session : MonoBehaviour {
   List<Data> exteriors;
   
   // Main menu UI
-  bool mainMenu; // True when main menu is active. 
+  bool mainMenu; // True when main menu is active.
   Camera sesCam;
   Menu sesMenu;
   
