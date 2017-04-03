@@ -143,7 +143,9 @@ public class CellSaver : MonoBehaviour {
     );
     List<GameObject> contents = new List<GameObject>();
     for(int i = 0; i < found.Length; i++){
-      contents.Add(found[i].collider.gameObject);
+      if(found[i].collider != null){
+        contents.Add(found[i].collider.gameObject);
+      }
     }
     return contents;
   }
