@@ -13,7 +13,7 @@
 */
 
 using System.Collections.Generic;
-
+[System.Serializable]
 public class Cell{
   // Cardinal Directions 
   public const int NORTH = 0;

@@ -1,10 +1,8 @@
 /*
     CellSaver is the MonoBehaviour responsibile for saving and loading the
-    contents of a Cell. It can be used by the Session to load a particular active
-    Cell, or it can be used in the Unity Editor to save the contents of a scene
-    as a Cell.  
+    contents of a Cell for editing the master map file.
     
-    The master map file represents all the cells available when generating 
+    The master map file contains all the cells available when generating 
     a new map, whereas a GameRecord represents a particular session's data. The
     CellSaver will not save directly to the GameRecord's file.
     
@@ -21,16 +19,20 @@
 */
 
 using UnityEngine;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
+
 public class CellSaver : MonoBehaviour {
   public string displayName;   // This should be unique between cells in a building.
-  public const string masterFile = "world.master";    // File containing all the map's cell data.     
+  public const string masterFile = "world";    // File containing all the map's cell data.     
   public GameObject  max, min; // Corners of the area that will be saved.
-  public bool interior; 
-  public bool saverMode = false;     // Will instantly save the current cell if true.
+  public bool interior;
+  public bool fileAccess = false; // True during file io
+  public bool saverMode = false;  // Will instantly save the current cell if true.
   // Interior
   public string building;    // The name of the building this interior resides within.
   public Data[] doorData;    // warp doors for interiors
@@ -50,7 +52,7 @@ public class CellSaver : MonoBehaviour {
     if(Input.GetKeyDown(KeyCode.Z)){ LoadMaster(); }
     if(Input.GetKeyDown(KeyCode.X)){ UpdateMaster(); }
     if(Input.GetKeyDown(KeyCode.C)){ SaveMaster(); }
-    if(Input.GetKeyDown(KeyCode.C)){ UnpackMasterInterior(building, 0); }
+    if(Input.GetKeyDown(KeyCode.V)){ UnpackMasterInterior(building, 0); }
     
   }
   public void Start(){
@@ -221,16 +223,33 @@ public class CellSaver : MonoBehaviour {
   /* Saves map to master map file. */
   public void SaveMaster(){
     if(map == null){ print("Master not loaded"); return; }
-    for(int i = 0; i < map.buildingNames.Count; i++){
-      print(map.buildingNames[i]);
-    }
-    print("Master saved");
+    if(fileAccess){ print("File access already in progress."); return; }
+    fileAccess = true;
+    string path = Application.persistentDataPath + "/" + masterFile + ".master";
+    FileStream file  = File.Create(path);
+    BinaryFormatter bf =  new BinaryFormatter();
+    bf.Serialize(file, map);
+    file.Close();
+    fileAccess = false;
+    print("Master saved to " + path);
   }
   
   /* Loads the master map file into map or creates new one. */
   public void LoadMaster(){
-    map = new MapRecord();
-    print("Loaded from master");
+    string path = Application.persistentDataPath + "/" + masterFile + ".master";
+    if(!File.Exists(path)){
+      map = new MapRecord();
+      print("File did not exist.");
+      return;
+    }
+    if(fileAccess){ print("File access already in progress."); return; }
+    fileAccess = true;
+    FileStream file = File.Open(path, FileMode.Open);
+    BinaryFormatter bf = new BinaryFormatter();
+    map = (MapRecord)bf.Deserialize(file);
+    file.Close();
+    fileAccess = false;
+    print("Loaded from master.");
   }
   
   /* unpacks a particular interior from master */

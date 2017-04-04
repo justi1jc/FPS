@@ -5,6 +5,7 @@
 
 using System.Collections.Generic;
 
+[System.Serializable]
 public class MapRecord{
   
   public List<Cell[]> buildings; // The array of cells comprising each type of building.
