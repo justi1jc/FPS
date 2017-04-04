@@ -1,6 +1,6 @@
 /*
     CellSaver is the MonoBehaviour responsibile for saving and loading the
-    contents of a Cell for editing the master map file.
+    contents of a Cell for editing the master map file via the unity editor.
     
     The master map file contains all the cells available when generating 
     a new map, whereas a GameRecord represents a particular session's data. The
@@ -52,7 +52,7 @@ public class CellSaver : MonoBehaviour {
     if(Input.GetKeyDown(KeyCode.Z)){ LoadMaster(); }
     if(Input.GetKeyDown(KeyCode.X)){ UpdateMaster(); }
     if(Input.GetKeyDown(KeyCode.C)){ SaveMaster(); }
-    if(Input.GetKeyDown(KeyCode.V)){ UnpackMasterInterior(building, 0); }
+    if(Input.GetKeyDown(KeyCode.V)){ UnpackMasterInterior(building, displayName); }
     
   }
   public void Start(){
@@ -88,6 +88,10 @@ public class CellSaver : MonoBehaviour {
   /* Instantiates all gameObjects from current data. */
   public void UnpackCell(){
     if(packedCell == null){ print("No data present."); return; }
+    if(interior){
+      displayName = packedCell.displayName;
+      building = packedCell.building;
+    }
     List<Data> buildings = packedCell.buildings;
     for(int i = 0; i < buildings.Count; i++){
       CreateItem(buildings[i]);
@@ -253,21 +257,26 @@ public class CellSaver : MonoBehaviour {
   }
   
   /* unpacks a particular interior from master */
-  public void UnpackMasterInterior(string buildingName, int cellIndex){
+  public void UnpackMasterInterior(string buildingName, string cellName){
     if(map == null){ print("Master not loaded"); }
     int found = -1;
     for(int i = 0; i < map.buildingNames.Count; i++){
       if(buildingName == map.buildingNames[i]){ found = i; break; }
     }
     if(found < 0){ print("Building not found."); return; }
-    if(cellIndex >= map.buildings[found].Length){ print("Cell not found"); return; }
-    packedCell = map.buildings[found][cellIndex];
+    Cell interior = null;
+    for(int i = 0; i < map.buildings[found].Length; i++){
+      Cell candidate = map.buildings[found][i];
+      if(candidate.displayName == cellName){ interior = candidate; }
+    }
+    if(interior == null){ print("Cell " + cellName + " not found."); return; }
+    packedCell = interior;
     UnpackCell();
-    print(buildingName + " " + cellIndex + " unpacked.");
+    print(buildingName + " " + cellName + " unpacked.");
   }
   
   /* unpacks a particular exterior from master */
-  public void UnpackMasterExterior(string buildingName, int cellIndex){
+  public void UnpackMasterExterior(){
     print("Exteriors not implemented");
   }
   

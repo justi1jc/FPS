@@ -21,7 +21,11 @@ using UnityEngine.SceneManagement;
 public class Session : MonoBehaviour {
   public static Session session;
   public static bool fileAccess = false; //True if files are currently accessed
-  public string sessionName; //Name Used in save.
+  public string sessionName; //Name Used in save file.
+  const string DEFAULT_BUILDING = "House";
+  const string DEFAULT_INTERIOR = "ActI";
+  string currentBuilding = DEFAULT_BUILDING;
+  string currentInterior = DEFAULT_INTERIOR;
   
   // Controller one linux values
   public static string C1 = "Joystick 1"; //Controller 1
@@ -54,30 +58,30 @@ public class Session : MonoBehaviour {
   List<Actor> players;
   
   // World data.
-  List<Data> interiors;
-  List<Data> exteriors;
+  List<Cell[]> interiors;
+  List<Cell> exteriors;
+  bool interior; // True if interior is currently loaded.
+  string buildingName;
+  string interiorName;
   
   // Main menu UI
   bool mainMenu; // True when main menu is active.
   Camera sesCam;
   Menu sesMenu;
+   
   
   void Awake(){
     if(Session.session){ Destroy(this); }
     else{ Session.session = this; }
     players = new List<Actor>();
-    interiors = new List<Data>();
-    exteriors = new List<Data>();
+    interiors = new List<Cell[]>();
+    exteriors = new List<Cell>();
     CreateMenu();
   }
   
   
   void Update(){
 
-  }
-  
-  Data GatherInterior(){
-    return new Data();
   }
   
   public void RegisterPlayer(Actor actor, int player, Camera cam){
@@ -93,6 +97,14 @@ public class Session : MonoBehaviour {
     UpdateCameras();
   }
   
+  public void LoadInterior(string building, string cellName){
+    
+  }
+  
+  /* Packs the current cell and loads an exterior. */
+  public void LoadExterior(){
+    
+  }
   
   /* Sets up each player's Menu */
   void UpdateCameras(){
@@ -156,12 +168,11 @@ public class Session : MonoBehaviour {
   
   /* Destroys Camera and Menu attached to gameObject */
   public void DestroyMenu(){
+    Camera cam = sesCam;
+    sesCam = null;
+    Destroy(GetComponent<Camera>());
   }
   
-  /* Loads a particular interior. */
-  public void LoadInterior(string displayName){
-  
-  }
   
   /* Returns an array of viable positions full of empty space directly
      above colliders, This is like surveying how many stories a building

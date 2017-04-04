@@ -42,13 +42,11 @@ World(Interior cells, NPC placement)
 
   Tasks For Interiors update
 -Make Main menu
--Save MASTER map file.
--Load MASTER map file.
--Load scene from MASTER map file
--Use MASTER map file to generate a Session's world map.
-DONE-Save Cell contents
-DONE-Load Cell contents.
+-Use MASTER map file and CellSaver to generate a Session's world map.
 -Save session.
 -Load Session.
+HoloDeck
+  -Load Interior from Session's map.
+  -Save Interior to Session's map.
 -Change interior cells via warp door. 
 -Get/Load serialization data for Actor

@@ -1,7 +1,6 @@
 /*
   A cell is the basic unit of the game's world. It can describe either the
-  an interior space, or an exterior space. A cell acts as a record used by
-  the CellSaver, CellLoader, and Session.
+  an interior space, or an exterior space.
 
   An interior cell exists within a building and has up to four doors corresponding
   to the four cardinal directions. The locations of each door are likewise
