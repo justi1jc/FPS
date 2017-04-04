@@ -8,15 +8,15 @@ using System.Collections.Generic;
 [System.Serializable]
 public class GameRecord{
   public string sessionName;
-  public List<Data> interiors;
-  public List<Data> exteriors;
+  public MapRecord map;
   public bool interior;
+  public string currentBuilding;
+  public string currentInterior;
+  public int x, y;
   public List<Data> quests; // Quest data.
-  public int currentCell; // Index of current cell.
   public List<Data> players;
   public GameRecord(){
-    interiors = new List<Data>();
-    exteriors = new List<Data>();
+    map = new MapRecord();
     quests    = new List<Data>();
     players   = new List<Data>();
   }

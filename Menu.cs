@@ -243,7 +243,7 @@ public class Menu : MonoBehaviour{
       case 1:
         sesName = TextField(sesName, x, ih, 3*iw, ih);
         if(Button("Start", x + 3*iw, ih, iw, ih)){
-          print("Starting game: " + sesName);
+          Session.session.CreateGame(sesName);
         }
         break;
     }

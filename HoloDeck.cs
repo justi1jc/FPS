@@ -14,12 +14,19 @@ using System.Collections.Generic;
 public class HoloDeck : MonoBehaviour{
   public bool initialized = false; // True if a cell of some type is currently loaded. 
   public bool interior; // True if an interior is currently loaded.
+  public Cell deck;
 
 
   public void LoadInterior(string building, string cellName){
-    if(initialized && interior){
-      SaveInterior();
-      ClearInterior();
+    if(interior){
+      if(initialized){
+        SaveInterior();
+        ClearInterior();
+      }
+      MapRecord map = Session.session.map;
+      if(map == null){ print("Session map not initialized"); return; }
+      for(int i = 0; i < 5; i++){
+      }
       print("Loaded " + building + " " + cellName);
     }
     

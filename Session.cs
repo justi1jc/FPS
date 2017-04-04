@@ -22,10 +22,7 @@ public class Session : MonoBehaviour {
   public static Session session;
   public static bool fileAccess = false; //True if files are currently accessed
   public string sessionName; //Name Used in save file.
-  const string DEFAULT_BUILDING = "House";
-  const string DEFAULT_INTERIOR = "ActI";
-  string currentBuilding = DEFAULT_BUILDING;
-  string currentInterior = DEFAULT_INTERIOR;
+  
   
   // Controller one linux values
   public static string C1 = "Joystick 1"; //Controller 1
@@ -57,26 +54,28 @@ public class Session : MonoBehaviour {
   Camera cam2;
   List<Actor> players;
   
-  // World data.
-  List<Cell[]> interiors;
-  List<Cell> exteriors;
-  bool interior; // True if interior is currently loaded.
-  string buildingName;
-  string interiorName;
+  // World.
+  const string MENU_BUILDING = "House";
+  const string MENU_INTERIOR = "ActI";
+  HoloDeck deck;
+  public MapRecord map;
+  bool interior = true; // True if interior is currently loaded.
+  string buildingName = MENU_BUILDING;
+  string interiorName = MENU_INTERIOR;
+  int xCord, yCord; // Coordinates on overworld
   
   // Main menu UI
   bool mainMenu; // True when main menu is active.
   Camera sesCam;
   Menu sesMenu;
-   
   
   void Awake(){
     if(Session.session){ Destroy(this); }
     else{ Session.session = this; }
     players = new List<Actor>();
-    interiors = new List<Cell[]>();
-    exteriors = new List<Cell>();
     CreateMenu();
+    LoadMaster();
+    CreateDeck();
   }
   
   
@@ -95,6 +94,11 @@ public class Session : MonoBehaviour {
     if(player == 1){ cam1 = null; }
     else if(player == 2){ cam2 = null; }
     UpdateCameras();
+  }
+  
+  public void CreateGame(string sesName){
+    sessionName = sesName;
+    print("Created session " + sesName);
   }
   
   public void LoadInterior(string building, string cellName){
@@ -173,6 +177,20 @@ public class Session : MonoBehaviour {
     Destroy(GetComponent<Camera>());
   }
   
+  public void CreateDeck(){
+    deck = gameObject.AddComponent(typeof(HoloDeck)) as HoloDeck;
+    deck.interior = interior;
+    deck.initialized = false;
+    deck.LoadInterior(buildingName, interiorName);
+  }
+  
+  public void LoadMaster(){
+    CellSaver saver = gameObject.AddComponent(typeof(CellSaver)) as CellSaver;
+    saver.LoadMaster();
+    map = saver.map;
+    Destroy(saver);
+    
+  }
   
   /* Returns an array of viable positions full of empty space directly
      above colliders, This is like surveying how many stories a building
