@@ -66,6 +66,7 @@ public class HoloDeck : MonoBehaviour{
   }
   void CreateItem(Data dat){
     Vector3 spawnPos = new Vector3(dat.x, dat.y, dat.z);
+    spawnPos += transform.position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
     GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
     GameObject go = (GameObject)GameObject.Instantiate(
@@ -75,10 +76,12 @@ public class HoloDeck : MonoBehaviour{
     );
     Item item = go.GetComponent<Item>();
     if(item){ item.LoadData(dat); }
+    go.transform.position = spawnPos;
   }
   
   void CreateNPC(Data dat){
     Vector3 spawnPos = new Vector3(dat.x, dat.y, dat.z);
+    spawnPos += transform.position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
     GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
     GameObject go = (GameObject)GameObject.Instantiate(
@@ -88,6 +91,7 @@ public class HoloDeck : MonoBehaviour{
     );
     Actor actor = go.GetComponent<Actor>();
     if(actor){ actor.LoadData(dat); }
+    go.transform.position = spawnPos;
   }
   
   /* Updates interior in Session's data. */

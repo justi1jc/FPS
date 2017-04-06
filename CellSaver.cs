@@ -33,6 +33,7 @@ public class CellSaver : MonoBehaviour {
   public bool interior;
   public bool fileAccess = false; // True during file io
   public bool saverMode = false;  // Will instantly save the current cell if true.
+  public bool cascade = false; // Will continue to save other scenes in build settings.
   // Interior
   public string building;    // The name of the building this interior resides within.
   public Data[] doorData;    // warp doors for interiors
@@ -58,12 +59,10 @@ public class CellSaver : MonoBehaviour {
   public void Start(){
     if(saverMode){
       PackCell();
-      Cell c = packedCell;
-      for(int i = 0; i < c.items.Count; i++){ print( "Item" + c.items[i].displayName); }
-      for(int i = 0; i < c.npcs.Count; i++){ print( "NPC"  + c.npcs[i].displayName); }
       LoadMaster();
+      UpdateMaster();
       SaveMaster();
-      LoadNextScene();
+      if(cascade){ LoadNextScene(); }
     }
   }
   
@@ -110,8 +109,14 @@ public class CellSaver : MonoBehaviour {
     }
   }
   
+  /* Converts an absolute position into relative one. */
+  Vector3 Relative(Vector3 absolute){
+    return absolute - transform.position;
+  }
+  
   void CreateItem(Data dat){
     Vector3 spawnPos = new Vector3(dat.x, dat.y, dat.z);
+    spawnPos += transform.position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
     GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
     GameObject go = (GameObject)GameObject.Instantiate(
@@ -175,6 +180,11 @@ public class CellSaver : MonoBehaviour {
     for(int i = 0; i < obs.Count; i++){
       Item item = obs[i].GetComponent<Item>();
       if(item){
+        Data dat = item.GetData();
+        Vector3 pos = Relative(obs[i].transform.position);
+        dat.x = pos.x;
+        dat.y = pos.y;
+        dat.z = pos.z;
         bool scenery = item.itemType == Item.SCENERY;
         if(scenery && !ignoreScenery){ ret.Add(item.GetData()); }
         if(!scenery && !ignoreItems){ ret.Add(item.GetData()); }
