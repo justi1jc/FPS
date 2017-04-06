@@ -23,7 +23,7 @@ public class Cell{
   public bool interior;   // True if this cell is an interior.
   public List<Data> items;
   public List<Data> npcs;
-  
+  public float heX, heY, heZ; // Half extents for boxcasts
   // Interior
   public string building; // The name of the building this interior resides within.
   public string displayName; // Base name for room.

@@ -192,7 +192,7 @@ public class Session : MonoBehaviour {
     
   }
   
-  /* Returns an array of viable positions full of empty space directly
+  /* Returns an array of viable positions consisting of empty space directly
      above colliders, This is like surveying how many stories a building
      has to it. */
   Vector3[] GroundedColumn(Vector3 pos, Vector3 scale,

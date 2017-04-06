@@ -41,7 +41,7 @@ World(Interior cells, NPC placement)
 
 
   Tasks For Interiors update
--Make Main menu
+-Load main menu into holo deck
 -Use MASTER map file and CellSaver to generate a Session's world map.
 -Save session.
 -Load Session.

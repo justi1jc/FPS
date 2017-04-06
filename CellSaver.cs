@@ -82,6 +82,10 @@ public class CellSaver : MonoBehaviour {
       c.buildings = GetItems(found, true, false); 
     }
     c.npcs = GetNpcs(found);
+    Vector3 he = (max.transform.position - min.transform.position) / 2;
+    c.heX = he.x;
+    c.heY = he.y;
+    c.heZ = he.z;
     packedCell = c;
   }
   
