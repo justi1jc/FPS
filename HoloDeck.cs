@@ -134,4 +134,52 @@ public class HoloDeck : MonoBehaviour{
     }
     return contents;
   }
+  
+  /* Returns the items in a GameObject list.
+     if ignoreItems is true, only scenery will be returned.
+     if ignoreScenery is true, only items will be returned.
+  */
+  public List<Data> GetItems(List<GameObject> obs,
+    bool ignoreItems = false,
+    bool ignoreScenery = false
+  ){
+    List<Data> ret = new List<Data>();
+    for(int i = 0; i < obs.Count; i++){
+      Item item = obs[i].GetComponent<Item>();
+      if(item){
+        Data dat = item.GetData();
+        Vector3 pos = Relative(obs[i].transform.position);
+        dat.x = pos.x;
+        dat.y = pos.y;
+        dat.z = pos.z;
+        bool scenery = item.itemType == Item.SCENERY;
+        if(scenery && !ignoreScenery){ ret.Add(item.GetData()); }
+        if(!scenery && !ignoreItems){ ret.Add(item.GetData()); }
+      }
+    }
+    return ret;
+  }
+  
+  /* Returns NPCs within GameObject list. */
+  public List<Data> GetNpcs(List<GameObject> obs){
+    List<Data> ret = new List<Data>();
+    for(int i = 0; i < obs.Count; i++){
+      Actor actor = obs[i].GetComponent<Actor>();
+      bool player = actor.playerNumber > 0 && actor.playerNumber < 5;
+      if(actor && !player){
+        Data dat = actor.GetData();
+        Vector3 pos = Relative(obs[i].transform.position);
+        dat.x = pos.x;
+        dat.y = pos.y;
+        dat.z = pos.z;
+        ret.Add(dat);
+      }
+    }
+    return ret;
+  }
+  
+  /* Converts an absolute position into relative one. */
+  Vector3 Relative(Vector3 absolute){
+    return absolute - transform.position;
+  }
 }

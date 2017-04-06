@@ -165,8 +165,11 @@ public class Session : MonoBehaviour {
   /* Adds Camera and Menu to gameObject, sets main menu. */
   public void CreateMenu(){
     mainMenu = true;
-    sesCam = gameObject.AddComponent(typeof(Camera)) as Camera;
-    sesMenu = gameObject.AddComponent(typeof(Menu)) as Menu;
+    GameObject go = new GameObject();
+    go.transform.position = transform.position + new Vector3(10f, 10f, 0f);
+    go.transform.LookAt(transform);
+    sesCam = go.AddComponent(typeof(Camera)) as Camera;
+    sesMenu = go.AddComponent(typeof(Menu)) as Menu;
     sesMenu.Change(Menu.MAIN);
   }
   
@@ -174,7 +177,7 @@ public class Session : MonoBehaviour {
   public void DestroyMenu(){
     Camera cam = sesCam;
     sesCam = null;
-    Destroy(GetComponent<Camera>());
+    Destroy(cam.gameObject);
   }
   
   public void CreateDeck(){

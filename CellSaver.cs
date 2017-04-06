@@ -227,15 +227,28 @@ public class CellSaver : MonoBehaviour {
         Cell[] cells = new Cell[1];
         cells[0] = packedCell;
         map.buildings.Add(cells);
+        print("New building added");
       }
       else{
-        List<Cell> cells = new List<Cell>(map.buildings[found]);
-        cells.Add(packedCell);
-        map.buildings[found] = cells.ToArray();
+        int foundCell = -1;
+        for(int i = 0; i < map.buildings[found].Length; i++){
+          if(map.buildings[found][i].displayName == packedCell.displayName){
+            foundCell = i;
+          }
+        }
+        if(foundCell != -1){
+          map.buildings[found][foundCell] = packedCell;
+          print("Updated existing cell.");
+        }
+        else{
+          List<Cell> cells = new List<Cell>(map.buildings[found]);
+          cells.Add(packedCell);
+          map.buildings[found] = cells.ToArray();
+          print("Added new cell.");
+        }
       }
     }
     else{ print("Exteriors not implemented"); }
-    print("Saved to master");
   }
   
   /* Saves map to master map file. */
@@ -267,7 +280,7 @@ public class CellSaver : MonoBehaviour {
     map = (MapRecord)bf.Deserialize(file);
     file.Close();
     fileAccess = false;
-    print("Loaded from master.");
+    print("Loaded from " + path);
   }
   
   /* unpacks a particular interior from master */
