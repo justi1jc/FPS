@@ -241,7 +241,7 @@ public class Actor : MonoBehaviour{
   /* Handles input from keyboard. */
   IEnumerator KeyboardInputRoutine(){
     while(true){
-      if(!menuOpen){//TODO: Toggle menu controls properly
+      if(!menuOpen){
         KeyboardActorInput();
       }
       else{
@@ -276,7 +276,7 @@ public class Actor : MonoBehaviour{
     else if(Input.GetKey(KeyCode.S)){ z = -1f; walk = true; }
     if(Input.GetKey(KeyCode.A)){ x = -1f; walk = true; }
     else if(Input.GetKey(KeyCode.D)){ x = 1f; walk = true; }
-    StickMove(x, z);
+    if(x != 0f || z != 0f){ StickMove(x, z); }
     if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(KeyCode.LeftControl)){ToggleCrouch(); }
     if(Input.GetKeyUp(KeyCode.LeftControl)){ToggleCrouch(); }

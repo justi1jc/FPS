@@ -103,6 +103,7 @@ public class Item : MonoBehaviour{
   
   // WARP variables
   public string destName;
+  public int deckId;
   public Vector3 destPos;
   public Vector3 destRot;
   
@@ -123,6 +124,11 @@ public class Item : MonoBehaviour{
         break;
       case CONTAINER:
         contents = new List<Data>();
+        break;
+      case WARP:
+        destName = "";
+        deckId = 0;
+        destPos = destPos = new Vector3();
         break;
       default:
         break;
