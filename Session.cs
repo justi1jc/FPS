@@ -53,11 +53,16 @@ public class Session : MonoBehaviour {
   Camera cam1;
   Camera cam2;
   List<Actor> players;
+  List<Data> playerData;
   
   // World.
   const string MENU_BUILDING = "House";
   const string MENU_INTERIOR = "ActI";
+  const string INIT_BUILDING = "House";
+  const string INIT_INTERIOR = "ActI";
   HoloDeck deck;
+  Vector3[] spawnPoints;
+  Vector3[] spawnRots;
   public MapRecord map;
   bool interior = true; // True if interior is currently loaded.
   string buildingName = MENU_BUILDING;
@@ -73,6 +78,9 @@ public class Session : MonoBehaviour {
     if(Session.session){ Destroy(this); }
     else{ Session.session = this; }
     players = new List<Actor>();
+    playerData = new List<Data>();
+    spawnPoints = new Vector3[1];
+    spawnRots = new Vector3[1];
     CreateMenu();
     LoadMaster();
     CreateDeck();
@@ -98,16 +106,33 @@ public class Session : MonoBehaviour {
   
   public void CreateGame(string sesName){
     sessionName = sesName;
+    DestroyMenu();
+    CreateLoadingScreen();
+    deck.initialized = false;
+    LoadInterior(INIT_BUILDING, INIT_INTERIOR);
+    DestroyLoadingScreen();
+    Spawn("Player1", spawnPoints[0]);
+    LoadPlayers(deck, 0);
     print("Created session " + sesName);
+    
   }
   
   public void LoadInterior(string building, string cellName){
-    
+    SavePlayers();
+    deck.LoadInterior(building, cellName);
   }
   
   /* Packs the current cell and loads an exterior. */
   public void LoadExterior(){
     
+  }
+  
+  /* Create camera and menu to display loading screen. */
+  public void CreateLoadingScreen(){
+  }
+  
+  /* Remove camera and menu. */
+  public void DestroyLoadingScreen(){
   }
   
   /* Sets up each player's Menu */
@@ -297,5 +322,29 @@ public class Session : MonoBehaviour {
     }
     fileAccess = false;
     return records;
+  }
+  
+  /* Places the players into a rendered location. */
+  public void LoadPlayers(HoloDeck hd, int id){
+    while(playerData.Count > 0){
+      int i = playerData.Count -1;
+      Data dat = playerData[i];
+      Vector3 pos = spawnPoints[id];
+      Vector3 rot = spawnRots[id];
+      dat.x = pos.x;
+      dat.y = pos.y;
+      dat.z = pos.z;
+      dat.xr = rot.x;
+      dat.yr = rot.y;
+      dat.zr = rot.x;
+      hd.CreateNPC(dat);
+      playerData.Remove(playerData[i]);
+    }
+  }
+  
+  public void SavePlayers(){
+    for(int i = 0; i < players.Count; i++){
+      playerData.Add(players[i].GetData());
+    }
   }
 }

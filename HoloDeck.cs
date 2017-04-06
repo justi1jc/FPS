@@ -15,7 +15,7 @@ public class HoloDeck : MonoBehaviour{
   public bool initialized = false; // True if a cell of some type is currently loaded. 
   public bool interior; // True if an interior is currently loaded.
   public Cell deck; // Active cell
-
+  int id = 0; // Id for multiple holodecks in a session. 
 
   public void LoadInterior(string building, string cellName){
     if(interior){
@@ -23,6 +23,7 @@ public class HoloDeck : MonoBehaviour{
         SaveInterior();
         ClearInterior();
       }
+      ClearInterior();
       MapRecord map = Session.session.map;
       if(map == null){ print("Session map not initialized"); return; }
       Cell found = null;
@@ -64,7 +65,7 @@ public class HoloDeck : MonoBehaviour{
     for(int i = 0; i < deck.items.Count; i++){ CreateItem(deck.items[i]); }
     for(int i = 0; i < deck.npcs.Count; i++){ CreateNPC(deck.npcs[i]); }
   }
-  void CreateItem(Data dat){
+  public void CreateItem(Data dat){
     Vector3 spawnPos = new Vector3(dat.x, dat.y, dat.z);
     spawnPos += transform.position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
@@ -79,7 +80,7 @@ public class HoloDeck : MonoBehaviour{
     go.transform.position = spawnPos;
   }
   
-  void CreateNPC(Data dat){
+  public void CreateNPC(Data dat){
     Vector3 spawnPos = new Vector3(dat.x, dat.y, dat.z);
     spawnPos += transform.position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
@@ -94,14 +95,17 @@ public class HoloDeck : MonoBehaviour{
     go.transform.position = spawnPos;
   }
   
-  /* Updates interior in Session's data. */
+  /* Updates interior in Session's data with current content. */
   public void SaveInterior(){
-    print("Saved Interior");
+    
   }
   
   /* Clears contents of loaded interior. */
   public void ClearInterior(){
-    print("ClearedInterior");
+    List<GameObject> obs = GetContents();
+    for(int i = 0; i < obs.Count; i++){
+      Destroy(obs[i]);
+    }
   }
   
   public void LoadExterior(int x, int y){
