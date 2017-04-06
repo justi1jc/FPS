@@ -45,6 +45,11 @@ public class HoloDeck : MonoBehaviour{
       }
       if(found != null){
         print("Loaded " + found.displayName);
+        deck = found;
+        UnpackInterior();
+      }
+      else{
+        print("Couldn't find " + cellName + " in " + building);
       }
       
     }
@@ -55,9 +60,9 @@ public class HoloDeck : MonoBehaviour{
   
   /* Instantiates contents of deck. */
   public void UnpackInterior(){
-    //for(int i = 0; i < map.buildings.Count; i++){ CreateItem(map.buildings[i]); }
-      //for(int i = 0; i < map.items.Count; i++){ CreateItem(map.items[i]); }
-      //for(int i = 0; i < map.npcs.Count; i++){ CreateNPC(map.npcs[i]); }
+    for(int i = 0; i < deck.buildings.Count; i++){ CreateItem(deck.buildings[i]); }
+    for(int i = 0; i < deck.items.Count; i++){ CreateItem(deck.items[i]); }
+    for(int i = 0; i < deck.npcs.Count; i++){ CreateNPC(deck.npcs[i]); }
   }
   void CreateItem(Data dat){
     Vector3 spawnPos = new Vector3(dat.x, dat.y, dat.z);
