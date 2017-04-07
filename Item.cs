@@ -102,7 +102,9 @@ public class Item : MonoBehaviour{
   public float impactForce;
   
   // WARP variables
-  public string destName;
+  public string destBuilding;
+  public string destCell; 
+  public int deckId; // Which deck should 
   public int doorId; // Should conform to cardinal direction of room. 
   public Vector3 destPos;
   public Vector3 destRot;
@@ -469,7 +471,8 @@ public class Item : MonoBehaviour{
   
   /* Warps to destination. */
   public void Warp(){
-    print("Warping to cell:" + destName);
+    Session.session.LoadInterior(destBuilding, destCell, deckId);
+    print("Warping to " + destBuilding + ", " + destCell);
   }
   
   /* Returns true if this weapon consumes ammo. */
@@ -553,7 +556,8 @@ public class Item : MonoBehaviour{
         dat.strings.Add(projectile);
         break;
       case WARP:
-        dat.strings.Add(destName);
+        dat.strings.Add(destCell);
+        dat.strings.Add(destBuilding);
         break;
       case CONTAINER:
         for(int j = 0; j < contents.Count; j++){
@@ -602,7 +606,12 @@ public class Item : MonoBehaviour{
         s++;
         break;
       case WARP:
-        destName = dat.strings[s];
+        destCell = dat.strings[s];
+        s++;
+        destBuilding = dat.strings[s];
+        s++;
+        destPos = transform.position + transform.forward * 2;
+        destRot = transform.rotation.eulerAngles;
         break;
       case CONTAINER:
         contents = new List<Data>(dat.data);

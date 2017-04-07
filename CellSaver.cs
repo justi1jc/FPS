@@ -190,6 +190,7 @@ public class CellSaver : MonoBehaviour {
         if(!scenery && !ignoreItems){ ret.Add(item.GetData()); }
       }
     }
+    print("Saved " + ret.Count + " items.");
     return ret;
   }
   
@@ -200,6 +201,7 @@ public class CellSaver : MonoBehaviour {
       Actor actor = obs[i].GetComponent<Actor>();
       if(actor){ ret.Add(actor.GetData()); }
     }
+    print("Saved " + ret.Count + " NPCs.");
     return ret;
   }
   

@@ -16,11 +16,10 @@ public class HoloDeck : MonoBehaviour{
   public bool interior; // True if an interior is currently loaded.
   public Cell deck; // Active cell
   int id = 0; // Id for multiple holodecks in a session. 
-  int destinationDoor; // Door to derive spawnPoint from.
+  int spawnDoor; // Door to derive spawnPoint from.
   Vector3 spawnRot, spawnPos;
 
   public void LoadInterior(string building, string cellName){
-    
     if(interior){
       if(initialized){
         SaveInterior();
@@ -79,9 +78,18 @@ public class HoloDeck : MonoBehaviour{
       spawnPos,
       rot
     );
-    Item item = go.GetComponent<Item>();
-    if(item){ item.LoadData(dat); }
     go.transform.position = spawnPos;
+    Item item = go.GetComponent<Item>();
+    if(item){ 
+      item.LoadData(dat);
+      if(item.itemType == Item.WARP){
+        item.deckId = id;
+        if(item.doorId == spawnDoor){
+          spawnPos = item.destPos;
+          spawnRot = item.destRot;
+        }
+      }
+    }
   }
   
   public void CreateNPC(Data dat){
@@ -89,6 +97,7 @@ public class HoloDeck : MonoBehaviour{
     spawnPos += transform.position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
     GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
+    if(!pref){ print(dat.prefabName + "," + dat.displayName + " null"); return; }
     GameObject go = (GameObject)GameObject.Instantiate(
       pref,
       spawnPos,
@@ -101,7 +110,47 @@ public class HoloDeck : MonoBehaviour{
   
   /* Updates interior in Session's data with current content. */
   public void SaveInterior(){
-    
+    PackInterior();
+    MapRecord map = Session.session.map;
+    for(int i = 0; i < map.buildings.Count; i++){
+        bool match = true; 
+        if(map.buildings[i] == null){ match = false; }
+        else if(map.buildings[i].Length == 0){ match = false; }
+        else if(map.buildings[i][0] == null){ match = false; }
+        else if(map.buildings[i][0].building != deck.building){ match = false; }
+        if(match){
+          for(int j = 0; j < map.buildings[i].Length; j++){
+            Cell candidate = map.buildings[i][j];
+            if(candidate != null && candidate.displayName == deck.displayName){
+              map.buildings[i][j] = deck;
+              print("Saved cell: " + deck.displayName);
+              return;
+            }
+          }
+        }
+      }
+      print("Couldn't find " + deck.displayName + " in " + deck.building);
+      
+  }
+  
+  /* Updates the active Cell's contents. */
+  public void PackInterior(){
+    Cell c = new Cell();
+    List<GameObject> found = GetContents();
+    if(interior){
+      c.items = GetItems(found);
+      c.building = deck.building;
+      c.displayName = deck.displayName;
+    }
+    else{
+      c.items = GetItems(found, false, true);
+      c.buildings = GetItems(found, true, false);
+    }
+    c.npcs = GetNpcs(found);
+    c.heX = deck.heX;
+    c.heY = deck.heY;
+    c.heZ = deck.heZ;
+    deck = c;
   }
   
   /* Clears contents of loaded interior. */
@@ -173,14 +222,17 @@ public class HoloDeck : MonoBehaviour{
     List<Data> ret = new List<Data>();
     for(int i = 0; i < obs.Count; i++){
       Actor actor = obs[i].GetComponent<Actor>();
-      bool player = actor.playerNumber > 0 && actor.playerNumber < 5;
-      if(actor && !player){
-        Data dat = actor.GetData();
-        Vector3 pos = Relative(obs[i].transform.position);
-        dat.x = pos.x;
-        dat.y = pos.y;
-        dat.z = pos.z;
-        ret.Add(dat);
+      if(actor){
+        bool player = actor.playerNumber > 0 && actor.playerNumber < 5;
+        if(!player){
+          Data dat = actor.GetData();
+          Vector3 pos = Relative(obs[i].transform.position);
+          dat.x = pos.x;
+          dat.y = pos.y;
+          dat.z = pos.z;
+          ret.Add(dat);
+          print(dat.displayName);
+        }
       }
     }
     return ret;

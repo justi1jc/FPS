@@ -1112,8 +1112,10 @@ public class Actor : MonoBehaviour{
     return true;
   }
   
-  /* Adds currency items to inventory. */
+  /* Adds currency items to inventory.
+     TODO: Make this optional. */
   public void PopulateCurrencyLoot(){
+    /*
     GameObject igo = Session.session.Spawn(currencies[0], Vector3.zero);
     Data item = igo.GetComponent<Item>().GetData();
     while(currency > 0){
@@ -1128,6 +1130,7 @@ public class Actor : MonoBehaviour{
         StoreItem(item);
       }
     }
+    */
   }
   
   /* Drops item onto ground from inventory. */

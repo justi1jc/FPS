@@ -118,9 +118,9 @@ public class Session : MonoBehaviour {
     
   }
   
-  public void LoadInterior(string building, string cellName){
+  public void LoadInterior(string building, string cellName, int deck = 0){
     SavePlayers();
-    decks[0].LoadInterior(building, cellName);
+    decks[deck].LoadInterior(building, cellName);
     LoadPlayers(0);
   }
   
@@ -345,7 +345,9 @@ public class Session : MonoBehaviour {
   
   public void SavePlayers(){
     for(int i = 0; i < players.Count; i++){
-      playerData.Add(players[i].GetData());
+      if(players[i] != null){
+        playerData.Add(players[i].GetData());
+      }
     }
   }
 }
