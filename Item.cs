@@ -103,7 +103,7 @@ public class Item : MonoBehaviour{
   
   // WARP variables
   public string destName;
-  public int deckId;
+  public int doorId; // Should conform to cardinal direction of room. 
   public Vector3 destPos;
   public Vector3 destRot;
   
@@ -126,9 +126,6 @@ public class Item : MonoBehaviour{
         contents = new List<Data>();
         break;
       case WARP:
-        destName = "";
-        deckId = 0;
-        destPos = destPos = new Vector3();
         break;
       default:
         break;
@@ -236,12 +233,17 @@ public class Item : MonoBehaviour{
   /* Response to interaction from non-holder Actor */
   public void Interact(Actor a, int mode = -1, string message = ""){
     // TODO: Account for other interaction modes.
-    if(itemType == CONTAINER && a != null && a.menu != null){
+    if(itemType == CONTAINER && a && a.menu){
       a.menu.contents = contents;
       a.menu.Change(Menu.LOOT);
       return;
     }
+    if(itemType == WARP){
+      Warp();
+      return;
+    }
     if(itemType != SCENERY && holder == null){ a.PickUp(this); };
+    
   }
   
   /* Pick the item up. */
@@ -467,7 +469,7 @@ public class Item : MonoBehaviour{
   
   /* Warps to destination. */
   public void Warp(){
-    //TODO
+    print("Warping to cell:" + destName);
   }
   
   /* Returns true if this weapon consumes ammo. */
@@ -552,12 +554,6 @@ public class Item : MonoBehaviour{
         break;
       case WARP:
         dat.strings.Add(destName);
-        dat.floats.Add(destPos.x);
-        dat.floats.Add(destPos.y);
-        dat.floats.Add(destPos.z);
-        dat.floats.Add(destRot.x);
-        dat.floats.Add(destRot.y);
-        dat.floats.Add(destRot.z);
         break;
       case CONTAINER:
         for(int j = 0; j < contents.Count; j++){
@@ -607,19 +603,6 @@ public class Item : MonoBehaviour{
         break;
       case WARP:
         destName = dat.strings[s];
-        s++;
-        destPos = new Vector3(
-                              dat.floats[f],
-                              dat.floats[f+1],
-                              dat.floats[f+2]
-                              );
-        f+=3;
-        destRot = new Vector3(
-                              dat.floats[f],
-                              dat.floats[f+1],
-                              dat.floats[f+2]
-                              );
-        f+=3;
         break;
       case CONTAINER:
         contents = new List<Data>(dat.data);

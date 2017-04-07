@@ -60,7 +60,7 @@ public class Session : MonoBehaviour {
   const string MENU_INTERIOR = "ActI";
   const string INIT_BUILDING = "House";
   const string INIT_INTERIOR = "ActI";
-  HoloDeck deck;
+  HoloDeck[] decks;
   Vector3[] spawnPoints;
   Vector3[] spawnRots;
   public MapRecord map;
@@ -77,6 +77,7 @@ public class Session : MonoBehaviour {
   void Awake(){
     if(Session.session){ Destroy(this); }
     else{ Session.session = this; }
+    decks = new HoloDeck[1];
     players = new List<Actor>();
     playerData = new List<Data>();
     spawnPoints = new Vector3[1];
@@ -108,18 +109,19 @@ public class Session : MonoBehaviour {
     sessionName = sesName;
     DestroyMenu();
     CreateLoadingScreen();
-    deck.initialized = false;
+    decks[0].initialized = false;
     LoadInterior(INIT_BUILDING, INIT_INTERIOR);
     DestroyLoadingScreen();
     Spawn("Player1", spawnPoints[0]);
-    LoadPlayers(deck, 0);
+    LoadPlayers(0);
     print("Created session " + sesName);
     
   }
   
   public void LoadInterior(string building, string cellName){
     SavePlayers();
-    deck.LoadInterior(building, cellName);
+    decks[0].LoadInterior(building, cellName);
+    LoadPlayers(0);
   }
   
   /* Packs the current cell and loads an exterior. */
@@ -206,10 +208,10 @@ public class Session : MonoBehaviour {
   }
   
   public void CreateDeck(){
-    deck = gameObject.AddComponent(typeof(HoloDeck)) as HoloDeck;
-    deck.interior = interior;
-    deck.initialized = false;
-    deck.LoadInterior(buildingName, interiorName);
+    decks[0] = gameObject.AddComponent(typeof(HoloDeck)) as HoloDeck;
+    decks[0].interior = interior;
+    decks[0].initialized = false;
+    decks[0].LoadInterior(buildingName, interiorName);
   }
   
   public void LoadMaster(){
@@ -217,7 +219,6 @@ public class Session : MonoBehaviour {
     saver.LoadMaster();
     map = saver.map;
     Destroy(saver);
-    
   }
   
   /* Returns an array of viable positions consisting of empty space directly
@@ -325,7 +326,7 @@ public class Session : MonoBehaviour {
   }
   
   /* Places the players into a rendered location. */
-  public void LoadPlayers(HoloDeck hd, int id){
+  public void LoadPlayers(int id){
     while(playerData.Count > 0){
       int i = playerData.Count -1;
       Data dat = playerData[i];
@@ -337,7 +338,7 @@ public class Session : MonoBehaviour {
       dat.xr = rot.x;
       dat.yr = rot.y;
       dat.zr = rot.x;
-      hd.CreateNPC(dat);
+      decks[id].CreateNPC(dat);
       playerData.Remove(playerData[i]);
     }
   }

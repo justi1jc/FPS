@@ -16,8 +16,11 @@ public class HoloDeck : MonoBehaviour{
   public bool interior; // True if an interior is currently loaded.
   public Cell deck; // Active cell
   int id = 0; // Id for multiple holodecks in a session. 
+  int destinationDoor; // Door to derive spawnPoint from.
+  Vector3 spawnRot, spawnPos;
 
   public void LoadInterior(string building, string cellName){
+    
     if(interior){
       if(initialized){
         SaveInterior();
@@ -45,7 +48,7 @@ public class HoloDeck : MonoBehaviour{
         }
       }
       if(found != null){
-        print("Loaded " + found.displayName);
+        print("Loaded cell:" + found.displayName);
         deck = found;
         UnpackInterior();
       }
@@ -65,6 +68,7 @@ public class HoloDeck : MonoBehaviour{
     for(int i = 0; i < deck.items.Count; i++){ CreateItem(deck.items[i]); }
     for(int i = 0; i < deck.npcs.Count; i++){ CreateNPC(deck.npcs[i]); }
   }
+  
   public void CreateItem(Data dat){
     Vector3 spawnPos = new Vector3(dat.x, dat.y, dat.z);
     spawnPos += transform.position;
