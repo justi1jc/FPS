@@ -259,12 +259,13 @@ public class CellSaver : MonoBehaviour {
     if(fileAccess){ print("File access already in progress."); return; }
     fileAccess = true;
     string path = Application.persistentDataPath + "/" + masterFile + ".master";
-    FileStream file  = File.Create(path);
-    BinaryFormatter bf =  new BinaryFormatter();
-    bf.Serialize(file, map);
-    file.Close();
-    fileAccess = false;
-    print("Master saved to " + path);
+    using(FileStream file  = File.Create(path)){
+      BinaryFormatter bf =  new BinaryFormatter();
+      bf.Serialize(file, map);
+      file.Close();
+      fileAccess = false;
+      print("Master saved to " + path);
+    }
   }
   
   /* Loads the master map file into map or creates new one. */
@@ -277,12 +278,13 @@ public class CellSaver : MonoBehaviour {
     }
     if(fileAccess){ print("File access already in progress."); return; }
     fileAccess = true;
-    FileStream file = File.Open(path, FileMode.Open);
-    BinaryFormatter bf = new BinaryFormatter();
-    map = (MapRecord)bf.Deserialize(file);
-    file.Close();
-    fileAccess = false;
-    print("Loaded from " + path);
+    using(FileStream file = File.Open(path, FileMode.Open)){
+      BinaryFormatter bf = new BinaryFormatter();
+      map = (MapRecord)bf.Deserialize(file);
+      file.Close();
+      fileAccess = false;
+      print("Loaded from " + path);
+    }
   }
   
   /* unpacks a particular interior from master */

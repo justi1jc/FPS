@@ -274,10 +274,11 @@ public class Session : MonoBehaviour {
     fileAccess = true;
     BinaryFormatter bf = new BinaryFormatter();
     string path = Application.persistentDataPath + "/" + fileName + ".save"; 
-    FileStream file = File.Create(path);
-    GameRecord record = GetData();
-    bf.Serialize(file, record);
-    file.Close();
+    using(FileStream file = File.Create(path)){
+      GameRecord record = GetData();
+      bf.Serialize(file, record);
+      file.Close();
+    }
     fileAccess = false;
   }
   
@@ -285,14 +286,49 @@ public class Session : MonoBehaviour {
   public void LoadGame(string fileName){
     GameRecord record = LoadFile(fileName);
     if(record == null){ return; }
-    record.sessionName = sessionName;
+    LoadData(record);
+    if(interior){ LoadInterior(buildingName, interiorName, 0); }
   }
   
   /* Returns a GameRecord containing this Session's data. */
   GameRecord GetData(){
     GameRecord record = new GameRecord();
     record.sessionName = sessionName;
+    for(int i = 0; i < decks.Length; i++){
+      if(decks[i].interior){ decks[i].SaveInterior(); }
+      else{ print("Exteriors not implemented"); }
+    }
+    record.interior = interior;
+    record.map = map;
+    record.currentBuilding = decks[0].deck.building;
+    record.currentInterior = decks[0].deck.displayName;
+    record.x = xCord;
+    record.y = yCord;
+    record.players = playerData;
+    
+    for(int i = 0; i < players.Count; i++){
+      record.players.Add(players[i].GetData());
+    }
     return record;
+  }
+  
+  public void LoadData(GameRecord dat){
+    sessionName = dat.sessionName;
+    map = dat.map;
+    buildingName = dat.currentBuilding;
+    interiorName = dat.currentInterior;
+    playerData = dat.players;
+    LoadPlayers(0);
+  }
+  
+  /* Clears all Cells and players. */
+  public void ClearData(){
+    for(int i = 0; i < decks.Length; i++){
+      decks[i].ClearInterior();
+    }
+    for(int i = 0; i < players.Count; i++){
+      Destroy(players[i].gameObject);
+    }
   }
   
   /* Returns a GameRecord containing data from a specified file, or null.*/
@@ -303,11 +339,12 @@ public class Session : MonoBehaviour {
     BinaryFormatter bf = new BinaryFormatter();
     string path = Application.persistentDataPath + "/" + fileName + ".save";
     if(!File.Exists(path)){ fileAccess = false; return null; }
-    FileStream file = File.Open(path, FileMode.Open);
-    GameRecord record = (GameRecord)bf.Deserialize(file);
-    file.Close();
-    fileAccess = false;
-    return record;
+    using(FileStream file = File.Open(path, FileMode.Open)){
+      GameRecord record = (GameRecord)bf.Deserialize(file);
+      file.Close();
+      fileAccess = false;
+      return record;
+    }
   }
   
   /* Returns an array of every valid GameRecord in the directory.*/
@@ -320,10 +357,10 @@ public class Session : MonoBehaviour {
     FileInfo[] info = dir.GetFiles("*.save");
     BinaryFormatter bf = new BinaryFormatter();
     for(int i = 0; i < info.Length; i++){
-      FileStream file = File.Open(info[i].FullName, FileMode.Open);
-      GameRecord record = (GameRecord)bf.Deserialize(file);
-      records.Add(record);
-      print("Info:" + record.sessionName); 
+      using(FileStream file = File.Open(info[i].FullName, FileMode.Open)){
+        GameRecord record = (GameRecord)bf.Deserialize(file);
+        records.Add(record);
+      }
     }
     fileAccess = false;
     return records;
