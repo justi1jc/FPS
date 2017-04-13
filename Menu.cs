@@ -55,6 +55,7 @@ public class Menu : MonoBehaviour{
   public List<Data> contents; // Contents of a container/npc inventory.
   public int subMenu = 0; // To account for menus within a menu.
   public string sesName = ""; // Name for new game.
+  public List<GameRecord> files;
   
   /* Changes the active menu and sets up variables for it. */
   public void Change(int menu){
@@ -71,6 +72,10 @@ public class Menu : MonoBehaviour{
         sold = new List<Data>();
         bought = new List<Data>();
         balance = 0;
+      }
+      if(menu == LOAD){
+        py = -1;
+        files = Session.session.LoadFiles();
       }
       if(menu == HUD && actor){ actor.SetMenuOpen(false); }
       else if(actor){actor.SetMenuOpen(true); }
@@ -803,13 +808,44 @@ public class Menu : MonoBehaviour{
     string str;
     int iw = Width()/6;
     int ih = Height()/5;
-    int x = XOffset() + iw;  
-    Box("Load Menu", x, 0, iw, ih);
+    int x, y;
     
-    if(!actor){ // Loaded from main menu.
-      if(Button("Back", x, ih, iw, ih)){
-        Change(MAIN);
+    x = XOffset() + iw;
+    Box("Load Menu", x, 0, iw, ih);
+    scrollPositionB = GUI.BeginScrollView(
+      new Rect(XOffset() + iw, ih, iw, 2*ih),
+      scrollPositionB,
+      new Rect(0, 0, iw, ih * files.Count)
+    );    
+    
+    
+    for(int i = 0; i < files.Count; i++){
+      y = i * ih / 2;
+      str = files[i].sessionName;
+      if(Button(str, 0, y, iw, ih/2)){ py = i; }
+    }
+    
+    GUI.EndScrollView();
+    int dest = actor ? OPTIONS : MAIN;
+    if(Button("Back", x, 3*ih, iw, ih)){ Change(dest); }
+  
+    if(py > -1){
+      str = files[py].sessionName;
+      x = XOffset() + 3 * iw; 
+      Box(str,x, 0, iw, ih/2);
+      
+      str = files[py].currentBuilding;
+      y = ih/2;
+      Box(str, x, y, iw, ih/2);
+      
+      if(files[py].players.Count > 0){
+        str = files[py].players[0].displayName;
+        y = ih;
+        Box(str, x, y, iw, ih/2);
       }
+      str = "Load?";
+      y = ih + ih/2;
+      if(Button(str, x, y, iw, ih/2)){ print("Loading" + files[py].sessionName); }
     }
   }
   
