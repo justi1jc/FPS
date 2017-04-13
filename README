@@ -46,7 +46,7 @@ World(Interior cells, NPC placement)
 -Save session.
 -Load Session.
 HoloDeck
-  -Load Interior from Session's map.
-  -Save Interior to Session's map.
--Change interior cells via warp door. 
+  -Place NPCs at proper door.
+WarpDoor
+  -Set position/orientation properly. 
 -Get/Load serialization data for Actor

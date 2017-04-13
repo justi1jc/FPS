@@ -17,10 +17,11 @@ public class HoloDeck : MonoBehaviour{
   public Cell deck; // Active cell
   int id = 0; // Id for multiple holodecks in a session. 
   int spawnDoor; // Door to derive spawnPoint from.
-  Vector3 spawnRot, spawnPos;
+  public Vector3 spawnRot, spawnPos;
 
-  public void LoadInterior(string building, string cellName){
+  public void LoadInterior(string building, string cellName, int door){
     if(interior){
+      spawnDoor = door;
       if(initialized){
         SaveInterior();
         ClearInterior();
@@ -47,7 +48,6 @@ public class HoloDeck : MonoBehaviour{
         }
       }
       if(found != null){
-        print("Loaded cell:" + found.displayName);
         deck = found;
         UnpackInterior();
       }
@@ -69,16 +69,16 @@ public class HoloDeck : MonoBehaviour{
   }
   
   public void CreateItem(Data dat){
-    Vector3 spawnPos = new Vector3(dat.x, dat.y, dat.z);
-    spawnPos += transform.position;
+    Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
+    sPos += transform.position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
     GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
     GameObject go = (GameObject)GameObject.Instantiate(
       pref,
-      spawnPos,
+      sPos,
       rot
     );
-    go.transform.position = spawnPos;
+    go.transform.position = sPos;
     Item item = go.GetComponent<Item>();
     if(item){ 
       item.LoadData(dat);
@@ -87,25 +87,25 @@ public class HoloDeck : MonoBehaviour{
         if(item.doorId == spawnDoor){
           spawnPos = item.destPos;
           spawnRot = item.destRot;
-        }
+        } 
       }
     }
   }
   
   public void CreateNPC(Data dat){
-    Vector3 spawnPos = new Vector3(dat.x, dat.y, dat.z);
-    spawnPos += transform.position;
+    Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
+    sPos += transform.position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
     GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
     if(!pref){ print(dat.prefabName + "," + dat.displayName + " null"); return; }
     GameObject go = (GameObject)GameObject.Instantiate(
       pref,
-      spawnPos,
+      sPos,
       rot
     );
     Actor actor = go.GetComponent<Actor>();
     if(actor){ actor.LoadData(dat); }
-    go.transform.position = spawnPos;
+    go.transform.position = sPos;
   }
   
   /* Updates interior in Session's data with current content. */
@@ -123,7 +123,6 @@ public class HoloDeck : MonoBehaviour{
             Cell candidate = map.buildings[i][j];
             if(candidate != null && candidate.displayName == deck.displayName){
               map.buildings[i][j] = deck;
-              print("Saved cell: " + deck.displayName);
               return;
             }
           }
@@ -231,7 +230,6 @@ public class HoloDeck : MonoBehaviour{
           dat.y = pos.y;
           dat.z = pos.z;
           ret.Add(dat);
-          print(dat.displayName);
         }
       }
     }

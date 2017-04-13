@@ -114,13 +114,17 @@ public class Session : MonoBehaviour {
     DestroyLoadingScreen();
     Spawn("Player1", spawnPoints[0]);
     LoadPlayers(0);
-    print("Created session " + sesName);
     
   }
   
-  public void LoadInterior(string building, string cellName, int deck = 0){
+  public void LoadInterior(
+    string building, 
+    string cellName, 
+    int deck = 0, 
+    int door = -1
+  ){
     SavePlayers();
-    decks[deck].LoadInterior(building, cellName);
+    decks[deck].LoadInterior(building, cellName, door);
     LoadPlayers(0);
   }
   
@@ -211,7 +215,7 @@ public class Session : MonoBehaviour {
     decks[0] = gameObject.AddComponent(typeof(HoloDeck)) as HoloDeck;
     decks[0].interior = interior;
     decks[0].initialized = false;
-    decks[0].LoadInterior(buildingName, interiorName);
+    decks[0].LoadInterior(buildingName, interiorName, -1);
   }
   
   public void LoadMaster(){
@@ -330,8 +334,9 @@ public class Session : MonoBehaviour {
     while(playerData.Count > 0){
       int i = playerData.Count -1;
       Data dat = playerData[i];
-      Vector3 pos = spawnPoints[id];
-      Vector3 rot = spawnRots[id];
+      Vector3 pos = transform.position + decks[0].spawnPos;
+      Vector3 rot = decks[0].spawnRot;
+      print(pos + ":" + rot);
       dat.x = pos.x;
       dat.y = pos.y;
       dat.z = pos.z;

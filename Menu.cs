@@ -176,7 +176,7 @@ public class Menu : MonoBehaviour{
     int cbsy = 20; // condition bar height scale
     int ch = Height()/15; // Condition height
     int cw = Width()/3;   // Condition width
-    
+    int x, y;
     string str;
     
     str = "Health: " + actor.health;
@@ -195,27 +195,18 @@ public class Menu : MonoBehaviour{
     
     // Display item in reach, if it exists.
     if(actor.itemInReach){
-      Item inReach = actor.itemInReach.GetComponent<Item>(); 
-      GUI.Box(
-        new Rect(
-              XOffset() + Width() - (2* Width()/cbsx),
-              (9 * Height()/cbsy),
-              Width()/cbsx,
-              Height()/cbsy
-            ),
-        inReach.displayName
-      );
+      Item inReach = actor.itemInReach.GetComponent<Item>();
+      x = XOffset() + Width() - (2*Width()/cbsx);
+      y = (9 * Height()/cbsy);
+      if(inReach.displayName != ""){ 
+        Box(inReach.displayName, x, y, Width()/cbsx, Height()/cbsy);
+      }
     }
-    else if(actor.actorInReach){ 
-        GUI.Box(
-          new Rect(
-                XOffset() + Width() - (2* Width()/cbsx),
-                (9 * Height()/cbsy),
-                Width()/cbsx,
-                Height()/cbsy
-              ),
-          actor.ActorInteractionText()
-        );
+    else if(actor.actorInReach){
+        str = actor.ActorInteractionText();
+        x = XOffset() + Width() - (2 * Width()/cbsx);
+        y = 9 * Height()/cbsy;
+        Box(str, x, y, Width()/cbsx, Height()/cbsy); 
       }
     }
   

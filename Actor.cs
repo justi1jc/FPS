@@ -1215,6 +1215,9 @@ public class Actor : MonoBehaviour{
     displayName = dat.displayName;
     transform.position = new Vector3(dat.x, dat.y, dat.z);
     transform.rotation = Quaternion.Euler(dat.xr, dat.yr, dat.zr);
+    headRotx = dat.xr;
+    headRoty = dat.yr;
+    bodyRoty = dat.yr;
   }
    
   /* Initiates conversation with other actor */
