@@ -845,7 +845,9 @@ public class Menu : MonoBehaviour{
       }
       str = "Load?";
       y = ih + ih/2;
-      if(Button(str, x, y, iw, ih/2)){ print("Loading" + files[py].sessionName); }
+      if(Button(str, x, y, iw, ih/2)){ 
+        Session.session.LoadGame(files[py].sessionName); 
+      }
     }
   }
   

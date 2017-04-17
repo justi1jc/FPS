@@ -209,6 +209,7 @@ public class Session : MonoBehaviour {
     Camera cam = sesCam;
     sesCam = null;
     Destroy(cam.gameObject);
+    mainMenu = false;
   }
   
   public void CreateDeck(){
@@ -286,6 +287,7 @@ public class Session : MonoBehaviour {
   public void LoadGame(string fileName){
     GameRecord record = LoadFile(fileName);
     if(record == null){ return; }
+    ClearData();
     LoadData(record);
     if(interior){ LoadInterior(buildingName, interiorName, 0); }
   }
@@ -309,6 +311,9 @@ public class Session : MonoBehaviour {
     for(int i = 0; i < players.Count; i++){
       record.players.Add(players[i].GetData());
     }
+    for(int i = 0; i < record.players.Count; i++){
+      print("Saved NPC: " + record.players[i].displayName);
+    }
     return record;
   }
   
@@ -318,11 +323,11 @@ public class Session : MonoBehaviour {
     buildingName = dat.currentBuilding;
     interiorName = dat.currentInterior;
     playerData = dat.players;
-    LoadPlayers(0);
   }
   
   /* Clears all Cells and players. */
   public void ClearData(){
+    if(mainMenu){ DestroyMenu(); }
     for(int i = 0; i < decks.Length; i++){
       decks[i].ClearInterior();
     }
@@ -373,7 +378,6 @@ public class Session : MonoBehaviour {
       Data dat = playerData[i];
       Vector3 pos = transform.position + decks[0].spawnPos;
       Vector3 rot = decks[0].spawnRot;
-      print(pos + ":" + rot);
       dat.x = pos.x;
       dat.y = pos.y;
       dat.z = pos.z;

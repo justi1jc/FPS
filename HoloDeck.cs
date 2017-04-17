@@ -106,6 +106,7 @@ public class HoloDeck : MonoBehaviour{
     Actor actor = go.GetComponent<Actor>();
     if(actor){ actor.LoadData(dat); }
     go.transform.position = sPos;
+    print("Created" + actor.displayName);
   }
   
   /* Updates interior in Session's data with current content. */
