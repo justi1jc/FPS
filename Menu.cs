@@ -829,7 +829,7 @@ public class Menu : MonoBehaviour{
     int dest = actor ? OPTIONS : MAIN;
     if(Button("Back", x, 3*ih, iw, ih)){ Change(dest); }
   
-    if(py > -1){
+    if(py > -1 && py < files.Count){
       str = files[py].sessionName;
       x = XOffset() + 3 * iw; 
       Box(str,x, 0, iw, ih/2);

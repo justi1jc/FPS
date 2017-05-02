@@ -332,8 +332,9 @@ public class Session : MonoBehaviour {
       decks[i].ClearInterior();
     }
     for(int i = 0; i < players.Count; i++){
-      Destroy(players[i].gameObject);
+      if(players[i] != null){ Destroy(players[i].gameObject); }
     }
+    players = new List<Actor>();
   }
   
   /* Returns a GameRecord containing data from a specified file, or null.*/
