@@ -309,7 +309,7 @@ public class Session : MonoBehaviour {
     record.players = playerData;
     
     for(int i = 0; i < players.Count; i++){
-      record.players.Add(players[i].GetData());
+      if(players[i] != null){ record.players.Add(players[i].GetData()); }
     }
     for(int i = 0; i < record.players.Count; i++){
       print("Saved NPC: " + record.players[i].displayName);
@@ -377,14 +377,6 @@ public class Session : MonoBehaviour {
     while(playerData.Count > 0){
       int i = playerData.Count -1;
       Data dat = playerData[i];
-      Vector3 pos = transform.position + decks[0].spawnPos;
-      Vector3 rot = decks[0].spawnRot;
-      dat.x = pos.x;
-      dat.y = pos.y;
-      dat.z = pos.z;
-      dat.xr = rot.x;
-      dat.yr = rot.y;
-      dat.zr = rot.x;
       decks[id].CreateNPC(dat);
       playerData.Remove(playerData[i]);
     }
