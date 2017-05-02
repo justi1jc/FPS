@@ -113,19 +113,23 @@ public class Session : MonoBehaviour {
     LoadInterior(INIT_BUILDING, INIT_INTERIOR);
     DestroyLoadingScreen();
     Spawn("Player1", spawnPoints[0]);
-    LoadPlayers(0);
     
   }
   
+  /*
+    Loads a particular interior into a specified deck. If init is false, 
+    the player will be placed at the specified door.
+  */
   public void LoadInterior(
     string building, 
     string cellName, 
     int deck = 0, 
-    int door = -1
+    int door = -1,
+    bool init = false
   ){
     SavePlayers();
-    decks[deck].LoadInterior(building, cellName, door);
-    LoadPlayers(0);
+    decks[deck].LoadInterior(building, cellName, door, playerData, init);
+    playerData = new List<Data>();
   }
   
   /* Packs the current cell and loads an exterior. */
@@ -216,7 +220,7 @@ public class Session : MonoBehaviour {
     decks[0] = gameObject.AddComponent(typeof(HoloDeck)) as HoloDeck;
     decks[0].interior = interior;
     decks[0].initialized = false;
-    decks[0].LoadInterior(buildingName, interiorName, -1);
+    decks[0].LoadInterior(buildingName, interiorName, -1, playerData, true);
   }
   
   public void LoadMaster(){
@@ -289,7 +293,7 @@ public class Session : MonoBehaviour {
     if(record == null){ return; }
     ClearData();
     LoadData(record);
-    if(interior){ LoadInterior(buildingName, interiorName, 0); }
+    if(interior){ LoadInterior(buildingName, interiorName, 0, -1, true); }
   }
   
   /* Returns a GameRecord containing this Session's data. */
@@ -372,16 +376,7 @@ public class Session : MonoBehaviour {
     return records;
   }
   
-  /* Places the players into a rendered location. */
-  public void LoadPlayers(int id){
-    while(playerData.Count > 0){
-      int i = playerData.Count -1;
-      Data dat = playerData[i];
-      decks[id].CreateNPC(dat);
-      playerData.Remove(playerData[i]);
-    }
-  }
-  
+  /* Collects the data of all registered players. */
   public void SavePlayers(){
     for(int i = 0; i < players.Count; i++){
       if(players[i] != null){

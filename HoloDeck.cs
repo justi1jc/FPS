@@ -19,7 +19,14 @@ public class HoloDeck : MonoBehaviour{
   int spawnDoor; // Door to derive spawnPoint from.
   public Vector3 spawnRot, spawnPos;
 
-  public void LoadInterior(string building, string cellName, int door){
+  public void LoadInterior(
+    string building, 
+    string cellName,
+    int door,
+    List<Data> playerData,
+    bool init
+  ){
+    print("Interior loaded with init as " + init);
     if(interior){
       spawnDoor = door;
       if(initialized){
@@ -50,6 +57,9 @@ public class HoloDeck : MonoBehaviour{
       if(found != null){
         deck = found;
         UnpackInterior();
+        for(int i = 0; i < playerData.Count; i++){ 
+          CreateNPC(playerData[i], init); 
+        }
       }
       else{
         print("Couldn't find " + cellName + " in " + building);
@@ -92,7 +102,10 @@ public class HoloDeck : MonoBehaviour{
     }
   }
   
-  public void CreateNPC(Data dat){
+  /* Creates an NPC with the given data. Init is true if file has just been
+    loaded. Otherwise it is assumed players are entering the cell via a
+    spawnpoint.  */
+  public void CreateNPC(Data dat, bool init = false){
     Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
     sPos += transform.position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
@@ -104,6 +117,14 @@ public class HoloDeck : MonoBehaviour{
       rot
     );
     Actor actor = go.GetComponent<Actor>();
+    if(!init){
+      dat.x = spawnPos.x;
+      dat.y = spawnPos.y;
+      dat.z = spawnPos.z;
+      dat.xr = spawnRot.x;
+      dat.yr = spawnRot.y;
+      dat.zr = spawnRot.z;
+    }
     if(actor){ actor.LoadData(dat); }
     go.transform.position = sPos;
     print("Created" + actor.displayName);
