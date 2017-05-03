@@ -13,17 +13,18 @@ using System.Collections.Generic;
 public class Menu : MonoBehaviour{
 
   // Menu constants
-  public const int NONE      =-1; // Do nothing
-  public const int HUD       = 0; // in-game HUD
-  public const int MAIN      = 1; // main menu
-  public const int INVENTORY = 2; // inventory
-  public const int OPTIONS   = 3; // pause menu
-  public const int SPEECH    = 4; // speech menu
-  public const int TRADE     = 5; // trading menu
-  public const int QUEST     = 6; // quest menu
-  public const int ABILITY   = 7; // abilities menu
-  public const int STATS     = 8; // rpg stats menu
-  public const int LOOT      = 9; // looking in containers
+  public const int NONE      = -1; // Do nothing
+  public const int HUD       =  0; // in-game HUD
+  public const int MAIN      =  1; // main menu
+  public const int INVENTORY =  2; // inventory
+  public const int OPTIONS   =  3; // pause menu
+  public const int SPEECH    =  4; // speech menu
+  public const int TRADE     =  5; // trading menu
+  public const int QUEST     =  6; // quest menu
+  public const int ABILITY   =  7; // abilities menu
+  public const int STATS     =  8; // rpg stats menu
+  public const int LOOT      =  9; // looking in containers
+  public const int LOAD      = 10; // Load the game
   
   // Button constants
   public const int UP    = 0;
@@ -52,23 +53,29 @@ public class Menu : MonoBehaviour{
   List<Data> sold, bought;    // Items changing hands in trade.
   int balance;            // Trade balance.
   public List<Data> contents; // Contents of a container/npc inventory.
-  
+  public int subMenu = 0; // To account for menus within a menu.
+  public string sesName = ""; // Name for new game.
+  public List<GameRecord> files;
   
   /* Changes the active menu and sets up variables for it. */
   public void Change(int menu){
     if(!actor){ activeMenu = NONE; }
     if(menu == ABILITY){ AbilitySetup(); }
-    if(menu <= LOOT && menu >= NONE){
+    if(menu <= LOAD && menu >= NONE){
       activeMenu = menu;
       px = py = sx = sy = 0;
       UpdateFocus();
+      if(menu == MAIN){ subMenu = 0; }
       if(menu == TRADE && actor && actor.interlocutor){
         selling = new List<Data>(actor.inventory);
         buying = new List<Data>(actor.interlocutor.inventory);
         sold = new List<Data>();
         bought = new List<Data>();
-        print("Selling count:"+ selling.Count);
         balance = 0;
+      }
+      if(menu == LOAD){
+        py = -1;
+        files = Session.session.LoadFiles();
       }
       if(menu == HUD && actor){ actor.SetMenuOpen(false); }
       else if(actor){actor.SetMenuOpen(true); }
@@ -90,7 +97,7 @@ public class Menu : MonoBehaviour{
     GUI.Box(new Rect(posx, posy, scalex, scaley), text);
   }
   
-  // Convenience method to render button and return if it's been clicked.
+  /* Convenience method to render button and return if it's been clicked. */
   bool Button(
     string text,
     int posx,
@@ -109,6 +116,10 @@ public class Menu : MonoBehaviour{
       GUI.color = Color.green;
     }
     return click;
+  }
+  
+  string TextField(string text, int posx, int posy, int scalex, int scaley){
+    return  GUI.TextField(new Rect(posx, posy, scalex, scaley), text, 25);
   }
   
   
@@ -144,6 +155,9 @@ public class Menu : MonoBehaviour{
       case LOOT:
         RenderLoot();
         break;
+      case LOAD:
+        RenderLoad();
+        break;
     }
   }
   int Height(){
@@ -167,7 +181,7 @@ public class Menu : MonoBehaviour{
     int cbsy = 20; // condition bar height scale
     int ch = Height()/15; // Condition height
     int cw = Width()/3;   // Condition width
-    
+    int x, y;
     string str;
     
     str = "Health: " + actor.health;
@@ -186,32 +200,60 @@ public class Menu : MonoBehaviour{
     
     // Display item in reach, if it exists.
     if(actor.itemInReach){
-      Item inReach = actor.itemInReach.GetComponent<Item>(); 
-      GUI.Box(
-        new Rect(
-              XOffset() + Width() - (2* Width()/cbsx),
-              (9 * Height()/cbsy),
-              Width()/cbsx,
-              Height()/cbsy
-            ),
-        inReach.displayName
-      );
+      Item inReach = actor.itemInReach.GetComponent<Item>();
+      x = XOffset() + Width() - (2*Width()/cbsx);
+      y = (9 * Height()/cbsy);
+      if(inReach.displayName != ""){ 
+        Box(inReach.displayName, x, y, Width()/cbsx, Height()/cbsy);
+      }
     }
-    else if(actor.actorInReach){ 
-        GUI.Box(
-          new Rect(
-                XOffset() + Width() - (2* Width()/cbsx),
-                (9 * Height()/cbsy),
-                Width()/cbsx,
-                Height()/cbsy
-              ),
-          actor.ActorInteractionText()
-        );
+    else if(actor.actorInReach){
+        str = actor.ActorInteractionText();
+        x = XOffset() + Width() - (2 * Width()/cbsx);
+        y = 9 * Height()/cbsy;
+        Box(str, x, y, Width()/cbsx, Height()/cbsy); 
       }
     }
   
   
-  void RenderMain(){}
+  /* This menu renders in the absence of an Actor. */
+  void RenderMain(){
+    int iw = Width()/6;
+    int ih = Height()/4;
+    int x = XOffset() + iw;
+    string str;
+    
+    
+    str = "Continue";
+    if(Button(str, x, 0, 4*iw, ih, 0, 0 )){ 
+      print("Continue");
+    }
+    
+    switch(subMenu){
+      case 0:
+        str = "New Game";
+        if(Button(str, x, ih, 4*iw, ih, 0, 1 )){ 
+          subMenu = 1;
+        }
+        break;
+      case 1:
+        sesName = TextField(sesName, x, ih, 3*iw, ih);
+        if(Button("Start", x + 3*iw, ih, iw, ih)){
+          Session.session.CreateGame(sesName);
+        }
+        break;
+    }
+    str = "Load Game";
+    if(Button(str, x, 2*ih, 4*iw, ih, 0, 2 )){ 
+      Change(LOAD);
+    }
+    
+    str = "Quit";
+    if(Button(str, x, 3*ih, 4*iw, ih, 0, 3 )){ 
+      Application.Quit();
+    }
+    
+  }
   
   
   void RenderInventory(){
@@ -278,7 +320,45 @@ public class Menu : MonoBehaviour{
   }
   
   
-  void RenderOptions(){}
+  void RenderOptions(){
+    string str;
+    int iw = Width()/6;
+    int ih = Height()/6;
+    int x = XOffset() + iw;
+    
+    str = "Resume";
+    if(Button(str, x, 0, 2*iw, ih, 0, 0)){
+      Change(HUD);
+    }
+    
+    str = "Load";
+    if(Button(str, x, ih, 2*iw, ih, 0, 1)){
+      Session.session.LoadFiles();
+      Change(LOAD);
+    }
+    
+    str = "Settings";
+    if(Button(str, x, 2*ih, 2*iw, ih, 0, 2)){
+      print("Settings");
+    }
+    
+    str = "Save";
+    if(Button(str, x, 3*ih, 2*iw, ih, 0, 3)){
+      Session.session.SaveGame(Session.session.sessionName);
+      
+    }
+    
+    str = "Save and Quit.";
+    if(Button(str, x, 4*ih, 2*iw, ih, 0, 4)){
+      Session.session.SaveGame(Session.session.sessionName);
+      Application.Quit();
+    }
+    
+    str = "Quit.";
+    if(Button(str, x, 5*ih, 2*iw, ih, 0, 5)){
+      print("Quit!");
+    }
+  }
 
   /* Render the dialogue screen. */
   void RenderSpeech(){
@@ -704,10 +784,7 @@ public class Menu : MonoBehaviour{
       new Rect(XOffset() + 2*iw, Height()/2, iw, Height()),
       scrollPositionB,
       new Rect(0, 0, iw, 200)
-    );
-    
-   
-    
+    );    
     for(int i = 0; i < invB.Count; i++){ 
       Data item = invB[i];
       string selected ="";
@@ -724,8 +801,56 @@ public class Menu : MonoBehaviour{
       }
     }
     GUI.EndScrollView();
-    
   }
+  
+  
+  void RenderLoad(){
+    string str;
+    int iw = Width()/6;
+    int ih = Height()/5;
+    int x, y;
+    
+    x = XOffset() + iw;
+    Box("Load Menu", x, 0, iw, ih);
+    scrollPositionB = GUI.BeginScrollView(
+      new Rect(XOffset() + iw, ih, iw, 2*ih),
+      scrollPositionB,
+      new Rect(0, 0, iw, ih * files.Count)
+    );    
+    
+    
+    for(int i = 0; i < files.Count; i++){
+      y = i * ih / 2;
+      str = files[i].sessionName;
+      if(Button(str, 0, y, iw, ih/2)){ py = i; }
+    }
+    
+    GUI.EndScrollView();
+    int dest = actor ? OPTIONS : MAIN;
+    if(Button("Back", x, 3*ih, iw, ih)){ Change(dest); }
+  
+    if(py > -1 && py < files.Count){
+      str = files[py].sessionName;
+      x = XOffset() + 3 * iw; 
+      Box(str,x, 0, iw, ih/2);
+      
+      str = files[py].currentBuilding;
+      y = ih/2;
+      Box(str, x, y, iw, ih/2);
+      
+      if(files[py].players.Count > 0){
+        str = files[py].players[0].displayName;
+        y = ih;
+        Box(str, x, y, iw, ih/2);
+      }
+      str = "Load?";
+      y = ih + ih/2;
+      if(Button(str, x, y, iw, ih/2)){ 
+        Session.session.LoadGame(files[py].sessionName); 
+      }
+    }
+  }
+  
 
   /* Call appropriate menu's focus update handler. */
   void UpdateFocus(){
@@ -756,6 +881,9 @@ public class Menu : MonoBehaviour{
         break;
       case LOOT:
         LootFocus();
+        break;
+      case LOAD:
+        LoadFocus();
         break;
     }
   }
@@ -818,6 +946,9 @@ public class Menu : MonoBehaviour{
     else if(sx == 1){ syMax = contents.Count -1; }
     SecondaryBounds();
   }
+  
+  void LoadFocus(){
+  }
  
   /* Receives button press from Actor. */
   public void Press( int button){
@@ -872,16 +1003,23 @@ public class Menu : MonoBehaviour{
       case LOOT:
         LootInput(button);
         break;
+      case LOAD:
+        LoadInput(button);
+        break;
+    }
+  }
+  
+  void DefaultExit(int button){
+    if(button == B || button == Y){
+      Change(HUD);
+      actor.SetMenuOpen(false);
     }
   }
   
   void MainInput(int button){}
+  
   void InventoryInput(int button){
-    if(button == B || button == Y){ // Exit menu
-      Change(HUD);
-      actor.SetMenuOpen(false);
-      return;
-    }
+    DefaultExit(button);
     if(sx == -1){
       if(button == A){ print("Quests not implemented"); return; }
     }
@@ -896,14 +1034,12 @@ public class Menu : MonoBehaviour{
     }
     
   }
-  void OptionsInput(int button){}
+  void OptionsInput(int button){
+    DefaultExit(button);
+  }
   
   void SpeechInput(int button){
-    if(button == B || button == Y){ // Exit menu
-      Change(HUD);
-      actor.SetMenuOpen(false);
-      return;
-    }
+    DefaultExit(button);
     SpeechTree st = actor.interlocutor.speechTree;
     if(button == A){
       if(st.ActiveNode().hidden[sy]){ return; }
@@ -926,20 +1062,12 @@ public class Menu : MonoBehaviour{
   }
   
   void TradeInput(int button){
-    if(button == B || button == Y){ // Exit menu
-      Change(HUD);
-      actor.SetMenuOpen(false);
-      return;
-    }
+    DefaultExit(button);
   }
   
   void QuestInput(int button){}
   void AbilityInput(int button){
-    if(button == B || button == Y){ // Exit menu
-      Change(HUD);
-      actor.SetMenuOpen(false);
-      return;
-    }
+    DefaultExit(button);
     if(sx == -1){
       if(button == A){ Change(INVENTORY); return; }
     }
@@ -953,12 +1081,7 @@ public class Menu : MonoBehaviour{
   }
   
   void StatsInput(int button){
-    if(button == B || button == Y){ // Exit menu
-      Change(HUD);
-      actor.SetMenuOpen(false);
-      return;
-    }
-    
+    DefaultExit(button);
     if(sx == -1){ if(button == A){ Change(ABILITY); return; } }
     if(sx == 0 && button == A && actor.skillPoints > 0){
       switch(sy){
@@ -993,10 +1116,10 @@ public class Menu : MonoBehaviour{
   }
   
   void LootInput(int button){
-    if(button == B || button == Y){ // Exit menu
-      Change(HUD);
-      actor.SetMenuOpen(false);
-      return;
-    }
+    DefaultExit(button);
+  }
+  
+  void LoadInput(int button){
+    if(button == B || button == Y){ Change(OPTIONS); }
   }
 }

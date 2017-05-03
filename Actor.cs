@@ -186,7 +186,7 @@ public class Actor : MonoBehaviour{
       SetMenuOpen(false);
       if(head){ menu = head.GetComponent<Menu>(); }
       if(menu){ menu.Change(Menu.HUD);  menu.actor = this; }
-      if(Session.session){ Session.session.RegisterPlayer(player, head.GetComponent<Camera>()); }
+      if(Session.session){ Session.session.RegisterPlayer(this, player, head.GetComponent<Camera>()); }
       if(player == 1){ StartCoroutine(KeyboardInputRoutine()); }
       else{StartCoroutine(ControllerInputRoutine()); }
     }
@@ -241,7 +241,7 @@ public class Actor : MonoBehaviour{
   /* Handles input from keyboard. */
   IEnumerator KeyboardInputRoutine(){
     while(true){
-      if(!menuOpen){//TODO: Toggle menu controls properly
+      if(!menuOpen){
         KeyboardActorInput();
       }
       else{
@@ -276,7 +276,7 @@ public class Actor : MonoBehaviour{
     else if(Input.GetKey(KeyCode.S)){ z = -1f; walk = true; }
     if(Input.GetKey(KeyCode.A)){ x = -1f; walk = true; }
     else if(Input.GetKey(KeyCode.D)){ x = 1f; walk = true; }
-    StickMove(x, z);
+    if(x != 0f || z != 0f){ StickMove(x, z); }
     if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(KeyCode.LeftControl)){ToggleCrouch(); }
     if(Input.GetKeyUp(KeyCode.LeftControl)){ToggleCrouch(); }
@@ -293,6 +293,7 @@ public class Actor : MonoBehaviour{
     Turn(new Vector3(rotx, roty, 0f));
     
     //Special use keys
+    if(Input.GetKeyDown(KeyCode.Escape)){ menu.Change(Menu.OPTIONS); }
     if(Input.GetKeyDown(KeyCode.R)){ Use(2); }
     if(Input.GetKeyDown(KeyCode.Q)){ Drop(); }
     if(Input.GetKeyDown(KeyCode.E)){ Interact(); }
@@ -311,7 +312,8 @@ public class Actor : MonoBehaviour{
   /* Handles pause menu keyboard input. */
   void KeyboardMenuInput(){
     if(!menu){ SetMenuOpen(false); } // Return control if menu not available
-    if(Input.GetKeyDown(KeyCode.Tab)){ menu.Press(Menu.B); };
+    if(Input.GetKeyDown(KeyCode.Tab)){ menu.Press(Menu.B); }
+    if(Input.GetKeyDown(KeyCode.Escape)){ menu.Press(Menu.B); }
     if(Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)){
       menu.Press(Menu.UP);
     }
@@ -350,6 +352,7 @@ public class Actor : MonoBehaviour{
     Turn(new Vector3(yr, xr, 0f));
     
     //Buttons
+    if(Input.GetKeyDown(Session.START)){ menu.Change(Menu.OPTIONS); }
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(Session.B)){ Use(7); }
     if(Input.GetKeyDown(Session.X)){ Interact(); }
@@ -1030,7 +1033,7 @@ public class Actor : MonoBehaviour{
       transform.position,
       Quaternion.identity
     );
-    if(!itemGO){print("GameObject null:" + dat.displayName); return; }
+    if(!itemGO){ print("GameObject null:" + dat.displayName); return; }
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
     itemGO.transform.parent = offHand.transform;
@@ -1109,8 +1112,10 @@ public class Actor : MonoBehaviour{
     return true;
   }
   
-  /* Adds currency items to inventory. */
+  /* Adds currency items to inventory.
+     TODO: Make this optional. */
   public void PopulateCurrencyLoot(){
+    /*
     GameObject igo = Session.session.Spawn(currencies[0], Vector3.zero);
     Data item = igo.GetComponent<Item>().GetData();
     while(currency > 0){
@@ -1125,6 +1130,7 @@ public class Actor : MonoBehaviour{
         StoreItem(item);
       }
     }
+    */
   }
   
   /* Drops item onto ground from inventory. */
@@ -1187,15 +1193,32 @@ public class Actor : MonoBehaviour{
   
   /* Returns data not stored in prefab for this Actor */
   public Data GetData(){
-  //TODO
-    return new Data();
+    Data dat = new Data();
+    dat.displayName = displayName;
+    dat.prefabName = prefabName;
+    dat.x = transform.position.x;
+    dat.y = transform.position.y;
+    dat.z = transform.position.z;
+    Vector3 rot = head.transform.rotation.eulerAngles;
+    dat.xr = rot.x;
+    dat.yr = rot.y;
+    dat.zr = rot.z;
+    dat.stack = 1;
+    dat.stackSize = 1;
+    return dat;
   }
   
   /* Loads data not specified for this prefab for this Actor */
   public void LoadData(Data dat){
-  //TODO
+    displayName = dat.displayName;
+    transform.position = new Vector3(dat.x, dat.y, dat.z);
+    transform.rotation = Quaternion.identity;
+    headRotx = dat.xr;
+    headRoty = dat.yr;
+    bodyRoty = dat.yr;
+    
   }
-   
+
   /* Initiates conversation with other actor */
   public void TalkTo(Actor other, int option = -1){
     if(option == -1 && other != interlocutor && other.interlocutor == null){
@@ -1208,20 +1231,20 @@ public class Actor : MonoBehaviour{
       interlocutor.ReceiveSpeech(option);
     }
   }
-  
+
   /* Respond to being talked to by other Actor. */
   public void ReceiveSpeech(int option = -1){
     //TODO Make one response for NPC, one for Player
   }
-  
-  
+
+
   /* Returns true and subtracts stamina if sufficient. */
   public bool StaminaCheck(int cost){
     if(stamina == 0){ return false; }
     if(cost <= stamina){ stamina-= cost; return true; }
     return false;
   }
-  
+
   /* Rolls to regenerate different conditions */
   public void RegenCondition(){
     if(Random.Range(0, 100) <= health && health != 0){

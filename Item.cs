@@ -102,9 +102,13 @@ public class Item : MonoBehaviour{
   public float impactForce;
   
   // WARP variables
-  public string destName;
+  public string destBuilding;
+  public string destCell; 
+  public int deckId; // Which deck is this door associated with?
+  public int doorId; // Should conform to cardinal NSEW direction of room.
   public Vector3 destPos;
   public Vector3 destRot;
+  bool warped = false;
   
   // projectile variables
   GameObject weaponOfOrigin;
@@ -123,6 +127,9 @@ public class Item : MonoBehaviour{
         break;
       case CONTAINER:
         contents = new List<Data>();
+        break;
+      case WARP:
+        warped = false;
         break;
       default:
         break;
@@ -230,12 +237,17 @@ public class Item : MonoBehaviour{
   /* Response to interaction from non-holder Actor */
   public void Interact(Actor a, int mode = -1, string message = ""){
     // TODO: Account for other interaction modes.
-    if(itemType == CONTAINER && a != null && a.menu != null){
+    if(itemType == CONTAINER && a && a.menu){
       a.menu.contents = contents;
       a.menu.Change(Menu.LOOT);
       return;
     }
+    if(itemType == WARP){
+      if(!warped){ warped = true; Warp(); }
+      return;
+    }
     if(itemType != SCENERY && holder == null){ a.PickUp(this); };
+    
   }
   
   /* Pick the item up. */
@@ -461,7 +473,9 @@ public class Item : MonoBehaviour{
   
   /* Warps to destination. */
   public void Warp(){
-    //TODO
+    print("Warping to:" + destBuilding + ", " + destCell);
+    int dest = OppositeDoor(doorId);
+    Session.session.LoadInterior(destBuilding, destCell, deckId, dest);
   }
   
   /* Returns true if this weapon consumes ammo. */
@@ -545,13 +559,9 @@ public class Item : MonoBehaviour{
         dat.strings.Add(projectile);
         break;
       case WARP:
-        dat.strings.Add(destName);
-        dat.floats.Add(destPos.x);
-        dat.floats.Add(destPos.y);
-        dat.floats.Add(destPos.z);
-        dat.floats.Add(destRot.x);
-        dat.floats.Add(destRot.y);
-        dat.floats.Add(destRot.z);
+        dat.strings.Add(destCell);
+        dat.strings.Add(destBuilding);
+        dat.ints.Add(doorId);
         break;
       case CONTAINER:
         for(int j = 0; j < contents.Count; j++){
@@ -600,20 +610,14 @@ public class Item : MonoBehaviour{
         s++;
         break;
       case WARP:
-        destName = dat.strings[s];
+        destCell = dat.strings[s];
         s++;
-        destPos = new Vector3(
-                              dat.floats[f],
-                              dat.floats[f+1],
-                              dat.floats[f+2]
-                              );
-        f+=3;
-        destRot = new Vector3(
-                              dat.floats[f],
-                              dat.floats[f+1],
-                              dat.floats[f+2]
-                              );
-        f+=3;
+        destBuilding = dat.strings[s];
+        s++;
+        destPos = transform.position + transform.forward * 2;
+        destRot = transform.rotation.eulerAngles;
+        doorId = dat.ints[i];
+        i++;
         break;
       case CONTAINER:
         contents = new List<Data>(dat.data);
@@ -621,6 +625,25 @@ public class Item : MonoBehaviour{
       default:
         break;
     }
+  }
+  
+  /* Returns a given door's neighbor in the adjacent cell. */
+  int OppositeDoor(int origin){
+    switch(origin){
+      case 0: //NORTH
+        return 1;
+        break;
+      case 1: //SOUTH
+        return 0;
+        break;
+      case 2: //EAST
+        return 3;
+        break;
+      case 3: //WEST
+        return 2;
+        break;
+    }
+    return -1;
   }
   
 }

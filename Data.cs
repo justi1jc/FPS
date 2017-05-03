@@ -15,13 +15,6 @@ using System.Collections.Generic;
 [System.Serializable]
 public class Data
 {
-   public Data(){
-      ints = new List<int>();
-      strings = new List<string>();
-      floats = new List<float>();
-      data = new List<Data>();
-      bools = new List<bool>();
-   }
    public bool readyToRead;
    public string prefabName;
    public string displayName;
@@ -40,6 +33,15 @@ public class Data
    public int baseValue;
    [System.NonSerialized]
    public List<Data> data;
+   
+   public Data(){
+      ints = new List<int>();
+      strings = new List<string>();
+      floats = new List<float>();
+      data = new List<Data>();
+      bools = new List<bool>();
+   }
+   
 
 }
 
