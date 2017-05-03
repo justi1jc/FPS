@@ -57,7 +57,8 @@ public class Actor : MonoBehaviour{
   public float headRoty= 0f;
   float bodyRoty = 0f;
 
-  //Walking 
+  //Movement
+  public bool ragdoll = false;
   public float speed;
   bool walking = false;
   bool sprinting = false;
@@ -73,11 +74,15 @@ public class Actor : MonoBehaviour{
   public Animator anim;
   
   //Inventory
-  bool menuOpen;
+  public static readonly string[] currencies = {"Penny", "Nickel"};
+  public int currency;
+  public bool menuOpen;
   public GameObject primaryItem;
   public GameObject secondaryItem;
   public int primaryIndex = -1;
   public int secondaryIndex = -1;
+  public GameObject actorInReach;
+  public string actorInReachName;
   public GameObject itemInReach;
   public string itemInReachName;
   public List<Data> inventory = new List<Data>();
@@ -103,6 +108,7 @@ public class Actor : MonoBehaviour{
 
   
   // Skill levels, max 100
+  public int skillPoints = 100;
   public int ranged  = 50;
   public int melee   = 50;
   public int unarmed = 50;
@@ -111,8 +117,9 @@ public class Actor : MonoBehaviour{
 
   
   // Leveling
-  int level = 0;
-  int xp    = 0;
+  public int nextLevel = 0;
+  public int level = 0;
+  public int xp    = 0;
   
   // abilities
   public bool[] abilities = {true, false, false, false, false};
@@ -125,6 +132,8 @@ public class Actor : MonoBehaviour{
   
   // Speech
   public Actor interlocutor; // Conversation partner
+  public string speechTreeFile; // File for speech tree to use.
+  public SpeechTree speechTree; // Speech tree if this is an NPC Actor
   
   // AI
   public AI ai;
@@ -142,6 +151,7 @@ public class Actor : MonoBehaviour{
     raItem.holder = this;
     laItem.holder = this;
     AssignPlayer(playerNumber);
+    if(level == 0){ LevelUp(); xp = 50; }
   }
   
   
@@ -157,7 +167,7 @@ public class Actor : MonoBehaviour{
   
   /* Late-cycle loop. Orients the model before render.*/
   void LateUpdate(){
-    if(spine){
+    if(spine && !ragdoll){
       spine.transform.rotation = Quaternion.Euler(new Vector3(
         headRotx,
         headRoty,
@@ -171,17 +181,19 @@ public class Actor : MonoBehaviour{
   */
   void AssignPlayer(int player){
     playerNumber = player;
+    StartCoroutine(RegenRoutine());
     if(player <5 && player > 0){
       SetMenuOpen(false);
       if(head){ menu = head.GetComponent<Menu>(); }
       if(menu){ menu.Change(Menu.HUD);  menu.actor = this; }
-      if(Session.session){ Session.session.RegisterPlayer(player, head.GetComponent<Camera>()); }
+      if(Session.session){ Session.session.RegisterPlayer(this, player, head.GetComponent<Camera>()); }
       if(player == 1){ StartCoroutine(KeyboardInputRoutine()); }
       else{StartCoroutine(ControllerInputRoutine()); }
     }
     else if(player == 5){
       ai = gameObject.GetComponent<AI>();
       if(ai){ ai.Begin(this); }
+      if(speechTreeFile != ""){ speechTree = new SpeechTree(speechTreeFile); }
     }
   }
   
@@ -199,6 +211,16 @@ public class Actor : MonoBehaviour{
     return info;
   }
   
+  /* Returns an empty string, or info about interacting with the actor in reach */
+  public string ActorInteractionText(){
+    string text = "";
+    if(crouched){ text += "Steal from "; }
+    else{ text += "Talk to "; }
+    text += actorInReachName;
+    return text;
+  }
+  
+  
   /* Sets controls between menu and in-game contexts. */
   public void SetMenuOpen(bool val){
     menuOpen = val;
@@ -209,11 +231,17 @@ public class Actor : MonoBehaviour{
     }
   }
   
+  IEnumerator RegenRoutine(){
+    while(health >= 0){
+      RegenCondition();
+      yield return new WaitForSeconds(0.2f);
+    }
+  }
   
   /* Handles input from keyboard. */
   IEnumerator KeyboardInputRoutine(){
     while(true){
-      if(!menuOpen){//TODO: Toggle menu controls properly
+      if(!menuOpen){
         KeyboardActorInput();
       }
       else{
@@ -242,29 +270,34 @@ public class Actor : MonoBehaviour{
     bool shift = Input.GetKey(KeyCode.LeftShift);
     bool walk = false;
     sprinting = shift;
-    if(Input.GetKey(KeyCode.W)){ Move(0); walk = true; }
-    if(Input.GetKey(KeyCode.S)){ Move(1); walk = true; }
-    if(Input.GetKey(KeyCode.A)){ Move(2); walk = true; }
-    if(Input.GetKey(KeyCode.D)){ Move(3); walk = true; }
+    float x = 0f;
+    float z = 0f;
+    if(Input.GetKey(KeyCode.W)){ z = 1f; walk = true; }
+    else if(Input.GetKey(KeyCode.S)){ z = -1f; walk = true; }
+    if(Input.GetKey(KeyCode.A)){ x = -1f; walk = true; }
+    else if(Input.GetKey(KeyCode.D)){ x = 1f; walk = true; }
+    if(x != 0f || z != 0f){ StickMove(x, z); }
     if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(KeyCode.LeftControl)){ToggleCrouch(); }
     if(Input.GetKeyUp(KeyCode.LeftControl)){ToggleCrouch(); }
     
     //Mouse controls
-    if(Input.GetMouseButtonDown(0)){ Use(0); }
-    if(Input.GetMouseButtonDown(1)){ Use(1); }
-    if(Input.GetMouseButton(0)){ Use(3); } // Charge Left
-    if(Input.GetMouseButton(1)){ Use(4); } // Charge right
-    if(Input.GetMouseButtonUp(0)){ Use(5); } // Release left
-    if(Input.GetMouseButtonUp(1)){ Use(6); } // Release right
+    if(Input.GetMouseButtonDown(0)){ Use(1); }
+    if(Input.GetMouseButtonDown(1)){ Use(0); }
+    if(Input.GetMouseButton(0)){ Use(4); } // Charge Left
+    if(Input.GetMouseButton(1)){ Use(3); } // Charge right
+    if(Input.GetMouseButtonUp(0)){ Use(6); } // Release left
+    if(Input.GetMouseButtonUp(1)){ Use(5); } // Release right
     float rotx = -Input.GetAxis("Mouse Y") * sensitivityX;
     float roty = Input.GetAxis("Mouse X") * sensitivityY;
     Turn(new Vector3(rotx, roty, 0f));
     
     //Special use keys
+    if(Input.GetKeyDown(KeyCode.Escape)){ menu.Change(Menu.OPTIONS); }
     if(Input.GetKeyDown(KeyCode.R)){ Use(2); }
     if(Input.GetKeyDown(KeyCode.Q)){ Drop(); }
     if(Input.GetKeyDown(KeyCode.E)){ Interact(); }
+    if(shift && Input.GetKeyDown(KeyCode.E)){ Interact(0); }
     if(Input.GetKeyDown(KeyCode.LeftArrow)){ Interact(1); }
     if(Input.GetKeyDown(KeyCode.RightArrow)){ Interact(2); }
     if(Input.GetKeyDown(KeyCode.DownArrow)){ Interact(3); }
@@ -279,7 +312,8 @@ public class Actor : MonoBehaviour{
   /* Handles pause menu keyboard input. */
   void KeyboardMenuInput(){
     if(!menu){ SetMenuOpen(false); } // Return control if menu not available
-    if(Input.GetKeyDown(KeyCode.Tab)){ menu.Press(Menu.B); };
+    if(Input.GetKeyDown(KeyCode.Tab)){ menu.Press(Menu.B); }
+    if(Input.GetKeyDown(KeyCode.Escape)){ menu.Press(Menu.B); }
     if(Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)){
       menu.Press(Menu.UP);
     }
@@ -318,18 +352,19 @@ public class Actor : MonoBehaviour{
     Turn(new Vector3(yr, xr, 0f));
     
     //Buttons
+    if(Input.GetKeyDown(Session.START)){ menu.Change(Menu.OPTIONS); }
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(Session.B)){ Use(7); }
-    if(Input.GetKeyDown(Session.X) && itemInReach){ Interact(); }
+    if(Input.GetKeyDown(Session.X)){ Interact(); }
     else if(Input.GetKeyDown(Session.X)){ Use(2); }
     if(Input.GetKeyDown(Session.Y)){ SetMenuOpen(true);
     if(menu){ menu.Change(Menu.INVENTORY); } }
-    if(rt > 0 && !rt_down){ Use(0); rt_down = true;}
-    else if(rt > 0){ Use(3); }
-    if(rt == 0 && rt_down){ rt_down = false; Use(5); }
-    if(lt > 0 && !lt_down){ Use(1); lt_down = true;}
-    else if(lt > 0){ Use(4); }
-    if(lt == 0 && lt_down){ lt_down = false; Use(6); }
+    if(rt > 0 && !rt_down){ Use(0); rt_down = true;}    // Use right
+    else if(rt > 0){ Use(3); }                          // Hold right
+    if(rt == 0 && rt_down){ rt_down = false; Use(5); }  // Release right
+    if(lt > 0 && !lt_down){ Use(1); lt_down = true;}    // Use left
+    else if(lt > 0){ Use(4); }                          // Hold left
+    if(lt == 0 && lt_down){ lt_down = false; Use(6); }  // Release left
     
     if(Input.GetKeyDown(Session.LSC)){ ToggleCrouch(); }
     if(Input.GetKeyDown(Session.RB)){ Drop(); }
@@ -371,63 +406,81 @@ public class Actor : MonoBehaviour{
     3 = Right
   */
   public void Move(int direction){
+    if(ragdoll){ return; }
     Rigidbody rb = body.GetComponent<Rigidbody>();
     if(rb == null){ return; }
     float pace = speed;
     Vector3 pos = body.transform.position;
-    Vector3 dest = new Vector3();
     Vector3 dir  = new Vector3();
     if(sprinting){ pace *= 1.75f; }
     if(!jumpReady){ pace *= 0.75f; }
     switch(direction){
       case 0:
-        dest = pos + body.transform.forward * pace;
         dir = body.transform.forward;
         break;
       case 1:
-        dest = pos + body.transform.forward * -pace;
         dir = -body.transform.forward;
         break;
       case 2:
-        dest = pos + body.transform.right * -pace;
         dir = -body.transform.right;
         break;
       case 3:
-        dest = pos + body.transform.right * pace;
         dir = body.transform.right;
         break;
     }
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
-    dir += body.transform.up * 45f;
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    ExecuteMove(pace, dir);
   }
   
   /* Move relative to transform.forward and transform.right */
   public void StickMove(float x, float y){
+    if(ragdoll){  return; }
     Vector3 xdir = x * body.transform.right;
     Vector3 ydir = y * body.transform.forward;
     Vector3 dir = (xdir + ydir).normalized;
     Rigidbody rb =  body.GetComponent<Rigidbody>();
     float pace = speed;
     if(sprinting){ pace *= 1.75f; }
-    if(!jumpReady){ pace *= 0.75f; } 
-    Vector3 dest = body.transform.position + (pace * dir);
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
-    dir += body.transform.up * 45f;
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    if(!jumpReady){ pace *= 0.75f; }
+    ExecuteMove(pace, dir);
   }
   
-  /* Move relative to x and z positions.(Used for thumbstick motion) */
+  /* Move relative to x and z positions.(Used for AI) */
   public void AxisMove(float x, float z){
+    if(ragdoll){  return; }
     Vector3 dir = new Vector3(x, 0f, z).normalized;
     Rigidbody rb = body.GetComponent<Rigidbody>();
     float pace = speed;
     if(sprinting){ pace *= 1.75f; }
     if(!jumpReady){ pace *= 0.75f; }
-    Vector3 dest = body.transform.position + (pace * dir);
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
-    dir += body.transform.up * 45f;
-    if(MoveCheck(dir, 3 * pace)){ rb.MovePosition(dest); return; }
+    ExecuteMove(pace, dir);
+  }
+  
+  /* Attempts to move the Actor. Applies stamina limitations.
+     If cannot move, tries to move at 45 degree angle */
+  void ExecuteMove(float pace, Vector3 dir){
+    Vector3 dest = body.transform.position +  dir * pace;
+    Rigidbody rb = body.GetComponent<Rigidbody>();
+    int runCost = (int)Vector3.Magnitude(pace * dir * 6);
+    if(EnduranceCheck(50)){ runCost = 0; }
+    if(MoveCheck(dir, pace * 3)){
+      if(StaminaCheck(runCost)){ rb.MovePosition(dest); }
+      else{
+        dest = body.transform.position +  speed * dir;
+        rb.MovePosition(dest);
+      }
+      return;
+    }
+    dir += body.transform.up;
+    dir = dir.normalized;
+    if(MoveCheck(dir, pace * 3)){
+      pace = speed;
+      dest = body.transform.position +  dir * pace;
+      if(StaminaCheck(runCost)){ rb.MovePosition(dest); }
+      else{
+        dest = body.transform.position + dir * speed;
+        rb.MovePosition(dest);
+      }
+    }
   }
   
   /* Returns true if the Actor has clearance to move in a particular direction
@@ -438,7 +491,7 @@ public class Actor : MonoBehaviour{
     Quaternion orientation = body.transform.rotation;
     int layerMask = ~(1 << 8);
     RaycastHit hit;
-    return !Physics.BoxCast(
+    bool check = !Physics.BoxCast(
       center,
       halfExtents,
       direction,
@@ -448,6 +501,7 @@ public class Actor : MonoBehaviour{
       layerMask,
       QueryTriggerInteraction.Ignore
     );
+    return check;
   }
   
   /* Boxcasts to find the current item in reach, updating itemInReach if they
@@ -468,39 +522,30 @@ public class Actor : MonoBehaviour{
       layerMask,
       QueryTriggerInteraction.Ignore
     );
+    bool itemFound = false;
     for(int i = 0; i < found.Length; i++){
       Item item = found[i].collider.gameObject.GetComponent<Item>();
-      if(item){ itemInReach = item.gameObject; return; }
+      if(item){ itemInReach = item.gameObject; itemFound = true; break; }
     }
-    itemInReach = null;
+    if(!itemFound){ itemInReach = null; }
+    bool actorFound = false;
+    for(int i = 0; i < found.Length; i++){
+      Actor other = found[i].collider.gameObject.GetComponent<Actor>();
+      if(other && other != this){
+        actorInReach = other.gameObject;
+        actorInReachName = other.displayName;
+        actorFound = true;
+        break;
+      }
+    }
+    if(!actorFound){ actorInReach = null; }
     return;
   }  
-  /* Two-axis movement. used by AI
-   0 = no motion on axis
-   1 = motion in positive direction
-  -1 = motion in negative direction */
-  void Move(int x, int z){
-  //TODO
-    switch(x){
-      case -1:
-        Move(1);
-        break;
-      case 1:
-        Move(0);
-        break;
-    }
-    switch(z){
-      case -1:
-        Move(3);
-        break;
-      case 1:
-        Move(2);
-        break;
-    }
-  }
+
   
   /* Rotates head along xyz, torso over x axis*/
   public void Turn(Vector3 direction){
+    if(ragdoll){ return; }
     headRotx += direction.x;
     headRoty += direction.y;
     bodyRoty += direction.y;
@@ -553,29 +598,113 @@ public class Actor : MonoBehaviour{
     crouched = !crouched;
   }
   
+  /* Add xp and check for levelup conditions. */
+  public void ReceiveXp(int amount){
+    xp += amount;
+    if(xp > nextLevel){ LevelUp(); }
+  }
+  
+  /* Apply skill points, calculate xp for next level. */
+  public void LevelUp(){
+    level++;
+    nextLevel = level * level * level * 100;
+    skillPoints += 25;
+  }
+  
+  
   /* Applies damage from attack. Ignores active weapon. */
   public void ReceiveDamage(int damage, GameObject weapon){
-    if(health < 0 || (weapon == primaryItem && damage > 0)){ return; }
+    
+    if(health < 1 || (weapon == primaryItem && damage > 0)){ return; }
     health -= damage;
     if(health < 1){
       health = 0;
       StopAllCoroutines();
       Ragdoll(true);
       if(ai){ ai.Pause(); }
+      Item item = weapon.GetComponent<Item>();
+      if(item && item.holder){ item.holder.ReceiveXp(xp); }
+      if(playerNumber < 5 && playerNumber > 0){
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+      }
+      PopulateCurrencyLoot();
+    }
+    else{
+      bool check = EnduranceCheck(damage);
+      if(check){ StartCoroutine(Stagger()); }
+      else{ StartCoroutine(FallDown()); }
     }
     if(health > healthMax){ health = healthMax; }
   }
   
+  /* Reduce stamina.*/
+  public void ReceiveFatigue(int amount){
+    stamina -= amount;
+    if(stamina < 0){ stamina = 0; }
+  }
+  
+  /* Reduces mana. */
+  public void ReceiveManaDrain(int amount){
+    mana -= amount;
+    if(mana < 0){ mana = 0; }
+  }
+  
+  /* Actor rocks a bit. */
+  IEnumerator Stagger(){
+    float sa = 10; // Stagger angle
+    Vector3 rot = body.transform.rotation.eulerAngles;
+    body.transform.rotation = Quaternion.Euler(rot.x+ sa, rot.y, rot.z);
+    speed -= 0.1f;
+    yield return new WaitForSeconds(0.1f);
+    speed += 0.1f;
+    rot = body.transform.rotation.eulerAngles;
+    body.transform.rotation = Quaternion.Euler(rot.x- sa, rot.y, rot.z);
+  }
+  
+  /* Actor is knocked over */
+  IEnumerator FallDown(){
+    Ragdoll(true);
+    int delay = 100 - health - Random.Range(0, (endurance * agility));
+    if(delay < 3){ delay = 3; }
+    yield return new WaitForSeconds(Random.Range(0, (float)delay));
+    float x = Mathf.Abs(body.transform.rotation.eulerAngles.x);
+    float z = Mathf.Abs(body.transform.rotation.eulerAngles.z);
+    Vector3 rot = new Vector3();
+    while(z > 0 && x > 0){
+      rot = body.transform.rotation.eulerAngles;
+      if(rot.x > 0f){ x = -1f; }
+      else if(rot.x < 0f){ x = 1f; }
+      if(rot.z > 0f){ z = -1f; }
+      else if(rot.z < 0f){ z = 1f; }
+      body.transform.rotation = Quaternion.Euler(rot.x+x, rot.y, rot.z+z);
+      rot = body.transform.rotation.eulerAngles;      
+      x = Mathf.Abs(rot.x);
+      z = Mathf.Abs(rot.y);
+      if(x < 1f || z < 1f){
+        body.transform.rotation = Quaternion.Euler(0f, rot.y, 0f);
+        x = 0f;
+        z = 0f;
+      }
+      yield return new WaitForSeconds(0.01f);
+    }
+    Vector3 pos = body.transform.position;
+    body.transform.position = new Vector3( pos.x, pos.y+1f, pos.z);
+    Ragdoll(false);
+  }
+  
   /* Adds or removes the ragdoll effect on the actor. */
   void Ragdoll(bool state){
+    ragdoll = state;
     Rigidbody rb = body.GetComponent<Rigidbody>();
     if(state){
-      rb.constraints = RigidbodyConstraints.FreezePositionX |
-                      RigidbodyConstraints.FreezePositionY |
-                      RigidbodyConstraints.FreezePositionZ;
+      if(ai){ ai.Pause(); }
+      rb.constraints = RigidbodyConstraints.None; 
     }
     else{
-     rb.constraints = RigidbodyConstraints.None; 
+      if(ai){ ai.Resume(); }
+      rb.constraints = RigidbodyConstraints.FreezeRotationX |
+                      RigidbodyConstraints.FreezeRotationY |
+                      RigidbodyConstraints.FreezeRotationZ;
     }
   }
   
@@ -642,6 +771,12 @@ public class Actor : MonoBehaviour{
       item.chargeMax = 25;
       item.damage = strength * (unarmed / 10 + 1);
     }
+    if(item.charge == item.chargeMax -1 || use == 4){
+      int dmg = (item.damage * item.charge) / item.chargeMax;
+      if(StaminaCheck(dmg)){ item.Use(use); }
+      else{ item.charge = 0; }
+      return;
+    }
     item.Use(use);
   }
   
@@ -661,6 +796,12 @@ public class Actor : MonoBehaviour{
       item.damage = intelligence * (magic / 10 + 1);
       item.effectiveDamage = 0;
     }
+    if(use == 4){
+      int dmg = (item.damage * item.charge) / item.chargeMax;
+      if(ManaCheck(dmg)){ item.ammo = 1; item.Use(use); }
+      else{ item.charge = 0; }
+      return;
+    }
     item.ammo = 1;
     item.Use(use);
   }
@@ -674,6 +815,7 @@ public class Actor : MonoBehaviour{
       item.healing = intelligence * (magic / 10 + 1);
       item.cooldown = 1f;
     }
+    if(!ManaCheck(item.healing)){ return; }
     Light l = item.gameObject.GetComponent<Light>();
     if(l){StartCoroutine(Glow(0.25f, Color.blue, l)); }
     item.stack = 2;
@@ -694,6 +836,12 @@ public class Actor : MonoBehaviour{
       item.impactForce = willpower * 50;
       item.damage = -(intelligence * (magic / 10 + 1));
       item.effectiveDamage = 0;
+    }
+    if(use == 4){
+      int hl = -1 * (item.damage * item.charge) / item.chargeMax;
+      if(ManaCheck(hl)){ item.ammo = 1; item.Use(use); }
+      else{ item.charge = 0; }
+      return;
     }
     item.ammo = 1;
     item.Use(use);
@@ -885,7 +1033,7 @@ public class Actor : MonoBehaviour{
       transform.position,
       Quaternion.identity
     );
-    if(!itemGO){print("GameObject null:" + dat.displayName); return; }
+    if(!itemGO){ print("GameObject null:" + dat.displayName); return; }
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
     itemGO.transform.parent = offHand.transform;
@@ -937,7 +1085,8 @@ public class Actor : MonoBehaviour{
   }
   /* Adds item data to inventory */
   public void StoreItem(Data item){
-    if(item.stack == 0){ return; }
+    if(item.stack < 1){ return; }
+    if(StoreCurrency(item.displayName, item.stack, item.baseValue)){ return; }
     for(int i = 0; i < inventory.Count; i++){
       if(item.stack < 1){ return; }
       Data dat = inventory[i];
@@ -951,9 +1100,42 @@ public class Actor : MonoBehaviour{
     inventory.Add(item);
   }
   
+  /* If provided currency, adds said currency and returns true.
+     otherwise returns false. */
+  public bool StoreCurrency(string displayName, int amount, int val){
+    int index = -1;
+    for(int i = 0; i < currencies.Length; i++){
+      if(displayName == currencies[i]){ index = i; break; }
+    }
+    if(index == -1){ return false; }
+    currency +=  amount * val;
+    return true;
+  }
+  
+  /* Adds currency items to inventory.
+     TODO: Make this optional. */
+  public void PopulateCurrencyLoot(){
+    /*
+    GameObject igo = Session.session.Spawn(currencies[0], Vector3.zero);
+    Data item = igo.GetComponent<Item>().GetData();
+    while(currency > 0){
+      if(item.stackSize <= currency){
+        item.stack = item.stackSize;
+        currency -= item.stack;
+        StoreItem(item);
+      }
+      else{
+        item.stack = currency;
+        currency = 0;
+        StoreItem(item);
+      }
+    }
+    */
+  }
+  
   /* Drops item onto ground from inventory. */
-  public void DiscardItem(int itemIndex){
-    if(itemIndex < 0 || itemIndex > inventory.Count){ return; }
+  public Item DiscardItem(int itemIndex){
+    if(itemIndex < 0 || itemIndex > inventory.Count){ return null; }
     if(itemIndex == primaryIndex){ StorePrimary(); }
     if(itemIndex == secondaryIndex){ StoreSecondary(); }
     Data dat = inventory[itemIndex];
@@ -969,15 +1151,35 @@ public class Actor : MonoBehaviour{
     itemGO.transform.position = hand.transform.position;
     dat.stack--;
     if(dat.stack < 1){ inventory.Remove(dat); }
+    return item;
   }
+  
   
   /* Interact with item in reach.
      i is the argument for the interaction, if relevant */
   public void Interact(int mode = -1){
-    if(itemInReach == null){ return; }
-    Item item = itemInReach.GetComponent<Item>();
-    if(item == null){ return; }
-    item.Interact(this, mode);
+    if(itemInReach){
+      Item item = itemInReach.GetComponent<Item>();
+      if(item){ item.Interact(this, mode); }
+    }
+    if(actorInReach){
+      Actor actor = actorInReach.GetComponent<Actor>();
+      if(actor && actor.speechTree != null && mode == -1 && actor.health > 0){
+        interlocutor = actor;
+        menu.Change(Menu.SPEECH);
+      }
+      else if(actor && mode == 0 && actor.health > 0){
+        print("Steal from " + actor.gameObject.name);
+      }
+      else if(actor && mode == -1){
+        menu.contents = actor.inventory;
+        menu.Change(Menu.LOOT);
+      }
+      else{
+        if(!actor){ print("Actor null"); }
+        if(actor && actor.speechTree == null){ print("Speech tree null"); }
+      }
+    }
   }
   
   /* Pick up item in world. */
@@ -989,17 +1191,34 @@ public class Actor : MonoBehaviour{
     Destroy(item.gameObject);
   }
   
-  /* Returns data not found in prefab for this Actor */
+  /* Returns data not stored in prefab for this Actor */
   public Data GetData(){
-  //TODO
-    return new Data();
+    Data dat = new Data();
+    dat.displayName = displayName;
+    dat.prefabName = prefabName;
+    dat.x = transform.position.x;
+    dat.y = transform.position.y;
+    dat.z = transform.position.z;
+    Vector3 rot = head.transform.rotation.eulerAngles;
+    dat.xr = rot.x;
+    dat.yr = rot.y;
+    dat.zr = rot.z;
+    dat.stack = 1;
+    dat.stackSize = 1;
+    return dat;
   }
   
   /* Loads data not specified for this prefab for this Actor */
   public void LoadData(Data dat){
-  //TODO
+    displayName = dat.displayName;
+    transform.position = new Vector3(dat.x, dat.y, dat.z);
+    transform.rotation = Quaternion.identity;
+    headRotx = dat.xr;
+    headRoty = dat.yr;
+    bodyRoty = dat.yr;
+    
   }
-   
+
   /* Initiates conversation with other actor */
   public void TalkTo(Actor other, int option = -1){
     if(option == -1 && other != interlocutor && other.interlocutor == null){
@@ -1012,10 +1231,43 @@ public class Actor : MonoBehaviour{
       interlocutor.ReceiveSpeech(option);
     }
   }
-  
+
   /* Respond to being talked to by other Actor. */
   public void ReceiveSpeech(int option = -1){
     //TODO Make one response for NPC, one for Player
+  }
+
+
+  /* Returns true and subtracts stamina if sufficient. */
+  public bool StaminaCheck(int cost){
+    if(stamina == 0){ return false; }
+    if(cost <= stamina){ stamina-= cost; return true; }
+    return false;
+  }
+
+  /* Rolls to regenerate different conditions */
+  public void RegenCondition(){
+    if(Random.Range(0, 100) <= health && health != 0){
+      health++;
+      if(health > 100){ health = 100; }
+    }
+    
+    if(EnduranceCheck(20)){
+      stamina++;
+      if(stamina > 100){ stamina = 100; }
+    }
+    
+    if(MagicCheck(25)){
+      mana++;
+      if(mana > 100){ mana = 100; }
+    }
+  }
+  
+  /* Returns true and subtracts mana if sufficient. */
+  public bool ManaCheck(int cost){
+    if(mana == 0){ return false; }
+    if(cost <= mana){ mana-= cost; return true; }
+    return false;
   }
   
   /* Returns true if player passes stealth check. */
@@ -1030,9 +1282,27 @@ public class Actor : MonoBehaviour{
     successSpace += sprintPenalty + viewerPenalty; // Penalties
     int roll = Random.Range(0, 100);
     if(roll <= successSpace){ return true; }
-
     return false;
   }
+  
+  /* Returns true if player passes endurance check. */
+  public bool EnduranceCheck(int damage = 5){
+    int enduranceBonus = health +  endurance * 5;
+    int successSpace = enduranceBonus - damage; // Max 95
+    int roll = Random.Range(0, 100);
+    if(roll <= successSpace){ return true; }
+    return false;
+  }
+  
+  /* Returns true if player passes magic test.  */
+  public bool MagicCheck(int difficulty = 0){
+    int successSpace = willpower * magic;
+    successSpace -= difficulty;
+    int roll = Random.Range(0, 100);
+    if(roll <= successSpace){ return true; }
+    return false;
+  }
+  
   
      
 }

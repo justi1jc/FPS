@@ -52,6 +52,7 @@ public class AI: MonoBehaviour{
   /* Switch for different */
   IEnumerator Think(){
     while(true){
+      if(host.ragdoll){ yield return new WaitForSeconds(1f); }
       if(!paused){
         switch(profile){
           case PASSIVE:
@@ -142,6 +143,7 @@ public class AI: MonoBehaviour{
       if(Mathf.Abs(y) > 180){ y *= -1f; }
       host.Turn(new Vector3(x, y, 0f).normalized);
       yield return new WaitForSeconds(turnSpeed);
+      if(!target){ yield break; }
       relRot = (target.head.transform.position - host.hand.transform.position).normalized;
       realRot = Quaternion.LookRotation(relRot, host.hand.transform.up);
       desiredRot = host.hand.transform.rotation;
@@ -153,18 +155,21 @@ public class AI: MonoBehaviour{
   
   /* Move directly at target. */
   IEnumerator Pursue(Actor target){
+    if(!target){ yield break; }
     pursuing = true;
     Vector3 pos = host.body.transform.position;
     pos = new Vector3(pos.x, 0f, pos.z);
-    Vector3 dest = target.body.transform.position;
+    Vector3 dest = new Vector3();
+    if(target){ dest = target.body.transform.position; }
     dest = new Vector3(dest.x, 0f, dest.z); 
     while(Vector3.Distance(dest, pos) > 3f && CanSee(target.body) && !paused){
+      if(!target){ yield break; }
       Vector3 move = dest - pos;
       host.AxisMove(move.x, move.z);
       yield return new WaitForSeconds(0.01f);
       pos = host.body.transform.position;
       pos = new Vector3(pos.x, 0f, pos.z);
-      dest = target.body.transform.position;
+      if(target){ dest = target.body.transform.position; }
       dest = new Vector3(dest.x, 0f, dest.z);
     }
     pursuing = false;
@@ -223,6 +228,7 @@ public class AI: MonoBehaviour{
   
   /* Returns true if one of five raycasts reaches the target's collider */
   bool CanSee(GameObject target){
+    if(!target){ return false; }
     Transform trans = host.head.transform;
     Vector3[] origins = {
       trans.position, // Center
@@ -232,8 +238,8 @@ public class AI: MonoBehaviour{
       trans.position - trans.right   // Left
     };
     for(int i = 0; i < origins.Length; i++){
+      if(!target){ return false; }
       Vector3 origin = origins[i];
-      
       Vector3 direction = target.transform.position - host.head.transform.position;
       RaycastHit hit;
       float maxDistance = sightDistance;
