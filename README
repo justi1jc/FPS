@@ -46,19 +46,26 @@ ______ _       _     _              _   _____             _
                                                                 
 ********************************************************************************
 
-Current version: 0.2.0
+Current version: 0.3.0
 
     Current features
-Menus(Inventory, Ability, Speech, Trade, level-up/stats, Loot)
+Menus(Main, Inventory/Loot, Ability, Speech, Trade, level-up/stats,
+  Save&Load Loot)
 Input(In-Game, Menu)
-Actor(XP/RPG Stats, Movement, Item Interaction, condition(health), Combat AI
-    condition(fatigue, mana ))
-Items(charging, pickup, drop, use, thrown type, ranged melee, containers)
+Actor
+(
+  XP/RPG Stats, Movement, Item Interaction, condition(health),
+  Combat AI, condition(fatigue, mana )
+)
+Items
+(
+  Warp doors charging, pickup, drop, use, thrown type, ranged melee, containers
+)
 Inventory(store, Looting)
 Abilities(Dual-wield, Unarmed, fireball, heal)
 Session(SpawnEntity);
 Speech(Speech tree, trade system)
-
+Save&Load(GameData, interior cells, Actor data)
 
 ********************************************************************************
  _   _  _____  _____   _____             _     
@@ -69,38 +76,7 @@ Speech(Speech tree, trade system)
  \___/  \___(_)____/   \____/\___/ \__,_|_|___/
                                                
 ********************************************************************************
-Menus(Main, Save&Load, Options, Loot, Quest)
-Actor(Ambient AI, condition(stat mods, effects&perks), reticle)
-Items(Warp door, shield type, damage&repair, two-handed items)
-Save&Load(GameData, interior cells, exterior cells, Actor data)
+Menus(Quest)
+World(exterior cells)
+Quest(Quest interface, hello world quest)
 
-World(Interior cells, exterior cells, NPC placement)
-Quest(Quest)
-
-
-********************************************************************************
- _   _  _____  _____   _____             _     
-| | | ||  _  ||____ | |  __ \           | |    
-| | | || |/' |    / / | |  \/ ___   __ _| |___ 
-| | | ||  /| |    \ \ | | __ / _ \ / _` | / __|
-\ \_/ /\ |_/ /.___/ / | |_\ \ (_) | (_| | \__ \
- \___/  \___(_)____/   \____/\___/ \__,_|_|___/
-                                               
-********************************************************************************
-    What needs to be done for 0.3.0 (Interiors update):
-Menus(Main, Options, Save&load)
-Save&Load(GameData, interior cells, Actor data)
-Items(Warp Door)
-World(Interior cells, NPC placement)
-
-
-  Tasks For Interiors update
--Store/Load Player as they move between scenes.
--Use MASTER map file and CellSaver to generate a Session's world map.
--Save session.
--Load Session.
-HoloDeck
-  -Load Interior from Session's map.
-  -Save Interior to Session's map.
--Change interior cells via warp door. 
--Get/Load serialization data for Actor
