@@ -108,6 +108,7 @@ public class Item : MonoBehaviour{
   public int doorId; // Should conform to cardinal NSEW direction of room.
   public Vector3 destPos;
   public Vector3 destRot;
+  bool warped = false;
   
   // projectile variables
   GameObject weaponOfOrigin;
@@ -128,6 +129,7 @@ public class Item : MonoBehaviour{
         contents = new List<Data>();
         break;
       case WARP:
+        warped = false;
         break;
       default:
         break;
@@ -241,7 +243,7 @@ public class Item : MonoBehaviour{
       return;
     }
     if(itemType == WARP){
-      Warp();
+      if(!warped){ warped = true; Warp(); }
       return;
     }
     if(itemType != SCENERY && holder == null){ a.PickUp(this); };
@@ -471,9 +473,9 @@ public class Item : MonoBehaviour{
   
   /* Warps to destination. */
   public void Warp(){
+    print("Warping to:" + destBuilding + ", " + destCell);
     int dest = OppositeDoor(doorId);
     Session.session.LoadInterior(destBuilding, destCell, deckId, dest);
-    print("Warping to:" + destBuilding + ", " + destCell);
   }
   
   /* Returns true if this weapon consumes ammo. */

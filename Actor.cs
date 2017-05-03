@@ -1033,7 +1033,7 @@ public class Actor : MonoBehaviour{
       transform.position,
       Quaternion.identity
     );
-    if(!itemGO){print("GameObject null:" + dat.displayName); return; }
+    if(!itemGO){ print("GameObject null:" + dat.displayName); return; }
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
     itemGO.transform.parent = offHand.transform;
@@ -1205,7 +1205,6 @@ public class Actor : MonoBehaviour{
     dat.zr = rot.z;
     dat.stack = 1;
     dat.stackSize = 1;
-    print(displayName + "," + dat.xr + "," + dat.yr);
     return dat;
   }
   
@@ -1217,10 +1216,9 @@ public class Actor : MonoBehaviour{
     headRotx = dat.xr;
     headRoty = dat.yr;
     bodyRoty = dat.yr;
-    print(displayName + "," + dat.xr + "," + dat.yr);
     
   }
-   
+
   /* Initiates conversation with other actor */
   public void TalkTo(Actor other, int option = -1){
     if(option == -1 && other != interlocutor && other.interlocutor == null){
@@ -1233,20 +1231,20 @@ public class Actor : MonoBehaviour{
       interlocutor.ReceiveSpeech(option);
     }
   }
-  
+
   /* Respond to being talked to by other Actor. */
   public void ReceiveSpeech(int option = -1){
     //TODO Make one response for NPC, one for Player
   }
-  
-  
+
+
   /* Returns true and subtracts stamina if sufficient. */
   public bool StaminaCheck(int cost){
     if(stamina == 0){ return false; }
     if(cost <= stamina){ stamina-= cost; return true; }
     return false;
   }
-  
+
   /* Rolls to regenerate different conditions */
   public void RegenCondition(){
     if(Random.Range(0, 100) <= health && health != 0){

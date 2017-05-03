@@ -110,9 +110,12 @@ public class Session : MonoBehaviour {
     DestroyMenu();
     CreateLoadingScreen();
     decks[0].initialized = false;
-    LoadInterior(INIT_BUILDING, INIT_INTERIOR);
+    GameObject player = Spawn("Player1", spawnPoints[0]); 
+    playerData.Add(player.GetComponent<Actor>().GetData());
+    Destroy(player);
+    players = new List<Actor>();
+    LoadInterior(INIT_BUILDING, INIT_INTERIOR, 0, -1, false);
     DestroyLoadingScreen();
-    Spawn("Player1", spawnPoints[0]);
     
   }
   

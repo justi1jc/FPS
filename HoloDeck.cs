@@ -31,7 +31,6 @@ public class HoloDeck : MonoBehaviour{
       spawnDoor = door;
       if(initialized){
         SaveInterior();
-        ClearInterior();
       }
       ClearInterior();
       MapRecord map = Session.session.map;
@@ -58,7 +57,7 @@ public class HoloDeck : MonoBehaviour{
         deck = found;
         UnpackInterior();
         for(int i = 0; i < playerData.Count; i++){ 
-          CreateNPC(playerData[i], init); 
+          CreateNPC(playerData[i], init, true); 
         }
       }
       else{
@@ -105,7 +104,15 @@ public class HoloDeck : MonoBehaviour{
   /* Creates an NPC with the given data. Init is true if file has just been
     loaded. Otherwise it is assumed players are entering the cell via a
     spawnpoint.  */
-  public void CreateNPC(Data dat, bool init = false){
+  public void CreateNPC(Data dat, bool init = false, bool player = false){
+    if(!init && player){
+      dat.x = spawnPos.x;
+      dat.y = spawnPos.y;
+      dat.z = spawnPos.z;
+      dat.xr = spawnRot.x;
+      dat.yr = spawnRot.y;
+      dat.zr = spawnRot.z;
+    }
     Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
     sPos += transform.position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
@@ -117,17 +124,8 @@ public class HoloDeck : MonoBehaviour{
       rot
     );
     Actor actor = go.GetComponent<Actor>();
-    if(!init){
-      dat.x = spawnPos.x;
-      dat.y = spawnPos.y;
-      dat.z = spawnPos.z;
-      dat.xr = spawnRot.x;
-      dat.yr = spawnRot.y;
-      dat.zr = spawnRot.z;
-    }
     if(actor){ actor.LoadData(dat); }
     go.transform.position = sPos;
-    print("Created" + actor.displayName);
   }
   
   /* Updates interior in Session's data with current content. */
@@ -177,6 +175,7 @@ public class HoloDeck : MonoBehaviour{
   /* Clears contents of loaded interior. */
   public void ClearInterior(){
     List<GameObject> obs = GetContents();
+    print("Clearing  " + obs.Count + " gameObjects.");
     for(int i = 0; i < obs.Count; i++){
       Destroy(obs[i]);
     }
