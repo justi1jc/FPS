@@ -91,7 +91,7 @@ Quest(Quest interface, hello world quest)
 ********************************************************************************
 Fixed-Enemy NPCs won't instantiate
   Prefab was not named
--Player doesn't retain equipped items.
+Fixed-Player doesn't retain equipped items.
 -Item menu does not scroll down when it has too many items.
-
+-Equipped items appear as items in reach
 
