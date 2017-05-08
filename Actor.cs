@@ -1218,9 +1218,15 @@ public class Actor : MonoBehaviour{
     dat.ints.Add(rightAbility);
     dat.ints.Add(primaryIndex);
     dat.ints.Add(secondaryIndex);
+    int pIndex = primaryIndex;
+    int sIndex = secondaryIndex;
     StorePrimary();
     StoreSecondary();
     dat.inventory = new Inventory(inventory);
+    primaryIndex = -1;
+    secondaryIndex = -1;
+    if(pIndex > -1){ Equip(pIndex); }
+    if(sIndex > -1){ EquipSecondary(sIndex); }
     return dat;
   }
   

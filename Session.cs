@@ -292,10 +292,13 @@ public class Session : MonoBehaviour {
   /* Load contents from a specific file. */
   public void LoadGame(string fileName){
     GameRecord record = LoadFile(fileName);
-    if(record == null){ return; }
+    if(record == null){ print("Null game record"); return; }
     ClearData();
     LoadData(record);
-    if(interior){ LoadInterior(buildingName, interiorName, 0, -1, true); }
+    if(interior){ 
+      decks[0].initialized = false;
+      LoadInterior(buildingName, interiorName, 0, -1, true);
+    }
   }
   
   /* Returns a GameRecord containing this Session's data. */
@@ -379,7 +382,6 @@ public class Session : MonoBehaviour {
         if(playerData[j].displayName == players[i].displayName){
           found = true;
           playerData[j] = players[i].GetData();
-          print("Duplicate found");
           break;
         }
       }
