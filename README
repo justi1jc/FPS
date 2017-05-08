@@ -90,6 +90,6 @@ Quest(Quest interface, hello world quest)
        \/                             \/
 ********************************************************************************
 -Item menu does not scroll down properly.
--Inventory is lost upon loading.
+Fixed-Inventory is lost upon loading.
 -Items re-appear on map after restarting game and loading.
-Fixed-Player instance multiplied by saving
+-Walls enter reach, displacing doors in priority.

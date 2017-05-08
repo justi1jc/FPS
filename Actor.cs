@@ -1220,7 +1220,7 @@ public class Actor : MonoBehaviour{
     dat.ints.Add(secondaryIndex);
     StorePrimary();
     StoreSecondary();
-    dat.data = inventory;
+    dat.inventory = new Inventory(inventory);
     return dat;
   }
   
@@ -1237,7 +1237,7 @@ public class Actor : MonoBehaviour{
     rightAbility = dat.ints[i]; i++;
     int pIndex = dat.ints[i]; i++;
     int sIndex = dat.ints[i]; i++;
-    if(dat.data != null){ inventory.AddRange(dat.data); }
+    if(dat.inventory != null){ inventory.AddRange(dat.inventory.inv); }
     else{ print(displayName + "inventory data null");}
     if(pIndex > -1){ Equip(pIndex); }
     else{ EquipAbility(rightAbility); }

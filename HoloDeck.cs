@@ -7,7 +7,6 @@
     Exterior rendering consists of loading a cell and a number of layers of
     cells surrounding it.
 */
-
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
