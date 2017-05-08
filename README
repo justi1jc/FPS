@@ -89,7 +89,8 @@ Quest(Quest interface, hello world quest)
  \___|_  / \____/|__|  |__|  |__/__/\_ \
        \/                             \/
 ********************************************************************************
--Enemy NPCs won't instantiate
+Fixed-Enemy NPCs won't instantiate
+  Prefab was not named
 -Player doesn't retain equipped items.
 -Item menu does not scroll down when it has too many items.
 

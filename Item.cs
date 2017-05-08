@@ -473,7 +473,6 @@ public class Item : MonoBehaviour{
   
   /* Warps to destination. */
   public void Warp(){
-    print("Warping to:" + destBuilding + ", " + destCell);
     int dest = OppositeDoor(doorId);
     Session.session.LoadInterior(destBuilding, destCell, deckId, dest);
   }

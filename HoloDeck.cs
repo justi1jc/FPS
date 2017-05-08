@@ -26,7 +26,6 @@ public class HoloDeck : MonoBehaviour{
     List<Data> playerData,
     bool init
   ){
-    print("Interior loaded with init as " + init);
     if(interior){
       spawnDoor = door;
       if(initialized){
@@ -63,9 +62,7 @@ public class HoloDeck : MonoBehaviour{
       else{
         print("Couldn't find " + cellName + " in " + building);
       }
-      
     }
-    
     initialized = true;
     interior = true;
   }
@@ -175,7 +172,6 @@ public class HoloDeck : MonoBehaviour{
   /* Clears contents of loaded interior. */
   public void ClearInterior(){
     List<GameObject> obs = GetContents();
-    print("Clearing  " + obs.Count + " gameObjects.");
     for(int i = 0; i < obs.Count; i++){
       Destroy(obs[i]);
     }

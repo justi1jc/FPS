@@ -87,7 +87,6 @@ public class Session : MonoBehaviour {
     CreateDeck();
   }
   
-  
   void Update(){
 
   }
