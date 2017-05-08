@@ -93,5 +93,5 @@ Fixed-Enemy NPCs won't instantiate
   Prefab was not named
 Fixed-Player doesn't retain equipped items.
 -Item menu does not scroll down when it has too many items.
--Equipped items appear as items in reach
+Fixed-Equipped items appear as items in reach
 

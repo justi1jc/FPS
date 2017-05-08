@@ -524,7 +524,13 @@ public class Actor : MonoBehaviour{
     bool itemFound = false;
     for(int i = 0; i < found.Length; i++){
       Item item = found[i].collider.gameObject.GetComponent<Item>();
-      if(item){ itemInReach = item.gameObject; itemFound = true; break; }
+      bool holding = item.gameObject == primaryItem;
+      holding = holding || item.gameObject == secondaryItem;
+      if(item && !holding){
+        itemInReach = item.gameObject;
+        itemFound = true;
+        break;
+      }
     }
     if(!itemFound){ itemInReach = null; }
     bool actorFound = false;
@@ -1211,7 +1217,6 @@ public class Actor : MonoBehaviour{
     dat.ints.Add(rightAbility);
     dat.ints.Add(primaryIndex);
     dat.ints.Add(secondaryIndex);
-    print(displayName + "Before:" + leftAbility + "," + rightAbility + "," + primaryIndex + "," + secondaryIndex + "," + inventory.Count);
     StorePrimary();
     StoreSecondary();
     dat.data.AddRange(inventory);
@@ -1232,7 +1237,6 @@ public class Actor : MonoBehaviour{
     int pIndex = dat.ints[i]; i++;
     int sIndex = dat.ints[i]; i++;
     if(dat.data != null){ inventory.AddRange(dat.data); }
-    print(displayName + "After" + leftAbility + "," + rightAbility + "," + primaryIndex + "," + secondaryIndex + "," + inventory.Count);
     if(pIndex > -1){ Equip(pIndex); }
     else{ EquipAbility(rightAbility); }
     if(sIndex > -1){ EquipSecondary(sIndex); }
