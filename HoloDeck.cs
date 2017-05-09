@@ -7,7 +7,6 @@
     Exterior rendering consists of loading a cell and a number of layers of
     cells surrounding it.
 */
-
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,7 +25,6 @@ public class HoloDeck : MonoBehaviour{
     List<Data> playerData,
     bool init
   ){
-    print("Interior loaded with init as " + init);
     if(interior){
       spawnDoor = door;
       if(initialized){
@@ -63,9 +61,7 @@ public class HoloDeck : MonoBehaviour{
       else{
         print("Couldn't find " + cellName + " in " + building);
       }
-      
     }
-    
     initialized = true;
     interior = true;
   }
@@ -142,7 +138,7 @@ public class HoloDeck : MonoBehaviour{
           for(int j = 0; j < map.buildings[i].Length; j++){
             Cell candidate = map.buildings[i][j];
             if(candidate != null && candidate.displayName == deck.displayName){
-              map.buildings[i][j] = deck;
+              Session.session.map.buildings[i][j] = deck;
               return;
             }
           }
@@ -175,7 +171,6 @@ public class HoloDeck : MonoBehaviour{
   /* Clears contents of loaded interior. */
   public void ClearInterior(){
     List<GameObject> obs = GetContents();
-    print("Clearing  " + obs.Count + " gameObjects.");
     for(int i = 0; i < obs.Count; i++){
       Destroy(obs[i]);
     }

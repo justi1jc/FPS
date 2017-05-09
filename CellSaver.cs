@@ -258,7 +258,7 @@ public class CellSaver : MonoBehaviour {
     if(map == null){ print("Master not loaded"); return; }
     if(fileAccess){ print("File access already in progress."); return; }
     fileAccess = true;
-    string path = Application.persistentDataPath + "/" + masterFile + ".master";
+    string path = Application.dataPath + "/Resources/" + masterFile + ".master";
     using(FileStream file  = File.Create(path)){
       BinaryFormatter bf =  new BinaryFormatter();
       bf.Serialize(file, map);
@@ -270,7 +270,7 @@ public class CellSaver : MonoBehaviour {
   
   /* Loads the master map file into map or creates new one. */
   public void LoadMaster(){
-    string path = Application.persistentDataPath + "/" + masterFile + ".master";
+    string path = Application.dataPath + "/Resources/" + masterFile + ".master";
     if(!File.Exists(path)){
       map = new MapRecord();
       print("File did not exist.");

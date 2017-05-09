@@ -87,7 +87,6 @@ public class Session : MonoBehaviour {
     CreateDeck();
   }
   
-  
   void Update(){
 
   }
@@ -293,10 +292,13 @@ public class Session : MonoBehaviour {
   /* Load contents from a specific file. */
   public void LoadGame(string fileName){
     GameRecord record = LoadFile(fileName);
-    if(record == null){ return; }
+    if(record == null){ print("Null game record"); return; }
     ClearData();
     LoadData(record);
-    if(interior){ LoadInterior(buildingName, interiorName, 0, -1, true); }
+    if(interior){ 
+      decks[0].initialized = false;
+      LoadInterior(buildingName, interiorName, 0, -1, true);
+    }
   }
   
   /* Returns a GameRecord containing this Session's data. */
@@ -313,14 +315,8 @@ public class Session : MonoBehaviour {
     record.currentInterior = decks[0].deck.displayName;
     record.x = xCord;
     record.y = yCord;
+    SavePlayers();
     record.players = playerData;
-    
-    for(int i = 0; i < players.Count; i++){
-      if(players[i] != null){ record.players.Add(players[i].GetData()); }
-    }
-    for(int i = 0; i < record.players.Count; i++){
-      print("Saved NPC: " + record.players[i].displayName);
-    }
     return record;
   }
   
@@ -346,7 +342,6 @@ public class Session : MonoBehaviour {
   
   /* Returns a GameRecord containing data from a specified file, or null.*/
   GameRecord LoadFile(string fileName){
-    
     if(fileAccess){ return null; }
     fileAccess = true;
     BinaryFormatter bf = new BinaryFormatter();
@@ -382,7 +377,15 @@ public class Session : MonoBehaviour {
   /* Collects the data of all registered players. */
   public void SavePlayers(){
     for(int i = 0; i < players.Count; i++){
-      if(players[i] != null){
+      bool found = false;
+      for(int j = 0; j < playerData.Count; j++){
+        if(playerData[j].displayName == players[i].displayName){
+          found = true;
+          playerData[j] = players[i].GetData();
+          break;
+        }
+      }
+      if(players[i] != null && !found){
         playerData.Add(players[i].GetData());
       }
     }

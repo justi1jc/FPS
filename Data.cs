@@ -31,14 +31,13 @@ public class Data
    public List<float> floats;
    public List<bool> bools;
    public int baseValue;
-   [System.NonSerialized]
-   public List<Data> data;
+   public Inventory inventory;
    
    public Data(){
       ints = new List<int>();
       strings = new List<string>();
       floats = new List<float>();
-      data = new List<Data>();
+      inventory = new Inventory();
       bools = new List<bool>();
    }
    
