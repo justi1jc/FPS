@@ -473,7 +473,6 @@ public class Item : MonoBehaviour{
   
   /* Warps to destination. */
   public void Warp(){
-    print("Warping to:" + destBuilding + ", " + destCell);
     int dest = OppositeDoor(doorId);
     Session.session.LoadInterior(destBuilding, destCell, deckId, dest);
   }
@@ -565,7 +564,7 @@ public class Item : MonoBehaviour{
         break;
       case CONTAINER:
         for(int j = 0; j < contents.Count; j++){
-          dat.data.Add(contents[j]);
+          dat.inventory.inv.Add(contents[j]);
         }
         break;
       default:
@@ -620,7 +619,8 @@ public class Item : MonoBehaviour{
         i++;
         break;
       case CONTAINER:
-        contents = new List<Data>(dat.data);
+        if(dat.inventory != null){ contents = new List<Data>(dat.inventory.inv); }
+        else{ contents = new List<Data>(); }
         break;
       default:
         break;

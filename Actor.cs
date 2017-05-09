@@ -104,7 +104,7 @@ public class Actor : MonoBehaviour{
   public int perception   = 5; // accuracy
   public int agility      = 5; // speed, jump height
   public int willpower    = 5; // mana regen
-  public int strength     = 5; // maxweight, 
+  public int strength     = 5; // maxweight
 
   
   // Skill levels, max 100
@@ -219,7 +219,6 @@ public class Actor : MonoBehaviour{
     text += actorInReachName;
     return text;
   }
-  
   
   /* Sets controls between menu and in-game contexts. */
   public void SetMenuOpen(bool val){
@@ -525,7 +524,14 @@ public class Actor : MonoBehaviour{
     bool itemFound = false;
     for(int i = 0; i < found.Length; i++){
       Item item = found[i].collider.gameObject.GetComponent<Item>();
-      if(item){ itemInReach = item.gameObject; itemFound = true; break; }
+      bool holding = false;
+      if(item && item.gameObject == primaryItem){ holding = true; }
+      if(item && item.gameObject == secondaryItem){ holding = true; }
+      if(item && !holding){
+        itemInReach = item.gameObject;
+        itemFound = true;
+        break;
+      }
     }
     if(!itemFound){ itemInReach = null; }
     bool actorFound = false;
@@ -991,15 +997,18 @@ public class Actor : MonoBehaviour{
       secondaryItem = null;
       secondaryIndex = -1;
     }
-    else if(leftAbility > 0){ leftAbility = 0;}
+    else if(leftAbility > 0){ leftAbility = 0; }
   }
   
   /* Selects an item in inventory to equip. */
   public void Equip(int itemIndex){
     if(itemIndex < 0 || itemIndex >= inventory.Count){ return; }
     if(itemIndex == primaryIndex){ StorePrimary(); return; }
-    if(itemIndex == secondaryIndex){ StoreSecondary(); return;  }
-    if(primaryIndex != -1 && secondaryIndex == -1){ EquipSecondary(itemIndex); return; }
+    if(itemIndex == secondaryIndex){ StoreSecondary(); return; }
+    if(primaryIndex != -1 && secondaryIndex == -1){ 
+      EquipSecondary(itemIndex);
+      return;
+    }
     StorePrimary();
     Data dat = inventory[itemIndex];
     GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
@@ -1205,6 +1214,19 @@ public class Actor : MonoBehaviour{
     dat.zr = rot.z;
     dat.stack = 1;
     dat.stackSize = 1;
+    dat.ints.Add(leftAbility);
+    dat.ints.Add(rightAbility);
+    dat.ints.Add(primaryIndex);
+    dat.ints.Add(secondaryIndex);
+    int pIndex = primaryIndex;
+    int sIndex = secondaryIndex;
+    StorePrimary();
+    StoreSecondary();
+    dat.inventory = new Inventory(inventory);
+    primaryIndex = -1;
+    secondaryIndex = -1;
+    if(pIndex > -1){ Equip(pIndex); }
+    if(sIndex > -1){ EquipSecondary(sIndex); }
     return dat;
   }
   
@@ -1216,7 +1238,17 @@ public class Actor : MonoBehaviour{
     headRotx = dat.xr;
     headRoty = dat.yr;
     bodyRoty = dat.yr;
-    
+    int i = 0;
+    leftAbility = dat.ints[i]; i++;
+    rightAbility = dat.ints[i]; i++;
+    int pIndex = dat.ints[i]; i++;
+    int sIndex = dat.ints[i]; i++;
+    if(dat.inventory != null){ inventory.AddRange(dat.inventory.inv); }
+    else{ print(displayName + "inventory data null");}
+    if(pIndex > -1){ Equip(pIndex); }
+    else{ EquipAbility(rightAbility); }
+    if(sIndex > -1){ EquipSecondary(sIndex); }
+    else{ EquipAbilitySecondary(leftAbility); }
   }
 
   /* Initiates conversation with other actor */
@@ -1302,7 +1334,4 @@ public class Actor : MonoBehaviour{
     if(roll <= successSpace){ return true; }
     return false;
   }
-  
-  
-     
 }

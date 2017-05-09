@@ -257,11 +257,9 @@ public class Menu : MonoBehaviour{
   
   
   void RenderInventory(){
-    //Draw Background
-    Box("", XOffset(), 0, Width(), Height());
-
+    Box("", XOffset(), 0, Width(), Height()); //Draw Background
     GUI.color = Color.green;
-    
+    List<Data> inv = actor.inventory;
     int iw = Width()/4;
     int ih = Height()/20;
     string str = "";
@@ -270,17 +268,15 @@ public class Menu : MonoBehaviour{
     Box(str, XOffset(), 0, iw, 2*ih);
     
     scrollPosition = GUI.BeginScrollView(
-      new Rect(XOffset() +iw, Height()/2, Width()-iw, Height()),
-      scrollPosition,
+      new Rect(XOffset() +iw, Height()/2, Width()-iw, ih * inv.Count),
+      new Vector2(0, ih * sy),
       new Rect(0, 0, 200, 200)
     );
-    
-    List<Data> inv = actor.inventory;
     
     for(int i = 0; i < inv.Count; i++){
       GUI.color = Color.green; 
       Data item = inv[i];
-      string selected ="";
+      string selected = "";
       if(i == actor.primaryIndex){ selected += "Right Hand "; }
       if(i == actor.secondaryIndex){ selected += "Left Hand "; }
       string name = item.displayName;
@@ -1034,6 +1030,7 @@ public class Menu : MonoBehaviour{
     }
     
   }
+  
   void OptionsInput(int button){
     DefaultExit(button);
   }
