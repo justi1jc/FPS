@@ -68,7 +68,6 @@ public class HoloDeck : MonoBehaviour{
   
   /* Instantiates contents of deck. */
   public void UnpackInterior(){
-    print("Unpacked " + deck.items.Count + " items." );
     for(int i = 0; i < deck.buildings.Count; i++){ CreateItem(deck.buildings[i]); }
     for(int i = 0; i < deck.items.Count; i++){ CreateItem(deck.items[i]); }
     for(int i = 0; i < deck.npcs.Count; i++){ CreateNPC(deck.npcs[i]); }
@@ -139,10 +138,7 @@ public class HoloDeck : MonoBehaviour{
           for(int j = 0; j < map.buildings[i].Length; j++){
             Cell candidate = map.buildings[i][j];
             if(candidate != null && candidate.displayName == deck.displayName){
-              //map.buildings[i][j] = deck;
-              print("Saving " + deck.items.Count + " items to master.");
               Session.session.map.buildings[i][j] = deck;
-              print("Master now has " + Session.session.map.buildings[i][j].items.Count + " items." );
               return;
             }
           }
@@ -165,7 +161,6 @@ public class HoloDeck : MonoBehaviour{
       c.items = GetItems(found, false, true);
       c.buildings = GetItems(found, true, false);
     }
-    print("packed " + c.items.Count + " items.");
     c.npcs = GetNpcs(found);
     c.heX = deck.heX;
     c.heY = deck.heY;

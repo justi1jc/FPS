@@ -89,6 +89,4 @@ Quest(Quest interface, hello world quest)
  \___|_  / \____/|__|  |__|  |__/__/\_ \
        \/                             \/
 ********************************************************************************
--Item menu does not scroll down properly.
-Fixed-Items re-appear on map after restarting game and loading.
--Walls enter reach, displacing doors in priority.
+Complete
