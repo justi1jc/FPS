@@ -90,3 +90,9 @@ Quest(Quest interface, hello world quest)
 
 ********************************************************************************
 World(exterior cells)
+
+-Adjust warp door for exteriors
+-Adjust cellsaver for exteriors
+-Adjust holodeck for exteriors
+-Adjust session to use exteriors
+-Create a couple example exteriors

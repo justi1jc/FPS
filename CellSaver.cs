@@ -43,7 +43,7 @@ public class CellSaver : MonoBehaviour {
   public Cell packedCell;    // The cell's data to populate or save with.
   
   // Exterior
-  public List<Data> buildings; // The buildings in this exterior. 
+  public bool unique;   // True if only one instance of this exterior should exist.
   
   void Update(){
     if(Input.GetKeyDown(KeyCode.Q)){ PackCell(); }
@@ -71,15 +71,9 @@ public class CellSaver : MonoBehaviour {
   public void PackCell(){
     Cell c = new Cell();
     List<GameObject> found = GetContents();
-    if(interior){
-      c.items = GetItems(found);
-      c.building = building;
-      c.displayName = displayName;
-    }
-    else{
-      c.items = GetItems(found, false, true);
-      c.buildings = GetItems(found, true, false); 
-    }
+    if(interior){ c.building = building; }
+    c.items = GetItems(found);
+    c.displayName = displayName;
     c.npcs = GetNpcs(found);
     Vector3 he = (max.transform.position - min.transform.position) / 2;
     c.heX = he.x;
@@ -94,10 +88,6 @@ public class CellSaver : MonoBehaviour {
     if(interior){
       displayName = packedCell.displayName;
       building = packedCell.building;
-    }
-    List<Data> buildings = packedCell.buildings;
-    for(int i = 0; i < buildings.Count; i++){
-      CreateItem(buildings[i]);
     }
     List<Data> items = packedCell.items;
     for(int i = 0; i < items.Count; i++){
@@ -219,38 +209,58 @@ public class CellSaver : MonoBehaviour {
   /* Saves packedCell to map.  */
   public void UpdateMaster(){
     if(map == null){ print("Master not loaded"); return; }
-    if(interior){
-      int found = -1;
-      for(int i = 0; i < map.buildingNames.Count; i++){
-        if(map.buildingNames[i] == building){ found = i; break;}
+    if(interior){ UpdateMasterInterior(); }
+    else{ UpdateMasterExterior(); }
+  }
+  
+  /* Caller ensures the map is not null. */
+  public void UpdateMasterInterior(){
+    int found = -1;
+    for(int i = 0; i < map.buildingNames.Count; i++){
+      if(map.buildingNames[i] == building){ found = i; break;}
+    }
+    if(found < 0){
+      map.buildingNames.Add(building);
+      Cell[] cells = new Cell[1];
+      cells[0] = packedCell;
+      map.buildings.Add(cells);
+      print("New building added");
+    }
+    else{
+      int foundCell = -1;
+      for(int i = 0; i < map.buildings[found].Length; i++){
+        if(map.buildings[found][i].displayName == packedCell.displayName){
+          foundCell = i;
+        }
       }
-      if(found < 0){
-        map.buildingNames.Add(building);
-        Cell[] cells = new Cell[1];
-        cells[0] = packedCell;
-        map.buildings.Add(cells);
-        print("New building added");
+      if(foundCell != -1){
+        map.buildings[found][foundCell] = packedCell;
+        print("Updated existing cell.");
       }
       else{
-        int foundCell = -1;
-        for(int i = 0; i < map.buildings[found].Length; i++){
-          if(map.buildings[found][i].displayName == packedCell.displayName){
-            foundCell = i;
-          }
-        }
-        if(foundCell != -1){
-          map.buildings[found][foundCell] = packedCell;
-          print("Updated existing cell.");
-        }
-        else{
-          List<Cell> cells = new List<Cell>(map.buildings[found]);
-          cells.Add(packedCell);
-          map.buildings[found] = cells.ToArray();
-          print("Added new cell.");
-        }
+        List<Cell> cells = new List<Cell>(map.buildings[found]);
+        cells.Add(packedCell);
+        map.buildings[found] = cells.ToArray();
+        print("Added new cell.");
       }
     }
-    else{ print("Exteriors not implemented"); }
+  }
+  
+  /* Caller ensures the map is not null. */
+  public void UpdateMasterExterior(){
+    print("Saving exterior to master...");
+    int found = -1;
+    for(int i = 0; i < map.exteriors.Count; i++){
+      if(map.exteriors[i].displayName == displayName){ found = i; break;}
+    }
+    if(found < 0){
+      map.exteriors.Add(packedCell);
+      print("New exterior added.");
+    }
+    else{
+      map.exteriors[found] = packedCell;
+      print("Updated existing interior.");
+    }
   }
   
   /* Saves map to master map file. */

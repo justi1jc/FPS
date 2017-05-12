@@ -17,7 +17,17 @@ public class HoloDeck : MonoBehaviour{
   int id = 0; // Id for multiple holodecks in a session. 
   int spawnDoor; // Door to derive spawnPoint from.
   public Vector3 spawnRot, spawnPos;
-
+  
+  public Cell[] exteriors; // Grid of exterior cells.
+  public int x, y; // Center of grid.
+  
+  /* Initialize */
+  public void Start(){
+    exteriors = new Cell[9];
+    for(int i = 0; i < exteriors.Length; i++){ exteriors[i] = null; }
+    x = y = 0;
+  }
+  
   public void LoadInterior(
     string building, 
     string cellName,
@@ -145,7 +155,6 @@ public class HoloDeck : MonoBehaviour{
         }
       }
       print("Couldn't find " + deck.displayName + " in " + deck.building);
-      
   }
   
   /* Updates the active Cell's contents. */

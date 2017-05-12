@@ -218,6 +218,8 @@ public class Session : MonoBehaviour {
     mainMenu = false;
   }
   
+  
+  /* Initializes a singular HoloDeck*/
   public void CreateDeck(){
     decks[0] = gameObject.AddComponent(typeof(HoloDeck)) as HoloDeck;
     decks[0].interior = interior;
@@ -225,6 +227,7 @@ public class Session : MonoBehaviour {
     decks[0].LoadInterior(buildingName, interiorName, -1, playerData, true);
   }
   
+  /* Loads the map from the master file. */
   public void LoadMaster(){
     CellSaver saver = gameObject.AddComponent(typeof(CellSaver)) as CellSaver;
     saver.LoadMaster();
@@ -320,6 +323,7 @@ public class Session : MonoBehaviour {
     return record;
   }
   
+  /* Loads the contents of a GameRecord */
   public void LoadData(GameRecord dat){
     sessionName = dat.sessionName;
     map = dat.map;
