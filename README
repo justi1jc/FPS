@@ -89,10 +89,11 @@ Quest(Quest interface, hello world quest)
  \___/  \___(_)   |_/  \____/\___/ \__,_|_|___/
 
 ********************************************************************************
-World(exterior cells)
+World(exterior cells, random generation)
 
 -Adjust warp door for exteriors
--Adjust cellsaver for exteriors
 -Adjust holodeck for exteriors
 -Adjust session to use exteriors
 -Create a couple example exteriors
+
+-World generation.

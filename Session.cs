@@ -135,8 +135,15 @@ public class Session : MonoBehaviour {
   }
   
   /* Packs the current cell and loads an exterior. */
-  public void LoadExterior(){
-    
+  public void LoadExterior(
+    string cellName,
+    int deck = 0,
+    int door = -1,
+    bool init = false
+  ){
+    SavePlayers();
+    decks[deck].LoadExterior(cellName, playerData, init);
+    playerData = new List<Data>();
   }
   
   /* Create camera and menu to display loading screen. */

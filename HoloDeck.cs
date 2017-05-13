@@ -83,6 +83,13 @@ public class HoloDeck : MonoBehaviour{
     for(int i = 0; i < deck.npcs.Count; i++){ CreateNPC(deck.npcs[i]); }
   }
   
+  /* Unpacks a single exterior cell. TODO: Unpack an nxm grid. */
+  public void UnpackExterior(){
+    for(int i = 0; i < deck.buildings.Count; i++){ CreateItem(deck.buildings[i]); }
+    for(int i = 0; i < deck.items.Count; i++){ CreateItem(deck.items[i]); }
+    for(int i = 0; i < deck.npcs.Count; i++){ CreateNPC(deck.npcs[i]); }
+  }
+  
   public void CreateItem(Data dat){
     Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
     sPos += transform.position;
@@ -185,8 +192,42 @@ public class HoloDeck : MonoBehaviour{
     }
   }
   
-  public void LoadExterior(int x, int y){
-    print("Exteriors not implemented");
+  /* Packs up contents and unpacks the contents of a specified exterior.*/
+  public void LoadExterior(string exterior, List<Data> playerData, bool init){
+    if(init){ 
+      if(interior){ SaveInterior(); }
+      else{ SaveExterior(); } 
+    }
+    ClearExterior();
+    Cell c = FindExterior(exterior);
+    if(c == null){ print("Couldn't find " + exterior); return; }
+    deck = c;
+    UnpackExterior();
+    for(int i = 0; i < playerData.Count; i++){ 
+      CreateNPC(playerData[i], init, true); 
+    }
+  }
+  
+  /* Empties contents of active exterior cell. TODO: Clear for an nxm matrix */
+  public void ClearExterior(){
+    List<GameObject> obs = GetContents();
+    for(int i = 0; i < obs.Count; i++){
+      Destroy(obs[i]);
+    }
+  }
+  
+  /* Updates active cells in Session's map. */
+  public void SaveExterior(){
+    print("SaveExterior not implemented.");
+  }
+  
+  /* Searches for a given exterior, returning null upon failure. */
+  public Cell FindExterior(string exterior){
+    MapRecord map = Session.session.map;
+    for(int i = 0; i < map.exteriors.Count; i++){
+      if(map.exteriors[i].displayName == exterior){ return map.exteriors[i]; }
+    }
+    return null;
   }
   
   /* Returns the gameObjects caught by boxcasting with min and max.*/
