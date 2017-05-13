@@ -323,6 +323,10 @@ public class CellSaver : MonoBehaviour {
   
   /* Loads the next scene in the build order, if possible. */
   public void LoadNextScene(){
-    print("Loaded next scene");
+    int index = SceneManager.GetActiveScene().buildIndex;
+    int count = SceneManager.sceneCountInBuildSettings;
+    if(index + 1  >= count){ print("End;"); return; }
+    print("Loading next scene.");
+    SceneManager.LoadScene(index + 1);
   }
 }
