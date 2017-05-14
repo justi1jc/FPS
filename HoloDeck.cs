@@ -17,7 +17,15 @@ public class HoloDeck : MonoBehaviour{
   int id = 0; // Id for multiple holodecks in a session. 
   int spawnDoor; // Door to derive spawnPoint from.
   public Vector3 spawnRot, spawnPos;
-
+  
+  public Cell[] exteriors; // Grid of exterior cells.
+  
+  /* Initialize */
+  public void Start(){
+    exteriors = new Cell[9];
+    for(int i = 0; i < exteriors.Length; i++){ exteriors[i] = null; }
+  }
+  
   public void LoadInterior(
     string building, 
     string cellName,
@@ -68,6 +76,13 @@ public class HoloDeck : MonoBehaviour{
   
   /* Instantiates contents of deck. */
   public void UnpackInterior(){
+    for(int i = 0; i < deck.buildings.Count; i++){ CreateItem(deck.buildings[i]); }
+    for(int i = 0; i < deck.items.Count; i++){ CreateItem(deck.items[i]); }
+    for(int i = 0; i < deck.npcs.Count; i++){ CreateNPC(deck.npcs[i]); }
+  }
+  
+  /* Unpacks a single exterior cell. TODO: Unpack an nxm grid. */
+  public void UnpackExterior(){
     for(int i = 0; i < deck.buildings.Count; i++){ CreateItem(deck.buildings[i]); }
     for(int i = 0; i < deck.items.Count; i++){ CreateItem(deck.items[i]); }
     for(int i = 0; i < deck.npcs.Count; i++){ CreateNPC(deck.npcs[i]); }
@@ -145,7 +160,6 @@ public class HoloDeck : MonoBehaviour{
         }
       }
       print("Couldn't find " + deck.displayName + " in " + deck.building);
-      
   }
   
   /* Updates the active Cell's contents. */
@@ -176,8 +190,67 @@ public class HoloDeck : MonoBehaviour{
     }
   }
   
-  public void LoadExterior(int x, int y){
-    print("Exteriors not implemented");
+  /* Packs up contents and unpacks the contents of a specified exterior.*/
+  public void LoadExterior(string exterior, List<Data> playerData, bool init){
+    if(init){ 
+      if(interior){ SaveInterior(); }
+      else{ SaveExterior(); } 
+    }
+    ClearExterior();
+    Cell c = FindExterior(exterior);
+    if(c == null){ print("Couldn't find " + exterior); return; }
+    deck = c;
+    UnpackExterior();
+    for(int i = 0; i < playerData.Count; i++){ 
+      CreateNPC(playerData[i], init, true); 
+    }
+    FindExteriors(c.x, c.y);
+  }
+  
+  /* Empties contents of active exterior cell. TODO: Clear for an nxm matrix */
+  public void ClearExterior(){
+    List<GameObject> obs = GetContents();
+    for(int i = 0; i < obs.Count; i++){
+      Destroy(obs[i]);
+    }
+  }
+  
+  /* Updates active cells in Session's map. */
+  public void SaveExterior(){
+    print("SaveExterior not implemented.");
+  }
+  
+  /* Searches for a given exterior, returning null upon failure. */
+  public Cell FindExterior(string exterior){
+    MapRecord map = Session.session.map;
+    for(int i = 0; i < map.exteriors.Count; i++){
+      if(map.exteriors[i].displayName == exterior){ return map.exteriors[i]; }
+    }
+    return null;
+  }
+  
+  /* Returns a list of any exteriors within or adjacent to given coordinates. */
+  public List<Cell> FindExteriors(int x, int y){
+    MapRecord map = Session.session.map;
+    List<Cell> cells = new List<Cell>();
+    for(int i = 0; i < map.exteriors.Count; i++){
+      Cell c = map.exteriors[i];
+      if(Adjacent(c.x, c.y, x, y)){ cells.Add(c); }
+    }
+    return cells;
+  }
+  
+  /* Returns true if two xy pairs are next to one another. */
+  public bool Adjacent(int x1, int y1, int x2, int y2){
+    int xdiff = x1 - x2;
+    int ydiff = y1 - y2;
+    if(xdiff < 0){ xdiff *= -1; }
+    if(ydiff < 0){ ydiff *= -1; }
+    if(xdiff < 2 && ydiff < 2){
+      return true; 
+    }
+    
+    return false;
   }
   
   /* Returns the gameObjects caught by boxcasting with min and max.*/

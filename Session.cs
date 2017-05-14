@@ -135,8 +135,15 @@ public class Session : MonoBehaviour {
   }
   
   /* Packs the current cell and loads an exterior. */
-  public void LoadExterior(){
-    
+  public void LoadExterior(
+    string cellName,
+    int deck = 0,
+    int door = -1,
+    bool init = false
+  ){
+    SavePlayers();
+    decks[deck].LoadExterior(cellName, playerData, init);
+    playerData = new List<Data>();
   }
   
   /* Create camera and menu to display loading screen. */
@@ -218,6 +225,8 @@ public class Session : MonoBehaviour {
     mainMenu = false;
   }
   
+  
+  /* Initializes a singular HoloDeck*/
   public void CreateDeck(){
     decks[0] = gameObject.AddComponent(typeof(HoloDeck)) as HoloDeck;
     decks[0].interior = interior;
@@ -225,6 +234,7 @@ public class Session : MonoBehaviour {
     decks[0].LoadInterior(buildingName, interiorName, -1, playerData, true);
   }
   
+  /* Loads the map from the master file. */
   public void LoadMaster(){
     CellSaver saver = gameObject.AddComponent(typeof(CellSaver)) as CellSaver;
     saver.LoadMaster();
@@ -320,6 +330,7 @@ public class Session : MonoBehaviour {
     return record;
   }
   
+  /* Loads the contents of a GameRecord */
   public void LoadData(GameRecord dat){
     sessionName = dat.sessionName;
     map = dat.map;
