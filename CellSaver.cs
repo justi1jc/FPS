@@ -27,6 +27,7 @@ using UnityEngine.SceneManagement;
 
 
 public class CellSaver : MonoBehaviour {
+  public int x, y; /// Coords for this cell.
   public string displayName;   // This should be unique between cells in a building.
   public const string masterFile = "world";    // File containing all the map's cell data.     
   public GameObject  max, min; // Corners of the area that will be saved.
@@ -79,6 +80,8 @@ public class CellSaver : MonoBehaviour {
     c.heX = he.x;
     c.heY = he.y;
     c.heZ = he.z;
+    c.x = x;
+    c.y = y;
     packedCell = c;
   }
   
@@ -314,11 +317,6 @@ public class CellSaver : MonoBehaviour {
     packedCell = interior;
     UnpackCell();
     print(buildingName + " " + cellName + " unpacked.");
-  }
-  
-  /* unpacks a particular exterior from master */
-  public void UnpackMasterExterior(){
-    print("Exteriors not implemented");
   }
   
   /* Loads the next scene in the build order, if possible. */

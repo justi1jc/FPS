@@ -19,13 +19,11 @@ public class HoloDeck : MonoBehaviour{
   public Vector3 spawnRot, spawnPos;
   
   public Cell[] exteriors; // Grid of exterior cells.
-  public int x, y; // Center of grid.
   
   /* Initialize */
   public void Start(){
     exteriors = new Cell[9];
     for(int i = 0; i < exteriors.Length; i++){ exteriors[i] = null; }
-    x = y = 0;
   }
   
   public void LoadInterior(
@@ -206,6 +204,7 @@ public class HoloDeck : MonoBehaviour{
     for(int i = 0; i < playerData.Count; i++){ 
       CreateNPC(playerData[i], init, true); 
     }
+    FindExteriors(c.x, c.y);
   }
   
   /* Empties contents of active exterior cell. TODO: Clear for an nxm matrix */
@@ -228,6 +227,30 @@ public class HoloDeck : MonoBehaviour{
       if(map.exteriors[i].displayName == exterior){ return map.exteriors[i]; }
     }
     return null;
+  }
+  
+  /* Returns a list of any exteriors within or adjacent to given coordinates. */
+  public List<Cell> FindExteriors(int x, int y){
+    MapRecord map = Session.session.map;
+    List<Cell> cells = new List<Cell>();
+    for(int i = 0; i < map.exteriors.Count; i++){
+      Cell c = map.exteriors[i];
+      if(Adjacent(c.x, c.y, x, y)){ cells.Add(c); }
+    }
+    return cells;
+  }
+  
+  /* Returns true if two xy pairs are next to one another. */
+  public bool Adjacent(int x1, int y1, int x2, int y2){
+    int xdiff = x1 - x2;
+    int ydiff = y1 - y2;
+    if(xdiff < 0){ xdiff *= -1; }
+    if(ydiff < 0){ ydiff *= -1; }
+    if(xdiff < 2 && ydiff < 2){
+      return true; 
+    }
+    
+    return false;
   }
   
   /* Returns the gameObjects caught by boxcasting with min and max.*/
