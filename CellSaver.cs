@@ -219,11 +219,10 @@ public class CellSaver : MonoBehaviour {
   /* Caller ensures the map is not null. */
   public void UpdateMasterInterior(){
     int found = -1;
-    for(int i = 0; i < map.buildingNames.Count; i++){
-      if(map.buildingNames[i] == building){ found = i; break;}
+    for(int i = 0; i < map.buildings.Count; i++){
+      if(map.buildings[i][0].building == building){ found = i; break;}
     }
     if(found < 0){
-      map.buildingNames.Add(building);
       Cell[] cells = new Cell[1];
       cells[0] = packedCell;
       map.buildings.Add(cells);

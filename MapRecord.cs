@@ -15,7 +15,6 @@ public class MapRecord{
   
   public MapRecord(){
     buildings = new List<Cell[]>();
-    buildingNames = new List<string>();
     exteriors = new List<Cell>();
     interiors = new List<Cell>();
   }
