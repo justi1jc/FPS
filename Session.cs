@@ -107,6 +107,11 @@ public class Session : MonoBehaviour {
   public void CreateGame(string sesName){
     sessionName = sesName;
     DestroyMenu();
+    
+    map = Cartographer.Generate(map, 3, 3);
+    for(int i = 0; i < map.exteriors.Count; i++){ print(map.exteriors[i].ToString()); }
+    for(int i = 0; i < map.interiors.Count; i++){ print(map.interiors[i].ToString()); }
+    
     CreateLoadingScreen();
     decks[0].initialized = false;
     GameObject player = Spawn("Player1", spawnPoints[0]); 
@@ -115,7 +120,6 @@ public class Session : MonoBehaviour {
     players = new List<Actor>();
     LoadInterior(INIT_BUILDING, INIT_INTERIOR, 0, -1, false);
     DestroyLoadingScreen();
-    
   }
   
   /*

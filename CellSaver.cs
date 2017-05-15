@@ -42,10 +42,11 @@ public class CellSaver : MonoBehaviour {
   public bool[] edges;       // True if a door exists for this direction.
   public MapRecord map;      // Contents of master map file.
   public Cell packedCell;    // The cell's data to populate or save with.
+  public string exteriorName; // Name of connected exterior.
   
   // Exterior
   public bool unique;   // True if only one instance of this exterior should exist.
-  
+  public bool entrance; // True if this exterior has a door in it.
   void Update(){
     if(Input.GetKeyDown(KeyCode.Q)){ PackCell(); }
     if(Input.GetKeyDown(KeyCode.W)){ ClearCell(); }
@@ -82,6 +83,8 @@ public class CellSaver : MonoBehaviour {
     c.heZ = he.z;
     c.x = x;
     c.y = y;
+    c.exteriorName = exteriorName;
+    c.entrance = entrance;
     packedCell = c;
   }
   

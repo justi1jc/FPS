@@ -33,9 +33,31 @@ public class Cell{
   // Exterior
   public bool entrance; // True if this contains a door to an interior.
   
+  public Cell(Cell c){
+    x = c.x;
+    y = c.y;
+    interior = c.interior;
+    items = c.items;
+    npcs = c.npcs;
+    heX = c.heX;
+    heY = c.heY;
+    heZ = c.heZ;
+    building = c.building;
+    displayName = c.displayName;
+    exteriorName = c.exteriorName;
+  }
+  
   public Cell(){
     items = new List<Data>();
     npcs = new List<Data>();
+  }
+  
+  public string ToString(){
+    string ret = "";
+    ret += displayName;
+    ret += "(" + x + "," + y + "),";
+    ret += exteriorName;
+    return ret;
   }
   
 }

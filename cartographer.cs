@@ -7,13 +7,20 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class Cartographer{
   MapRecord master;
   List<Cell> interiors;
   List<Cell> exteriors;
-  Random rand;
+  System.Random rand;
   int n, m; // Size of map.
+  
+  /* Convenience method. */
+  public static MapRecord Generate(MapRecord map, int _n, int _m){
+    Cartographer c = new Cartographer(map, _n, _m);
+    return c.GenerateMap();
+  }
   
   public Cartographer(MapRecord _master, int _n, int _m){
     master = _master;
@@ -21,11 +28,11 @@ public class Cartographer{
     exteriors = new List<Cell>();
     n = _n;
     m = _m;
-    rand = new Random();
+    rand = new System.Random();
   }
   
   /* Produces a randomly-generated map */
-  public MapRecord Generate(){
+  public MapRecord GenerateMap(){
     for(int i = 0; i < master.buildings.Count; i++){ PlaceBuilding(i); }
     FillInExteriors();
     MapRecord ret = new MapRecord();
@@ -100,13 +107,15 @@ public class Cartographer{
     List<Cell> ne = GetNonEntrances();
     for(int i = 0; i < n; i++){
       for(int j = 0; j < m; j++){
-        if(GetExterior(i, j) == -1){
+        int ext = GetExterior(i, j);
+        if(ext == -1){
           int choice = rand.Next(0, ne.Count);
-          Cell c = ne[choice];
+          Cell c = new Cell(ne[choice]);
           c.x = i;
           c.y = j;
           exteriors.Add(c);
         }
+        
       }
     }
   }
