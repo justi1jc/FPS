@@ -76,14 +76,12 @@ public class HoloDeck : MonoBehaviour{
   
   /* Instantiates contents of deck. */
   public void UnpackInterior(){
-    for(int i = 0; i < deck.buildings.Count; i++){ CreateItem(deck.buildings[i]); }
     for(int i = 0; i < deck.items.Count; i++){ CreateItem(deck.items[i]); }
     for(int i = 0; i < deck.npcs.Count; i++){ CreateNPC(deck.npcs[i]); }
   }
   
   /* Unpacks a single exterior cell. TODO: Unpack an nxm grid. */
   public void UnpackExterior(){
-    for(int i = 0; i < deck.buildings.Count; i++){ CreateItem(deck.buildings[i]); }
     for(int i = 0; i < deck.items.Count; i++){ CreateItem(deck.items[i]); }
     for(int i = 0; i < deck.npcs.Count; i++){ CreateNPC(deck.npcs[i]); }
   }
@@ -172,8 +170,7 @@ public class HoloDeck : MonoBehaviour{
       c.displayName = deck.displayName;
     }
     else{
-      c.items = GetItems(found, false, true);
-      c.buildings = GetItems(found, true, false);
+      c.items = GetItems(found);
     }
     c.npcs = GetNpcs(found);
     c.heX = deck.heX;
@@ -281,13 +278,8 @@ public class HoloDeck : MonoBehaviour{
   }
   
   /* Returns the items in a GameObject list.
-     if ignoreItems is true, only scenery will be returned.
-     if ignoreScenery is true, only items will be returned.
   */
-  public List<Data> GetItems(List<GameObject> obs,
-    bool ignoreItems = false,
-    bool ignoreScenery = false
-  ){
+  public List<Data> GetItems(List<GameObject> obs ){
     List<Data> ret = new List<Data>();
     for(int i = 0; i < obs.Count; i++){
       Item item = obs[i].GetComponent<Item>();
@@ -297,9 +289,7 @@ public class HoloDeck : MonoBehaviour{
         dat.x = pos.x;
         dat.y = pos.y;
         dat.z = pos.z;
-        bool scenery = item.itemType == Item.SCENERY;
-        if(scenery && !ignoreScenery){ ret.Add(item.GetData()); }
-        if(!scenery && !ignoreItems){ ret.Add(item.GetData()); }
+        ret.Add(item.GetData());
       }
     }
     return ret;

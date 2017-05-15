@@ -91,9 +91,8 @@ Quest(Quest interface, hello world quest)
 ********************************************************************************
 World(exterior cells, random generation)
 
--Adjust warp door for exteriors
--Adjust holodeck for exteriors
--Adjust session to use exteriors
--Create a couple example exteriors
 
--World generation.
+Random World generation:
+  -Place at most one of each buildings (Create a list of options. Pick one randomly.)
+  -Fill the remaining space with non-entrance exteriors.(Create a list of them, pick one randomly.)
+  -Provide each interior with an exterior it connects to

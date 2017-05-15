@@ -24,19 +24,40 @@ public class Cell{
   public List<Data> items;
   public List<Data> npcs;
   public float heX, heY, heZ; // Half extents for boxcasts
+  
   // Interior
   public string building; // The name of the building this interior resides within.
   public string displayName; // Base name for room.
-  public Data[] doorData; // warp doors for interiors
-  public bool[] edges;    // True if a door exists for this direction.
+  public string exteriorName; //Linked exterior, if any
   
   // Exterior
-  public List<Data> buildings; // The buildings in this exterior. 
+  public bool entrance; // True if this contains a door to an interior.
+  
+  public Cell(Cell c){
+    x = c.x;
+    y = c.y;
+    interior = c.interior;
+    items = c.items;
+    npcs = c.npcs;
+    heX = c.heX;
+    heY = c.heY;
+    heZ = c.heZ;
+    building = c.building;
+    displayName = c.displayName;
+    exteriorName = c.exteriorName;
+  }
   
   public Cell(){
     items = new List<Data>();
     npcs = new List<Data>();
-    buildings = new List<Data>();
+  }
+  
+  public string ToString(){
+    string ret = "";
+    ret += displayName;
+    ret += "(" + x + "," + y + "),";
+    ret += exteriorName;
+    return ret;
   }
   
 }
