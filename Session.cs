@@ -52,22 +52,16 @@ public class Session : MonoBehaviour {
   // players
   Camera cam1;
   Camera cam2;
-  List<Actor> players;
-  List<Data> playerData;
   
   // World.
   const string MENU_BUILDING = "House";
   const string MENU_INTERIOR = "ActI";
   const string INIT_BUILDING = "House";
   const string INIT_INTERIOR = "ActI";
-  HoloDeck[] decks;
-  Vector3[] spawnPoints;
-  Vector3[] spawnRots;
-  public MapRecord map;
-  bool interior = true; // True if interior is currently loaded.
+  HoloDeck[] decks; // active HoloDecks
+  public MapRecord map; // World map.
   string buildingName = MENU_BUILDING;
   string interiorName = MENU_INTERIOR;
-  int xCord, yCord; // Coordinates on overworld
   
   // Main menu UI
   bool mainMenu; // True when main menu is active.
@@ -78,10 +72,6 @@ public class Session : MonoBehaviour {
     if(Session.session){ Destroy(this); }
     else{ Session.session = this; }
     decks = new HoloDeck[1];
-    players = new List<Actor>();
-    playerData = new List<Data>();
-    spawnPoints = new Vector3[1];
-    spawnRots = new Vector3[1];
     CreateMenu();
     LoadMaster();
     CreateDeck();
@@ -95,7 +85,9 @@ public class Session : MonoBehaviour {
     if(player == 1){ cam1 = cam; }
     else if(player == 2){ cam2 = cam; }
     UpdateCameras();
-    players.Add(actor);
+    for(int i = 0; i < decks.Length; i++){
+      if(decks[i].RegisterPlayer(actor)){ break; }
+    }
   }
   
   public void UnregisterPlayer(int player){
@@ -113,12 +105,12 @@ public class Session : MonoBehaviour {
     for(int i = 0; i < map.interiors.Count; i++){ print(map.interiors[i].ToString()); }
     
     CreateLoadingScreen();
-    decks[0].initialized = false;
-    GameObject player = Spawn("Player1", spawnPoints[0]); 
-    playerData.Add(player.GetComponent<Actor>().GetData());
-    Destroy(player);
-    players = new List<Actor>();
-    LoadInterior(INIT_BUILDING, INIT_INTERIOR, 0, -1, false);
+    
+    //GameObject player = Spawn("Player1", spawnPoints[0]); 
+    //playerData.Add(player.GetComponent<Actor>().GetData());
+    //Destroy(player);
+    //players = new List<Actor>();
+    //LoadInterior(INIT_BUILDING, INIT_INTERIOR, 0, -1, false);
     DestroyLoadingScreen();
   }
   
@@ -129,25 +121,22 @@ public class Session : MonoBehaviour {
   public void LoadInterior(
     string building, 
     string cellName, 
+    int x, int y,
     int deck = 0, 
     int door = -1,
-    bool init = false
+    bool saveFirst = true
   ){
-    SavePlayers();
-    decks[deck].LoadInterior(building, cellName, door, playerData, init);
-    playerData = new List<Data>();
+    //decks[deck].LoadInterior(building, cellName, door, x, y, saveFirst);
   }
   
   /* Packs the current cell and loads an exterior. */
   public void LoadExterior(
-    string cellName,
+    int x, int y,
     int deck = 0,
     int door = -1,
-    bool init = false
+    bool saveFirst = true
   ){
-    SavePlayers();
-    decks[deck].LoadExterior(cellName, playerData, init);
-    playerData = new List<Data>();
+    //decks[deck].LoadExterior(door, x, y, saveFirst);
   }
   
   /* Create camera and menu to display loading screen. */
@@ -181,34 +170,7 @@ public class Session : MonoBehaviour {
     }   
   }
   
-  /* Instantiates gameObject of a specific prefab  
-     as close to the desired location as possible.
-     will spawn gameObject directly on top of map if
-     there's no space large enough for the movecheck. */
-  public GameObject Spawn(string prefab, Vector3 pos){
-    GameObject go = null;
-    GameObject pref = (GameObject)Resources.Load(
-      prefab,
-      typeof(GameObject)
-    );
-    if(!pref){ print("Prefab null:" + prefab); return go; }
-    Vector3[] candidates = GroundedColumn(pos, pref.transform.localScale);
-    int min = 0;
-    float minDist, dist;
-    for(int i = 0; i < candidates.Length; i++){
-      minDist = Vector3.Distance(candidates[min], pos);
-      dist = Vector3.Distance(candidates[i], pos);
-      if(minDist > dist){
-        min = i;
-      }
-    }
-    go = (GameObject)GameObject.Instantiate(
-      pref,
-      candidates[min],
-      Quaternion.identity
-    );
-    return go;
-  }
+  
   
   /* Adds Camera and Menu to gameObject, sets main menu. */
   public void CreateMenu(){
@@ -233,60 +195,12 @@ public class Session : MonoBehaviour {
   /* Initializes a singular HoloDeck*/
   public void CreateDeck(){
     decks[0] = gameObject.AddComponent(typeof(HoloDeck)) as HoloDeck;
-    decks[0].interior = interior;
-    decks[0].initialized = false;
-    decks[0].LoadInterior(buildingName, interiorName, -1, playerData, true);
+    //decks[0].LoadInterior(buildingName, interiorName, -1, playerData, true);
   }
   
   /* Loads the map from the master file. */
   public void LoadMaster(){
-    CellSaver saver = gameObject.AddComponent(typeof(CellSaver)) as CellSaver;
-    saver.LoadMaster();
-    map = saver.map;
-    Destroy(saver);
-  }
-  
-  /* Returns an array of viable positions consisting of empty space directly
-     above colliders, This is like surveying how many stories a building
-     has to it. */
-  Vector3[] GroundedColumn(Vector3 pos, Vector3 scale,
-                           float max=100f, float min=-100f){
-    Vector3 origin = pos;
-    List<Vector3> grounded = new List<Vector3>();
-    pos = new Vector3( pos.x, max, pos.z);
-    Vector3 last = pos;
-    bool lastPlace = true;
-    while(pos.y > min){
-      bool check = PlacementCheck(pos, scale);
-      if(!check && lastPlace){ grounded.Add(last + Vector3.up); }
-      last = pos;
-      pos = new Vector3(pos.x, pos.y-scale.y, pos.z);
-      lastPlace = check;
-    }
-    if(grounded.Count == 0){ grounded.Add(origin); } // Don't return an empty array.
-    return grounded.ToArray();
-  }
-  
-  /* Performs a boxcast at a certain point and scale. Returns true on collison. */
-  bool PlacementCheck(Vector3 pos, Vector3 scale){
-    Vector3 direction = Vector3.up;
-    float distance = scale.y;
-    Vector3 center = pos;
-    Vector3 halfExtents = scale / 2;
-    Quaternion orientation = Quaternion.identity;
-    int layerMask = ~(1 << 8);
-    RaycastHit hit;
-    bool check = !Physics.BoxCast(
-      center,
-      halfExtents,
-      direction,
-      out hit,
-      orientation,
-      distance,
-      layerMask,
-      QueryTriggerInteraction.Ignore
-    );
-    return check;
+    map = Cartographer.GetMaster();
   }
   
   /* Overwrite specific file with current session's game data. */
@@ -309,10 +223,6 @@ public class Session : MonoBehaviour {
     if(record == null){ print("Null game record"); return; }
     ClearData();
     LoadData(record);
-    if(interior){ 
-      decks[0].initialized = false;
-      LoadInterior(buildingName, interiorName, 0, -1, true);
-    }
   }
   
   /* Returns a GameRecord containing this Session's data. */
@@ -323,14 +233,9 @@ public class Session : MonoBehaviour {
       if(decks[i].interior){ decks[i].SaveInterior(); }
       else{ print("Exteriors not implemented"); }
     }
-    record.interior = interior;
     record.map = map;
     record.currentBuilding = decks[0].deck.building;
     record.currentInterior = decks[0].deck.displayName;
-    record.x = xCord;
-    record.y = yCord;
-    SavePlayers();
-    record.players = playerData;
     return record;
   }
   
@@ -340,20 +245,8 @@ public class Session : MonoBehaviour {
     map = dat.map;
     buildingName = dat.currentBuilding;
     interiorName = dat.currentInterior;
-    playerData = dat.players;
   }
   
-  /* Clears all Cells and players. */
-  public void ClearData(){
-    if(mainMenu){ DestroyMenu(); }
-    for(int i = 0; i < decks.Length; i++){
-      decks[i].ClearInterior();
-    }
-    for(int i = 0; i < players.Count; i++){
-      if(players[i] != null){ Destroy(players[i].gameObject); }
-    }
-    players = new List<Actor>();
-  }
   
   /* Returns a GameRecord containing data from a specified file, or null.*/
   GameRecord LoadFile(string fileName){
@@ -389,19 +282,56 @@ public class Session : MonoBehaviour {
     return records;
   }
   
-  /* Collects the data of all registered players. */
-  public void SavePlayers(){
-    for(int i = 0; i < players.Count; i++){
-      bool found = false;
-      for(int j = 0; j < playerData.Count; j++){
-        if(playerData[j].displayName == players[i].displayName){
-          found = true;
-          playerData[j] = players[i].GetData();
-          break;
-        }
+  /* Returns a requested interior or null.
+     TODO: Cache map to reduce overhead.
+     TODO: Make sure requested cell is not already active.
+  */
+  public Cell GetInterior(string building, string name, int x, int y){
+    for(int i = 0; i < map.interiors.Count; i++){
+      bool bmatch = building == map.interiors[i].building;
+      bool nmatch = name == map.interiors[i].displayName;
+      bool xmatch = x == map.interiors[i].x;
+      bool ymatch = y == map.interiors[i].y;
+      if(bmatch && nmatch && xmatch && ymatch){ return map.interiors[i]; }
+    }
+    return null;
+  }
+  
+  /* Updates a specified interior. */
+  public void SetInterior(string building, string name, int x, int y, Cell c){
+    for(int i = 0; i < map.interiors.Count; i++){
+      bool bmatch = building == map.interiors[i].building;
+      bool nmatch = name == map.interiors[i].displayName;
+      bool xmatch = x == map.interiors[i].x;
+      bool ymatch = y == map.interiors[i].y;
+      if(bmatch && nmatch && xmatch && ymatch){
+        map.interiors[i] = c;
+        return; 
       }
-      if(players[i] != null && !found){
-        playerData.Add(players[i].GetData());
+    }
+  }
+  
+  /* Returns a specififed exterior or null. 
+     TODO: Cache map to reduce overhead.
+     TODO: Make sure requested cell is not already active.
+  */
+  public Cell GetExterior(int x, int y){
+    for(int i = 0; i < map.exteriors.Count; i++){
+      bool xmatch = map.exteriors[i].x == x;
+      bool ymatch = map.exteriors[i].y == y;
+      if(xmatch && ymatch){ return map.exteriors[i]; }
+    }
+    return null;
+  }
+  
+  /* Updates a specified exterior. */
+  public void SetExterior(int x, int y, Cell c){
+    for(int i = 0; i < map.exteriors.Count; i++){
+      bool xmatch = map.exteriors[i].x == x;
+      bool ymatch = map.exteriors[i].y == y;
+      if(xmatch && ymatch){
+        map.exteriors[i] = c;
+        return; 
       }
     }
   }

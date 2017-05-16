@@ -47,6 +47,7 @@ public class CellSaver : MonoBehaviour {
   // Exterior
   public bool unique;   // True if only one instance of this exterior should exist.
   public bool entrance; // True if this exterior has a door in it.
+  
   void Update(){
     if(Input.GetKeyDown(KeyCode.Q)){ PackCell(); }
     if(Input.GetKeyDown(KeyCode.W)){ ClearCell(); }

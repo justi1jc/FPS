@@ -66,6 +66,7 @@ Abilities(Dual-wield, Unarmed, fireball, heal)
 Session(SpawnEntity);
 Speech(Speech tree, trade system)
 Save&Load(GameData, interior cells, Actor data)
+World(interior cells, random generation)
 
 ********************************************************************************
  _   _  _____  _____   _____             _     
@@ -89,10 +90,29 @@ Quest(Quest interface, hello world quest)
  \___/  \___(_)   |_/  \____/\___/ \__,_|_|___/
 
 ********************************************************************************
-World(exterior cells, random generation)
+World(exterior cells)
 
 
-Random World generation:
-  -Place at most one of each buildings (Create a list of options. Pick one randomly.)
-  -Fill the remaining space with non-entrance exteriors.(Create a list of them, pick one randomly.)
-  -Provide each interior with an exterior it connects to
+Tasks for game.
+-create menu scene
+  load master
+  create holodeck
+  create cam
+  create menu
+  
+-Initialize a new game.
+  clear menu, holodeck, camera if it exists
+  Load master
+  Generate map
+  Create holodeck.
+  create Add player 1
+
+-Load an existing game.
+  Place players in holodeck at last location.
+  
+-Save active game.
+  Gather active players
+  save from current holodecks
+  
+-Save players to master.
+  
