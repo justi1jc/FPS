@@ -19,14 +19,14 @@ public class HoloDeck : MonoBehaviour{
   public List<Actor> players;
   public List<Data> playerData;
   List<HoloCell> cells;
-  HoloCell activeCell; // HoloCell that players will be placed into.
+  HoloCell focalCell; // HoloCell that players will be placed into.
   
   /* Initialize */
   public void Start(){
     players = new List<Actor>();
     playerData = new List<Data>();
     cells = new List<HoloCell>();
-    activeCell = null;
+    focalCell = null;
   }
   
   /* Requests an interior cell from the Session and loads it. */
@@ -110,9 +110,9 @@ public class HoloDeck : MonoBehaviour{
     return false;
   }
   
-  /* Adds a new player based on prefab type. */
+  /* Adds a new player to focal cell. */
   public void AddPlayer(string prefabName){
-    //activeCell.CreateNPC(dat, false, true);
+    focalCell.AddPlayer(prefabName);
   }
   
   /* Convenience method for saving upon exit. */
@@ -133,7 +133,7 @@ public class HoloDeck : MonoBehaviour{
   /* Loads players from playerData into the active cell. */
   public void LoadPlayers(){
      for(int i = 0; i < playerData.Count; i++){
-       activeCell.CreateNPC(playerData[i], false, true);
+       focalCell.CreateNPC(playerData[i], false, true);
      }
      playerData = new List<Data>();
   }

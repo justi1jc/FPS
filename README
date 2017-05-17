@@ -115,10 +115,6 @@ Tasks for game.
   save from current holodecks
 
 
-Session Laundry list.
-  CreateGame
-  AddPlayer
-Handle at HoloDeck level with AddPlayer(string)
-  CreateDeck
-  SaveGame
-  LoadGame
+Problems with creating a new game.
+Loading starting cell. 
+Create new player.

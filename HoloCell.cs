@@ -63,6 +63,25 @@ public class HoloCell{
     }
   }
   
+  /* Creates a new player from prefab and places them at spawnpoint. */
+  public void AddPlayer(string prefabName){
+    GameObject pref = (GameObject)Resources.Load(prefabName, typeof(GameObject));
+    if(!pref){ MonoBehaviour.print(prefabName + " does not exist."); return; }
+    Vector3 sPos = position;
+    Quaternion rot = Quaternion.identity;
+    GameObject go = (GameObject)GameObject.Instantiate(pref, sPos, rot);
+    Actor a = go.GetComponent<Actor>();
+    if(a == null){ MonoBehaviour.print(prefabName + " had no actor."); return; }
+    Data dat = a.GetData();
+    dat.x = spawnPos.x;
+    dat.y = spawnPos.y;
+    dat.z = spawnPos.z;
+    dat.xr = spawnRot.x;
+    dat.yr = spawnRot.y;
+    dat.zr = spawnRot.z;
+    a.LoadData(dat);
+  }
+  
   /* Creates an NPC with the given data. 
     IgnoreDoor is true if file has just been loaded and the player should remain in
     their last known position. Otherwise it is assumed players are entering the 
@@ -200,8 +219,12 @@ public class HoloCell{
   /* Returns an array of viable positions consisting of empty space directly
      above colliders, This is like surveying how many stories a building
      has to it. */
-  Vector3[] GroundedColumn(Vector3 pos, Vector3 scale,
-                           float max=100f, float min=-100f){
+  Vector3[] GroundedColumn(
+    Vector3 pos,
+    Vector3 scale,
+    float max=100f,
+    float min=-100f
+  ){
     Vector3 origin = pos;
     List<Vector3> grounded = new List<Vector3>();
     pos = new Vector3( pos.x, max, pos.z);

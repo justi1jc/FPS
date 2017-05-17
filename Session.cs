@@ -57,12 +57,10 @@ public class Session : MonoBehaviour {
   // World.
   const string MENU_BUILDING = "House";
   const string MENU_INTERIOR = "ActI";
-  const string INIT_BUILDING = "House";
-  const string INIT_INTERIOR = "ActI";
-  List<HoloDeck> decks; // active HoloDecks
-  public MapRecord map; // World map.
   string buildingName = MENU_BUILDING;
   string interiorName = MENU_INTERIOR;
+  List<HoloDeck> decks; // active HoloDecks
+  public MapRecord map; // World map.
   
   // Main menu UI
   bool mainMenu; // True when main menu is active.
@@ -78,10 +76,7 @@ public class Session : MonoBehaviour {
     CreateDeck();
   }
   
-  void Update(){
-
-  }
-  
+  /* Updates cameras and associates player with appropriate HoloDeck. */
   public void RegisterPlayer(Actor actor, int player, Camera cam){
     if(player == 1){ cam1 = cam; }
     else if(player == 2){ cam2 = cam; }
@@ -91,22 +86,42 @@ public class Session : MonoBehaviour {
     }
   }
   
+  /* Updates the cameras according to remaining players. */
   public void UnregisterPlayer(int player){
     if(player == 1){ cam1 = null; }
     else if(player == 2){ cam2 = null; }
     UpdateCameras();
   }
   
-  /* Create a new game.
-     It's assumed the main menu will be displayed, and thus must be destroyed.*/
+  /* Create a new game.*/
   public void CreateGame(string sesName){
     sessionName = sesName;
-    DestroyMenu();
+    if(mainMenu){ DestroyMenu(); }
     CreateLoadingScreen();
     map = Cartographer.GetMaster();
     map = Cartographer.Generate(map, 3, 3);
     HoloDeck deck = CreateDeck();
+    Cell initCell = GetStartingCell();
+    if(initCell == null){ print("Init cell null"); return; }
+    
     DestroyLoadingScreen();
+  }
+  
+  /* Returns the interior cell the player aught to start in at the beginning of
+     the game.
+     WARNING: This is hardcoded and must be updated to match the master file.
+  */
+  public Cell GetStartingCell(){
+    string INIT_BUILDING = "House";
+    string INIT_ROOM = "ActI";
+    for(int i = 0; i < map.interiors.Count; i++){
+      bool bmatch = map.interiors[i].building == INIT_BUILDING;
+      bool rmatch = map.interiors[i].displayName == INIT_ROOM;
+      if(bmatch && rmatch){
+        return map.interiors[i];
+      }
+    }
+    return null;
   }
   
   /*
@@ -121,7 +136,7 @@ public class Session : MonoBehaviour {
     int door = -1,
     bool saveFirst = true
   ){
-    //decks[deck].LoadInterior(building, cellName, door, x, y, saveFirst);
+    decks[deck].LoadInterior(building, cellName, door, x, y, saveFirst);
   }
   
   /* Packs the current cell and loads an exterior. */
@@ -131,7 +146,7 @@ public class Session : MonoBehaviour {
     int door = -1,
     bool saveFirst = true
   ){
-    //decks[deck].LoadExterior(door, x, y, saveFirst);
+    decks[deck].LoadExterior(door, x, y, saveFirst);
   }
   
   
