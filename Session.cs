@@ -59,7 +59,7 @@ public class Session : MonoBehaviour {
   const string MENU_INTERIOR = "ActI";
   string buildingName = MENU_BUILDING;
   string interiorName = MENU_INTERIOR;
-  List<HoloDeck> decks; // active HoloDecks
+  public List<HoloDeck> decks; // active HoloDecks
   public MapRecord map; // World map.
   
   // Main menu UI
@@ -93,7 +93,9 @@ public class Session : MonoBehaviour {
     UpdateCameras();
   }
   
-  /* Create a new game.*/
+  /* Create a new game.
+     Warning: This is hardcoded in a project-specific fashion.
+  */
   public void CreateGame(string sesName){
     sessionName = sesName;
     if(mainMenu){ DestroyMenu(); }
@@ -103,7 +105,8 @@ public class Session : MonoBehaviour {
     HoloDeck deck = CreateDeck();
     Cell initCell = GetStartingCell();
     if(initCell == null){ print("Init cell null"); return; }
-    
+    deck.LoadInterior(initCell, 0, false);
+    deck.AddPlayer("player1");
     DestroyLoadingScreen();
   }
   
@@ -213,6 +216,7 @@ public class Session : MonoBehaviour {
   public HoloDeck CreateDeck(){
     HoloDeck ret = gameObject.AddComponent<HoloDeck>();
     decks.Add(ret);
+    ret.Start();
     return ret;
   }
   
@@ -241,6 +245,7 @@ public class Session : MonoBehaviour {
   public void LoadGame(string fileName){
     GameRecord record = LoadFile(fileName);
     if(record == null){ print("Null game record"); return; }
+    
   }
   
   /* Returns a GameRecord containing this Session's data. */

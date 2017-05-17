@@ -13,7 +13,7 @@ using System.Collections.Generic;
 public class HoloDeck : MonoBehaviour{ 
   public bool interior; // True if an interior is currently loaded.
   public Cell deck; // Active cell
-  int id = 0; // Id for multiple holodecks in a session. 
+  int id; // Id for multiple holodecks in a session. 
   int spawnDoor; // Door to derive spawnPoint from.
   public Vector3 spawnRot, spawnPos;
   public List<Actor> players;
@@ -23,6 +23,7 @@ public class HoloDeck : MonoBehaviour{
   
   /* Initialize */
   public void Start(){
+    id = Session.session.decks.IndexOf(this);
     players = new List<Actor>();
     playerData = new List<Data>();
     cells = new List<HoloCell>();
@@ -44,14 +45,23 @@ public class HoloDeck : MonoBehaviour{
   
   /* Loads a given interior cell. */
   public void LoadInterior(Cell c, int door, bool saveFirst){
-    //TODO
+    SavePlayers();
+    if(saveFirst && interior){ SaveInterior(); }
+    else if(saveFirst){ SaveExterior(); }
+    ClearContents();
+    cells.Add(new HoloCell(transform.position, id));
+    focalCell = cells[0];
+    focalCell.LoadData(c);
+    LoadPlayers();
   }
   
   /* Updates interior in Session's data with current content. */
   public void SaveInterior(){
+    Cell c = focalCell.GetData();
+    Session.session.SetInterior(c.building, c.displayName, c.x, c.y, c);
   }
   
-  /* Recenters the HoloDeck on specified exterior.*/
+  /* Recenters the HoloDeck on specified exterior and loads relevant cells.*/
   public void LoadExterior(
     int door,
     int x, int y,
@@ -60,17 +70,34 @@ public class HoloDeck : MonoBehaviour{
     //TODO
   }
   
-  /* Clears the contents of all HoloCells. */
-  public void ClearContents(){
+  /* Loads one particular exterior cell. */
+  public void LoadExterior(){
+    //TODO
   }
   
-  /* Updates active cells in Session's map. */
+  /* Clears the contents of all HoloCells and deletes them. */
+  public void ClearContents(){
+    for(int i = 0; i < cells.Count; i++){ cells[i].Clear(); }
+    cells = new List<HoloCell>();
+    focalCell = null;
+  }
+  
+  /* Updates all active exterior cells to Session's map. */
+  public void SaveExterior(){
+    for(int i = 0; i < cells.Count; i++){
+      Cell c = cells[i].GetData();
+      Session.session.SetExterior(c.x, c.y, c);
+    }
+  }
+  
+  /* Updates specified exterior, if it is active. */
   public void SaveExterior(int x, int y){
     for(int i = 0; i < cells.Count; i++){
       bool xmatch = x == cells[i].cell.x;
       bool ymatch = y == cells[i].cell.y;
       if(xmatch && ymatch){ 
-        
+        Cell c = cells[i].GetData();
+        Session.session.SetExterior(x, y, c);
       }
     }
   }

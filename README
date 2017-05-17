@@ -99,22 +99,13 @@ Tasks for game.
   create holodeck
   create cam
   create menu
-  
--Initialize a new game.
-  clear menu, holodeck, camera if it exists
-  Load master
-  Generate map
-  Create holodeck.
-  create Add player 1
 
 -Load an existing game.
   Place players in holodeck at last location.
-  
+
 -Save active game.
   Gather active players
   save from current holodecks
 
 
-Problems with creating a new game.
-Loading starting cell. 
-Create new player.
+
