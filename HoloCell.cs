@@ -21,7 +21,7 @@ public class HoloCell{
   }
   
   /* Returns the updated cell.*/
-  public Cell Save(){
+  public Cell GetData(){
     List<GameObject> contents = GetContents();
     cell.items = GetItems(contents);
     cell.npcs = GetNpcs(contents);
@@ -29,7 +29,7 @@ public class HoloCell{
   }
   
   /* Places the contents of a cell into the scene. */
-  public void Load(Cell c){
+  public void LoadData(Cell c){
     cell = c;
     for(int i = 0; i < cell.items.Count; i++){ CreateItem(cell.items[i]); }
     for(int i = 0; i < cell.npcs.Count; i++){ CreateNPC(cell.npcs[i]); }
@@ -84,11 +84,7 @@ public class HoloCell{
       MonoBehaviour.print(dat.prefabName + "," + dat.displayName + " null");
       return;
     }
-    GameObject go = (GameObject)GameObject.Instantiate(
-      pref,
-      sPos,
-      rot
-    );
+    GameObject go = (GameObject)GameObject.Instantiate(pref, sPos, rot);
     Actor actor = go.GetComponent<Actor>();
     if(actor){ actor.LoadData(dat); }
     go.transform.position = sPos; 

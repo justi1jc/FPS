@@ -476,10 +476,10 @@ public class Item : MonoBehaviour{
   public void Warp(){
     int dest = OppositeDoor(doorId);
     if(interior){
-      Session.session.LoadInterior(destBuilding, destCell, deckId, dest);
+      //Session.session.LoadInterior(destBuilding, destCell, deckId, dest);
     }
     else{
-      Session.session.LoadExterior(destCell, deckId, dest);
+      //Session.session.LoadExterior(destCell, deckId, dest);
     }
   }
   

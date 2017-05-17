@@ -29,6 +29,7 @@ public class HoloDeck : MonoBehaviour{
     activeCell = null;
   }
   
+  /* Requests an interior cell from the Session and loads it. */
   public void LoadInterior(
     string building, 
     string cellName,
@@ -36,18 +37,31 @@ public class HoloDeck : MonoBehaviour{
     int x, int y,
     bool saveFirst
   ){
+    Cell c = Session.session.GetInterior(building, cellName, x, y);
+    if(c != null){ LoadInterior(c, door, saveFirst); }
+    else{ print("Could not find " + building + ":" +  name); }
+  }
+  
+  /* Loads a given interior cell. */
+  public void LoadInterior(Cell c, int door, bool saveFirst){
+    //TODO
   }
   
   /* Updates interior in Session's data with current content. */
   public void SaveInterior(){
   }
   
-  /* Packs up contents and unpacks the contents of a specified exterior.*/
+  /* Recenters the HoloDeck on specified exterior.*/
   public void LoadExterior(
     int door,
     int x, int y,
     bool saveFirst
   ){
+    //TODO
+  }
+  
+  /* Clears the contents of all HoloCells. */
+  public void ClearContents(){
   }
   
   /* Updates active cells in Session's map. */
@@ -55,8 +69,9 @@ public class HoloDeck : MonoBehaviour{
     for(int i = 0; i < cells.Count; i++){
       bool xmatch = x == cells[i].cell.x;
       bool ymatch = y == cells[i].cell.y;
-      if(xmatch && ymatch){  }
-      
+      if(xmatch && ymatch){ 
+        
+      }
     }
   }
   
@@ -66,7 +81,9 @@ public class HoloDeck : MonoBehaviour{
     List<Cell> cells = new List<Cell>();
     for(int i = 0; i < map.exteriors.Count; i++){
       Cell c = map.exteriors[i];
-      if(Adjacent(c.x, c.y, x, y)){ cells.Add(c); }
+      if(Adjacent(c.x, c.y, x, y)){
+        cells.Add(c);
+      }
     }
     return cells;
   }
@@ -93,7 +110,7 @@ public class HoloDeck : MonoBehaviour{
     return false;
   }
   
-  /* Adds an extra player to the HoloDeck. */
+  /* Adds a new player based on prefab type. */
   public void AddPlayer(string prefabName){
     //activeCell.CreateNPC(dat, false, true);
   }

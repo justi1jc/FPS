@@ -113,3 +113,12 @@ Tasks for game.
 -Save active game.
   Gather active players
   save from current holodecks
+
+
+Session Laundry list.
+  CreateGame
+  AddPlayer
+Handle at HoloDeck level with AddPlayer(string)
+  CreateDeck
+  SaveGame
+  LoadGame

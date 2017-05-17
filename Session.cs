@@ -50,6 +50,7 @@ public class Session : MonoBehaviour {
   public static string LSC = "joystick button 9";  // 9   left stick click
   
   // players
+  List<Data> playerData;
   Camera cam1;
   Camera cam2;
   
@@ -58,7 +59,7 @@ public class Session : MonoBehaviour {
   const string MENU_INTERIOR = "ActI";
   const string INIT_BUILDING = "House";
   const string INIT_INTERIOR = "ActI";
-  HoloDeck[] decks; // active HoloDecks
+  List<HoloDeck> decks; // active HoloDecks
   public MapRecord map; // World map.
   string buildingName = MENU_BUILDING;
   string interiorName = MENU_INTERIOR;
@@ -71,9 +72,9 @@ public class Session : MonoBehaviour {
   void Awake(){
     if(Session.session){ Destroy(this); }
     else{ Session.session = this; }
-    decks = new HoloDeck[1];
+    
+    decks = new List<HoloDeck>();
     CreateMenu();
-    LoadMaster();
     CreateDeck();
   }
   
@@ -85,7 +86,7 @@ public class Session : MonoBehaviour {
     if(player == 1){ cam1 = cam; }
     else if(player == 2){ cam2 = cam; }
     UpdateCameras();
-    for(int i = 0; i < decks.Length; i++){
+    for(int i = 0; i < decks.Count; i++){
       if(decks[i].RegisterPlayer(actor)){ break; }
     }
   }
@@ -96,21 +97,15 @@ public class Session : MonoBehaviour {
     UpdateCameras();
   }
   
+  /* Create a new game.
+     It's assumed the main menu will be displayed, and thus must be destroyed.*/
   public void CreateGame(string sesName){
     sessionName = sesName;
     DestroyMenu();
-    
-    map = Cartographer.Generate(map, 3, 3);
-    for(int i = 0; i < map.exteriors.Count; i++){ print(map.exteriors[i].ToString()); }
-    for(int i = 0; i < map.interiors.Count; i++){ print(map.interiors[i].ToString()); }
-    
     CreateLoadingScreen();
-    
-    //GameObject player = Spawn("Player1", spawnPoints[0]); 
-    //playerData.Add(player.GetComponent<Actor>().GetData());
-    //Destroy(player);
-    //players = new List<Actor>();
-    //LoadInterior(INIT_BUILDING, INIT_INTERIOR, 0, -1, false);
+    map = Cartographer.GetMaster();
+    map = Cartographer.Generate(map, 3, 3);
+    HoloDeck deck = CreateDeck();
     DestroyLoadingScreen();
   }
   
@@ -138,6 +133,7 @@ public class Session : MonoBehaviour {
   ){
     //decks[deck].LoadExterior(door, x, y, saveFirst);
   }
+  
   
   /* Create camera and menu to display loading screen. */
   public void CreateLoadingScreen(){
@@ -170,8 +166,6 @@ public class Session : MonoBehaviour {
     }   
   }
   
-  
-  
   /* Adds Camera and Menu to gameObject, sets main menu. */
   public void CreateMenu(){
     mainMenu = true;
@@ -191,16 +185,27 @@ public class Session : MonoBehaviour {
     mainMenu = false;
   }
   
-  
-  /* Initializes a singular HoloDeck*/
-  public void CreateDeck(){
-    decks[0] = gameObject.AddComponent(typeof(HoloDeck)) as HoloDeck;
-    //decks[0].LoadInterior(buildingName, interiorName, -1, playerData, true);
+  /* Clears all HoloDecks and then removes them. */
+  public void ClearDecks(){
+    for(int i = 0; i < decks.Count; i++){
+      decks[i].ClearContents();
+      Destroy(decks[i]);
+    }
+    decks = new List<HoloDeck>();
   }
   
-  /* Loads the map from the master file. */
-  public void LoadMaster(){
-    map = Cartographer.GetMaster();
+  /* Initializes a new HoloDeck*/
+  public HoloDeck CreateDeck(){
+    HoloDeck ret = gameObject.AddComponent<HoloDeck>();
+    decks.Add(ret);
+    return ret;
+  }
+  
+  /* Gathers player data from all decks. */
+  public List<Data> GetPlayers(){
+    List<Data> ret = new List<Data>();
+    for(int i = 0; i < decks.Count; i++){ ret.AddRange(decks[i].GetPlayers()); }
+    return ret;
   }
   
   /* Overwrite specific file with current session's game data. */
@@ -221,15 +226,13 @@ public class Session : MonoBehaviour {
   public void LoadGame(string fileName){
     GameRecord record = LoadFile(fileName);
     if(record == null){ print("Null game record"); return; }
-    ClearData();
-    LoadData(record);
   }
   
   /* Returns a GameRecord containing this Session's data. */
   GameRecord GetData(){
     GameRecord record = new GameRecord();
     record.sessionName = sessionName;
-    for(int i = 0; i < decks.Length; i++){
+    for(int i = 0; i < decks.Count; i++){
       if(decks[i].interior){ decks[i].SaveInterior(); }
       else{ print("Exteriors not implemented"); }
     }
