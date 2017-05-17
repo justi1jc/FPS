@@ -265,7 +265,19 @@ public class Session : MonoBehaviour {
   public void LoadGame(string fileName){
     GameRecord record = LoadFile(fileName);
     if(record == null){ print("Null game record"); return; }
-    
+    LoadData(record);
+    if(playerData.Count == 0){ print("There are no players."); return; }
+    HoloDeck hd = CreateDeck();
+    Data player = players[0];
+    Cell c = player.lastPos;
+    if(c.interior){
+      hd.Loadinterior(c.building, c.displayName, -1, c.x, c.y, false);
+    }
+    else{
+      hd.LoadExterior(-1, c.x, c.y, false);
+    }
+    hd.AddPlayer(player);
+    players.Remove(player);
   }
   
   /* Returns a GameRecord containing this Session's data. */
@@ -274,11 +286,10 @@ public class Session : MonoBehaviour {
     record.sessionName = sessionName;
     for(int i = 0; i < decks.Count; i++){
       if(decks[i].interior){ decks[i].SaveInterior(); }
-      else{ print("Exteriors not implemented"); }
+      else{ decks[i].SaveExterior(); }
     }
     record.map = map;
-    record.currentBuilding = decks[0].deck.building;
-    record.currentInterior = decks[0].deck.displayName;
+    record.players = GetPlayers();
     return record;
   }
   
@@ -286,6 +297,7 @@ public class Session : MonoBehaviour {
   public void LoadData(GameRecord dat){
     sessionName = dat.sessionName;
     map = dat.map;
+    playerData = dat.players;
   }
   
   

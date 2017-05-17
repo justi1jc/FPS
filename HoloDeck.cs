@@ -63,7 +63,7 @@ public class HoloDeck : MonoBehaviour{
   
   /* Recenters the HoloDeck on specified exterior and loads relevant cells.*/
   public void LoadExterior(
-    int door,
+    int door, // If -1, ignores doors.
     int x, int y,
     bool saveFirst
   ){
@@ -137,9 +137,14 @@ public class HoloDeck : MonoBehaviour{
     return false;
   }
   
-  /* Adds a new player to focal cell. */
+  /* Adds a new player to focal cell based on prefab. */
   public void AddPlayer(string prefabName){
     focalCell.AddPlayer(prefabName);
+  }
+  
+  /* Adds a new player to the focal cell based on Data.*/
+  public void AddPlayer(Data dat){
+    focalCell.CreateNPC(dat, false, true);
   }
   
   /* Convenience method for saving upon exit. */

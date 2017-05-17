@@ -94,11 +94,6 @@ World(exterior cells)
 
 
 Tasks for game.
--create menu scene
-  load master
-  create holodeck
-  create cam
-  create menu
 
 -Load an existing game.
   Place players in holodeck at last location.
@@ -106,6 +101,4 @@ Tasks for game.
 -Save active game.
   Gather active players
   save from current holodecks
-
-
 
