@@ -55,25 +55,20 @@ public class Session : MonoBehaviour {
   Camera cam2;
   
   // World.
-  const string MENU_BUILDING = "House";
-  const string MENU_INTERIOR = "ActI";
-  string buildingName = MENU_BUILDING;
-  string interiorName = MENU_INTERIOR;
   public List<HoloDeck> decks; // active HoloDecks
   public MapRecord map; // World map.
   
   // Main menu UI
   bool mainMenu; // True when main menu is active.
+  HoloCell menuCell;
   Camera sesCam;
   Menu sesMenu;
   
   void Awake(){
     if(Session.session){ Destroy(this); }
     else{ Session.session = this; }
-    
     decks = new List<HoloDeck>();
     CreateMenu();
-    CreateDeck();
   }
   
   /* Updates cameras and associates player with appropriate HoloDeck. */
@@ -184,8 +179,12 @@ public class Session : MonoBehaviour {
     }   
   }
   
-  /* Adds Camera and Menu to gameObject, sets main menu. */
+  /* Creates UI for main menu and renders menu cell in the background. 
+     Warning: Is hardcoded with project-specific variables.
+  */
   public void CreateMenu(){
+    string MENU_BUILDING = "House";
+    string MENU_INTERIOR = "ActI";
     mainMenu = true;
     GameObject go = new GameObject();
     go.transform.position = transform.position + new Vector3(10f, 10f, 0f);
@@ -193,6 +192,25 @@ public class Session : MonoBehaviour {
     sesCam = go.AddComponent(typeof(Camera)) as Camera;
     sesMenu = go.AddComponent(typeof(Menu)) as Menu;
     sesMenu.Change(Menu.MAIN);
+    menuCell = new HoloCell(transform.position, -1);
+    Cell c = GetMasterInterior(MENU_BUILDING, MENU_INTERIOR);
+    if(c == null){ print("Couldn't find menu cell"); return; }
+    menuCell.LoadData(c);
+    
+  }
+  
+  /* Grabs specified interior from loaded master file. */
+  public Cell GetMasterInterior(string building, string name){
+    for(int i = 0; i < map.buildings.Count; i++){
+      if(map.buildings[i][0].building == building){
+        for(int j = 0; j < map.buildings[i].Length; j++){
+          if(map.buildings[i][j].displayName == name){
+            return map.buildings[i][j];
+          }
+        }
+      }
+    }
+    return null;
   }
   
   /* Destroys Camera and Menu attached to gameObject */
@@ -201,6 +219,8 @@ public class Session : MonoBehaviour {
     sesCam = null;
     Destroy(cam.gameObject);
     mainMenu = false;
+    menuCell.Clear();
+    menuCell = null;
   }
   
   /* Clears all HoloDecks and then removes them. */
@@ -266,8 +286,6 @@ public class Session : MonoBehaviour {
   public void LoadData(GameRecord dat){
     sessionName = dat.sessionName;
     map = dat.map;
-    buildingName = dat.currentBuilding;
-    interiorName = dat.currentInterior;
   }
   
   
