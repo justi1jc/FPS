@@ -33,6 +33,7 @@ public class Actor : MonoBehaviour{
   public string displayName;
   public string prefabName;
   public int playerNumber; // 1 for keyboard, 3-4 for controller, 5 for NPC
+  public Cell lastPos = null; // Used to place player in correct cell
   
   //Body parts
   public GameObject head;    // Gameobject containing the camera.
@@ -1225,6 +1226,7 @@ public class Actor : MonoBehaviour{
     dat.inventory = new Inventory(inventory);
     primaryIndex = -1;
     secondaryIndex = -1;
+    dat.lastPos = lastPos; 
     if(pIndex > -1){ Equip(pIndex); }
     if(sIndex > -1){ EquipSecondary(sIndex); }
     return dat;
@@ -1249,6 +1251,7 @@ public class Actor : MonoBehaviour{
     else{ EquipAbility(rightAbility); }
     if(sIndex > -1){ EquipSecondary(sIndex); }
     else{ EquipAbilitySecondary(leftAbility); }
+    lastPos = dat.lastPos;
   }
 
   /* Initiates conversation with other actor */

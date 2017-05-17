@@ -11,7 +11,7 @@ using System.Collections.Generic;
 public class HoloCell{
   Vector3 position;
   Vector3 spawnRot, spawnPos; // Rotation and position players will spawn into.
-  Cell cell; // Active cell.
+  public Cell cell; // Active cell.
   int spawnDoor; // ID of the spawn door
   int hdid; // Id of the HoloDeck using this HoloCell.
   
@@ -48,11 +48,7 @@ public class HoloCell{
     sPos += position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
     GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
-    GameObject go = (GameObject)GameObject.Instantiate(
-      pref,
-      sPos,
-      rot
-    );
+    GameObject go = (GameObject)GameObject.Instantiate(pref, sPos, rot );
     go.transform.position = sPos;
     Item item = go.GetComponent<Item>();
     if(item){ 
