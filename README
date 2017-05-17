@@ -95,9 +95,6 @@ World(exterior cells)
 
 Tasks for game.
 
--Load an existing game.
-  Place players in holodeck at last location.
-
 -Save active game.
   Gather active players
   save from current holodecks

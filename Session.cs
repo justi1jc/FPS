@@ -268,16 +268,16 @@ public class Session : MonoBehaviour {
     LoadData(record);
     if(playerData.Count == 0){ print("There are no players."); return; }
     HoloDeck hd = CreateDeck();
-    Data player = players[0];
+    Data player = playerData[0];
     Cell c = player.lastPos;
     if(c.interior){
-      hd.Loadinterior(c.building, c.displayName, -1, c.x, c.y, false);
+      hd.LoadInterior(c.building, c.displayName, -1, c.x, c.y, false);
     }
     else{
       hd.LoadExterior(-1, c.x, c.y, false);
     }
     hd.AddPlayer(player);
-    players.Remove(player);
+    playerData.Remove(player);
   }
   
   /* Returns a GameRecord containing this Session's data. */

@@ -147,9 +147,15 @@ public class HoloDeck : MonoBehaviour{
     focalCell.CreateNPC(dat, false, true);
   }
   
-  /* Convenience method for saving upon exit. */
+  /* Saves players and tags them with their last position. */
   public List<Data> GetPlayers(){
     SavePlayers();
+    Cell lp = new Cell(focalCell.cell);
+    lp.items = new List<Data>();
+    lp.npcs = new List<Data>();
+    for(int i = 0 ; i < playerData.Count; i++){
+      playerData[i].lastPos = lp;
+    }
     return playerData;
   }
 
