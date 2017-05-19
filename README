@@ -92,10 +92,9 @@ Quest(Quest interface, hello world quest)
 ********************************************************************************
 World(exterior cells)
 
-
-Tasks for game.
-
--Save active game.
-  Gather active players
-  save from current holodecks
+Debug existing functionality:
+  Create Menu with background Cell
+  Create game (Load interior)
+  Save game (Save interior)
+  Load game
 

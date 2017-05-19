@@ -11,12 +11,10 @@ public class MapRecord{
   public List<Cell[]> buildings; // The array of cells comprising each type of building.
   public List<Cell> exteriors; // All possible exteriors.
   public List<Cell> interiors; // All interiors
-  public List<Data> playerData; // All initial player characters
   
   public MapRecord(){
     buildings = new List<Cell[]>();
     exteriors = new List<Cell>();
     interiors = new List<Cell>();
-    playerData = new List<Data>();
   }
 }

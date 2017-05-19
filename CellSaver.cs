@@ -27,7 +27,6 @@ using UnityEngine.SceneManagement;
 
 
 public class CellSaver : MonoBehaviour {
-  List<Data> playerData; // Players to be added to Master
   public int x, y; /// Coords for this cell.
   public string displayName;   // This should be unique between cells in a building.
   public const string masterFile = "world";    // File containing all the map's cell data.     
@@ -61,7 +60,6 @@ public class CellSaver : MonoBehaviour {
     
   }
   public void Start(){
-    playerData = new List<Data>();
     if(saverMode){
       PackCell();
       LoadMaster();
@@ -193,18 +191,12 @@ public class CellSaver : MonoBehaviour {
     return ret;
   }
   
-  /* Returns NPCs within GameObject list. 
-     Stashes players into playerData
-  */
+  /* Returns NPCs within GameObject list. */
   public List<Data> GetNpcs(List<GameObject> obs){
     List<Data> ret = new List<Data>();
     for(int i = 0; i < obs.Count; i++){
       Actor actor = obs[i].GetComponent<Actor>();
-      if(actor){
-        bool player = actor.playerNumber > 0 && actor.playerNumber < 5;
-        if(player){ playerData.Add(actor.GetData()); }
-        else{ ret.Add(actor.GetData()); }
-      }
+      if(actor){ ret.Add(actor.GetData()); }
     }
     print("Saved " + ret.Count + " NPCs.");
     return ret;
@@ -224,7 +216,6 @@ public class CellSaver : MonoBehaviour {
   /* Saves packedCell to map.  */
   public void UpdateMaster(){
     if(map == null){ print("Master not loaded"); return; }
-    map.playerData = playerData;
     if(interior){ UpdateMasterInterior(); }
     else{ UpdateMasterExterior(); }
   }
