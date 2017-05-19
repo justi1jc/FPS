@@ -114,7 +114,7 @@ public class HoloCell{
     if(cell == null){ return new List<GameObject>(); }
     Vector3 center = position;
     Vector3 halfExtents = new Vector3(cell.heX, cell.heY, cell.heZ);
-    Vector3 direction = new Vector3(0f,0f,0f);
+    Vector3 direction = new Vector3(0f,0.001f,0f);
     Quaternion orientation = Quaternion.identity;
     float distance = 1f;
     int layerMask = ~(1 << 8);

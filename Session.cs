@@ -93,7 +93,7 @@ public class Session : MonoBehaviour {
   */
   public void CreateGame(string sesName){
     sessionName = sesName;
-    if(mainMenu){ DestroyMenu(); }
+    if(mainMenu){ DestroyMenu(); print("Destroying main menu"); }
     CreateLoadingScreen();
     map = Cartographer.GetMaster();
     map = Cartographer.Generate(map, 3, 3);
@@ -103,6 +103,7 @@ public class Session : MonoBehaviour {
     deck.LoadInterior(initCell, 0, false);
     deck.AddPlayer("player1");
     DestroyLoadingScreen();
+    
   }
   
   /* Returns the interior cell the player aught to start in at the beginning of
@@ -192,7 +193,7 @@ public class Session : MonoBehaviour {
     sesCam = go.AddComponent(typeof(Camera)) as Camera;
     sesMenu = go.AddComponent(typeof(Menu)) as Menu;
     sesMenu.Change(Menu.MAIN);
-    menuCell = new HoloCell(go.transform.position, -1);
+    menuCell = new HoloCell(transform.position, -1);
     map = Cartographer.GetMaster();
     Cell c = GetMasterInterior(MENU_BUILDING, MENU_INTERIOR);
     if(c == null){ print("Couldn't find menu cell"); return; }

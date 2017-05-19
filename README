@@ -93,7 +93,6 @@ Quest(Quest interface, hello world quest)
 World(exterior cells)
 
 Debug existing functionality:
-  Create Menu with background Cell
   Create game (Load interior)
   Save game (Save interior)
   Load game
