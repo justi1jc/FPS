@@ -187,23 +187,25 @@ public class Session : MonoBehaviour {
     string MENU_INTERIOR = "ActI";
     mainMenu = true;
     GameObject go = new GameObject();
-    go.transform.position = transform.position + new Vector3(10f, 10f, 0f);
+    go.transform.position = transform.position + new Vector3(10f, 50f, 0f);
     go.transform.LookAt(transform);
     sesCam = go.AddComponent(typeof(Camera)) as Camera;
     sesMenu = go.AddComponent(typeof(Menu)) as Menu;
     sesMenu.Change(Menu.MAIN);
-    menuCell = new HoloCell(transform.position, -1);
+    menuCell = new HoloCell(go.transform.position, -1);
+    map = Cartographer.GetMaster();
     Cell c = GetMasterInterior(MENU_BUILDING, MENU_INTERIOR);
     if(c == null){ print("Couldn't find menu cell"); return; }
     menuCell.LoadData(c);
-    
   }
   
-  /* Grabs specified interior from loaded master file. */
+  /* Grabs specified interior from loaded master file's buildings list. */
   public Cell GetMasterInterior(string building, string name){
     for(int i = 0; i < map.buildings.Count; i++){
+      print("Building:" + map.buildings[i][0].building);
       if(map.buildings[i][0].building == building){
         for(int j = 0; j < map.buildings[i].Length; j++){
+          print("CellName:" + map.buildings[i][j].displayName);
           if(map.buildings[i][j].displayName == name){
             return map.buildings[i][j];
           }
