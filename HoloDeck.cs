@@ -19,15 +19,14 @@ public class HoloDeck : MonoBehaviour{
   public List<Actor> players;
   public List<Data> playerData;
   List<HoloCell> cells;
-  HoloCell focalCell; // HoloCell that players will be placed into.
+  HoloCell focalCell = null; // HoloCell that players will be placed into.
   
   /* Initialize */
-  public void Start(){
+  public void Awake(){
     id = Session.session.decks.IndexOf(this);
     players = new List<Actor>();
     playerData = new List<Data>();
     cells = new List<HoloCell>();
-    focalCell = null;
   }
   
   /* Requests an interior cell from the Session and loads it. */

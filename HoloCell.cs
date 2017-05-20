@@ -262,4 +262,10 @@ public class HoloCell{
     );
     return check;
   }
+  
+  public string ToString(){
+    string ret = "Holocell:";
+    ret += cell == null ? "Null cell" : cell.ToString();
+    return ret; 
+  }
 }

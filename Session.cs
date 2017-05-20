@@ -239,7 +239,6 @@ public class Session : MonoBehaviour {
   public HoloDeck CreateDeck(){
     HoloDeck ret = gameObject.AddComponent<HoloDeck>();
     decks.Add(ret);
-    ret.Start();
     return ret;
   }
   
