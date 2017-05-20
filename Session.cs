@@ -265,6 +265,7 @@ public class Session : MonoBehaviour {
   
   /* Load contents from a specific file. */
   public void LoadGame(string fileName){
+    if(mainMenu){ DestroyMenu(); print("Destroy Main Menu"); }
     GameRecord record = LoadFile(fileName);
     if(record == null){ print("Null game record"); return; }
     LoadData(record);
@@ -273,12 +274,14 @@ public class Session : MonoBehaviour {
     Data player = playerData[0];
     Cell c = player.lastPos;
     if(c.interior){
+      print("Loading interior");
       hd.LoadInterior(c.building, c.displayName, -1, c.x, c.y, false);
     }
     else{
+      print("Loading exterior");
       hd.LoadExterior(-1, c.x, c.y, false);
     }
-    hd.AddPlayer(player);
+    hd.AddPlayer(player, true);
     playerData.Remove(player);
   }
   

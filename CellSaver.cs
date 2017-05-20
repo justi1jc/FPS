@@ -75,6 +75,7 @@ public class CellSaver : MonoBehaviour {
     Cell c = new Cell();
     List<GameObject> found = GetContents();
     if(interior){ c.building = building; }
+    c.interior = interior;
     c.items = GetItems(found);
     c.displayName = displayName;
     c.npcs = GetNpcs(found);

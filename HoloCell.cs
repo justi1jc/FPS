@@ -31,6 +31,7 @@ public class HoloCell{
   /* Places the contents of a cell into the scene. */
   public void LoadData(Cell c){
     cell = c;
+    MonoBehaviour.print("HOLOCELL Interior:" + c.interior);
     for(int i = 0; i < cell.items.Count; i++){ CreateItem(cell.items[i]); }
     for(int i = 0; i < cell.npcs.Count; i++){ CreateNPC(cell.npcs[i]); }
   }

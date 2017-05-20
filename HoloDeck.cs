@@ -37,6 +37,7 @@ public class HoloDeck : MonoBehaviour{
     int x, int y,
     bool saveFirst
   ){
+    print("Loading interior " + cellName);
     Cell c = Session.session.GetInterior(building, cellName, x, y);
     if(c != null){ LoadInterior(c, door, saveFirst); }
     else{ print("Could not find " + building + ":" +  name); }
@@ -142,8 +143,9 @@ public class HoloDeck : MonoBehaviour{
   }
   
   /* Adds a new player to the focal cell based on Data.*/
-  public void AddPlayer(Data dat){
-    focalCell.CreateNPC(dat, false, true);
+  public void AddPlayer(Data dat, bool ignoreDoor = false){
+    if(focalCell == null){ print("Focal Cell null"); return; }
+    focalCell.CreateNPC(dat, ignoreDoor, true);
   }
   
   /* Saves players and tags them with their last position. */

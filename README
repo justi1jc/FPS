@@ -93,6 +93,5 @@ Quest(Quest interface, hello world quest)
 World(exterior cells)
 
 Debug existing functionality:
-  Save game (Save interior)
-  Load game
+  Warp Doors
 
