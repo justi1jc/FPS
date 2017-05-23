@@ -13,11 +13,11 @@ public class HoloCell{
   Vector3 spawnRot, spawnPos; // Rotation and position players will spawn into.
   public Cell cell; // Active cell.
   int spawnDoor; // ID of the spawn door
-  int hdid; // Id of the HoloDeck using this HoloCell.
+  HoloDeck deck; // Id of the HoloDeck using this HoloCell.
   
-  public HoloCell(Vector3 _position, int _hdid){
-    position = _position;
-    hdid = _hdid;
+  public HoloCell(Vector3 position, HoloDeck deck = null){
+    this.position = position;
+    this.deck = deck;
   }
   
   /* Returns the updated cell.*/
@@ -29,9 +29,10 @@ public class HoloCell{
   }
   
   /* Places the contents of a cell into the scene. */
-  public void LoadData(Cell c){
+  public void LoadData(Cell c, int doorId = -1){
+    spawnDoor = doorId;
     cell = c;
-    MonoBehaviour.print("HOLOCELL Interior:" + c.interior);
+    //MonoBehaviour.print("HOLOCELL Interior:" + c.interior);
     for(int i = 0; i < cell.items.Count; i++){ CreateItem(cell.items[i]); }
     for(int i = 0; i < cell.npcs.Count; i++){ CreateNPC(cell.npcs[i]); }
   }
@@ -55,7 +56,7 @@ public class HoloCell{
     if(item){ 
       item.LoadData(dat);
       if(item.itemType == Item.WARP){
-        item.deckId = hdid;
+        item.deck = deck;
         if(item.doorId == spawnDoor){
           spawnPos = item.destPos;
           spawnRot = item.destRot;

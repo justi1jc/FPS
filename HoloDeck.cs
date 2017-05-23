@@ -13,13 +13,12 @@ using System.Collections.Generic;
 public class HoloDeck : MonoBehaviour{ 
   public bool interior; // True if an interior is currently loaded.
   public Cell deck; // Active cell
-  int id; // Id for multiple holodecks in a session. 
-  int spawnDoor; // Door to derive spawnPoint from.
+  public int id; // Id for multiple holodecks in a session.
   public Vector3 spawnRot, spawnPos;
   public List<Actor> players;
   public List<Data> playerData;
   List<HoloCell> cells;
-  HoloCell focalCell = null; // HoloCell that players will be placed into.
+  public HoloCell focalCell = null; // HoloCell that players will be placed into.
   
   /* Initialize */
   public void Awake(){
@@ -40,18 +39,19 @@ public class HoloDeck : MonoBehaviour{
     print("Loading interior " + cellName);
     Cell c = Session.session.GetInterior(building, cellName, x, y);
     if(c != null){ LoadInterior(c, door, saveFirst); }
-    else{ print("Could not find " + building + ":" +  name); }
+    else{ print("Could not find " + building + ":" +  name + " at " + x + "," + y); }
   }
   
   /* Loads a given interior cell. */
   public void LoadInterior(Cell c, int door, bool saveFirst){
+    print("Door id is" + door);
     SavePlayers();
     if(saveFirst && interior){ SaveInterior(); }
     else if(saveFirst){ SaveExterior(); }
     ClearContents();
-    cells.Add(new HoloCell(transform.position, id));
+    cells.Add(new HoloCell(transform.position, this));
     focalCell = cells[0];
-    focalCell.LoadData(c);
+    focalCell.LoadData(c, door);
     LoadPlayers();
   }
   

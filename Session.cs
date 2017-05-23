@@ -93,7 +93,7 @@ public class Session : MonoBehaviour {
   */
   public void CreateGame(string sesName){
     sessionName = sesName;
-    if(mainMenu){ DestroyMenu(); print("Destroying main menu"); }
+    if(mainMenu){ DestroyMenu();}
     CreateLoadingScreen();
     map = Cartographer.GetMaster();
     map = Cartographer.Generate(map, 3, 3);
@@ -193,7 +193,7 @@ public class Session : MonoBehaviour {
     sesCam = go.AddComponent(typeof(Camera)) as Camera;
     sesMenu = go.AddComponent(typeof(Menu)) as Menu;
     sesMenu.Change(Menu.MAIN);
-    menuCell = new HoloCell(transform.position, -1);
+    menuCell = new HoloCell(transform.position);
     map = Cartographer.GetMaster();
     Cell c = GetMasterInterior(MENU_BUILDING, MENU_INTERIOR);
     if(c == null){ print("Couldn't find menu cell"); return; }
@@ -239,6 +239,7 @@ public class Session : MonoBehaviour {
   public HoloDeck CreateDeck(){
     HoloDeck ret = gameObject.AddComponent<HoloDeck>();
     decks.Add(ret);
+    ret.id = decks.IndexOf(ret);
     return ret;
   }
   
@@ -343,13 +344,15 @@ public class Session : MonoBehaviour {
   /* Returns a requested interior or null.
      TODO: Cache map to reduce overhead.
      TODO: Make sure requested cell is not already active.
+     NOTE: Ignoring coordinate matching until the need for multiple
+     instances of a building presents itself.
   */
   public Cell GetInterior(string building, string name, int x, int y){
     for(int i = 0; i < map.interiors.Count; i++){
       bool bmatch = building == map.interiors[i].building;
       bool nmatch = name == map.interiors[i].displayName;
-      bool xmatch = x == map.interiors[i].x;
-      bool ymatch = y == map.interiors[i].y;
+      bool xmatch = true; //x == map.interiors[i].x;
+      bool ymatch = true; //y == map.interiors[i].y;
       if(bmatch && nmatch && xmatch && ymatch){ return map.interiors[i]; }
     }
     return null;
