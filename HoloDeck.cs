@@ -85,8 +85,7 @@ public class HoloDeck : MonoBehaviour{
         int cx = x - 1 + i;
         int cy = y - 1 + j; 
         Cell c = Session.session.GetExterior(cx, cy);
-        HoloCell hc = new HoloCell(GridPosition(i,j), this);
-        cells.Add(hc);
+        HoloCell hc = AddExteriorCell(i,j);
         if(i == 1 && j == 1){
           hc.LoadData(c, door);
           focalCell = hc;
@@ -102,6 +101,15 @@ public class HoloDeck : MonoBehaviour{
      happens, the holodeck shifts its focus to the player's current position. */
   public void ManageShifting(){
     if(!focalCell.Contains(players[0].transform.position)){ ShiftExterior(); }
+  }
+  
+  
+  /* Instantiates a cell to the correct position, adds it to cells, 
+     and returns it. */
+  HoloCell AddExteriorCell(int x, int y){
+    HoloCell hc = new HoloCell(GridPosition(x,y), this);
+    cells.Add(hc);
+    return hc;
   }
   
   /* Returns the cell that contains this pos, or null. */
@@ -122,10 +130,12 @@ public class HoloDeck : MonoBehaviour{
     focalCell = ContainingCell(players[0].transform.position);
     print("Changed from " + fc.ToString() + " to " + focalCell.ToString());
     Prune();
+    Expand();
   }
   
   /* Removes all non-adjacent Cells. */
   void Prune(){
+    print("Prune.");
     List<HoloCell> orphans = new List<HoloCell>();
     for(int i = 0; i < cells.Count; i++){
       HoloCell hc = cells[i];
@@ -140,6 +150,43 @@ public class HoloDeck : MonoBehaviour{
   
   /* Loads any unloaded adjacent cells. */
   void Expand(){
+    print("Expand");
+    List<int[]> neighbors = Adjacencies(focalCell.cell.x, focalCell.cell.y);
+    for(int i = 0; i < neighbors.Count; i++){
+      int[] ne = neighbors[i];
+      if(!Loaded(ne[0], ne[1])){
+        int[] fr = FocalRelation(ne[0], ne[1]); 
+        HoloCell hc = AddExteriorCell(fr[0], fr[1]);
+        Cell c = Session.session.GetExterior(ne[0], ne[1]);
+        hc.LoadData(c);
+        print(hc.ToString() + "," + hc.position);
+      }
+    }
+    for(int i = 0; i < cells.Count; i++){
+      //print(cells[i].position);
+    }
+  }
+  
+  /* Returns true if this cell is already loaded. */
+  bool Loaded(int x, int y){
+    for(int i = 0; i < cells.Count; i++){
+      if(x == cells[i].cell.x && y == cells[i].cell.y){ return true; }
+    }
+    return false;
+  }
+  
+  /* Returns the 8 coords that should surround the given coordinates. */
+  List<int[]> Adjacencies(int x, int y){
+    List<int[]> ret = new List<int[]>();
+    for(int i = -1; i < 2; i++){
+      for(int j = -1; j < 2; j++){
+        if(j != 0 || i != 0){ 
+          int[] coord = {x+i, y+j};
+          ret.Add(coord); 
+        }
+      }
+    }
+    return ret;
   }
   
   /* Returns the relative 3x3 grid position of a cell to a center cell.*/
@@ -148,6 +195,16 @@ public class HoloDeck : MonoBehaviour{
     if(center.cell == null || other.cell == null){ return null; }
     ret[0] = other.cell.x - center.cell.x; 
     ret[1] = other.cell.y - center.cell.y;
+    ret[0] += 1; // This pushes the grid from [-1,1] to [0,2]
+    ret[1] += 1;
+    return ret;
+  }
+  
+  /* Returns the relative 3x3 grid position of a cell to the focalCell*/
+  int[] FocalRelation(int x, int y){
+    int[] ret = new int[2];
+    ret[0] = x - focalCell.cell.x; 
+    ret[1] = y - focalCell.cell.y;
     ret[0] += 1; // This pushes the grid from [-1,1] to [0,2]
     ret[1] += 1;
     return ret;
@@ -167,19 +224,21 @@ public class HoloDeck : MonoBehaviour{
   bool CellAdjacency(HoloCell a, HoloCell b){
     int DISTANCE = 150; // Distance between two cells, allowing corners.
     float dist = Vector3.Distance(a.position, b.position);     
-    if(dist < DISTANCE){ print(a.position + " VS " + b.position + " dist: " + dist ); return true; }
+    if(dist < DISTANCE){ return true; }
     return false;
   }
   
   /* Returns an in-scene position according to a 3x3 grid. */
   Vector3 GridPosition(int x, int y){
-    float xpos = transform.position.x;
-    float zpos = transform.position.z;
+    float xpos = focalCell != null ? focalCell.position.x : transform.position.x;
+    float zpos = focalCell != null ? focalCell.position.z : transform.position.z;
     if(x == 2){ xpos += 100; }
     else if(x == 0){ xpos -= 100; }
     if(y == 2){ zpos += 100; }
     else if(y == 0){ zpos -= 100; }
-    return new Vector3(xpos, transform.position.y, zpos);
+    Vector3 ret = new Vector3(xpos, transform.position.y, zpos);
+    print(x + "," + y + " maps to " + ret);
+    return ret;
   }
   
   /* Clears the contents of all HoloCells and deletes them. */
