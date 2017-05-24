@@ -31,6 +31,7 @@ public class HoloDeck : MonoBehaviour{
   
   public void Update(){
     if(!interior){ ManageShifting(); }
+    if(Input.GetKey(KeyCode.P)){ ClearContents(); }
   }
   
   
@@ -100,37 +101,49 @@ public class HoloDeck : MonoBehaviour{
   /* Listens for the player leaving the active cell. In the event that this
      happens, the holodeck shifts its focus to the player's current position. */
   public void ManageShifting(){
-    int DISTANCE = 50; // Roughly half the Exterior Cell Size. 
-    for(int i = 0; i < players.Count; i++){
-      float dist = Vector3.Distance(
-                                    players[0].transform.position, 
-                                    focalCell.position);
-      if(dist > DISTANCE){ print("Player left Focal Cell"); }
-    }
+    if(!focalCell.Contains(players[0].transform.position)){ ShiftExterior(); }
   }
   
-  /* Returns the position's corresponding cell, or null. */
-  public HoloCell PositionLocation(Vector3 pos){
+  /* Returns the cell that contains this pos, or null. */
+  HoloCell ContainingCell(Vector3 pos){
+    float DISTANCE = 50;
     for(int i = 0; i < cells.Count; i++){
-      if(cells[i].Contains(pos)){ return cells[i]; }
+      HoloCell hc = cells[i];
+      if(hc.Contains(pos)){ return hc; }
     }
     return null;
   }
   
-  /* Re-centers the holodeck around the desired Cell, unloading and removing
+  /* Re-centers the holodeck around the player's location, pruning
      HoloCells that are not adjacent whilst loading any additional adjacent
      HoloCells. */
-  public void ShiftExterior(HoloCell center){
+  public void ShiftExterior(){
+    HoloCell fc = focalCell;
+    focalCell = ContainingCell(players[0].transform.position);
+    print("Changed from " + fc.ToString() + " to " + focalCell.ToString());
+    Prune();
+  }
+  
+  /* Removes all non-adjacent Cells. */
+  void Prune(){
+    print("Prune");
+    focalCell.Clear();
+    /*
     List<HoloCell> orphans = new List<HoloCell>();
     for(int i = 0; i < cells.Count; i++){
       HoloCell hc = cells[i];
-      if(!CellAdjacency(center, hc)){
+      if(!CellAdjacency(focalCell, hc)){
         Session.session.SetExterior(hc.GetData());
         hc.Clear();
         orphans.Add(hc);
       }
     }
     for(int i = 0; i < orphans.Count; i++){ cells.Remove(orphans[i]); }
+    */
+  }
+  
+  /* Loads any unloaded adjacent cells. */
+  void Expand(){
   }
   
   /* Returns the relative 3x3 grid position of a cell to a center cell.*/
@@ -140,7 +153,7 @@ public class HoloDeck : MonoBehaviour{
     ret[0] = other.cell.x - center.cell.x; 
     ret[1] = other.cell.y - center.cell.y;
     ret[0] += 1; // This pushes the grid from [-1,1] to [0,2]
-    ret[1] += 1; 
+    ret[1] += 1;
     return ret;
   }
   
@@ -156,9 +169,10 @@ public class HoloDeck : MonoBehaviour{
 
   /* Compares two Cells using GridAdjacency. */
   bool CellAdjacency(HoloCell a, HoloCell b){
-    int[] ac = {a.cell.x, a.cell.y};
-    int[] ab = {b.cell.x, b.cell.y};
-    return GridAdjacency(ac, ab);
+    int DISTANCE = 150; // Distance between two cells, allowing corners.
+    float dist = Vector3.Distance(a.position, b.position);     
+    if(dist < DISTANCE){ print(a.position + " VS " + b.position + " dist: " + dist ); return true; }
+    return false;
   }
   
   /* Returns an in-scene position according to a 3x3 grid. */

@@ -135,7 +135,8 @@ public class HoloCell{
     List<GameObject> contents = new List<GameObject>();
     for(int i = 0; i < found.Length; i++){
       if(found[i].collider != null){
-        contents.Add(found[i].collider.gameObject);
+        GameObject go = found[i].collider.gameObject;
+        if(Contains(go.transform.position)){ contents.Add(go); } 
       }
     }
     return contents;
@@ -187,10 +188,16 @@ public class HoloCell{
   /* Returns true if the point resides within this Cell, */
   public bool Contains(Vector3 point){
     if(cell == null){ return false; }
-    float dist = Vector3.Distance(point, position);
-    float mag = new Vector3(cell.heX, cell.heY, cell.heZ).magnitude;
-    if(dist < mag){ return true; }
-    return false;
+    Vector3 max = position;
+    Vector3 min = position;
+    Vector3 he = new Vector3(cell.heX, cell.heY, cell.heZ);
+    max += he;
+    min -= he;
+    bool ret = point.x < max.x;
+    ret = ret && point.z < max.z;
+    ret = ret && point.x > min.x;
+    ret = ret && point.z > min.z;
+    return ret;
   }
   
   /* Instantiates gameObject of a specific prefab  
