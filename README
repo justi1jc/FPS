@@ -93,6 +93,5 @@ Quest(Quest interface, hello world quest)
 World(exterior cells)
 
 Log:
-Today I aim to finish debugging the game such that interiors work properly.
-Once I'm finished with that, I'll move on to implement loading a grid of exterior
-cells to represent the overworld.
+Today I need to get the HoloDeck to monitor the movement of the player and 
+consequently shift the position of the world.

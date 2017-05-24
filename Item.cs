@@ -484,8 +484,9 @@ public class Item : MonoBehaviour{
       Session.session.LoadInterior(destBuilding, destCell, dtx, dty, deck.id, dest);
     }
     else{
-      //Session.session.LoadExterior(destCell, deck.id, dest);
-      print("Exteriors not implemented");
+      int dtx = deck.focalCell.cell.x;
+      int dty = deck.focalCell.cell.y;
+      Session.session.LoadExterior(dtx, dty, deck.id, dest);
     }
   }
   
@@ -646,19 +647,19 @@ public class Item : MonoBehaviour{
   int OppositeDoor(int origin){
     switch(origin){
       case 0: //NORTH
-        print(origin + " maps to " + "1"); return 1;
+        return 1;
         break;
       case 1: //SOUTH
-        print(origin + " maps to " + "0"); return 0;
+        return 0;
         break;
       case 2: //EAST
-        print(origin + " maps to " + "3"); return 3;
+        return 3;
         break;
       case 3: //WEST
-        print(origin + " maps to " + "2"); return 2;
+        return 2;
         break;
     }
-    if(origin > 0){ print(origin + " maps to " + "itself"); return origin; }
+    if(origin > 0){ return origin; }
     return -1;
   }
   

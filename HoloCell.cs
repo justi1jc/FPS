@@ -18,6 +18,7 @@ public class HoloCell{
   public HoloCell(Vector3 position, HoloDeck deck = null){
     this.position = position;
     this.deck = deck;
+    this.cell = null;
   }
   
   /* Returns the updated cell.*/
@@ -32,7 +33,8 @@ public class HoloCell{
   public void LoadData(Cell c, int doorId = -1){
     spawnDoor = doorId;
     cell = c;
-    //MonoBehaviour.print("HOLOCELL Interior:" + c.interior);
+    if(c == null){ return; }
+    MonoBehaviour.print("HOLOCELL Interior:" + c.interior);
     for(int i = 0; i < cell.items.Count; i++){ CreateItem(cell.items[i]); }
     for(int i = 0; i < cell.npcs.Count; i++){ CreateNPC(cell.npcs[i]); }
   }
@@ -43,6 +45,7 @@ public class HoloCell{
     for(int i = 0; i < obs.Count; i++){
       Object.Destroy(obs[i]);
     }
+    MonoBehaviour.print(cell.displayName + "cleared");
   }
   
   public void CreateItem(Data dat){
@@ -51,7 +54,6 @@ public class HoloCell{
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
     GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
     GameObject go = (GameObject)GameObject.Instantiate(pref, sPos, rot );
-    go.transform.position = sPos;
     Item item = go.GetComponent<Item>();
     if(item){ 
       item.LoadData(dat);
@@ -63,6 +65,7 @@ public class HoloCell{
         } 
       }
     }
+    go.transform.position = sPos;
   }
   
   /* Creates a new player from prefab and places them at spawnpoint. */
@@ -183,6 +186,7 @@ public class HoloCell{
   
   /* Returns true if the point resides within this Cell, */
   public bool Contains(Vector3 point){
+    if(cell == null){ return false; }
     float dist = Vector3.Distance(point, position);
     float mag = new Vector3(cell.heX, cell.heY, cell.heZ).magnitude;
     if(dist < mag){ return true; }

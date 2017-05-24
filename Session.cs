@@ -96,14 +96,13 @@ public class Session : MonoBehaviour {
     if(mainMenu){ DestroyMenu();}
     CreateLoadingScreen();
     map = Cartographer.GetMaster();
-    map = Cartographer.Generate(map, 3, 3);
+    map = Cartographer.Generate(map, 16, 16);
     HoloDeck deck = CreateDeck();
     Cell initCell = GetStartingCell();
     if(initCell == null){ print("Init cell null"); return; }
     deck.LoadInterior(initCell, 0, false);
     deck.AddPlayer("player1");
     DestroyLoadingScreen();
-    
   }
   
   /* Returns the interior cell the player aught to start in at the beginning of
@@ -203,10 +202,10 @@ public class Session : MonoBehaviour {
   /* Grabs specified interior from loaded master file's buildings list. */
   public Cell GetMasterInterior(string building, string name){
     for(int i = 0; i < map.buildings.Count; i++){
-      print("Building:" + map.buildings[i][0].building);
+      //print("Building:" + map.buildings[i][0].building);
       if(map.buildings[i][0].building == building){
         for(int j = 0; j < map.buildings[i].Length; j++){
-          print("CellName:" + map.buildings[i][j].displayName);
+          //print("CellName:" + map.buildings[i][j].displayName);
           if(map.buildings[i][j].displayName == name){
             return map.buildings[i][j];
           }
