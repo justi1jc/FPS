@@ -100,10 +100,12 @@ public class HoloDeck : MonoBehaviour{
   /* Listens for the player leaving the active cell. In the event that this
      happens, the holodeck shifts its focus to the player's current position. */
   public void ManageShifting(){
+    int DISTANCE = 50; // Roughly half the Exterior Cell Size. 
     for(int i = 0; i < players.Count; i++){
-      Vector3 pos = players[i].transform.position;
-      HoloCell ploc = PositionLocation(pos);
-      if(ploc != null && ploc != focalCell){ ShiftExterior(ploc); return; }
+      float dist = Vector3.Distance(
+                                    players[0].transform.position, 
+                                    focalCell.position);
+      if(dist > DISTANCE){ print("Player left Focal Cell"); }
     }
   }
   
@@ -118,15 +120,48 @@ public class HoloDeck : MonoBehaviour{
   /* Re-centers the holodeck around the desired Cell, unloading and removing
      HoloCells that are not adjacent whilst loading any additional adjacent
      HoloCells. */
-  public void ShiftExterior(HoloCell ploc){
+  public void ShiftExterior(HoloCell center){
+    List<HoloCell> orphans = new List<HoloCell>();
+    for(int i = 0; i < cells.Count; i++){
+      HoloCell hc = cells[i];
+      if(!CellAdjacency(center, hc)){
+        Session.session.SetExterior(hc.GetData());
+        hc.Clear();
+        orphans.Add(hc);
+      }
+    }
+    for(int i = 0; i < orphans.Count; i++){ cells.Remove(orphans[i]); }
   }
   
-  /* Returns the relative position of a cell to a center cell. */
+  /* Returns the relative 3x3 grid position of a cell to a center cell.*/
   int[] GridRelation(HoloCell center, HoloCell other){
-    return new int[2];
+    int[] ret = new int[2];
+    if(center.cell == null || other.cell == null){ return null; }
+    ret[0] = other.cell.x - center.cell.x; 
+    ret[1] = other.cell.y - center.cell.y;
+    ret[0] += 1; // This pushes the grid from [-1,1] to [0,2]
+    ret[1] += 1; 
+    return ret;
   }
   
-  /* Returns a position according to a 3x3 grid. */
+  /* Given two coordinates, returns whether they are adjacent. */
+  bool GridAdjacency(int[] first, int[] second){
+    int x = first[0] - second[0];
+    int y = first[1] - second[1];
+    if(x < 0){ x *= -1; }
+    if(y < 0){ x *= -1; }
+    if(x < 2 && y < 2){ return true; }
+    return false;
+  }
+
+  /* Compares two Cells using GridAdjacency. */
+  bool CellAdjacency(HoloCell a, HoloCell b){
+    int[] ac = {a.cell.x, a.cell.y};
+    int[] ab = {b.cell.x, b.cell.y};
+    return GridAdjacency(ac, ab);
+  }
+  
+  /* Returns an in-scene position according to a 3x3 grid. */
   Vector3 GridPosition(int x, int y){
     float xpos = transform.position.x;
     float zpos = transform.position.z;

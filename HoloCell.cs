@@ -9,7 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class HoloCell{
-  Vector3 position;
+  public Vector3 position;
   Vector3 spawnRot, spawnPos; // Rotation and position players will spawn into.
   public Cell cell; // Active cell.
   int spawnDoor; // ID of the spawn door
