@@ -281,4 +281,24 @@ public class HoloCell{
     ret += cell == null ? "Null cell" : cell.ToString();
     return ret; 
   }
+  
+  /* Moves the HoloCell and all its contents in a certain direction. */
+  public void Move(Vector3 dir){
+    List<GameObject> contents = GetContents();
+    for(int i = 0; i < contents.Count; i++){
+      RecursiveMove(contents[i].transform, true, dir);
+    }
+    position += dir;
+  }
+  /* Only the immediate children of a child move with it. I assume this is
+     a Unity3d bug and will need to change this code if that's the case.
+     */
+  void RecursiveMove(Transform t, bool moveThis, Vector3 dir){
+    if(moveThis){ t.localPosition += dir; }
+    foreach(Transform child in t){
+      foreach(Transform gchild in child){
+        gchild.localPosition -= dir;
+      }
+    }
+  }
 }

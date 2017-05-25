@@ -31,9 +31,30 @@ public class HoloDeck : MonoBehaviour{
   
   public void Update(){
     if(!interior){ ManageShifting(); }
-    if(Input.GetKey(KeyCode.P)){ ClearContents(); }
+    if(Input.GetKeyDown(KeyCode.P)){
+      Vector3 dir = new Vector3(0,0,-100);
+      PositionShift(dir);
+    }
   }
   
+  /* Shifts the position of cells such that the cells closest to the destination
+     are moved first, averting cells merging contents.*/
+  void PositionShift(Vector3 dir){
+    List<HoloCell> cs = new List<HoloCell>(cells);
+    List<HoloCell> sorted = new List<HoloCell>();
+    Vector3 dest = focalCell.position + 10*dir; // Points in direction of movement.
+    while(cs.Count > 0){
+      HoloCell min = cs[0];
+      for(int i = 1; i < cs.Count; i++){
+        float mdist = Vector3.Distance(dest, min.position);
+        float cdist = Vector3.Distance(dest, cs[i].position);
+        if(cdist < mdist){ min = cs[i]; }
+      }
+      cs.Remove(min);
+      sorted.Add(min);
+    }
+    for(int i = 0; i < sorted.Count; i++){ sorted[i].Move(dir); }
+  }
   
   /* Requests an interior cell from the Session and loads it. */
   public void LoadInterior(
@@ -43,7 +64,6 @@ public class HoloDeck : MonoBehaviour{
     int x, int y,
     bool saveFirst
   ){
-    print("Loading interior " + cellName);
     Cell c = Session.session.GetInterior(building, cellName, x, y);
     if(c != null){ LoadInterior(c, door, saveFirst); }
     else{ print("Could not find " + building + ":" +  name + " at " + x + "," + y); }
@@ -100,7 +120,10 @@ public class HoloDeck : MonoBehaviour{
   /* Listens for the player leaving the active cell. In the event that this
      happens, the holodeck shifts its focus to the player's current position. */
   public void ManageShifting(){
-    if(!focalCell.Contains(players[0].transform.position)){ ShiftExterior(); }
+    
+    if(players[0] != null && !focalCell.Contains(players[0].transform.position)){
+      ShiftExterior();
+    }
   }
   
   
@@ -128,14 +151,15 @@ public class HoloDeck : MonoBehaviour{
   public void ShiftExterior(){
     HoloCell fc = focalCell;
     focalCell = ContainingCell(players[0].transform.position);
-    print("Changed from " + fc.ToString() + " to " + focalCell.ToString());
     Prune();
     Expand();
+    Vector3 dir = transform.position - focalCell.position;
+    PositionShift(dir);
+     
   }
   
   /* Removes all non-adjacent Cells. */
   void Prune(){
-    print("Prune.");
     List<HoloCell> orphans = new List<HoloCell>();
     for(int i = 0; i < cells.Count; i++){
       HoloCell hc = cells[i];
@@ -150,7 +174,6 @@ public class HoloDeck : MonoBehaviour{
   
   /* Loads any unloaded adjacent cells. */
   void Expand(){
-    print("Expand");
     List<int[]> neighbors = Adjacencies(focalCell.cell.x, focalCell.cell.y);
     for(int i = 0; i < neighbors.Count; i++){
       int[] ne = neighbors[i];
@@ -162,15 +185,13 @@ public class HoloDeck : MonoBehaviour{
         print(hc.ToString() + "," + hc.position);
       }
     }
-    for(int i = 0; i < cells.Count; i++){
-      //print(cells[i].position);
-    }
   }
   
   /* Returns true if this cell is already loaded. */
   bool Loaded(int x, int y){
     for(int i = 0; i < cells.Count; i++){
-      if(x == cells[i].cell.x && y == cells[i].cell.y){ return true; }
+      bool exists = cells[i].cell != null;
+      if(exists && x == cells[i].cell.x && y == cells[i].cell.y){ return true; }
     }
     return false;
   }
@@ -237,7 +258,6 @@ public class HoloDeck : MonoBehaviour{
     if(y == 2){ zpos += 100; }
     else if(y == 0){ zpos -= 100; }
     Vector3 ret = new Vector3(xpos, transform.position.y, zpos);
-    print(x + "," + y + " maps to " + ret);
     return ret;
   }
   

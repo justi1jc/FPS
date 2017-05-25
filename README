@@ -93,5 +93,5 @@ Quest(Quest interface, hello world quest)
 World(exterior cells)
 
 Log:
-Today I need to get the HoloDeck to monitor the movement of the player and 
-consequently shift the position of the world.
+Today I need to get the HoloDeck to shift all its cells backward once it has 
+deleted the back row and created a front row.
