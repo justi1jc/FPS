@@ -33,7 +33,7 @@ public class HoloDeck : MonoBehaviour{
     if(!interior){ ManageShifting(); }
     if(Input.GetKeyDown(KeyCode.P)){
       Vector3 dir = new Vector3(0,0,-100);
-      PositionShift(dir);
+      //PositionShift(dir);
     }
   }
   
@@ -182,7 +182,6 @@ public class HoloDeck : MonoBehaviour{
         HoloCell hc = AddExteriorCell(fr[0], fr[1]);
         Cell c = Session.session.GetExterior(ne[0], ne[1]);
         hc.LoadData(c);
-        print(hc.ToString() + "," + hc.position);
       }
     }
   }
@@ -258,6 +257,8 @@ public class HoloDeck : MonoBehaviour{
     if(y == 2){ zpos += 100; }
     else if(y == 0){ zpos -= 100; }
     Vector3 ret = new Vector3(xpos, transform.position.y, zpos);
+    Vector3 ter = focalCell != null ? focalCell.position : transform.position;    
+    //print("Moving from " + ter + " to " + ret);
     return ret;
   }
   

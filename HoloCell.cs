@@ -24,8 +24,10 @@ public class HoloCell{
   /* Returns the updated cell.*/
   public Cell GetData(){
     List<GameObject> contents = GetContents();
-    cell.items = GetItems(contents);
-    cell.npcs = GetNpcs(contents);
+    if(cell != null){
+      cell.items = GetItems(contents);
+      cell.npcs = GetNpcs(contents);
+    }
     return cell;
   }
   
@@ -34,7 +36,6 @@ public class HoloCell{
     spawnDoor = doorId;
     cell = c;
     if(c == null){ return; }
-    MonoBehaviour.print("HOLOCELL Interior:" + c.interior);
     for(int i = 0; i < cell.items.Count; i++){ CreateItem(cell.items[i]); }
     for(int i = 0; i < cell.npcs.Count; i++){ CreateNPC(cell.npcs[i]); }
   }
@@ -45,7 +46,6 @@ public class HoloCell{
     for(int i = 0; i < obs.Count; i++){
       Object.Destroy(obs[i]);
     }
-    MonoBehaviour.print(cell.displayName + "cleared");
   }
   
   public void CreateItem(Data dat){
@@ -154,7 +154,7 @@ public class HoloCell{
         dat.x = pos.x;
         dat.y = pos.y;
         dat.z = pos.z;
-        ret.Add(item.GetData());
+        ret.Add(dat);
       }
     }
     return ret;
@@ -276,6 +276,7 @@ public class HoloCell{
     return check;
   }
   
+  /* String representation of this HoloCell */
   public string ToString(){
     string ret = "Holocell:";
     ret += cell == null ? "Null cell" : cell.ToString();
