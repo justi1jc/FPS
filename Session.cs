@@ -398,6 +398,6 @@ public class Session : MonoBehaviour {
   
   /* Convenience method */
   public void SetExterior(Cell c){
-    SetExterior(c.x, c.y, c);
+    if(c != null){ SetExterior(c.x, c.y, c); }
   }
 }

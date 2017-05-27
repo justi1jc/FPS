@@ -14,11 +14,14 @@ public class HoloCell{
   public Cell cell; // Active cell.
   int spawnDoor; // ID of the spawn door
   HoloDeck deck; // Id of the HoloDeck using this HoloCell.
+  GameObject[] walls; // Invisible walls
   
   public HoloCell(Vector3 position, HoloDeck deck = null){
     this.position = position;
     this.deck = deck;
     this.cell = null;
+    this.walls = new GameObject[4];
+    for(int  i = 0; i < walls.Length; i++){ walls[i] = null; }
   }
   
   /* Returns the updated cell.*/
@@ -46,6 +49,7 @@ public class HoloCell{
     for(int i = 0; i < obs.Count; i++){
       Object.Destroy(obs[i]);
     }
+    ClearWalls();
   }
   
   public void CreateItem(Data dat){
@@ -274,6 +278,61 @@ public class HoloCell{
       QueryTriggerInteraction.Ignore
     );
     return check;
+  }
+  
+  
+  /* Places an invisible wall covering one of the four cardinal directions
+     X: 0(positive), 1(negative)
+     Z: 2(positive), 3(negative)
+   */
+  public void BuildWall(int direction){
+    if(walls[direction] != null){ return; }
+    Vector3 wallPos = WallPosition(direction);
+    walls[direction] = GameObject.CreatePrimitive(PrimitiveType.Cube);
+    GameObject w = walls[direction];
+    GameObject.Destroy(w.GetComponent<MeshRenderer>());
+    w.transform.localScale = WallScale(direction);
+    w.transform.position = wallPos;
+  }
+  
+  Vector3 WallPosition(int direction){
+    if(cell == null){ return new Vector3(); }
+    float x = position.x;
+    float y = position.y;
+    float z = position.z;
+    switch(direction){
+      case 0:
+        x += (cell.heX + 1);
+        break;
+      case 1:
+        x -= (cell.heX + 1);
+        break;
+      case 2:
+        z += (cell.heZ + 1);
+        break;
+      case 3:
+        z -= (cell.heZ + 1);
+        break;
+    }
+    return new Vector3(x, y, z);
+  }
+  
+  Vector3 WallScale(int direction){
+    float x = 1;
+    float y = 200f;
+    float z = 1;
+    if(direction == 0 || direction == 1){ z *= (2.5f * cell.heZ); }
+    if(direction == 2 || direction == 3){ x *= (2.5f * cell.heX); }
+    return new Vector3(x, y, z);
+  }
+  
+  public void ClearWalls(){
+    for(int i = 0; i < walls.Length; i++){
+      if(walls[i] != null){
+        GameObject.Destroy(walls[i]);
+        walls[i] = null;
+      }
+    }
   }
   
   /* String representation of this HoloCell */

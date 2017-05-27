@@ -115,6 +115,7 @@ public class HoloDeck : MonoBehaviour{
     }
     LoadPlayers();
     interior = false;
+    BuildWalls();
   }
   
   /* Listens for the player leaving the active cell. In the event that this
@@ -151,11 +152,12 @@ public class HoloDeck : MonoBehaviour{
   public void ShiftExterior(){
     HoloCell fc = focalCell;
     focalCell = ContainingCell(players[0].transform.position);
+    ClearWalls();
     Prune();
     Expand();
     Vector3 dir = transform.position - focalCell.position;
     PositionShift(dir);
-     
+    BuildWalls();
   }
   
   /* Removes all non-adjacent Cells. */
@@ -362,5 +364,32 @@ public class HoloDeck : MonoBehaviour{
        if(focalCell != null){ focalCell.CreateNPC(playerData[i], false, true); }
      }
      playerData = new List<Data>();
+  }
+  
+  /* Apply invisible walls to exterior holocells that need them. */
+  public void BuildWalls(){
+    for(int i = 0; i < cells.Count; i++){ BuildWalls(cells[i]); }
+  }
+  
+  /* Builds walls for individual exterior cell */
+  public void BuildWalls(HoloCell c){
+    if(c.cell == null){ return; }
+    int x = c.cell.x;
+    int y = c.cell.y;
+    List<int[]> sides = new List<int[]>(); // neighboring coordinates
+    sides.Add(new int[]{x+1,y});
+    sides.Add(new int[]{x-1,y});
+    sides.Add(new int[]{x,y+1});
+    sides.Add(new int[]{x,y-1});
+    Session s = Session.session;
+    for(int i = 0; i < sides.Count; i++){
+      bool needWall = !Loaded(sides[i][0], sides[i][1]);
+      if(needWall){ c.BuildWall(i); }
+    }
+  }
+  
+  /* Tear down existing invisible walls. */
+  public void ClearWalls(){
+    for(int i = 0; i < cells.Count; i++){ cells[i].ClearWalls(); }
   }
 }
