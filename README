@@ -22,8 +22,6 @@ player in a rich game world.
 
 Tentative roadmap:
 itch.io release
-  -V0.3 Interiors
-  -V0.4 Exteriors
   -V0.5 Quest framework
   -V0.5 Content for demo.
 
@@ -46,7 +44,7 @@ ______ _       _     _              _   _____             _
                                                                 
 ********************************************************************************
 
-Current version: 0.3.0
+Current version: 0.4.0
 
     Current features
 Menus(Main, Inventory/Loot, Ability, Speech, Trade, level-up/stats,
@@ -66,6 +64,7 @@ Abilities(Dual-wield, Unarmed, fireball, heal)
 Session(SpawnEntity);
 Speech(Speech tree, trade system)
 Save&Load(GameData, interior cells, Actor data)
+World(interior cells, exterior cells, random generation)
 
 ********************************************************************************
  _   _  _____  _____   _____             _     
@@ -77,22 +76,6 @@ Save&Load(GameData, interior cells, Actor data)
                                                
 ********************************************************************************
 Menus(Quest)
-World(exterior cells)
 Quest(Quest interface, hello world quest)
 
-********************************************************************************
- _   _  _____    ___   _____             _     
-| | | ||  _  |  /   | |  __ \           | |    
-| | | || |/' | / /| | | |  \/ ___   __ _| |___ 
-| | | ||  /| |/ /_| | | | __ / _ \ / _` | / __|
-\ \_/ /\ |_/ /\___  | | |_\ \ (_) | (_| | \__ \
- \___/  \___(_)   |_/  \____/\___/ \__,_|_|___/
 
-********************************************************************************
-World(exterior cells, random generation)
-
-
-Random World generation:
-  -Place at most one of each buildings (Create a list of options. Pick one randomly.)
-  -Fill the remaining space with non-entrance exteriors.(Create a list of them, pick one randomly.)
-  -Provide each interior with an exterior it connects to

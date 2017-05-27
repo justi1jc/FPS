@@ -47,6 +47,7 @@ public class CellSaver : MonoBehaviour {
   // Exterior
   public bool unique;   // True if only one instance of this exterior should exist.
   public bool entrance; // True if this exterior has a door in it.
+  
   void Update(){
     if(Input.GetKeyDown(KeyCode.Q)){ PackCell(); }
     if(Input.GetKeyDown(KeyCode.W)){ ClearCell(); }
@@ -74,6 +75,7 @@ public class CellSaver : MonoBehaviour {
     Cell c = new Cell();
     List<GameObject> found = GetContents();
     if(interior){ c.building = building; }
+    c.interior = interior;
     c.items = GetItems(found);
     c.displayName = displayName;
     c.npcs = GetNpcs(found);
@@ -306,8 +308,8 @@ public class CellSaver : MonoBehaviour {
   public void UnpackMasterInterior(string buildingName, string cellName){
     if(map == null){ print("Master not loaded"); }
     int found = -1;
-    for(int i = 0; i < map.buildingNames.Count; i++){
-      if(buildingName == map.buildingNames[i]){ found = i; break; }
+    for(int i = 0; i < map.buildings.Count; i++){
+      if(buildingName == map.buildings[i][0].displayName){ found = i; break; }
     }
     if(found < 0){ print("Building not found."); return; }
     Cell interior = null;

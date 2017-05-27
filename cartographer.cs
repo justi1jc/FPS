@@ -1,6 +1,6 @@
 /*
-        The cartographer takes the master map file that contains one of each
-        type of cell and creates a map by placing them randomly across a grid.
+        The cartographer is responsible for accessing the master map as well as
+        for generating new maps.
 */
 using System;
 using System.IO;
@@ -20,6 +20,16 @@ public class Cartographer{
   public static MapRecord Generate(MapRecord map, int _n, int _m){
     Cartographer c = new Cartographer(map, _n, _m);
     return c.GenerateMap();
+  }
+  
+  /* Uses the CellSaver to return acess of map from master file. */
+  public static MapRecord GetMaster(){
+    GameObject go = new GameObject();
+    CellSaver cs = go.AddComponent<CellSaver>();
+    cs.LoadMaster();
+    MapRecord ret = cs.map;
+    GameObject.Destroy(go);
+    return ret;
   }
   
   public Cartographer(MapRecord _master, int _n, int _m){

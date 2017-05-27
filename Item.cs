@@ -104,8 +104,9 @@ public class Item : MonoBehaviour{
   // WARP variables
   public string destBuilding;
   public string destCell;
-  public int deckId; // Which deck is this door associated with?
+  public HoloDeck deck; // Which deck is this door associated with?
   public int doorId; // Should conform to cardinal NSEW direction of room.
+  public int dx, dy; // Destination's offset from current coords
   public bool interior;
   public Vector3 destPos;
   public Vector3 destRot;
@@ -472,14 +473,20 @@ public class Item : MonoBehaviour{
   }
  
   
-  /* Warps to destination. */
+  /* Warps to destination.
+     It can be reasoned the 
+   */
   public void Warp(){
     int dest = OppositeDoor(doorId);
     if(interior){
-      Session.session.LoadInterior(destBuilding, destCell, deckId, dest);
+      int dtx = dx + deck.focalCell.cell.x;
+      int dty = dy + deck.focalCell.cell.y;
+      Session.session.LoadInterior(destBuilding, destCell, dtx, dty, deck.id, dest);
     }
     else{
-      Session.session.LoadExterior(destCell, deckId, dest);
+      int dtx = deck.focalCell.cell.x;
+      int dty = deck.focalCell.cell.y;
+      Session.session.LoadExterior(dtx, dty, deck.id, dest);
     }
   }
   
@@ -652,6 +659,7 @@ public class Item : MonoBehaviour{
         return 2;
         break;
     }
+    if(origin > 0){ return origin; }
     return -1;
   }
   
