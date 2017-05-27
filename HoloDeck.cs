@@ -275,7 +275,7 @@ public class HoloDeck : MonoBehaviour{
   public void SaveExterior(){
     for(int i = 0; i < cells.Count; i++){
       Cell c = cells[i].GetData();
-      Session.session.SetExterior(c.x, c.y, c);
+      if(c != null){ Session.session.SetExterior(c.x, c.y, c); }
     }
   }
   
