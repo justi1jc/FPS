@@ -32,7 +32,7 @@ public class Data
    public List<bool> bools;
    public int baseValue;
    public Inventory inventory;
-   
+   public Cell lastPos = null; 
    public Data(){
       ints = new List<int>();
       strings = new List<string>();

@@ -103,9 +103,11 @@ public class Item : MonoBehaviour{
   
   // WARP variables
   public string destBuilding;
-  public string destCell; 
-  public int deckId; // Which deck is this door associated with?
+  public string destCell;
+  public HoloDeck deck; // Which deck is this door associated with?
   public int doorId; // Should conform to cardinal NSEW direction of room.
+  public int dx, dy; // Destination's offset from current coords
+  public bool interior;
   public Vector3 destPos;
   public Vector3 destRot;
   bool warped = false;
@@ -471,10 +473,21 @@ public class Item : MonoBehaviour{
   }
  
   
-  /* Warps to destination. */
+  /* Warps to destination.
+     It can be reasoned the 
+   */
   public void Warp(){
     int dest = OppositeDoor(doorId);
-    Session.session.LoadInterior(destBuilding, destCell, deckId, dest);
+    if(interior){
+      int dtx = dx + deck.focalCell.cell.x;
+      int dty = dy + deck.focalCell.cell.y;
+      Session.session.LoadInterior(destBuilding, destCell, dtx, dty, deck.id, dest);
+    }
+    else{
+      int dtx = deck.focalCell.cell.x;
+      int dty = deck.focalCell.cell.y;
+      Session.session.LoadExterior(dtx, dty, deck.id, dest);
+    }
   }
   
   /* Returns true if this weapon consumes ammo. */
@@ -561,6 +574,7 @@ public class Item : MonoBehaviour{
         dat.strings.Add(destCell);
         dat.strings.Add(destBuilding);
         dat.ints.Add(doorId);
+        dat.bools.Add(interior);
         break;
       case CONTAINER:
         for(int j = 0; j < contents.Count; j++){
@@ -575,8 +589,8 @@ public class Item : MonoBehaviour{
   
   /* Load the item's data. */
   public void LoadData(Data dat){
-    int i, s, f;
-    i = s = f = 0;
+    int i, s, f, b;
+    i = s = f = b = 0;
 
     transform.position = new Vector3(dat.x, dat.y, dat.z);
     transform.rotation = Quaternion.Euler(dat.xr, dat.yr, dat.zr);
@@ -617,6 +631,8 @@ public class Item : MonoBehaviour{
         destRot = transform.rotation.eulerAngles;
         doorId = dat.ints[i];
         i++;
+        interior = dat.bools[b];
+        b++;
         break;
       case CONTAINER:
         if(dat.inventory != null){ contents = new List<Data>(dat.inventory.inv); }
@@ -643,6 +659,7 @@ public class Item : MonoBehaviour{
         return 2;
         break;
     }
+    if(origin > 0){ return origin; }
     return -1;
   }
   

@@ -27,6 +27,7 @@ using UnityEngine.SceneManagement;
 
 
 public class CellSaver : MonoBehaviour {
+  public int x, y; /// Coords for this cell.
   public string displayName;   // This should be unique between cells in a building.
   public const string masterFile = "world";    // File containing all the map's cell data.     
   public GameObject  max, min; // Corners of the area that will be saved.
@@ -41,9 +42,11 @@ public class CellSaver : MonoBehaviour {
   public bool[] edges;       // True if a door exists for this direction.
   public MapRecord map;      // Contents of master map file.
   public Cell packedCell;    // The cell's data to populate or save with.
+  public string exteriorName; // Name of connected exterior.
   
   // Exterior
-  public List<Data> buildings; // The buildings in this exterior. 
+  public bool unique;   // True if only one instance of this exterior should exist.
+  public bool entrance; // True if this exterior has a door in it.
   
   void Update(){
     if(Input.GetKeyDown(KeyCode.Q)){ PackCell(); }
@@ -71,20 +74,19 @@ public class CellSaver : MonoBehaviour {
   public void PackCell(){
     Cell c = new Cell();
     List<GameObject> found = GetContents();
-    if(interior){
-      c.items = GetItems(found);
-      c.building = building;
-      c.displayName = displayName;
-    }
-    else{
-      c.items = GetItems(found, false, true);
-      c.buildings = GetItems(found, true, false); 
-    }
+    if(interior){ c.building = building; }
+    c.interior = interior;
+    c.items = GetItems(found);
+    c.displayName = displayName;
     c.npcs = GetNpcs(found);
     Vector3 he = (max.transform.position - min.transform.position) / 2;
     c.heX = he.x;
     c.heY = he.y;
     c.heZ = he.z;
+    c.x = x;
+    c.y = y;
+    c.exteriorName = exteriorName;
+    c.entrance = entrance;
     packedCell = c;
   }
   
@@ -94,10 +96,6 @@ public class CellSaver : MonoBehaviour {
     if(interior){
       displayName = packedCell.displayName;
       building = packedCell.building;
-    }
-    List<Data> buildings = packedCell.buildings;
-    for(int i = 0; i < buildings.Count; i++){
-      CreateItem(buildings[i]);
     }
     List<Data> items = packedCell.items;
     for(int i = 0; i < items.Count; i++){
@@ -219,38 +217,57 @@ public class CellSaver : MonoBehaviour {
   /* Saves packedCell to map.  */
   public void UpdateMaster(){
     if(map == null){ print("Master not loaded"); return; }
-    if(interior){
-      int found = -1;
-      for(int i = 0; i < map.buildingNames.Count; i++){
-        if(map.buildingNames[i] == building){ found = i; break;}
+    if(interior){ UpdateMasterInterior(); }
+    else{ UpdateMasterExterior(); }
+  }
+  
+  /* Caller ensures the map is not null. */
+  public void UpdateMasterInterior(){
+    int found = -1;
+    for(int i = 0; i < map.buildings.Count; i++){
+      if(map.buildings[i][0].building == building){ found = i; break;}
+    }
+    if(found < 0){
+      Cell[] cells = new Cell[1];
+      cells[0] = packedCell;
+      map.buildings.Add(cells);
+      print("New building added");
+    }
+    else{
+      int foundCell = -1;
+      for(int i = 0; i < map.buildings[found].Length; i++){
+        if(map.buildings[found][i].displayName == packedCell.displayName){
+          foundCell = i;
+        }
       }
-      if(found < 0){
-        map.buildingNames.Add(building);
-        Cell[] cells = new Cell[1];
-        cells[0] = packedCell;
-        map.buildings.Add(cells);
-        print("New building added");
+      if(foundCell != -1){
+        map.buildings[found][foundCell] = packedCell;
+        print("Updated existing cell.");
       }
       else{
-        int foundCell = -1;
-        for(int i = 0; i < map.buildings[found].Length; i++){
-          if(map.buildings[found][i].displayName == packedCell.displayName){
-            foundCell = i;
-          }
-        }
-        if(foundCell != -1){
-          map.buildings[found][foundCell] = packedCell;
-          print("Updated existing cell.");
-        }
-        else{
-          List<Cell> cells = new List<Cell>(map.buildings[found]);
-          cells.Add(packedCell);
-          map.buildings[found] = cells.ToArray();
-          print("Added new cell.");
-        }
+        List<Cell> cells = new List<Cell>(map.buildings[found]);
+        cells.Add(packedCell);
+        map.buildings[found] = cells.ToArray();
+        print("Added new cell.");
       }
     }
-    else{ print("Exteriors not implemented"); }
+  }
+  
+  /* Caller ensures the map is not null. */
+  public void UpdateMasterExterior(){
+    print("Saving exterior to master...");
+    int found = -1;
+    for(int i = 0; i < map.exteriors.Count; i++){
+      if(map.exteriors[i].displayName == displayName){ found = i; break;}
+    }
+    if(found < 0){
+      map.exteriors.Add(packedCell);
+      print("New exterior added.");
+    }
+    else{
+      map.exteriors[found] = packedCell;
+      print("Updated existing interior.");
+    }
   }
   
   /* Saves map to master map file. */
@@ -291,8 +308,8 @@ public class CellSaver : MonoBehaviour {
   public void UnpackMasterInterior(string buildingName, string cellName){
     if(map == null){ print("Master not loaded"); }
     int found = -1;
-    for(int i = 0; i < map.buildingNames.Count; i++){
-      if(buildingName == map.buildingNames[i]){ found = i; break; }
+    for(int i = 0; i < map.buildings.Count; i++){
+      if(buildingName == map.buildings[i][0].displayName){ found = i; break; }
     }
     if(found < 0){ print("Building not found."); return; }
     Cell interior = null;
@@ -306,13 +323,12 @@ public class CellSaver : MonoBehaviour {
     print(buildingName + " " + cellName + " unpacked.");
   }
   
-  /* unpacks a particular exterior from master */
-  public void UnpackMasterExterior(){
-    print("Exteriors not implemented");
-  }
-  
   /* Loads the next scene in the build order, if possible. */
   public void LoadNextScene(){
-    print("Loaded next scene");
+    int index = SceneManager.GetActiveScene().buildIndex;
+    int count = SceneManager.sceneCountInBuildSettings;
+    if(index + 1  >= count){ print("End;"); return; }
+    print("Loading next scene.");
+    SceneManager.LoadScene(index + 1);
   }
 }
