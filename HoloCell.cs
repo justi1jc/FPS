@@ -89,6 +89,7 @@ public class HoloCell{
     dat.yr = spawnRot.y;
     dat.zr = spawnRot.z;
     a.LoadData(dat);
+    if(a.id == -1){ a.id = Session.session.NextId(); }
   }
   
   /* Creates an NPC with the given data. 
@@ -114,8 +115,11 @@ public class HoloCell{
     }
     GameObject go = (GameObject)GameObject.Instantiate(pref, sPos, rot);
     Actor actor = go.GetComponent<Actor>();
-    if(actor){ actor.LoadData(dat); }
-    go.transform.position = sPos; 
+    if(actor){ 
+      actor.LoadData(dat);
+      if(actor.id == -1){ actor.id = Session.session.NextId(); } 
+    }
+    go.transform.position = sPos;
   }
   
   /* Returns the gameObjects caught by boxcasting with min and max.*/

@@ -830,7 +830,7 @@ public class Menu : MonoBehaviour{
       x = XOffset() + 3 * iw; 
       Box(str,x, 0, iw, ih/2);
       
-      str = files[py].currentBuilding;
+      str = "Important fact about this file";
       y = ih/2;
       Box(str, x, y, iw, ih/2);
       

@@ -91,6 +91,7 @@ public class Actor : MonoBehaviour{
   public int weightMax = 100;
   
   //Player vitals
+  public int id = -1;
   public int health     = 100;
   public int mana       = 100;
   public int stamina    = 100;
@@ -1219,6 +1220,7 @@ public class Actor : MonoBehaviour{
     dat.ints.Add(rightAbility);
     dat.ints.Add(primaryIndex);
     dat.ints.Add(secondaryIndex);
+    dat.ints.Add(id);
     int pIndex = primaryIndex;
     int sIndex = secondaryIndex;
     StorePrimary();
@@ -1245,6 +1247,7 @@ public class Actor : MonoBehaviour{
     rightAbility = dat.ints[i]; i++;
     int pIndex = dat.ints[i]; i++;
     int sIndex = dat.ints[i]; i++;
+    id = dat.ints[i]; i++;
     if(dat.inventory != null){ inventory.AddRange(dat.inventory.inv); }
     else{ print(displayName + "inventory data null");}
     if(pIndex > -1){ Equip(pIndex); }

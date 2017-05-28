@@ -21,6 +21,7 @@ using UnityEngine.SceneManagement;
 public class Session : MonoBehaviour {
   public static Session session;
   public static bool fileAccess = false; //True if files are currently accessed
+  private readonly object syncLock = new object(); // Mutex lock
   public string sessionName; //Name Used in save file.
   
   
@@ -57,6 +58,7 @@ public class Session : MonoBehaviour {
   // World.
   public List<HoloDeck> decks; // active HoloDecks
   public MapRecord map; // World map.
+  int currentID = 0;
   
   // Main menu UI
   bool mainMenu; // True when main menu is active.
@@ -93,6 +95,7 @@ public class Session : MonoBehaviour {
   */
   public void CreateGame(string sesName){
     sessionName = sesName;
+    currentID = 0;
     if(mainMenu){ DestroyMenu();}
     CreateLoadingScreen();
     map = Cartographer.GetMaster();
@@ -295,6 +298,7 @@ public class Session : MonoBehaviour {
     }
     record.map = map;
     record.players = GetPlayers();
+    record.currentID = currentID;
     return record;
   }
   
@@ -303,6 +307,7 @@ public class Session : MonoBehaviour {
     sessionName = dat.sessionName;
     map = dat.map;
     playerData = dat.players;
+    currentID = dat.currentID;
   }
   
   
@@ -399,5 +404,13 @@ public class Session : MonoBehaviour {
   /* Convenience method */
   public void SetExterior(Cell c){
     if(c != null){ SetExterior(c.x, c.y, c); }
+  }
+  
+  
+  /* Returns an auto-incremented id number for all NPCs.
+     NOTE: May want to either use a long or make another ID for items.
+  */
+  public int NextId(){
+    lock(syncLock){ return currentID++; }
   }
 }

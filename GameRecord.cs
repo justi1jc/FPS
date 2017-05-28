@@ -9,10 +9,7 @@ using System.Collections.Generic;
 public class GameRecord{
   public string sessionName;
   public MapRecord map;
-  public bool interior;
-  public string currentBuilding;
-  public string currentInterior;
-  public int x, y;
+  public int currentID; // Current ID for identifying NPCs
   public List<Data> quests; // Quest data.
   public List<Data> players;
   public GameRecord(){

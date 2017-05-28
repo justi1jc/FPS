@@ -87,3 +87,4 @@ menus(Quest)
 Quest Framework
 In Progress 1. Static Factory for quests GetQuest(string name)
 Done 2. Quests 
+3. Kill 3 Enemies quest.
