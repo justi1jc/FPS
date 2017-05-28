@@ -108,8 +108,8 @@ public class Session : MonoBehaviour {
     deck.LoadInterior(initCell, 0, false);
     deck.AddPlayer("player1");
     DestroyLoadingScreen();
-    CreateStartingQuests();
     StartCoroutine(QuestRoutine());
+    CreateStartingQuests();
     
   }
   
@@ -461,5 +461,14 @@ public class Session : MonoBehaviour {
       ret.AddRange(decks[i].players);
     }
     return ret;
+  }
+  
+  /* Sends a notification to every player's HUD, 
+     or a specific player's HUD */
+  public void Notify(string message, Actor player = null){
+    List<Actor> players = GetPlayers();
+    for(int i = 0; i < players.Count; i++){ 
+      if(player == null || player == players[i]){ players[i].Notify(message); }
+    }
   }
 }

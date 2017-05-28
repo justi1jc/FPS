@@ -177,6 +177,11 @@ public class Actor : MonoBehaviour{
     }                                    
   }
   
+  /* Notifies menu, if it exists. */
+  public void Notify(string message){
+    if(menu != null){ menu.Notify(message); }
+  }
+  
   /* 0 No AI
   *  1-4 Input routine + initialize HUD
   *  >4 Initialize AI module

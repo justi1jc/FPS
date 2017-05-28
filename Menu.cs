@@ -38,6 +38,9 @@ public class Menu : MonoBehaviour{
   public const int RT    = 8;
   public const int LT    = 9;
   
+  
+  public List<string> notifications;
+  public float notificationTimer = 6f;
   public Actor actor;
   public int activeMenu = NONE;
   public bool split;
@@ -56,6 +59,10 @@ public class Menu : MonoBehaviour{
   public int subMenu = 0; // To account for menus within a menu.
   public string sesName = ""; // Name for new game.
   public List<GameRecord> files;
+  
+  public void Awake(){
+    notifications = new List<string>();
+  }
   
   /* Changes the active menu and sets up variables for it. */
   public void Change(int menu){
@@ -80,6 +87,11 @@ public class Menu : MonoBehaviour{
       if(menu == HUD && actor){ actor.SetMenuOpen(false); }
       else if(actor){actor.SetMenuOpen(true); }
     }
+  }
+  
+  public void Notify(string message){
+    print("Notified:" + message);
+    notifications.Add(message);
   }
   
   /* Populates selection with available abilities */
@@ -124,6 +136,7 @@ public class Menu : MonoBehaviour{
   
   
   void OnGUI(){
+      RenderNotifications();
     switch(activeMenu){
       case HUD:
         RenderHUD();
@@ -174,6 +187,20 @@ public class Menu : MonoBehaviour{
     return 0;
   }
   
+  
+  void RenderNotifications(){
+    if(notifications.Count == 0){ return; }
+    notificationTimer -= Time.deltaTime;
+    if(notificationTimer < 0f){
+      notifications.Remove(notifications[0]);
+      notificationTimer = 6f;
+      return;
+    }
+    string str = notifications[0];
+    int x = Width()/2;
+    int y = Height()/6;
+    Box(str, XOffset()+x, y, x, y);
+  }
   
   void RenderHUD(){
     // Display Condition bars

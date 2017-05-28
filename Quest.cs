@@ -20,6 +20,7 @@ public abstract class Quest{
      NOTE: EVERYTHING about this method is hard-coded to rely on 
      project-specific files.  */
   public static Quest Factory(string questName){
+    Session.session.Notify("Qest " + questName + " started.");
     switch(questName){
       case "kill the enemies!":
         KillXQuest q = new KillXQuest();
