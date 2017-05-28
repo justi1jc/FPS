@@ -13,6 +13,7 @@ public abstract class Quest{
   public abstract void LoadData(Data dat);   // Loads an existing quest record
   public abstract string Description();  // Returns string describing this quest.
   public abstract string[] Objectives(); // Returns a list of objectives.
+  public abstract string Name(); // Returns displayName
   public abstract int Status(); // -1: Not started 0: Started 1: Success 2: Failed
   /* This Factory method exists for convenience of creating new quests.
      with their appropriate files. 
@@ -22,6 +23,7 @@ public abstract class Quest{
     switch(questName){
       case "kill the enemies!":
         KillXQuest q = new KillXQuest();
+        q.displayName = questName;
         q.targetName = "Enemy";
         q.targetNumber = 3;
         q.completion = 0;
@@ -29,5 +31,11 @@ public abstract class Quest{
         break;
     }
     return null;
+  }
+  
+  public static Quest Factory(Data dat){
+    Quest q = Quest.Factory(dat.displayName);
+    q.LoadData(dat);
+    return q;
   }
 }

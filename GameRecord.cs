@@ -16,5 +16,6 @@ public class GameRecord{
     map = new MapRecord();
     quests    = new List<Data>();
     players   = new List<Data>();
+    quests = new List<Data>();
   }
 } 
