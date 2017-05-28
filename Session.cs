@@ -413,4 +413,13 @@ public class Session : MonoBehaviour {
   public int NextId(){
     lock(syncLock){ return currentID++; }
   }
+  
+  /* Returns all active actors in this session. */
+  public List<Actor> GetActors(){
+    List<Actor> ret = new List<Actor>();
+    for(int i = 0; i < decks.Count; i++){
+      ret.AddRange(decks[i].GetActors());
+    }
+    return ret;
+  }
 }

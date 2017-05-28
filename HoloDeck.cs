@@ -357,7 +357,16 @@ public class HoloDeck : MonoBehaviour{
      }
      players = new List<Actor>();
   }
- 
+  
+  /* Returns all active actors. */
+  public List<Actor> GetActors(){
+    List<Actor> ret = new List<Actor>();
+    for(int i = 0; i < cells.Count; i++){
+      ret.AddRange(cells[i].GetActors());
+    }
+    return ret;
+  }
+  
   /* Loads players from playerData into the active cell. */
   public void LoadPlayers(){
      for(int i = 0; i < playerData.Count; i++){

@@ -168,6 +168,17 @@ public class HoloCell{
     return ret;
   }
   
+  /* Returns all active Actors in this cell. */
+  public List<Actor> GetActors(){
+    List<GameObject> obs = GetContents();
+    List<Actor> ret = new List<Actor>();
+    for(int i = 0; i < obs.Count; i++){
+      Actor a = obs[i].GetComponent<Actor>();
+      if(a != null){ ret.Add(a); }
+    }
+    return ret;
+  }
+  
   /* Returns NPCs within GameObject list. */
   public List<Data> GetNpcs(List<GameObject> obs){
     List<Data> ret = new List<Data>();
