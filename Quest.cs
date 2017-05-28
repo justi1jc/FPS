@@ -14,7 +14,6 @@ public abstract class Quest{
   public abstract string Description();  // Returns string describing this quest.
   public abstract string[] Objectives(); // Returns a list of objectives.
   public abstract int Status(); // -1: Not started 0: Started 1: Success 2: Failed
-  
   /* This Factory method exists for convenience of creating new quests.
      with their appropriate files. 
      NOTE: EVERYTHING about this method is hard-coded to rely on 
@@ -22,7 +21,11 @@ public abstract class Quest{
   public static Quest Factory(string questName){
     switch(questName){
       case "kill the enemies!":
-        MonoBehaviour.print("Not implemented just yet.");
+        KillXQuest q = new KillXQuest();
+        q.targetName = "Enemy";
+        q.targetNumber = 3;
+        q.completion = 0;
+        return (Quest)q;
         break;
     }
     return null;

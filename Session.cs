@@ -246,7 +246,7 @@ public class Session : MonoBehaviour {
   }
   
   /* Gathers player data from all decks. */
-  public List<Data> GetPlayers(){
+  public List<Data> GetPlayerData(){
     List<Data> ret = new List<Data>();
     for(int i = 0; i < decks.Count; i++){ ret.AddRange(decks[i].GetPlayers()); }
     return ret;
@@ -297,7 +297,7 @@ public class Session : MonoBehaviour {
       else{ decks[i].SaveExterior(); }
     }
     record.map = map;
-    record.players = GetPlayers();
+    record.players = GetPlayerData();
     record.currentID = currentID;
     return record;
   }
@@ -419,6 +419,15 @@ public class Session : MonoBehaviour {
     List<Actor> ret = new List<Actor>();
     for(int i = 0; i < decks.Count; i++){
       ret.AddRange(decks[i].GetActors());
+    }
+    return ret;
+  }
+  
+  /* Returns all active players in this session. */
+  public List<Actor> GetPlayers(){
+    List<Actor> ret = new List<Actor>();
+    for(int i = 0; i < decks.Count; i++){
+      ret.AddRange(decks[i].players);
     }
     return ret;
   }
