@@ -22,13 +22,11 @@ player in a rich game world.
 
 Tentative roadmap:
 itch.io release
-  -V0.5 Quest framework
-  -V0.5 Content for demo.
+  -V0.5 Content and debugging for demo.
 
 Refactor
   -Use polymorphism for Items.
   -Use polymorphism for menus.
-  -Investigate unity unit-testing framework.
   
 React to feedback:
   -Determine format for Models/Animation
@@ -44,11 +42,11 @@ ______ _       _     _              _   _____             _
                                                                 
 ********************************************************************************
 
-Current version: 0.4.0
+Current version: 0.5.0
 
     Current features
 Menus(Main, Inventory/Loot, Ability, Speech, Trade, level-up/stats,
-  Save&Load Loot)
+  Save&Load, Loot, quest)
 Input(In-Game, Menu)
 Actor
 (
@@ -65,26 +63,4 @@ Session(SpawnEntity);
 Speech(Speech tree, trade system)
 Save&Load(GameData, interior cells, Actor data)
 World(interior cells, exterior cells, random generation)
-
-********************************************************************************
- _   _  _____  _____   _____             _     
-| | | ||  _  ||  ___| |  __ \           | |    
-| | | || |/' ||___ \  | |  \/ ___   __ _| |___ 
-| | | ||  /| |    \ \ | | __ / _ \ / _` | / __|
-\ \_/ /\ |_/ //\__/ / | |_\ \ (_) | (_| | \__ \
- \___/  \___(_)____/   \____/\___/ \__,_|_|___/
-                                               
-********************************************************************************
-Menus(Quest)
 Quest(Quest interface, hello world quest)
-
-
-menus(Quest)
-1. Can reach quest menu.
-2. Quest menu displays scrolling list of quests.
-3. Selecting a quest will show its description.
-
-Quest Framework
-In Progress 1. Static Factory for quests GetQuest(string name)
-Done 2. Quests 
-3. Kill 3 Enemies quest.

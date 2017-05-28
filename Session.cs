@@ -471,4 +471,5 @@ public class Session : MonoBehaviour {
       if(player == null || player == players[i]){ players[i].Notify(message); }
     }
   }
+  
 }
