@@ -21,8 +21,9 @@ using UnityEngine.SceneManagement;
 public class Session : MonoBehaviour {
   public static Session session;
   public static bool fileAccess = false; //True if files are currently accessed
+  private readonly object syncLock = new object(); // Mutex lock
   public string sessionName; //Name Used in save file.
-  
+  public List<Quest> quests;
   
   // Controller one linux values
   public static string C1 = "Joystick 1"; //Controller 1
@@ -57,6 +58,8 @@ public class Session : MonoBehaviour {
   // World.
   public List<HoloDeck> decks; // active HoloDecks
   public MapRecord map; // World map.
+  int currentID = 0;
+  bool runQuests = true;
   
   // Main menu UI
   bool mainMenu; // True when main menu is active.
@@ -68,6 +71,7 @@ public class Session : MonoBehaviour {
     if(Session.session){ Destroy(this); }
     else{ Session.session = this; }
     decks = new List<HoloDeck>();
+    quests = new List<Quest>();
     CreateMenu();
   }
   
@@ -93,6 +97,7 @@ public class Session : MonoBehaviour {
   */
   public void CreateGame(string sesName){
     sessionName = sesName;
+    currentID = 0;
     if(mainMenu){ DestroyMenu();}
     CreateLoadingScreen();
     map = Cartographer.GetMaster();
@@ -103,7 +108,28 @@ public class Session : MonoBehaviour {
     deck.LoadInterior(initCell, 0, false);
     deck.AddPlayer("player1");
     DestroyLoadingScreen();
+    StartCoroutine(QuestRoutine());
+    CreateStartingQuests();
+    
   }
+  
+  /* Initializes Starting quests for a new Game.
+     NOTE: This is as hard-coded as Quest.Factory()
+  */
+  void CreateStartingQuests(){
+    quests.Add(Quest.Factory("kill the enemies!"));
+  }
+  
+  /* Routine that checks all the quests. */
+  IEnumerator QuestRoutine(){
+    while(runQuests){
+      for(int i = 0; i < quests.Count; i++){
+        quests[i].Update();
+      }
+      yield return new WaitForSeconds(3f);
+    }
+  }
+  
   
   /* Returns the interior cell the player aught to start in at the beginning of
      the game.
@@ -243,7 +269,7 @@ public class Session : MonoBehaviour {
   }
   
   /* Gathers player data from all decks. */
-  public List<Data> GetPlayers(){
+  public List<Data> GetPlayerData(){
     List<Data> ret = new List<Data>();
     for(int i = 0; i < decks.Count; i++){ ret.AddRange(decks[i].GetPlayers()); }
     return ret;
@@ -283,6 +309,8 @@ public class Session : MonoBehaviour {
     }
     hd.AddPlayer(player, true);
     playerData.Remove(player);
+    StopAllCoroutines();
+    StartCoroutine(QuestRoutine());
   }
   
   /* Returns a GameRecord containing this Session's data. */
@@ -294,7 +322,11 @@ public class Session : MonoBehaviour {
       else{ decks[i].SaveExterior(); }
     }
     record.map = map;
-    record.players = GetPlayers();
+    record.players = GetPlayerData();
+    record.currentID = currentID;
+    for(int i = 0; i < quests.Count; i++){
+      record.quests.Add(quests[i].GetData());
+    }
     return record;
   }
   
@@ -303,6 +335,10 @@ public class Session : MonoBehaviour {
     sessionName = dat.sessionName;
     map = dat.map;
     playerData = dat.players;
+    currentID = dat.currentID;
+    for(int i = 0; i < dat.quests.Count; i++){
+      quests.Add(Quest.Factory(dat.quests[i]));
+    }
   }
   
   
@@ -400,4 +436,40 @@ public class Session : MonoBehaviour {
   public void SetExterior(Cell c){
     if(c != null){ SetExterior(c.x, c.y, c); }
   }
+  
+  
+  /* Returns an auto-incremented id number for all NPCs.
+     NOTE: May want to either use a long or make another ID for items.
+  */
+  public int NextId(){
+    lock(syncLock){ return currentID++; }
+  }
+  
+  /* Returns all active actors in this session. */
+  public List<Actor> GetActors(){
+    List<Actor> ret = new List<Actor>();
+    for(int i = 0; i < decks.Count; i++){
+      ret.AddRange(decks[i].GetActors());
+    }
+    return ret;
+  }
+  
+  /* Returns all active players in this session. */
+  public List<Actor> GetPlayers(){
+    List<Actor> ret = new List<Actor>();
+    for(int i = 0; i < decks.Count; i++){
+      ret.AddRange(decks[i].players);
+    }
+    return ret;
+  }
+  
+  /* Sends a notification to every player's HUD, 
+     or a specific player's HUD */
+  public void Notify(string message, Actor player = null){
+    List<Actor> players = GetPlayers();
+    for(int i = 0; i < players.Count; i++){ 
+      if(player == null || player == players[i]){ players[i].Notify(message); }
+    }
+  }
+  
 }
