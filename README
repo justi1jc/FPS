@@ -79,3 +79,11 @@ Menus(Quest)
 Quest(Quest interface, hello world quest)
 
 
+menus(Quest)
+1. Can reach quest menu.
+2. Quest menu displays scrolling list of quests.
+3. Selecting a quest will show its description.
+
+Quest Framework
+In Progress 1. Static Factory for quests GetQuest(string name)
+Done 2. Quests 
