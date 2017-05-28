@@ -38,6 +38,9 @@ public class Menu : MonoBehaviour{
   public const int RT    = 8;
   public const int LT    = 9;
   
+  
+  public List<string> notifications;
+  public float notificationTimer = 6f;
   public Actor actor;
   public int activeMenu = NONE;
   public bool split;
@@ -56,6 +59,10 @@ public class Menu : MonoBehaviour{
   public int subMenu = 0; // To account for menus within a menu.
   public string sesName = ""; // Name for new game.
   public List<GameRecord> files;
+  
+  public void Awake(){
+    notifications = new List<string>();
+  }
   
   /* Changes the active menu and sets up variables for it. */
   public void Change(int menu){
@@ -80,6 +87,11 @@ public class Menu : MonoBehaviour{
       if(menu == HUD && actor){ actor.SetMenuOpen(false); }
       else if(actor){actor.SetMenuOpen(true); }
     }
+  }
+  
+  public void Notify(string message){
+    print("Notified:" + message);
+    notifications.Add(message);
   }
   
   /* Populates selection with available abilities */
@@ -124,6 +136,7 @@ public class Menu : MonoBehaviour{
   
   
   void OnGUI(){
+      RenderNotifications();
     switch(activeMenu){
       case HUD:
         RenderHUD();
@@ -174,6 +187,20 @@ public class Menu : MonoBehaviour{
     return 0;
   }
   
+  
+  void RenderNotifications(){
+    if(notifications.Count == 0){ return; }
+    notificationTimer -= Time.deltaTime;
+    if(notificationTimer < 0f){
+      notifications.Remove(notifications[0]);
+      notificationTimer = 6f;
+      return;
+    }
+    string str = notifications[0];
+    int x = Width()/2;
+    int y = Height()/6;
+    Box(str, XOffset()+x, y, x, y);
+  }
   
   void RenderHUD(){
     // Display Condition bars
@@ -310,7 +337,7 @@ public class Menu : MonoBehaviour{
         new Rect(XOffset(), Height()/2, iw, ih),
         "Quests"
       )){
-        print("Quests not implemented.");
+        Change(QUEST);
     }
     if(sx == -1){ GUI.color = Color.green; }
   }
@@ -576,7 +603,39 @@ public class Menu : MonoBehaviour{
   }
 
 
-  void RenderQuest(){}
+  void RenderQuest(){
+    Box("", XOffset(), 0, Width(), Height()); // Background
+    int iw = Width()/4;
+    int ih = Height()/20;
+    int y = 0;
+    string str = "";
+    str = "Inventory";
+    if(Button(str, Width() - iw, Height()/2, iw, ih, 1, 0)){ Change(INVENTORY); }
+    scrollPosition = GUI.BeginScrollView(
+      new Rect(XOffset() +iw, Height()/2, iw, Height()),
+      scrollPosition,
+      new Rect(0, 0, iw, 200)
+    );
+    
+    List<Quest> quests = Session.session.quests;
+    for(int i = 0; i < quests.Count; i++){ 
+      y = ih * i;
+      if(Button(quests[i].Name(), 0, y, iw, ih, 0, i)){
+        print(quests[i].Name());
+      }
+      
+    }
+    GUI.EndScrollView();
+    if(sy < 0 || sy >= quests.Count){ return; }
+    str = "";
+    string[] obj = quests[sy].Objectives();
+    for(int i = 0; i < obj.Length; i++){
+      str += obj[i] + "\n";
+      Box(str, XOffset() + 2*iw, Height()/2 + i*y, iw, ih);
+    }
+    
+  }
+  
   void RenderAbility(){
     GUI.Box(
       new Rect(XOffset(), 0, Width(), Height()),
@@ -830,7 +889,7 @@ public class Menu : MonoBehaviour{
       x = XOffset() + 3 * iw; 
       Box(str,x, 0, iw, ih/2);
       
-      str = files[py].currentBuilding;
+      str = "Important fact about this file";
       y = ih/2;
       Box(str, x, y, iw, ih/2);
       
@@ -1062,7 +1121,10 @@ public class Menu : MonoBehaviour{
     DefaultExit(button);
   }
   
-  void QuestInput(int button){}
+  void QuestInput(int button){
+    DefaultExit(button);
+  }
+  
   void AbilityInput(int button){
     DefaultExit(button);
     if(sx == -1){
