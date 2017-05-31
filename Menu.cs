@@ -250,12 +250,6 @@ public class Menu : MonoBehaviour{
     int x = XOffset() + iw;
     string str;
     
-    
-    str = "Continue";
-    if(Button(str, x, 0, 4*iw, ih, 0, 0 )){ 
-      print("Continue");
-    }
-    
     switch(subMenu){
       case 0:
         str = "New Game";
@@ -379,7 +373,7 @@ public class Menu : MonoBehaviour{
     
     str = "Quit.";
     if(Button(str, x, 5*ih, 2*iw, ih, 0, 5)){
-      print("Quit!");
+      Application.Quit();
     }
   }
 
@@ -864,23 +858,25 @@ public class Menu : MonoBehaviour{
     int iw = Width()/6;
     int ih = Height()/5;
     int x, y;
-    
     x = XOffset() + iw;
-    Box("Load Menu", x, 0, iw, ih);
-    scrollPositionB = GUI.BeginScrollView(
-      new Rect(XOffset() + iw, ih, iw, 2*ih),
-      scrollPositionB,
-      new Rect(0, 0, iw, ih * files.Count)
-    );    
-    
-    
-    for(int i = 0; i < files.Count; i++){
-      y = i * ih / 2;
-      str = files[i].sessionName;
-      if(Button(str, 0, y, iw, ih/2)){ py = i; }
+    if(files != null){
+      
+      Box("Load Menu", x, 0, iw, ih);
+      scrollPositionB = GUI.BeginScrollView(
+        new Rect(XOffset() + iw, ih, iw, 2*ih),
+        scrollPositionB,
+        new Rect(0, 0, iw, ih * files.Count)
+      );    
+      
+      
+      for(int i = 0; i < files.Count; i++){
+        y = i * ih / 2;
+        str = files[i].sessionName;
+        if(Button(str, 0, y, iw, ih/2)){ py = i; }
+      }
+      
+      GUI.EndScrollView();
     }
-    
-    GUI.EndScrollView();
     int dest = actor ? OPTIONS : MAIN;
     if(Button("Back", x, 3*ih, iw, ih)){ Change(dest); }
   
@@ -898,10 +894,16 @@ public class Menu : MonoBehaviour{
         y = ih;
         Box(str, x, y, iw, ih/2);
       }
-      str = "Load?";
+      str = "Load";
       y = ih + ih/2;
       if(Button(str, x, y, iw, ih/2)){ 
         Session.session.LoadGame(files[py].sessionName); 
+      }
+      str = "Delete";
+      y = 2*ih;
+      if(Button(str, x, y, iw, ih/2)){ 
+        Session.session.DeleteFile(files[py].sessionName);
+        files = Session.session.LoadFiles();
       }
     }
   }

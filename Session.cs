@@ -357,6 +357,16 @@ public class Session : MonoBehaviour {
     }
   }
   
+  /* Deletes a specified save. */
+  public void DeleteFile(string fileName){
+    if(fileAccess){ return; }
+    fileAccess = true;
+    BinaryFormatter bf = new BinaryFormatter();
+    string path = Application.persistentDataPath + "/" + fileName + ".save";
+    if(!File.Exists(path)){ fileAccess = false; return; }
+    File.Delete(path);
+  }
+  
   /* Returns an array of every valid GameRecord in the directory.*/
   public List<GameRecord> LoadFiles(){
     if(fileAccess){ return new List<GameRecord>(); }
