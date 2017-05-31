@@ -64,3 +64,16 @@ Speech(Speech tree, trade system)
 Save&Load(GameData, interior cells, Actor data)
 World(interior cells, exterior cells, random generation)
 Quest(Quest interface, hello world quest)
+
+********************************************************************************
+Itch prep
+********************************************************************************
+
+  Programing tasks
+Add delete button to load menu
+Create spawner item
+
+  Non-programming tasks
+Starting building with passive NPC
+passive NPC dialogue
+building full of enemies
