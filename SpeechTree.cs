@@ -1,214 +1,157 @@
-/*
-  The speech tree is responsible for parsing a text file into a tree of
-  SpeechNode objects.
+/* Manages the traversal of a tree/graph of SpeechNodes */
 
-
-  SPEECH NODE TEXT FILE FORMAT:
-  NODE
-  <Node id>
-  <ARGUMENT COUNT>:<Child>:<Hidden?>[:<Action>:<TargetNode>:<TargetOption>:<Arg>]:<Option text>
-  <ARGUMENT COUNT>:<Child>:<Hidden?>[:<Action>:<TargetNode>:<TargetOption>:<Arg>]:<Option text>
-  <ARGUMENT COUNT>:<Child>:<Hidden?>[:<Action>:<TargetNode>:<TargetOption>:<Arg>]:<Option text>
-  <ARGUMENT COUNT>:<Child>:<Hidden?>[:<Action>:<TargetNode>:<TargetOption>:<Arg>]:<Option text>
-  
-  //Repeat for however many nodes you will include
-  END// File ends with END on last line
-  
-  For a built windows or linux project, all text files must be
-  stored in <Name>_Data/Resources manually after building.
-  TODO: Create a better storage location for text files
-*/
 using System;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class SpeechTree{
-  public string fileName;
-  public int activeNode;
-  public List<SpeechNode> nodes;
-  public int lineCount;
+  List<SpeechNode> nodes; // Nodes in the tree.
+  SpeechNode active; // Node currently rendered.
   
-  public SpeechTree(string _fileName, int _activeNode = 0){
-    lineCount = 0;
-    fileName = _fileName;
-    activeNode = _activeNode;
+  public SpeechTree(string filename){
     nodes = new List<SpeechNode>();
-    ParseFile();
+    active = null;
+    TemporaryInit();
   }
   
-  /* Returns active node. */
-  public SpeechNode ActiveNode(){
-    return nodes[activeNode];
+  public string Prompt(){
+    if(active != null){ return active.Prompt(); }
+    return "";
   }
   
-  /* Selects an option and performs its actions. */
+  public string Option(int option){
+    if(active != null){ return active.OptionText(option); }
+    return "";
+  }
+  
   public void SelectOption(int option){
-    SpeechNode node = ActiveNode();
-    SpeechNode targetNode = null;
-    int child = node.children[option];
-    if(child != -1 && child < nodes.Count){ activeNode = nodes[child].id; }
-    switch(node.actions[option]){
-      case SpeechNode.NONE:
+    if(active == null){ return; }
+    int dest = active.GetChild(option);
+    List<string> actions = active.GetActions(option);
+    if(actions != null){
+      for(int i = 0; i < actions.Count; i++){
+        PerformAction(actions[i], active.ActionArgs(option, i));
+      }
+    }
+    ChangeActive(dest);
+  }
+  
+  /* Performs specified action if arguments are sufficient. */
+  void PerformAction(string action, int[] args){   
+    if(args == null){ return; }
+    switch(action.ToUpper()){
+      case "HIDE_NODE":
+        if(args.Length < 2){ return; }
+        SetHidden(true, args[0], args[1]);
         break;
-      case SpeechNode.SHOW_NODE:
-        targetNode = nodes[node.targetNodes[option]];
-        targetNode.hidden[node.targetOptions[option]] = false;
+      case "SHOW_NODE":
+        if(args.Length < 2){ return; }
+        SetHidden(false, args[0], args[1]);
         break;
-      case SpeechNode.HIDE_NODE:
-        targetNode = nodes[node.targetNodes[option]];
-        targetNode.hidden[node.targetOptions[option]] = true;
+      case "CHANGE_CHILD":
+        if(args.Length < 3){ return; }
+        ChangeChild(args[0], args[1], args[2]);
         break;
-      case SpeechNode.CHANGE_CHILD:
-        targetNode = nodes[node.targetNodes[option]];
-        targetNode.children[node.targetOptions[option]] = node.actionIntArgs[option];
+      case "START_QUEST":
+        if(args.Length < 1){ return; }
+        Session.session.StartQuest(args[0]);
         break;
-      case SpeechNode.CHANGE_ACTION:
-        targetNode = nodes[node.targetNodes[option]];
-        targetNode.actions[node.targetOptions[option]] = node.actionIntArgs[option];
+      case "AWARD_XP":      
+        if(args.Length < 1){ return; }
+        Session.session.AwardXP(args[0]);
         break;
     }
   }
   
-  /* Prints out some debug ingo */
-  void DebugPrint(){
-    for(int i = 0; i < nodes.Count; i++){
-      MonoBehaviour.print("Node " + i +nodes[i].prompt);
-      for(int j = 0; j < 4; j++){
-        MonoBehaviour.print("Node " + i + " option "+ j + nodes[i].options[j]);
-      }
-    }
+  /* Changes the active node, if the selection is valid. */
+  void ChangeActive(int node){
+    if(node < 0 || node >= nodes.Count){ return; }
+    active = nodes[node];
   }
   
-  
-  /* Reads data in from file. */
-  void ParseFile(){
-  
-    string location = Application.dataPath + "/Resources/";
-    try{ 
-        using (StreamReader sr = new StreamReader(location+fileName)){
-            String line = sr.ReadLine(); lineCount++;
-            while(line != null && line.ToUpper() != "END"){
-              if(line.ToUpper() == "NODE"){
-                if(!ParseNode(sr)){ return; } 
-              }
-              line = sr.ReadLine(); lineCount++;
-            }
-        }
-    }
-    catch (Exception e){ MonoBehaviour.print("Exception:" + e); }
+  /* Sets a particular node's option to a particular value */
+  void SetHidden(bool val, int node, int option){
+    if(node < 0 || node >= nodes.Count){ return; }
+    nodes[node].SetHidden(option, val);
   }
   
-  /* Creates a node.*/
-  bool ParseNode(StreamReader sr){
-
-    string line = sr.ReadLine(); lineCount++;
-    int id = int.TryParse(line, out id) ? id : -1;
-    if(id == -1){ MonoBehaviour.print("Missing ID. Line " + lineCount); return false;}
+  /* Changes a specific node's destination. */
+  void ChangeChild(int val, int node, int option){
+    if(node < 0 || node >= nodes.Count){ return; }
+    nodes[node].ChangeChild(option, val);
+  }
+  
+  void TemporaryInit(){
+    List<Option> ops = new List<Option>();
+    for(int i = 0; i < 4; i++){ ops.Add(new Option()); }
     
-    //Parse prompt
-    string prompt = sr.ReadLine(); lineCount++;
+    ops[0].text = "First option.";
+    ops[0].child = 0;
+    ops[0].hidden = false;
+    ops[0].actions = new List<string>();
+    ops[0].actions = null;
     
-    //Set up option vars.
-    char[] delimiters = {':'}; 
-    string[] lines;
-    int val, argCount;
-    int arg = 0;
-    string[] options    = {"", "", "", ""};
-    bool[] hidden       = {false, false, false, false};
-    int[] children      = {-1, -1, -1, -1};
-    int[] actions       = {-1, -1, -1, -1};
-    int[] targetNodes   = {-1, -1, -1, -1};
-    int[] targetOptions = {-1, -1, -1, -1};
-    int[] actionIntArgs = {-1, -1, -1, -1};
+    ops[1].text = "Second option.";
+    ops[1].child = 0;
+    ops[1].hidden = false;
+    ops[1].actions = new List<string>();
+    ops[1].actions.Add("SHOW_NODE");
+    ops[1].args = new List<int[]>();
+    ops[1].args.Add( new int[2]);
+    ops[1].args[0][0] = 0;
+    ops[1].args[0][1] = 3;
     
-    //Parse each option.
-    for(int i = 0; i<4; i++){
-      arg = 0;
-      line = sr.ReadLine(); lineCount++;
-      lines = line.Split(delimiters);
-      
-      // Parse number of args before text
-      val = int.TryParse(lines[arg], out val) ? val : -1; arg++;
-      if(val == -1){ MonoBehaviour.print("Missing argCount. Line " + lineCount); return false; }
-      argCount = val;
-      if(argCount > lines.Length){
-        MonoBehaviour.print("Missing arg number. Line " + lineCount); 
-        return false;
-      }
-      
-      // Parse child
-      if(argCount > 0){
-        val = int.TryParse(lines[arg], out val) ? val : -1; arg++;
-        if(val == -1){ 
-          MonoBehaviour.print("Missing child number. Line " + lineCount);
-          return false;
-        }
-        children[i] = val;
-      }
-      
-      // Parse hidden
-      if(argCount > 1){
-        val = int.TryParse(lines[arg], out val) ? val : -1; arg++;
-        if(val == -1){ 
-          MonoBehaviour.print("Missing child number. Line " + lineCount);
-          return false;
-        }
-        hidden[i] = val==1 ? true : false;
-      }
-      
-      
-      // Parse action, if defined
-      if(argCount > 2){
-        val = int.TryParse(lines[arg], out val) ? val : -1; arg++;
-        if(val == -1){ MonoBehaviour.print("Missing action. Line " + lineCount); return false; }
-        children[i] = val;
-      }
-      
-      // Parse targetNode, if defined
-      if(argCount > 3){
-        val = int.TryParse(lines[arg], out val) ? val : -1; arg++;
-        if(val == -1){
-          MonoBehaviour.print("Missing targetNode. Line " + lineCount); 
-          return false; 
-        }
-        targetNodes[i] = val;
-      }
-      
-      // Parse targetOption, if defined
-      if(argCount > 4){
-        val = int.TryParse(lines[arg], out val) ? val : -1; arg++;
-        if(val == -1){
-          MonoBehaviour.print("Missing targetNode. Line " + lineCount); 
-          return false; 
-        }
-        targetOptions[i] = val;
-      }
-      
-      // Parse actionIntArg, if defined
-      if(argCount > 5){
-        val = int.TryParse(lines[arg], out val) ? val : -1; arg++;
-        if(val == -1){
-          MonoBehaviour.print("Missing actionIntArg. Line " + lineCount); 
-          return false; 
-        }
-        actionIntArgs[i] = val;
-      }
-      options[i] = lines[arg];
-    }
-    SpeechNode node = new SpeechNode(
-      id = id,
-      prompt = prompt,
-      hidden = hidden,
-      options = options,
-      children = children,
-      actions = actions,
-      targetNodes = targetNodes,
-      targetOptions = targetOptions,
-      actionIntArgs = actionIntArgs
-    );
-    nodes.Add(node);
-    return true; 
+    ops[2].text = "I really want some XP.";
+    ops[2].child = 1;
+    ops[2].hidden = false;
+    ops[2].actions = new List<string>();
+    ops[2].actions.Add("CHANGE_CHILD");
+    ops[2].args = new List<int[]>();
+    ops[2].args.Add( new int[3]);
+    ops[2].args[0][0] = 2;
+    ops[2].args[0][1] = 0;
+    ops[2].args[0][2] = 2;
+    
+    ops[3].text = "Fourth option.";
+    ops[3].child = 0;
+    ops[3].hidden = false;
+    ops[3].actions = new List<string>();
+    ops[3].actions.Add("START_QUEST");
+    ops[3].args = new List<int[]>();
+    ops[3].args.Add( new int[1]);
+    ops[3].args[0][0] = 0;
+    ops[3].actions.Add("HIDE_NODE");
+    ops[3].args.Add(new int[2]);
+    ops[3].args[1][0] = 0;
+    ops[3].args[1][1] = 3;
+    
+    nodes.Add(new SpeechNode(0, "Choose an option.", ops));
+    
+    ops = new List<Option>();
+    ops.Add(new Option());
+    ops[0].text = "[Take XP]";
+    ops[0].child = 0;
+    ops[0].hidden = false;
+    ops[0].actions = new List<string>();
+    ops[0].actions.Add("AWARD_XP");
+    ops[0].args = new List<int[]>();
+    ops[0].args.Add( new int[1]);
+    ops[0].args[0][0] = 100;
+    
+    nodes.Add(new SpeechNode(1, "Well, then, have some XP", ops));
+    
+    ops = new List<Option>();
+    ops.Add(new Option());
+    ops[0].text = "Oh, ok.";
+    ops[0].child = 0;
+    ops[0].hidden = false;
+    ops[0].actions = null;
+    
+    nodes.Add(new SpeechNode(2, "No more XP for you.", ops));
+    
+    active = nodes[0];
   }
 }

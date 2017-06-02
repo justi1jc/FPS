@@ -117,7 +117,18 @@ public class Session : MonoBehaviour {
      NOTE: This is as hard-coded as Quest.Factory()
   */
   void CreateStartingQuests(){
-    quests.Add(Quest.Factory("kill the enemies!"));
+    //quests.Add(Quest.Factory("kill the enemies!"));
+  }
+  
+  /* Initializes a specified quest. */
+  public void StartQuest(int quest){
+    quests.Add(Quest.Factory(quest));
+  }
+  
+  /* Gives xp to all players. */
+  public void AwardXP(int amount){
+    string str = amount + " xp awarded!";
+    Notify(str);
   }
   
   /* Routine that checks all the quests. */

@@ -90,7 +90,6 @@ public class Menu : MonoBehaviour{
   }
   
   public void Notify(string message){
-    print("Notified:" + message);
     notifications.Add(message);
   }
   
@@ -379,82 +378,31 @@ public class Menu : MonoBehaviour{
 
   /* Render the dialogue screen. */
   void RenderSpeech(){
-    if(!actor){ return; }
-    if(!actor.interlocutor){print("Interlocutor missing"); return;}
+    if(!actor){ print("Actor missing"); return; }
+    if(actor.interlocutor == null){ print("Interlocutor missing"); return;}
+    if(actor.interlocutor.speechTree == null){ print("tree missing."); return; }
+    
     GUI.skin.button.wordWrap = true; // Make sure text wraps in buttons.
     GUI.skin.box.wordWrap = true; // Make sure text wraps in boxes.
-    GUI.Box(
-      new Rect(XOffset(), 0, Width(), Height()),
-      ""
-    );
+    
+    Box("", XOffset(), 0, Width(), Height());
     SpeechTree st = actor.interlocutor.speechTree;
-    if(st == null){ print("Interlocutor lacks speech tree"); return; }
-    GUI.color = Color.green;
     int iw = Width()/6;
     int ih = Height()/15;
     int mid = Height()/2;
-    string text = "";
+    string str = "";
+    if(Button("Trade", XOffset(), Height()/2, iw, ih)){ Change(TRADE); }
+    
     
     // Render Prompt
-    GUI.Box(
-      new Rect(XOffset()+(2*iw), 0, 4*iw, 7*ih),
-        st.ActiveNode().prompt
-    );
+    str = st.Prompt(); 
+    Box(str,XOffset() + iw, 0, 4*iw, 7*ih);
     
-    // Render Option 0
-    if(!st.ActiveNode().hidden[0]){
-      if(sy==0 && sx == 0){ GUI.color = Color.yellow; }
-      text = st.ActiveNode().options[0];
-      if(GUI.Button(
-        new Rect(XOffset()+(2*iw), ih*7, 4*iw, 2*ih),
-          text
-      )){
-        st.SelectOption(0);
-      }
-      if(sy==0 && sx == 0){ GUI.color = Color.green; }
-    }
-    
-    // Render Option 1
-    if(!st.ActiveNode().hidden[1]){
-      if(sy==1 && sx == 0){ GUI.color = Color.yellow; }
-      text = st.ActiveNode().options[1];
-      if(GUI.Button(
-        new Rect(XOffset()+(2*iw), ih*9, 4*iw, 2*ih),
-          text
-      )){
-        st.SelectOption(1);
-      }
-      if(sy==1 && sx == 0){ GUI.color = Color.green; }
-    }
-    
-    // Render Option 2
-    if(!st.ActiveNode().hidden[2]){
-      if(sy==2 && sx == 0){ GUI.color = Color.yellow; }
-      text = st.ActiveNode().options[2];
-      if(GUI.Button(
-        new Rect(XOffset()+(2*iw), ih*11, 4*iw, 2*ih),
-          text
-      )){
-        st.SelectOption(2);
-      }
-      if(sy==2 && sx == 0){ GUI.color = Color.green; }
-    }
-    
-    // Render Option 3
-    if(!st.ActiveNode().hidden[3]){
-      if(sy==3 && sx == 0){ GUI.color = Color.yellow; }
-      text = st.ActiveNode().options[3];
-      if(GUI.Button(
-        new Rect(XOffset()+(2*iw), ih*13, 4*iw, 2*ih),
-          text
-      )){
-        st.SelectOption(3);
-      }
-      if(sy==3 && sx == 0){ GUI.color = Color.green; }
-    }
-    
-    if(Button("Trade", XOffset(), Height()/2, iw, ih)){
-      Change(TRADE);
+    int i = 0;
+    while(st.Option(i) != ""){
+      str = st.Option(i);
+      if(Button(str, XOffset() + iw, (7+i)*ih, 4*iw, 1*ih)){ st.SelectOption(i); }
+      i++;
     }
   }
   
@@ -969,8 +917,8 @@ public class Menu : MonoBehaviour{
     sxMax = 0;
     sxMin = 0;
     SecondaryBounds();
-    SpeechTree st = actor.interlocutor.speechTree;
-    if(st.ActiveNode().hidden[sy]){ sy--; }
+    SpeechTree st = actor.interlocutor != null ? actor.interlocutor.speechTree : null;
+    if(st != null && st.Option(sy) == ""){ sy--; }
   }
   
   void TradeFocus(){}
@@ -1100,7 +1048,7 @@ public class Menu : MonoBehaviour{
     DefaultExit(button);
     SpeechTree st = actor.interlocutor.speechTree;
     if(button == A){
-      if(st.ActiveNode().hidden[sy]){ return; }
+      if(st.Option(sy) == ""){ return; }
       switch(sy){
         case 0:
           st.SelectOption(0);

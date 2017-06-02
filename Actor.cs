@@ -1233,9 +1233,11 @@ public class Actor : MonoBehaviour{
     dat.inventory = new Inventory(inventory);
     primaryIndex = -1;
     secondaryIndex = -1;
-    dat.lastPos = lastPos; 
+    dat.lastPos = lastPos;
+    dat.strings.Add(speechTreeFile);
     if(pIndex > -1){ Equip(pIndex); }
     if(sIndex > -1){ EquipSecondary(sIndex); }
+    dat.speechTree = speechTree;
     return dat;
   }
   
@@ -1260,6 +1262,7 @@ public class Actor : MonoBehaviour{
     if(sIndex > -1){ EquipSecondary(sIndex); }
     else{ EquipAbilitySecondary(leftAbility); }
     lastPos = dat.lastPos;
+    speechTree = dat.speechTree;
   }
 
   /* Initiates conversation with other actor */

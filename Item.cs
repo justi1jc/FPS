@@ -496,7 +496,6 @@ public class Item : MonoBehaviour{
   
   /* Spawns whatever it will spawn and then deletes itself.  */
   void Spawn(){
-    print("Starting spawn");
     System.Random r = new System.Random();
     int roll = r.Next(101);
     if(roll < spawnChance){
@@ -505,7 +504,7 @@ public class Item : MonoBehaviour{
       GameObject pref = (GameObject)Resources.Load(spawnee, typeof(GameObject));
       if(pref != null){ GameObject.Instantiate(pref, sPos, pRot); }
     }
-    //Destroy(gameObject);
+    Destroy(gameObject);
   }
   
   /* Returns true if this weapon consumes ammo. */
@@ -600,7 +599,6 @@ public class Item : MonoBehaviour{
         }
         break;
       case SPAWNER:
-        print("Spawner giving data");
         dat.strings.Add(spawnee);
         dat.ints.Add(spawnChance);
         break;
@@ -663,7 +661,6 @@ public class Item : MonoBehaviour{
         else{ contents = new List<Data>(); }
         break;
       case SPAWNER:
-        print("Spawner Loaded");
         spawnChance = dat.ints[i];
         spawnee = dat.strings[s];
         Spawn();

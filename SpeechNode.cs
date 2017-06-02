@@ -1,58 +1,80 @@
 /*
-    This object acts as a record for the information needed to render one 
-    speech menu.
+  A container for a list of options that represents the contents of 
+  one screen of dialogue. 
 */
 
 
+using System.Collections.Generic;
+using UnityEngine;
+
+[System.Serializable]
 public class SpeechNode{
-  public const int NONE          = 0; // Do nothing.
-  public const int SHOW_NODE     = 1; // Show a node's option.
-  public const int HIDE_NODE     = 2; // Hide a node's option.
-  public const int CHANGE_CHILD  = 3; // Change the destination of a node's option.
-  public const int CHANGE_ACTION = 4; 
-
-  public int id;                 // The node's index in the tree.
-  public string prompt;          // Text prompting a user's response.
-  public string[] options;       // The four options available
-  public bool[] hidden;          // Whether option is hidden.
-  public int[] children;         // Speech node to go to.
-  public int[] actions;          // The action to perform upon selecting an option.
-  public int[] targetNodes;      // Speech node to be edited.
-  public int[] targetOptions;   // Target Node's option to be edited
-  public int[] actionIntArgs;    // Int argument used for the action
   
-  public SpeechNode(
-    int _id,
-    string _prompt = "",
-    bool[] _hidden = null,
-    string[] _options = null,
-    int[] _children = null,
-    int[] _actions = null,
-    int[] _targetNodes = null,
-    int[] _targetOptions = null,
-    int[] _actionIntArgs = null
-  ){
-    id = _id;
-    prompt = _prompt;
-    hidden = _hidden ?? new bool[]{false, false, false, false};
-    options  = _options ?? new string[] {"", "", "", ""};
-    children = _children ?? new int[] {-1, -1, -1, -1};
-    actions = _actions ?? new int[] {NONE, NONE, NONE, NONE};
-    targetNodes = _targetNodes ?? new int[] {-1, -1, -1, -1};
-    targetOptions = _targetOptions ?? new int[] {-1, -1, -1, -1};
-    actionIntArgs = _actionIntArgs ?? new int[] {-1, -1, -1, -1};
+  private int id;
+  private string prompt;
+  private List<Option> options;
+  
+  public SpeechNode(int id, string prompt, List<Option> options){
+    this.id = id;
+    this.prompt = prompt;
+    this.options = options;
   }
   
-  public void SetVisible(int option, bool val){
-    hidden[option] = val;
+  /* Returns true if the option is hidden, or if the option doesn't exist. */
+  public bool Hidden(int option){
+    if(!ValidOption(option)){ return true; }
+    return options[option].hidden;
   }
   
-  public void ChangeChild(int option, int child){
-    children[option] = child;
+  /* Access method */
+  public string Prompt(){
+    return prompt;
   }
   
-  public void ChangeAction(int option, int action){
-    actions[option] = action;
+  /* Returns the option text, if it exists, or a blank string. */
+  public string OptionText(int option){
+    if(!ValidOption(option)){ return ""; }
+    if(!options[option].hidden){ return options[option].text; }
+    return "";
   }
-
+  
+  /* Returns the actions of an option, or an empty list. */
+  public List<string> GetActions(int option){
+    if(!ValidOption(option)){ return new List<string>(); }
+    return options[option].actions;
+  }
+  
+  /* Returns the arguments, if they exists. Otherwise returns null*/
+  public int[] ActionArgs(int option, int action){
+    if(!ValidOption(option)){ return null; }
+    List<int[]> args = options[option].args;
+    if(args == null || action < 0 || action >= args.Count){ return null; }
+    return args[action];
+  }
+  
+  /* Sets a particular option's hidden status. */
+  public void SetHidden(int option, bool val){
+    if(!ValidOption(option)){ return; }
+    options[option].hidden = val;
+  }
+  
+  /* Changes the specified option's destination. */
+  public void ChangeChild(int option, int val){
+    if(!ValidOption(option)){ return; }
+    options[option].child = val;
+  }
+  
+  /* Returns the relevant child of an option, or this node's id.*/
+  public int GetChild(int option){
+    if(!ValidOption(option)){ return id; }
+    return options[option].child;
+  }
+  
+  /* Returns true if specified option exists. */
+  bool ValidOption(int option){
+    if(option < 0 || option >= options.Count){ return false; }
+    if(options[option] == null){ return false; }
+    return true;
+  }
+  
 }
