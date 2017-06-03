@@ -53,6 +53,7 @@ public class HoloCell{
   }
   
   public void CreateItem(Data dat){
+    if(dat == null){ return; }
     Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
     sPos += position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
@@ -97,6 +98,7 @@ public class HoloCell{
     their last known position. Otherwise it is assumed players are entering the 
     cell via a spawnpoint.  */
   public void CreateNPC(Data dat, bool ignoreDoor = false, bool player = false){
+    if(dat == null){ return; }
     if(!ignoreDoor && player){
       dat.x = spawnPos.x;
       dat.y = spawnPos.y;

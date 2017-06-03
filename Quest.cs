@@ -34,6 +34,18 @@ public abstract class Quest{
     return null;
   }
   
+  /* Returns a quest based on an integer value for the quest. */
+  public static Quest Factory(int quest){
+    switch(quest){
+      case 0:
+        return Factory("kill the enemies!");
+        break;
+      default:
+        return null;
+        break;
+    }
+  }
+  
   public static Quest Factory(Data dat){
     Quest q = Quest.Factory(dat.displayName);
     q.LoadData(dat);

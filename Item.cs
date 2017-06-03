@@ -42,6 +42,7 @@ public class Item : MonoBehaviour{
   public const int WARP      = 5; // Warps player to new area.
   public const int CONTAINER = 6; // Access contents, but not pick up.
   public const int PROJECTILE= 7; // Flies forward when used.
+  public const int SPAWNER   = 8; // Spawns an enemy after being loaded.
   
   // Ranged weapon types
   const int RIFLE  = 0; // Two-handed firearm.
@@ -118,6 +119,11 @@ public class Item : MonoBehaviour{
   // Container variables
   public List<Data> contents;
   
+  // Spawner variables
+  public string spawnee;  // Prefab that should be spawned.
+  public int spawnChance; // Out of 100
+  
+  
   public void Start(){
     switch(itemType){
       case MELEE:
@@ -132,8 +138,6 @@ public class Item : MonoBehaviour{
         break;
       case WARP:
         warped = false;
-        break;
-      default:
         break;
     }
   }
@@ -490,6 +494,19 @@ public class Item : MonoBehaviour{
     }
   }
   
+  /* Spawns whatever it will spawn and then deletes itself.  */
+  void Spawn(){
+    System.Random r = new System.Random();
+    int roll = r.Next(101);
+    if(roll < spawnChance){
+      Vector3 sPos = transform.position;
+      Quaternion pRot = Quaternion.identity;
+      GameObject pref = (GameObject)Resources.Load(spawnee, typeof(GameObject));
+      if(pref != null){ GameObject.Instantiate(pref, sPos, pRot); }
+    }
+    Destroy(gameObject);
+  }
+  
   /* Returns true if this weapon consumes ammo. */
   public bool ConsumesAmmo(){
     switch(itemType){
@@ -581,6 +598,10 @@ public class Item : MonoBehaviour{
           dat.inventory.inv.Add(contents[j]);
         }
         break;
+      case SPAWNER:
+        dat.strings.Add(spawnee);
+        dat.ints.Add(spawnChance);
+        break;
       default:
         break;
     }
@@ -589,6 +610,7 @@ public class Item : MonoBehaviour{
   
   /* Load the item's data. */
   public void LoadData(Data dat){
+    if(dat == null){ return; }
     int i, s, f, b;
     i = s = f = b = 0;
 
@@ -637,6 +659,11 @@ public class Item : MonoBehaviour{
       case CONTAINER:
         if(dat.inventory != null){ contents = new List<Data>(dat.inventory.inv); }
         else{ contents = new List<Data>(); }
+        break;
+      case SPAWNER:
+        spawnChance = dat.ints[i];
+        spawnee = dat.strings[s];
+        Spawn();
         break;
       default:
         break;
