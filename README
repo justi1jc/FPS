@@ -9,6 +9,8 @@ ____________  _____  ______
 ********************************************************************************
 
 This is boiler-plate code for an open-world first-person shooter game.
+These scripts work with Unity3D editor 5.6.1f1. Ubuntu link below.
+https://forum.unity3d.com/threads/unity-on-linux-release-notes-and-known-issues.350256/
 
 Vision: Provide first-person shooter roleplaying gameplay similar to the recent
 installments of The Elder Scrolls and Fallout series, albeit with the addition
@@ -65,15 +67,3 @@ Save&Load(GameData, interior cells, Actor data)
 World(interior cells, exterior cells, random generation)
 Quest(Quest interface, hello world quest)
 
-********************************************************************************
-Itch prep
-********************************************************************************
-
-  Programing tasks
-Create spawner item
-Allow dialogue to start quests, issue rewards for completed quests
-
-  Non-programming tasks
-Starting building with passive NPC
-passive NPC dialogue
-building full of enemies
