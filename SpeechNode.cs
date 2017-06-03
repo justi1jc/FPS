@@ -12,7 +12,7 @@ public class SpeechNode{
   
   private int id;
   private string prompt;
-  private List<Option> options;
+  public List<Option> options;
   
   public SpeechNode(int id, string prompt, List<Option> options){
     this.id = id;

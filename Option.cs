@@ -13,4 +13,8 @@ public class Option{
   public bool hidden; // Whether option is visible or not.
   public List<string> actions; // the actions for this option
   public List<int[]> args; // These are the int args for given actions
+  public Option(){
+    actions = new List<string>();
+    args = new List<int[]>();
+  }
 }
