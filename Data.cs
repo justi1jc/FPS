@@ -32,13 +32,15 @@ public class Data
    public List<bool> bools;
    public int baseValue;
    public Inventory inventory;
-   public Cell lastPos = null; 
+   public Cell lastPos = null;
+   public SpeechTree speechTree; 
    public Data(){
       ints = new List<int>();
       strings = new List<string>();
       floats = new List<float>();
       inventory = new Inventory();
       bools = new List<bool>();
+      speechTree = null;
    }
    
 
