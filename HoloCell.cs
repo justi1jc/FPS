@@ -57,7 +57,7 @@ public class HoloCell{
     Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
     sPos += position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
-    GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
+    GameObject pref = (GameObject)Resources.Load("Prefabs/" + dat.prefabName, typeof(GameObject));
     GameObject go = (GameObject)GameObject.Instantiate(pref, sPos, rot );
     Item item = go.GetComponent<Item>();
     if(item){ 
@@ -75,7 +75,7 @@ public class HoloCell{
   
   /* Creates a new player from prefab and places them at spawnpoint. */
   public void AddPlayer(string prefabName){
-    GameObject pref = (GameObject)Resources.Load(prefabName, typeof(GameObject));
+    GameObject pref = (GameObject)Resources.Load("Prefabs/" + prefabName, typeof(GameObject));
     if(!pref){ MonoBehaviour.print(prefabName + " does not exist."); return; }
     Vector3 sPos = position;
     Quaternion rot = Quaternion.identity;
@@ -110,7 +110,7 @@ public class HoloCell{
     Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
     sPos += position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
-    GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
+    GameObject pref = (GameObject)Resources.Load("Prefabs/" + dat.prefabName, typeof(GameObject));
     if(!pref){
       MonoBehaviour.print(dat.prefabName + "," + dat.displayName + " null");
       return;
@@ -228,7 +228,7 @@ public class HoloCell{
   public GameObject Spawn(string prefab, Vector3 pos){
     GameObject go = null;
     GameObject pref = (GameObject)Resources.Load(
-      prefab,
+      "Prefabs/" + prefab,
       typeof(GameObject)
     );
     if(!pref){ MonoBehaviour.print("Prefab null:" + prefab); return go; }

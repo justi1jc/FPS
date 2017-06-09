@@ -8,7 +8,7 @@
       Body| // Parent to others. Rigidbody, collider, Actor
           |
           |spine| // Pivot point for torso
-          |     | Head| // Contains Camera
+          |     | Head| // Contains Camera, Menu
           |     |     |RHand| // Mount points for held items. 
           |     |     |     |primaryItem
           |     |     |     | // Need trigger box and Item for abilities
@@ -125,8 +125,8 @@ public class Actor : MonoBehaviour{
   
   // abilities
   public bool[] abilities = {true, false, false, false, false};
-  public int rightAbility = 1;   // Ability in right hand.
-  public int leftAbility  = 1;   // Ability in left hand.
+  public int rightAbility = 0;   // Ability in right hand.
+  public int leftAbility  = 0;   // Ability in left hand.
   public Item raItem = null;     // Ability Item in right hand.
   public Item laItem = null;     // Ability item in left hand.
   public bool raReady = true;    // Is right hand busy?
@@ -231,9 +231,9 @@ public class Actor : MonoBehaviour{
   public void SetMenuOpen(bool val){
     menuOpen = val;
     if(playerNumber == 1){
-      Cursor.visible = !val;
       if(!val){ Cursor.lockState = CursorLockMode.Locked; }
       else{ Cursor.lockState = CursorLockMode.None; }
+      Cursor.visible = !val;
     }
   }
   
@@ -1018,7 +1018,7 @@ public class Actor : MonoBehaviour{
     }
     StorePrimary();
     Data dat = inventory[itemIndex];
-    GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
+    GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
     if(!prefab){ print("Prefab null:" + dat.displayName); return;}
     GameObject itemGO = (GameObject)GameObject.Instantiate(
       prefab,
@@ -1042,7 +1042,7 @@ public class Actor : MonoBehaviour{
     if(itemIndex == secondaryIndex){ StoreSecondary(); return;}
     if(secondaryIndex != -1){ StoreSecondary(); }
     Data dat = inventory[itemIndex];
-    GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
+    GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
     if(!prefab){ print("Prefab null:" + dat.displayName); return;}
     GameObject itemGO = (GameObject)GameObject.Instantiate(
       prefab,
@@ -1155,7 +1155,7 @@ public class Actor : MonoBehaviour{
     if(itemIndex == primaryIndex){ StorePrimary(); }
     if(itemIndex == secondaryIndex){ StoreSecondary(); }
     Data dat = inventory[itemIndex];
-    GameObject prefab = Resources.Load(dat.prefabName) as GameObject;
+    GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
     GameObject itemGO = (GameObject)GameObject.Instantiate(
       prefab,
       hand.transform.position,
@@ -1293,7 +1293,7 @@ public class Actor : MonoBehaviour{
 
   /* Rolls to regenerate different conditions */
   public void RegenCondition(){
-    if(Random.Range(0, 100) <= health && health != 0){
+    if(health != 0 && Random.Range(0, 100) <= health){
       health++;
       if(health > 100){ health = 100; }
     }

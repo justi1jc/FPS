@@ -148,7 +148,7 @@ public class Session : MonoBehaviour {
   */
   public Cell GetStartingCell(){
     string INIT_BUILDING = "House";
-    string INIT_ROOM = "ActI";
+    string INIT_ROOM = "Entrance";
     for(int i = 0; i < map.interiors.Count; i++){
       bool bmatch = map.interiors[i].building == INIT_BUILDING;
       bool rmatch = map.interiors[i].displayName == INIT_ROOM;
@@ -221,7 +221,7 @@ public class Session : MonoBehaviour {
   */
   public void CreateMenu(){
     string MENU_BUILDING = "House";
-    string MENU_INTERIOR = "ActI";
+    string MENU_INTERIOR = "Entrance";
     mainMenu = true;
     GameObject go = new GameObject();
     go.transform.position = transform.position + new Vector3(10f, 50f, 0f);
