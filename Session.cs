@@ -279,6 +279,15 @@ public class Session : MonoBehaviour {
     return ret;
   }
   
+  /* Returns the deck this position is in, or null */
+  public HoloCell GetCell(Vector3 pos){
+    for(int i = 0; i < decks.Count; i++){
+      HoloCell hc = decks[i].ContainingCell(pos);
+      if(hc != null){ return hc; }
+    }
+    return null;
+  } 
+  
   /* Gathers player data from all decks. */
   public List<Data> GetPlayerData(){
     List<Data> ret = new List<Data>();
@@ -318,7 +327,7 @@ public class Session : MonoBehaviour {
       print("Loading exterior");
       hd.LoadExterior(-1, c.x, c.y, false);
     }
-    hd.AddPlayer(player, true);
+    hd.AddPlayer(player, false);
     playerData.Remove(player);
     StopAllCoroutines();
     StartCoroutine(QuestRoutine());

@@ -137,7 +137,7 @@ public class HoloDeck : MonoBehaviour{
   }
   
   /* Returns the cell that contains this pos, or null. */
-  HoloCell ContainingCell(Vector3 pos){
+  public HoloCell ContainingCell(Vector3 pos){
     float DISTANCE = 50;
     for(int i = 0; i < cells.Count; i++){
       HoloCell hc = cells[i];
