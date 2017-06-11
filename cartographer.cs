@@ -54,6 +54,7 @@ public class Cartographer{
   /* Places a building at most one time in the world,
      given the index of the building in the master file. */
   public void PlaceBuilding(int b){
+    
     List<int[]> footprint = GetFootprint(b);
     List<int[]> candidates = GetPlacementCandidates(footprint);
     int choice = rand.Next(0, candidates.Count);

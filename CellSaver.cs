@@ -47,18 +47,7 @@ public class CellSaver : MonoBehaviour {
   // Exterior
   public bool unique;   // True if only one instance of this exterior should exist.
   public bool entrance; // True if this exterior has a door in it.
-  
-  void Update(){
-    if(Input.GetKeyDown(KeyCode.Q)){ PackCell(); }
-    if(Input.GetKeyDown(KeyCode.W)){ ClearCell(); }
-    if(Input.GetKeyDown(KeyCode.E)){ UnpackCell(); }
-    
-    if(Input.GetKeyDown(KeyCode.Z)){ LoadMaster(); }
-    if(Input.GetKeyDown(KeyCode.X)){ UpdateMaster(); }
-    if(Input.GetKeyDown(KeyCode.C)){ SaveMaster(); }
-    if(Input.GetKeyDown(KeyCode.V)){ UnpackMasterInterior(building, displayName); }
-    
-  }
+
   public void Start(){
     if(saverMode){
       PackCell();
@@ -116,7 +105,7 @@ public class CellSaver : MonoBehaviour {
     Vector3 spawnPos = new Vector3(dat.x, dat.y, dat.z);
     spawnPos += transform.position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
-    GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
+    GameObject pref = (GameObject)Resources.Load("Prefabs/" + dat.prefabName, typeof(GameObject));
     GameObject go = (GameObject)GameObject.Instantiate(
       pref,
       spawnPos,
@@ -129,7 +118,7 @@ public class CellSaver : MonoBehaviour {
   void CreateNPC(Data dat){
     Vector3 spawnPos = new Vector3(dat.x, dat.y, dat.z);
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
-    GameObject pref = (GameObject)Resources.Load(dat.prefabName, typeof(GameObject));
+    GameObject pref = (GameObject)Resources.Load("Prefabs/" + dat.prefabName, typeof(GameObject));
     GameObject go = (GameObject)GameObject.Instantiate(
       pref,
       spawnPos,

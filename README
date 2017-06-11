@@ -9,6 +9,8 @@ ____________  _____  ______
 ********************************************************************************
 
 This is boiler-plate code for an open-world first-person shooter game.
+These scripts work with Unity3D editor 5.6.1f1. Ubuntu link below.
+https://forum.unity3d.com/threads/unity-on-linux-release-notes-and-known-issues.350256/
 
 Vision: Provide first-person shooter roleplaying gameplay similar to the recent
 installments of The Elder Scrolls and Fallout series, albeit with the addition
@@ -21,17 +23,20 @@ After this stage, my aim will be to provide compelling assets to immerse the
 player in a rich game world.
 
 Tentative roadmap:
-itch.io release
-  -V0.5 Content and debugging for demo.
 
 Refactor
   -Use polymorphism for Items.
   -Use polymorphism for menus.
-  
+  -Use polymorphism for Actor
+  -Inventory component to contain inventory logic.
+  -Slot component to contain ability/item use logic.
+  -Stats component to contain RPG stats logic
+
 React to feedback:
   -Determine format for Models/Animation
   -Determine Priority of existing V1.0 Goals
   -Determine new V1.0 Goals.
+
 ********************************************************************************
 ______ _       _     _              _   _____             _     
 |  ___(_)     (_)   | |            | | |  __ \           | |    
@@ -65,15 +70,3 @@ Save&Load(GameData, interior cells, Actor data)
 World(interior cells, exterior cells, random generation)
 Quest(Quest interface, hello world quest)
 
-********************************************************************************
-Itch prep
-********************************************************************************
-
-  Programing tasks
-Create spawner item
-Allow dialogue to start quests, issue rewards for completed quests
-
-  Non-programming tasks
-Starting building with passive NPC
-passive NPC dialogue
-building full of enemies

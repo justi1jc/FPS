@@ -30,6 +30,7 @@ public class Item : MonoBehaviour{
 *   For Melee weapon: damage, cooldown, damageStart, damageEnd, chargeMax, knockback
 *   For ranged weapon: damage, maxAmmo, projectile, rangeType, cooldown
 *     reloadDelay, muzzleVelocity, impactForce
+*   For Spawner: spawnee, spawnChance
 */
 
 
@@ -433,7 +434,7 @@ public class Item : MonoBehaviour{
     Vector3 spawnPos = transform.position + transform.forward;
     Quaternion projRot = Quaternion.LookRotation(relPos);
     GameObject pref = (GameObject)Resources.Load(
-      projectile,
+      "Prefabs/"+projectile,
       typeof(GameObject));
     GameObject proj = (GameObject)GameObject.Instantiate(
       pref,
@@ -481,7 +482,7 @@ public class Item : MonoBehaviour{
      It can be reasoned the 
    */
   public void Warp(){
-    int dest = OppositeDoor(doorId);
+    int dest = doorId;
     if(interior){
       int dtx = dx + deck.focalCell.cell.x;
       int dty = dy + deck.focalCell.cell.y;
@@ -501,7 +502,7 @@ public class Item : MonoBehaviour{
     if(roll < spawnChance){
       Vector3 sPos = transform.position;
       Quaternion pRot = Quaternion.identity;
-      GameObject pref = (GameObject)Resources.Load(spawnee, typeof(GameObject));
+      GameObject pref = (GameObject)Resources.Load("Prefabs/" + spawnee, typeof(GameObject));
       if(pref != null){ GameObject.Instantiate(pref, sPos, pRot); }
     }
     Destroy(gameObject);
@@ -669,25 +670,4 @@ public class Item : MonoBehaviour{
         break;
     }
   }
-  
-  /* Returns a given door's neighbor in the adjacent cell. */
-  int OppositeDoor(int origin){
-    switch(origin){
-      case 0: //NORTH
-        return 1;
-        break;
-      case 1: //SOUTH
-        return 0;
-        break;
-      case 2: //EAST
-        return 3;
-        break;
-      case 3: //WEST
-        return 2;
-        break;
-    }
-    if(origin > 0){ return origin; }
-    return -1;
-  }
-  
 }
