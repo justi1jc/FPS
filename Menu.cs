@@ -820,13 +820,14 @@ public class Menu : MonoBehaviour{
       for(int i = 0; i < files.Count; i++){
         y = i * ih / 2;
         str = files[i].sessionName;
-        if(Button(str, 0, y, iw, ih/2)){ py = i; }
+        if(Button(str, 0, y, iw, ih/2, 0, i)){ py = i; }
       }
       
       GUI.EndScrollView();
     }
     int dest = actor ? OPTIONS : MAIN;
-    if(Button("Back", x, 3*ih, iw, ih)){ Change(dest); }
+    int back = files != null ? files.Count : 0;
+    if(Button("Back", x, 3*ih, iw, ih, 0, back)){ Change(dest); }
   
     if(py > -1 && py < files.Count){
       str = files[py].sessionName;
@@ -844,14 +845,14 @@ public class Menu : MonoBehaviour{
       }
       str = "Load";
       y = ih + ih/2;
-      if(Button(str, x, y, iw, ih/2)){ 
+      if(Button(str, x, y, iw, ih/2, 1, 0)){ 
         Session.session.LoadGame(files[py].sessionName); 
       }
       str = "Delete";
       y = 2*ih;
-      if(Button(str, x, y, iw, ih/2)){ 
+      if(Button(str, x, y, iw, ih/2, 1, 1)){ 
         Session.session.DeleteFile(files[py].sessionName);
-        files = Session.session.LoadFiles();
+        files.Remove(files[py]);
       }
     }
   }
@@ -909,7 +910,11 @@ public class Menu : MonoBehaviour{
     if(sx != 0){ sy = 0; }
     SecondaryBounds();
   }
-  void OptionsFocus(){}
+  void OptionsFocus(){
+    sx = 0;
+    if(sy < 0){ sy = 0; }
+    if(sy > 5){ sy = 5; }
+  }
   
   void SpeechFocus(){
     syMax = 3;
@@ -953,6 +958,16 @@ public class Menu : MonoBehaviour{
   }
   
   void LoadFocus(){
+    if(sx < 0 || py < 0){ sx = 0; }
+    if(sx > 1){ sx = 1; }
+    if(sy < 0){ sy = 0; }
+    if(sx == 0){  
+      syMax = files != null ? files.Count : 0;
+      if(sy > syMax){ sy = syMax; }
+    }
+    if(sx == 1){
+      if(sy > 1){ sy = 1; }
+    }
   }
  
   /* Receives button press from Actor. */
@@ -1042,6 +1057,30 @@ public class Menu : MonoBehaviour{
   
   void OptionsInput(int button){
     DefaultExit(button);
+    if(button == A){
+      switch(sy){
+        case 0:
+          Change(HUD);
+          break;
+        case 1:
+          Session.session.LoadFiles();
+          Change(LOAD);
+          break;
+        case 2:
+          print("Settings");
+          break;
+        case 3:
+          Session.session.SaveGame(Session.session.sessionName);
+          break;
+        case 4:
+          Session.session.SaveGame(Session.session.sessionName);
+          Application.Quit();
+          break;
+        case 5:
+          Application.Quit();
+          break;
+      }
+    }
   }
   
   void SpeechInput(int button){
@@ -1129,6 +1168,25 @@ public class Menu : MonoBehaviour{
   }
   
   void LoadInput(int button){
-    if(button == B || button == Y){ Change(OPTIONS); }
+    int dest = actor ? OPTIONS : MAIN;
+    if(button == B || button == Y){ Change(dest); }
+    if(sx == 0 && button == A){
+      if(sy < 0 || files == null){ return; }
+      if(sy < files.Count){ py = sy; }
+      if(sy == files.Count){
+        Change(dest);
+      }
+    }
+    if(sx == 1 && button == A){
+      switch(sy){
+        case 0:
+          Session.session.LoadGame(files[py].sessionName); 
+          break;
+        case 1:
+          Session.session.DeleteFile(files[py].sessionName);
+          files.Remove(files[py]);
+          break;
+      }
+    }
   }
 }

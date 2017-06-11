@@ -121,7 +121,7 @@ public class HoloDeck : MonoBehaviour{
   /* Listens for the player leaving the active cell. In the event that this
      happens, the holodeck shifts its focus to the player's current position. */
   public void ManageShifting(){
-    
+    if(players == null){ return; }
     if(players[0] != null && !focalCell.Contains(players[0].transform.position)){
       ShiftExterior();
     }
