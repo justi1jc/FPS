@@ -70,3 +70,45 @@ Save&Load(GameData, interior cells, Actor data)
 World(interior cells, exterior cells, random generation)
 Quest(Quest interface, hello world quest)
 
+
+********************************************************************************
+______      __           _               _____             _     
+| ___ \    / _|         | |             |  __ \           | |    
+| |_/ /___| |_ __ _  ___| |_ ___  _ __  | |  \/ ___   __ _| |___ 
+|    // _ \  _/ _` |/ __| __/ _ \| '__| | | __ / _ \ / _` | / __|
+| |\ \  __/ || (_| | (__| || (_) | |    | |_\ \ (_) | (_| | \__ \
+\_| \_\___|_| \__,_|\___|\__\___/|_|     \____/\___/ \__,_|_|___/
+
+********************************************************************************
+
+-Break item into multiple classes.
+Item
+Scenery
+Misc
+Food
+Melee
+Ranged
+Warp
+Container
+Projectile
+Spawner
+
+-Break menu into multiple classes
+Menu
+HUD
+Main
+Inventory
+Options
+Speech
+Trade
+Quest
+Ability
+Stats
+Loot
+Load
+
+-Break logic out into re-usable components
+ItemSlot
+Inventory
+StatHandler
+ConditionHandler
