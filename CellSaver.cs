@@ -161,7 +161,7 @@ public class CellSaver : MonoBehaviour {
   */
   public List<Data> GetItems(List<GameObject> obs,
     bool ignoreItems = false,
-    bool ignoreScenery = false
+    bool ignoreDecor = false
   ){
     List<Data> ret = new List<Data>();
     for(int i = 0; i < obs.Count; i++){
@@ -172,9 +172,9 @@ public class CellSaver : MonoBehaviour {
         dat.x = pos.x;
         dat.y = pos.y;
         dat.z = pos.z;
-        bool scenery = item.itemType == Item.SCENERY;
-        if(scenery && !ignoreScenery){ ret.Add(item.GetData()); }
-        if(!scenery && !ignoreItems){ ret.Add(item.GetData()); }
+        bool decor = item is Decor;
+        if(decor && !ignoreDecor){ ret.Add(item.GetData()); }
+        if(!decor && !ignoreItems){ ret.Add(item.GetData()); }
       }
     }
     print("Saved " + ret.Count + " items.");
