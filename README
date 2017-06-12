@@ -82,16 +82,15 @@ ______      __           _               _____             _
 ********************************************************************************
 
 -Break item into multiple classes.
-Item
-Scenery
-Misc
-Food
-Melee
-Ranged
-Warp
-Container
-Projectile
-Spawner
+*Item
+*Scenery
+*Food
+*Melee
+*Ranged
+*Warp
+*Container
+*Projectile
+*Spawner
 
 -Break menu into multiple classes
 Menu
