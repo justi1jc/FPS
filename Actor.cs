@@ -768,96 +768,159 @@ public class Actor : MonoBehaviour{
   
   /* Melee attack
      0 Charges punch.
-     1 executes punch.
+     4 executes punch.
   */
   void Punch(bool right, int use){
+    GameObject user = right ? hand : offHand;
     Item item = right ? raItem : laItem;
-    if(item.itemType != Item.MELEE){
-      item.cooldown = 0.5f;
-      item.damageStart = 0f;
-      item.damageEnd = 0.25f;
-      item.knockBack = strength * 50;
-      item.itemType = Item.MELEE;
-      item.chargeable = true;
-      item.executeOnCharge = true;
-      item.charge = 0;
-      item.chargeMax = 25;
-      item.damage = strength * (unarmed / 10 + 1);
+    if(!item is Melee){ 
+      Destroy(item);
+      InitPunch(user);
+      if(right){ 
+        raItem = user.GetComponent<Item>();
+        raItem.Use(use);
+      }
+      else{ 
+        laItem = user.GetComponent<Item>();
+        laItem.Use(use); 
+      }
     }
-    if(item.charge == item.chargeMax -1 || use == 4){
-      int dmg = (item.damage * item.charge) / item.chargeMax;
-      if(StaminaCheck(dmg)){ item.Use(use); }
-      else{ item.charge = 0; }
-      return;
+    else{
+      Melee m = (Melee)item;
+      if(m.charge == m.chargeMax -1 || use == 4){
+        int dmg = (m.damage * m.charge) / m.chargeMax;
+        if(StaminaCheck(dmg)){ m.Use(use); }
+        else{ m.charge = 0; }
+      }
     }
-    item.Use(use);
+  }
+  
+  /* Initializes unarmed ability on selected hand. */
+  void InitPunch(GameObject user){
+    Melee item = user.AddComponent<Melee>();
+    item.cooldown = 0.5f;
+    item.damageStart = 0f;
+    item.damageEnd = 0.25f;
+    item.knockBack = strength * 50;
+    item.chargeable = true;
+    item.executeOnCharge = true;
+    item.charge = 0;
+    item.chargeMax = 25;
+    item.damage = strength * (unarmed / 10 + 1);
   }
   
   /* Charges a fireball, then launches it. */
   void FireBall(bool right, int use){
+    GameObject user = right ? hand : offHand;
     Item item = right ? raItem : laItem;
-    if(item.itemType != Item.RANGED){
-      item.cooldown = 1.1f - (float)(willpower/10f);
-      item.itemType = Item.RANGED;
-      item.chargeable = true;
-      item.executeOnCharge = false;
-      item.projectile = "FireBall";
-      item.charge = 0;
-      item.chargeMax = 200 / willpower;
-      item.muzzleVelocity = 50;
-      item.impactForce = willpower * 50;
-      item.damage = intelligence * (magic / 10 + 1);
-      item.effectiveDamage = 0;
+    if(!item is Ranged){
+      Destroy(item);
+      InitFireBall(user);
+      if(right){ 
+        raItem = user.GetComponent<Item>();
+        raItem.Use(use);
+        ((Ranged)raItem).ammo = 1;
+      }
+      else{ 
+        laItem = user.GetComponent<Item>();
+        laItem.Use(use); 
+        ((Ranged)laItem).ammo = 1;
+      }
     }
     if(use == 4){
-      int dmg = (item.damage * item.charge) / item.chargeMax;
-      if(ManaCheck(dmg)){ item.ammo = 1; item.Use(use); }
-      else{ item.charge = 0; }
+      Ranged r = (Ranged)item;
+      int dmg = (r.damage * r.charge) / r.chargeMax;
+      if(ManaCheck(dmg)){ r.ammo = 1; r.Use(use); }
+      else{ r.charge = 0; }
+      r.ammo = 1;
       return;
     }
-    item.ammo = 1;
-    item.Use(use);
+  }
+  
+  /* Initializes fireball ability on selected hand */
+  void InitFireBall(GameObject user){
+    Ranged item = user.AddComponent<Ranged>();
+    item.cooldown = 1.1f - (float)(willpower/10f);
+    item.chargeable = true;
+    item.executeOnCharge = false;
+    item.projectile = "FireBall";
+    item.charge = 0;
+    item.chargeMax = 200 / willpower;
+    item.muzzleVelocity = 50;
+    item.impactForce = willpower * 50;
+    item.damage = intelligence * (magic / 10 + 1);
+    item.effectiveDamage = 0;
   }
   
   /* Instant health boost. */
   void HealSelf(bool right, int use){
+    GameObject user = right ? hand : offHand;
     if(use != 0){ return; }
     Item item = right ? raItem : laItem;
-    if(item.itemType != Item.FOOD){
-      item.itemType = Item.FOOD;
-      item.healing = intelligence * (magic / 10 + 1);
-      item.cooldown = 1f;
+    if(!item is Food){
+      Destroy(item);
+      InitHealSelf(user);
+      if(right){ 
+        raItem = user.GetComponent<Item>();
+        item = raItem;
+      }
+      else{ 
+        laItem = user.GetComponent<Item>();
+        item = laItem; 
+      }
     }
-    if(!ManaCheck(item.healing)){ return; }
+    Food f = (Food)item;
+    f.stack = 2;
+    if(!ManaCheck(f.healing)){ return; }
     Light l = item.gameObject.GetComponent<Light>();
     if(l){StartCoroutine(Glow(0.25f, Color.blue, l)); }
-    item.stack = 2;
-    item.Use(0);
+    f.Use(0);
+  }
+  
+  void InitHealSelf(GameObject user){
+    Food item  = user.AddComponent<Food>();
+    item.healing = intelligence * (magic / 10 + 1);
+    item.cooldown = 1f;
   }
   
   void HealOther(bool right, int use){
+    GameObject user = right ? hand : offHand;
     Item item = right ? raItem : laItem;
-    if(item.itemType != Item.RANGED){
-      item.cooldown = 1.1f - (float)(willpower/10f);
-      item.itemType = Item.RANGED;
-      item.chargeable = true;
-      item.executeOnCharge = false;
-      item.projectile = "HealBall";
-      item.charge = 0;
-      item.chargeMax = 200 / willpower;
-      item.muzzleVelocity = 50;
-      item.impactForce = willpower * 50;
-      item.damage = -(intelligence * (magic / 10 + 1));
-      item.effectiveDamage = 0;
+    if(!item is Ranged){
+      Destroy(item);
+      InitHealOther(user);
+      if(right){ 
+        raItem = user.GetComponent<Item>();
+        item = raItem;
+      }
+      else{
+        laItem = user.GetComponent<Item>();
+        item = laItem; 
+      }
     }
+    Ranged r = (Ranged)item;
     if(use == 4){
-      int hl = -1 * (item.damage * item.charge) / item.chargeMax;
-      if(ManaCheck(hl)){ item.ammo = 1; item.Use(use); }
-      else{ item.charge = 0; }
+      int hl = -1 * (r.damage * r.charge) / r.chargeMax;
+      if(ManaCheck(hl)){ r.ammo = 1; r.Use(use); }
+      else{ r.charge = 0; }
       return;
     }
-    item.ammo = 1;
-    item.Use(use);
+    r.ammo = 1;
+    r.Use(use);
+  }
+  
+  void InitHealOther(GameObject user){
+    Ranged item = user.AddComponent<Ranged>();
+    item.cooldown = 1.1f - (float)(willpower/10f);
+    item.chargeable = true;
+    item.executeOnCharge = false;
+    item.projectile = "HealBall";
+    item.charge = 0;
+    item.chargeMax = 200 / willpower;
+    item.muzzleVelocity = 50;
+    item.impactForce = willpower * 50;
+    item.damage = -(intelligence * (magic / 10 + 1));
+    item.effectiveDamage = 0;
   }
   
   IEnumerator Glow(float time, Color color, Light light){

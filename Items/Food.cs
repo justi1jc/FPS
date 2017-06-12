@@ -1,12 +1,12 @@
 /*
-    Food loads 
+    Food is an item that imparts health onto its user.
 */
 
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Scenery : Item{
+public class Food : Item{
   public int healing; // Health gained by consumption.
   bool ready = true;
   public float cooldown; // Delay between uses
