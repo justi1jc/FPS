@@ -12,11 +12,16 @@ public class Melee : Weapon{
   public bool damageActive; // True if damage can be given
   public float knockBack;   // Magnitude of force exerted on target
   
+  public void Start(){
+    ready = true;
+  }
+  
   public override void Use(int action){
-    if(action == 0 && ready){ 
+    if((action == 0 || action == 3)){ 
       chargeable = true;
       ChargeSwing();
     }
+    if(action == 4 && ready){ StartCoroutine(Swing()); }
   }
   
   /* Charges up a swing. */
@@ -26,7 +31,7 @@ public class Melee : Weapon{
       effectiveDamage = (damage * charge) / chargeMax;
     }
     if(chargeable && executeOnCharge && (charge >= chargeMax) && ready){
-      charge = 0;
+      charge = chargeMax/3;
       chargeable = false;
       StartCoroutine(Swing());
     }

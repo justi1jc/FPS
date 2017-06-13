@@ -288,12 +288,12 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyUp(KeyCode.LeftControl)){ToggleCrouch(); }
     
     //Mouse controls
-    if(Input.GetMouseButtonDown(0)){ Use(1); }
-    if(Input.GetMouseButtonDown(1)){ Use(0); }
-    if(Input.GetMouseButton(0)){ Use(4); } // Charge Left
-    if(Input.GetMouseButton(1)){ Use(3); } // Charge right
-    if(Input.GetMouseButtonUp(0)){ Use(6); } // Release left
-    if(Input.GetMouseButtonUp(1)){ Use(5); } // Release right
+    if(Input.GetMouseButtonDown(0)){ Use(0); }
+    if(Input.GetMouseButtonDown(1)){ Use(1); }
+    if(Input.GetMouseButton(0)){ Use(3); } // Charge Left
+    if(Input.GetMouseButton(1)){ Use(4); } // Charge right
+    if(Input.GetMouseButtonUp(0)){ Use(5); } // Release left
+    if(Input.GetMouseButtonUp(1)){ Use(6); } // Release right
     float rotx = -Input.GetAxis("Mouse Y") * sensitivityX;
     float roty = Input.GetAxis("Mouse X") * sensitivityY;
     Turn(new Vector3(rotx, roty, 0f));
@@ -771,9 +771,9 @@ public class Actor : MonoBehaviour{
      4 executes punch.
   */
   void Punch(bool right, int use){
-    GameObject user = right ? hand : offHand;
+    GameObject user = right ? offHand : hand;
     Item item = right ? raItem : laItem;
-    if(!item is Melee){ 
+    if(!(item is Melee)){
       Destroy(item);
       InitPunch(user);
       if(right){ 
@@ -786,13 +786,14 @@ public class Actor : MonoBehaviour{
       }
     }
     else{
-      Melee m = (Melee)item;
-      if(m.charge == m.chargeMax -1 || use == 4){
+      Melee m = item as Melee;
+      if(m.charge >= m.chargeMax -1 || use == 4){
         int dmg = (m.damage * m.charge) / m.chargeMax;
         if(StaminaCheck(dmg)){ m.Use(use); }
         else{ m.charge = 0; }
       }
     }
+    item.Use(use);
   }
   
   /* Initializes unarmed ability on selected hand. */
@@ -811,30 +812,32 @@ public class Actor : MonoBehaviour{
   
   /* Charges a fireball, then launches it. */
   void FireBall(bool right, int use){
-    GameObject user = right ? hand : offHand;
+    GameObject user = right ? offHand : hand;
     Item item = right ? raItem : laItem;
-    if(!item is Ranged){
+    if(!(item is Ranged)){
       Destroy(item);
       InitFireBall(user);
+      item = user.GetComponent<Item>();
       if(right){ 
-        raItem = user.GetComponent<Item>();
+        raItem = item;
         raItem.Use(use);
-        ((Ranged)raItem).ammo = 1;
       }
       else{ 
-        laItem = user.GetComponent<Item>();
+        laItem = item;
         laItem.Use(use); 
-        ((Ranged)laItem).ammo = 1;
       }
+      Ranged r = user.GetComponent<Ranged>();
+      r.ammo = 1;
     }
     if(use == 4){
       Ranged r = (Ranged)item;
       int dmg = (r.damage * r.charge) / r.chargeMax;
       if(ManaCheck(dmg)){ r.ammo = 1; r.Use(use); }
-      else{ r.charge = 0; }
+      else{ r.charge = 10; }
       r.ammo = 1;
       return;
     }
+    item.Use(use);
   }
   
   /* Initializes fireball ability on selected hand */
@@ -844,8 +847,8 @@ public class Actor : MonoBehaviour{
     item.chargeable = true;
     item.executeOnCharge = false;
     item.projectile = "FireBall";
-    item.charge = 0;
-    item.chargeMax = 200 / willpower;
+    item.charge = 10;
+    item.chargeMax = 25;
     item.muzzleVelocity = 50;
     item.impactForce = willpower * 50;
     item.damage = intelligence * (magic / 10 + 1);
@@ -854,10 +857,10 @@ public class Actor : MonoBehaviour{
   
   /* Instant health boost. */
   void HealSelf(bool right, int use){
-    GameObject user = right ? hand : offHand;
+    GameObject user = right ? offHand : hand;
     if(use != 0){ return; }
     Item item = right ? raItem : laItem;
-    if(!item is Food){
+    if(!(item is Food)){
       Destroy(item);
       InitHealSelf(user);
       if(right){ 
@@ -884,9 +887,9 @@ public class Actor : MonoBehaviour{
   }
   
   void HealOther(bool right, int use){
-    GameObject user = right ? hand : offHand;
+    GameObject user = right ? offHand : hand;
     Item item = right ? raItem : laItem;
-    if(!item is Ranged){
+    if(!(item is Ranged)){
       Destroy(item);
       InitHealOther(user);
       if(right){ 
@@ -1313,17 +1316,17 @@ public class Actor : MonoBehaviour{
     headRoty = dat.yr;
     bodyRoty = dat.yr;
     int i = 0;
-    leftAbility = dat.ints[i]; i++;
-    rightAbility = dat.ints[i]; i++;
+    int lAbility = dat.ints[i]; i++;
+    int rAbility = dat.ints[i]; i++;
     int pIndex = dat.ints[i]; i++;
     int sIndex = dat.ints[i]; i++;
     id = dat.ints[i]; i++;
     if(dat.inventory != null){ inventory.AddRange(dat.inventory.inv); }
     else{ print(displayName + "inventory data null");}
     if(pIndex > -1){ Equip(pIndex); }
-    else{ EquipAbility(rightAbility); }
+    else{ EquipAbility(rAbility); }
     if(sIndex > -1){ EquipSecondary(sIndex); }
-    else{ EquipAbilitySecondary(leftAbility); }
+    else{ EquipAbilitySecondary(lAbility); }
     lastPos = dat.lastPos;
     speechTree = dat.speechTree;
   }

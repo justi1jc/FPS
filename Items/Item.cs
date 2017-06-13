@@ -21,7 +21,7 @@ public class Item : MonoBehaviour{
   public AudioClip[] sounds;
   public int weight;
   public Actor holder;
-  public bool ready;
+  public bool ready = true;
   
   // Empty base methods
   public virtual void Use(int action){}

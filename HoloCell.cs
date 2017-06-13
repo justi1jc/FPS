@@ -20,6 +20,7 @@ public class HoloCell{
     this.position = position;
     this.spawnPos = position;
     this.spawnRot = new Vector3();
+    this.spawnDoor = -1;
     this.deck = deck;
     this.cell = null;
     this.walls = new GameObject[4];
@@ -71,7 +72,7 @@ public class HoloCell{
     if(item){ 
       item.LoadData(dat);
       if(item is WarpDoor){
-        WarpDoor w = (WarpDoor)item;
+        WarpDoor w = item as WarpDoor;
         w.deck = deck;
         if(spawnDoor == -1 || w.doorId == spawnDoor){
           spawnPos = w.destPos;

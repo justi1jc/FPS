@@ -21,6 +21,10 @@ public class Ranged : Weapon{
   public float muzzleVelocity;
   public float impactForce;
   
+  public void Start(){
+    ready = true;
+  }
+  
   public override void Use(int action){
     if(action == 0 || action == 3){
       if(chargeable){ ChargeFire(); }
@@ -31,7 +35,10 @@ public class Ranged : Weapon{
       if(ready){ StartCoroutine(Reload()); }
     }
     else if(action == 4){
-      if(chargeable && ready){ Fire(); }
+      if(chargeable && ready){
+        effectiveDamage = (damage * charge) / chargeMax;
+        Fire();
+      }
     }
   }
   
@@ -43,9 +50,9 @@ public class Ranged : Weapon{
   void ChargeFire(){
     if(chargeable && charge < chargeMax){
       charge++;
-      effectiveDamage = (damage * charge) / chargeMax;
     }
     if(chargeable && executeOnCharge && (charge >- chargeMax) && ready){
+      effectiveDamage = (damage * charge) / chargeMax;
       charge = 0;
       Fire();
     }
@@ -53,15 +60,16 @@ public class Ranged : Weapon{
   
   /* Fires ranged weapon. */
   void Fire(){
-    if(ammo < 1){ return; }
-    ready = false;
+    if(ammo < 1){ return; }    
+    StartCoroutine(CoolDown(cooldown));
     ammo--;
     Vector3 relPos = transform.forward;
     Vector3 spawnPos = transform.position + transform.forward;
     Quaternion projRot = Quaternion.LookRotation(relPos);
     GameObject pref = (GameObject)Resources.Load(
       "Prefabs/"+projectile,
-      typeof(GameObject));
+      typeof(GameObject)
+    );
     GameObject proj = (GameObject)GameObject.Instantiate(
       pref,
       spawnPos,

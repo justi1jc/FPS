@@ -57,6 +57,8 @@ public class WarpDoor : Decor{
     destCell = dat.strings[1];
     doorId = dat.ints[1];
     dx = dat.ints[2];
-    dy = dat.ints[3];   
+    dy = dat.ints[3];
+    destPos = transform.position + transform.forward * 2;
+    destRot = transform.rotation.eulerAngles; 
   }
 }
