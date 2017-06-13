@@ -872,18 +872,21 @@ public class Actor : MonoBehaviour{
         item = laItem; 
       }
     }
-    Food f = (Food)item;
+    Food f = user.GetComponent<Food>();
     f.stack = 2;
     if(!ManaCheck(f.healing)){ return; }
     Light l = item.gameObject.GetComponent<Light>();
-    if(l){StartCoroutine(Glow(0.25f, Color.blue, l)); }
+    if(l){StartCoroutine(Glow(0.25f, Color.blue, l)); print("Glow"); }
     f.Use(0);
   }
   
   void InitHealSelf(GameObject user){
+    Light l = user.GetComponent<Light>();
+    if(!l){ user.AddComponent<Light>(); }
     Food item  = user.AddComponent<Food>();
     item.healing = intelligence * (magic / 10 + 1);
     item.cooldown = 1f;
+    
   }
   
   void HealOther(bool right, int use){
