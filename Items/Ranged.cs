@@ -91,8 +91,14 @@ public class Ranged : Weapon{
         charge = 0;
         Light light = item.gameObject.GetComponent<Light>();
         if(light){
-          light.intensity = ((float)p.damage)/10f;
-          light.range = p.damage;
+          if(p.damage < 0){
+            light.intensity = -(float)p.damage/10f;
+            light.range = -p.damage;
+          }
+          else{
+            light.intensity = ((float)p.damage)/10f;
+            light.range = p.damage;
+          }
         }
       }
       

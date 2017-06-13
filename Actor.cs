@@ -876,7 +876,7 @@ public class Actor : MonoBehaviour{
     f.stack = 2;
     if(!ManaCheck(f.healing)){ return; }
     Light l = item.gameObject.GetComponent<Light>();
-    if(l){StartCoroutine(Glow(0.25f, Color.blue, l)); print("Glow"); }
+    if(l){StartCoroutine(Glow(0.25f, Color.blue, l)); }
     f.Use(0);
   }
   
@@ -886,7 +886,6 @@ public class Actor : MonoBehaviour{
     Food item  = user.AddComponent<Food>();
     item.healing = intelligence * (magic / 10 + 1);
     item.cooldown = 1f;
-    
   }
   
   void HealOther(bool right, int use){
@@ -904,7 +903,7 @@ public class Actor : MonoBehaviour{
         item = laItem; 
       }
     }
-    Ranged r = (Ranged)item;
+    Ranged r = user.GetComponent<Ranged>();
     if(use == 4){
       int hl = -1 * (r.damage * r.charge) / r.chargeMax;
       if(ManaCheck(hl)){ r.ammo = 1; r.Use(use); }
