@@ -25,12 +25,8 @@ player in a rich game world.
 Tentative roadmap:
 
 Refactor
-  -Use polymorphism for Items.
   -Use polymorphism for menus.
-  -Use polymorphism for Actor
-  -Inventory component to contain inventory logic.
-  -Slot component to contain ability/item use logic.
-  -Stats component to contain RPG stats logic
+  -Break reusable or excessive logic up into components
 
 React to feedback:
   -Determine format for Models/Animation
@@ -70,3 +66,33 @@ Save&Load(GameData, interior cells, Actor data)
 World(interior cells, exterior cells, random generation)
 Quest(Quest interface, hello world quest)
 
+
+********************************************************************************
+______      __           _               _____             _     
+| ___ \    / _|         | |             |  __ \           | |    
+| |_/ /___| |_ __ _  ___| |_ ___  _ __  | |  \/ ___   __ _| |___ 
+|    // _ \  _/ _` |/ __| __/ _ \| '__| | | __ / _ \ / _` | / __|
+| |\ \  __/ || (_| | (__| || (_) | |    | |_\ \ (_) | (_| | \__ \
+\_| \_\___|_| \__,_|\___|\__\___/|_|     \____/\___/ \__,_|_|___/
+
+********************************************************************************
+
+-Break menu into multiple classes
+Menu
+HUD
+Main
+Inventory
+Options
+Speech
+Trade
+Quest
+Ability
+Stats
+Loot
+Load
+
+-Break logic out into re-usable components
+ItemSlot
+Inventory
+StatHandler
+ConditionHandler

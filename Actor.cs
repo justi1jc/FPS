@@ -148,8 +148,8 @@ public class Actor : MonoBehaviour{
   
   /* Before rest of code */
   void Start(){
-    raItem = hand.GetComponent<Item>(); 
-    laItem = offHand.GetComponent<Item>();
+    laItem = hand.GetComponent<Item>(); 
+    raItem = offHand.GetComponent<Item>();
     raItem.holder = this;
     laItem.holder = this;
     AssignPlayer(playerNumber);
@@ -288,12 +288,12 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyUp(KeyCode.LeftControl)){ToggleCrouch(); }
     
     //Mouse controls
-    if(Input.GetMouseButtonDown(0)){ Use(1); }
-    if(Input.GetMouseButtonDown(1)){ Use(0); }
-    if(Input.GetMouseButton(0)){ Use(4); } // Charge Left
-    if(Input.GetMouseButton(1)){ Use(3); } // Charge right
-    if(Input.GetMouseButtonUp(0)){ Use(6); } // Release left
-    if(Input.GetMouseButtonUp(1)){ Use(5); } // Release right
+    if(Input.GetMouseButtonDown(0)){ Use(0); }
+    if(Input.GetMouseButtonDown(1)){ Use(1); }
+    if(Input.GetMouseButton(0)){ Use(3); } // Charge Left
+    if(Input.GetMouseButton(1)){ Use(4); } // Charge right
+    if(Input.GetMouseButtonUp(0)){ Use(5); } // Release left
+    if(Input.GetMouseButtonUp(1)){ Use(6); } // Release right
     float rotx = -Input.GetAxis("Mouse Y") * sensitivityX;
     float roty = Input.GetAxis("Mouse X") * sensitivityY;
     Turn(new Vector3(rotx, roty, 0f));
@@ -768,96 +768,164 @@ public class Actor : MonoBehaviour{
   
   /* Melee attack
      0 Charges punch.
-     1 executes punch.
+     4 executes punch.
   */
   void Punch(bool right, int use){
+    GameObject user = right ? offHand : hand;
     Item item = right ? raItem : laItem;
-    if(item.itemType != Item.MELEE){
-      item.cooldown = 0.5f;
-      item.damageStart = 0f;
-      item.damageEnd = 0.25f;
-      item.knockBack = strength * 50;
-      item.itemType = Item.MELEE;
-      item.chargeable = true;
-      item.executeOnCharge = true;
-      item.charge = 0;
-      item.chargeMax = 25;
-      item.damage = strength * (unarmed / 10 + 1);
+    if(!(item is Melee)){
+      Destroy(item);
+      InitPunch(user);
+      if(right){ 
+        raItem = user.GetComponent<Item>();
+        raItem.Use(use);
+      }
+      else{ 
+        laItem = user.GetComponent<Item>();
+        laItem.Use(use); 
+      }
     }
-    if(item.charge == item.chargeMax -1 || use == 4){
-      int dmg = (item.damage * item.charge) / item.chargeMax;
-      if(StaminaCheck(dmg)){ item.Use(use); }
-      else{ item.charge = 0; }
-      return;
+    else{
+      Melee m = item as Melee;
+      if(m.charge >= m.chargeMax -1 || use == 4){
+        int dmg = (m.damage * m.charge) / m.chargeMax;
+        if(StaminaCheck(dmg)){ m.Use(use); }
+        else{ m.charge = 0; }
+      }
     }
     item.Use(use);
+  }
+  
+  /* Initializes unarmed ability on selected hand. */
+  void InitPunch(GameObject user){
+    Melee item = user.AddComponent<Melee>();
+    item.cooldown = 0.5f;
+    item.damageStart = 0f;
+    item.damageEnd = 0.25f;
+    item.knockBack = strength * 50;
+    item.chargeable = true;
+    item.executeOnCharge = true;
+    item.charge = 0;
+    item.chargeMax = 25;
+    item.damage = strength * (unarmed / 10 + 1);
   }
   
   /* Charges a fireball, then launches it. */
   void FireBall(bool right, int use){
+    GameObject user = right ? offHand : hand;
     Item item = right ? raItem : laItem;
-    if(item.itemType != Item.RANGED){
-      item.cooldown = 1.1f - (float)(willpower/10f);
-      item.itemType = Item.RANGED;
-      item.chargeable = true;
-      item.executeOnCharge = false;
-      item.projectile = "FireBall";
-      item.charge = 0;
-      item.chargeMax = 200 / willpower;
-      item.muzzleVelocity = 50;
-      item.impactForce = willpower * 50;
-      item.damage = intelligence * (magic / 10 + 1);
-      item.effectiveDamage = 0;
+    if(!(item is Ranged)){
+      Destroy(item);
+      InitFireBall(user);
+      item = user.GetComponent<Item>();
+      if(right){ 
+        raItem = item;
+        raItem.Use(use);
+      }
+      else{ 
+        laItem = item;
+        laItem.Use(use); 
+      }
+      Ranged r = user.GetComponent<Ranged>();
+      r.ammo = 1;
     }
     if(use == 4){
-      int dmg = (item.damage * item.charge) / item.chargeMax;
-      if(ManaCheck(dmg)){ item.ammo = 1; item.Use(use); }
-      else{ item.charge = 0; }
+      Ranged r = (Ranged)item;
+      int dmg = (r.damage * r.charge) / r.chargeMax;
+      if(ManaCheck(dmg)){ r.ammo = 1; r.Use(use); }
+      else{ r.charge = 10; }
+      r.ammo = 1;
       return;
     }
-    item.ammo = 1;
     item.Use(use);
+  }
+  
+  /* Initializes fireball ability on selected hand */
+  void InitFireBall(GameObject user){
+    Ranged item = user.AddComponent<Ranged>();
+    item.cooldown = 1.1f - (float)(willpower/10f);
+    item.chargeable = true;
+    item.executeOnCharge = false;
+    item.projectile = "FireBall";
+    item.charge = 10;
+    item.chargeMax = 25;
+    item.muzzleVelocity = 50;
+    item.impactForce = willpower * 50;
+    item.damage = intelligence * (magic / 10 + 1);
+    item.effectiveDamage = 0;
   }
   
   /* Instant health boost. */
   void HealSelf(bool right, int use){
+    GameObject user = right ? offHand : hand;
     if(use != 0){ return; }
     Item item = right ? raItem : laItem;
-    if(item.itemType != Item.FOOD){
-      item.itemType = Item.FOOD;
-      item.healing = intelligence * (magic / 10 + 1);
-      item.cooldown = 1f;
+    if(!(item is Food)){
+      Destroy(item);
+      InitHealSelf(user);
+      if(right){ 
+        raItem = user.GetComponent<Item>();
+        item = raItem;
+      }
+      else{ 
+        laItem = user.GetComponent<Item>();
+        item = laItem; 
+      }
     }
-    if(!ManaCheck(item.healing)){ return; }
+    Food f = user.GetComponent<Food>();
+    f.stack = 2;
+    if(!ManaCheck(f.healing)){ return; }
     Light l = item.gameObject.GetComponent<Light>();
     if(l){StartCoroutine(Glow(0.25f, Color.blue, l)); }
-    item.stack = 2;
-    item.Use(0);
+    f.Use(0);
+  }
+  
+  void InitHealSelf(GameObject user){
+    Light l = user.GetComponent<Light>();
+    if(!l){ user.AddComponent<Light>(); }
+    Food item  = user.AddComponent<Food>();
+    item.healing = intelligence * (magic / 10 + 1);
+    item.cooldown = 1f;
   }
   
   void HealOther(bool right, int use){
+    GameObject user = right ? offHand : hand;
     Item item = right ? raItem : laItem;
-    if(item.itemType != Item.RANGED){
-      item.cooldown = 1.1f - (float)(willpower/10f);
-      item.itemType = Item.RANGED;
-      item.chargeable = true;
-      item.executeOnCharge = false;
-      item.projectile = "HealBall";
-      item.charge = 0;
-      item.chargeMax = 200 / willpower;
-      item.muzzleVelocity = 50;
-      item.impactForce = willpower * 50;
-      item.damage = -(intelligence * (magic / 10 + 1));
-      item.effectiveDamage = 0;
+    if(!(item is Ranged)){
+      Destroy(item);
+      InitHealOther(user);
+      if(right){ 
+        raItem = user.GetComponent<Item>();
+        item = raItem;
+      }
+      else{
+        laItem = user.GetComponent<Item>();
+        item = laItem; 
+      }
     }
+    Ranged r = user.GetComponent<Ranged>();
     if(use == 4){
-      int hl = -1 * (item.damage * item.charge) / item.chargeMax;
-      if(ManaCheck(hl)){ item.ammo = 1; item.Use(use); }
-      else{ item.charge = 0; }
+      int hl = -1 * (r.damage * r.charge) / r.chargeMax;
+      if(ManaCheck(hl)){ r.ammo = 1; r.Use(use); }
+      else{ r.charge = 0; }
       return;
     }
-    item.ammo = 1;
-    item.Use(use);
+    r.ammo = 1;
+    r.Use(use);
+  }
+  
+  void InitHealOther(GameObject user){
+    Ranged item = user.AddComponent<Ranged>();
+    item.cooldown = 1.1f - (float)(willpower/10f);
+    item.chargeable = true;
+    item.executeOnCharge = false;
+    item.projectile = "HealBall";
+    item.charge = 0;
+    item.chargeMax = 200 / willpower;
+    item.muzzleVelocity = 50;
+    item.impactForce = willpower * 50;
+    item.damage = -(intelligence * (magic / 10 + 1));
+    item.effectiveDamage = 0;
   }
   
   IEnumerator Glow(float time, Color color, Light light){
@@ -891,12 +959,12 @@ public class Actor : MonoBehaviour{
     bool left  = (leftAbility > -1) || secondary;
     if(right && left){
       if(use==0){
-       if(primary){primary.Use(0); return; }
-       if(rightAbility > -1){ Ability(rightAbility, true); }
+        if(primary){primary.Use(0); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false); }
       }
       if(use==1){
-        if(secondary){secondary.Use(0); return; }
-        if(leftAbility > -1){ Ability(leftAbility, false); }
+       if(secondary){secondary.Use(0); return; }
+       if(rightAbility > -1){ Ability(rightAbility, true); }
       }
       if(use==2){
         if(primary){ primary.Use(2); }
@@ -904,46 +972,21 @@ public class Actor : MonoBehaviour{
       }
       if(use==3){
         if(primary){ primary.Use(3); return; }
-        if(rightAbility > -1){ Ability(rightAbility, true, 3); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false, 3); return; }
       }
       if(use==4){
         if(secondary){ secondary.Use(3); return; }
-        if(leftAbility > -1){ Ability(leftAbility, false, 3); return; }
+        if(rightAbility > -1){ Ability(rightAbility, true, 3); return; }
       }
       if(use==5){
         if(primary){ primary.Use(4); return; }
-        if(rightAbility > -1){ Ability(rightAbility, true, 4); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false, 4); return; }
       }
       if(use==6){
         if(secondary){ secondary.Use(4); return; }
-        if(leftAbility > -1){ Ability(leftAbility, false, 4); return; }
+        if(rightAbility > -1){ Ability(rightAbility, true, 4); return; }
       }
       if(use==7 && primary){ primary.Use(5); }
-      
-    }
-    else if(right){
-      if(use==3){
-        if(primary){ primary.Use(3); return; }
-        if(rightAbility > -1){ Ability(rightAbility, true, 3); return; }
-      }
-      if(use==5){
-        if(primary){ primary.Use(4); return; }
-        if(rightAbility > -1){ Ability(rightAbility, true, 4); return; }
-      }
-      if(primary){ primary.Use(use); return; }
-      if(rightAbility > -1){ Ability(rightAbility, true); return;}
-    }
-    else if(left){
-      if(use==4){
-        if(secondary){ secondary.Use(3); return; }
-        if(leftAbility > -1){ Ability(leftAbility, false, 3); return; }
-      }
-      if(use==6){
-        if(secondary){ secondary.Use(4); return; }
-        if(leftAbility > -1){ Ability(leftAbility, false, 4); return; }
-      }
-      if(secondary){ secondary.Use(use); return; }
-      if(leftAbility > -1){ Ability(leftAbility, false); return;}
     }
   }
   
@@ -1082,7 +1125,8 @@ public class Actor : MonoBehaviour{
   public void StorePrimary(){
     if(!primaryItem){ return; }
     Item item = primaryItem.GetComponent<Item>();
-    if(primaryIndex == -1){ StoreItem(item.GetData()); }
+    if(!item){ return; }
+    if(primaryIndex == -1 || primaryIndex > inventory.Count){ StoreItem(item.GetData()); }
     else{ inventory[primaryIndex] = item.GetData(); }
     Destroy(primaryItem);
     primaryItem = null;
@@ -1250,17 +1294,17 @@ public class Actor : MonoBehaviour{
     headRoty = dat.yr;
     bodyRoty = dat.yr;
     int i = 0;
-    leftAbility = dat.ints[i]; i++;
-    rightAbility = dat.ints[i]; i++;
+    int lAbility = dat.ints[i]; i++;
+    int rAbility = dat.ints[i]; i++;
     int pIndex = dat.ints[i]; i++;
     int sIndex = dat.ints[i]; i++;
     id = dat.ints[i]; i++;
     if(dat.inventory != null){ inventory.AddRange(dat.inventory.inv); }
     else{ print(displayName + "inventory data null");}
     if(pIndex > -1){ Equip(pIndex); }
-    else{ EquipAbility(rightAbility); }
+    else{ EquipAbility(rAbility); }
     if(sIndex > -1){ EquipSecondary(sIndex); }
-    else{ EquipAbilitySecondary(leftAbility); }
+    else{ EquipAbilitySecondary(lAbility); }
     lastPos = dat.lastPos;
     speechTree = dat.speechTree;
   }
