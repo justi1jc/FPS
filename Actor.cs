@@ -148,8 +148,8 @@ public class Actor : MonoBehaviour{
   
   /* Before rest of code */
   void Start(){
-    raItem = hand.GetComponent<Item>(); 
-    laItem = offHand.GetComponent<Item>();
+    laItem = hand.GetComponent<Item>(); 
+    raItem = offHand.GetComponent<Item>();
     raItem.holder = this;
     laItem.holder = this;
     AssignPlayer(playerNumber);
@@ -959,12 +959,12 @@ public class Actor : MonoBehaviour{
     bool left  = (leftAbility > -1) || secondary;
     if(right && left){
       if(use==0){
-       if(primary){primary.Use(0); return; }
-       if(rightAbility > -1){ Ability(rightAbility, true); }
+        if(primary){primary.Use(0); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false); }
       }
       if(use==1){
-        if(secondary){secondary.Use(0); return; }
-        if(leftAbility > -1){ Ability(leftAbility, false); }
+       if(secondary){secondary.Use(0); return; }
+       if(rightAbility > -1){ Ability(rightAbility, true); }
       }
       if(use==2){
         if(primary){ primary.Use(2); }
@@ -972,46 +972,21 @@ public class Actor : MonoBehaviour{
       }
       if(use==3){
         if(primary){ primary.Use(3); return; }
-        if(rightAbility > -1){ Ability(rightAbility, true, 3); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false, 3); return; }
       }
       if(use==4){
         if(secondary){ secondary.Use(3); return; }
-        if(leftAbility > -1){ Ability(leftAbility, false, 3); return; }
+        if(rightAbility > -1){ Ability(rightAbility, true, 3); return; }
       }
       if(use==5){
         if(primary){ primary.Use(4); return; }
-        if(rightAbility > -1){ Ability(rightAbility, true, 4); return; }
+        if(leftAbility > -1){ Ability(leftAbility, false, 4); return; }
       }
       if(use==6){
         if(secondary){ secondary.Use(4); return; }
-        if(leftAbility > -1){ Ability(leftAbility, false, 4); return; }
+        if(rightAbility > -1){ Ability(rightAbility, true, 4); return; }
       }
       if(use==7 && primary){ primary.Use(5); }
-      
-    }
-    else if(right){
-      if(use==3){
-        if(primary){ primary.Use(3); return; }
-        if(rightAbility > -1){ Ability(rightAbility, true, 3); return; }
-      }
-      if(use==5){
-        if(primary){ primary.Use(4); return; }
-        if(rightAbility > -1){ Ability(rightAbility, true, 4); return; }
-      }
-      if(primary){ primary.Use(use); return; }
-      if(rightAbility > -1){ Ability(rightAbility, true); return;}
-    }
-    else if(left){
-      if(use==4){
-        if(secondary){ secondary.Use(3); return; }
-        if(leftAbility > -1){ Ability(leftAbility, false, 3); return; }
-      }
-      if(use==6){
-        if(secondary){ secondary.Use(4); return; }
-        if(leftAbility > -1){ Ability(leftAbility, false, 4); return; }
-      }
-      if(secondary){ secondary.Use(use); return; }
-      if(leftAbility > -1){ Ability(leftAbility, false); return;}
     }
   }
   
@@ -1150,7 +1125,8 @@ public class Actor : MonoBehaviour{
   public void StorePrimary(){
     if(!primaryItem){ return; }
     Item item = primaryItem.GetComponent<Item>();
-    if(primaryIndex == -1){ StoreItem(item.GetData()); }
+    if(!item){ return; }
+    if(primaryIndex == -1 || primaryIndex > inventory.Count){ StoreItem(item.GetData()); }
     else{ inventory[primaryIndex] = item.GetData(); }
     Destroy(primaryItem);
     primaryItem = null;

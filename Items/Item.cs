@@ -22,6 +22,7 @@ public class Item : MonoBehaviour{
   public int weight;
   public Actor holder;
   public bool ready = true;
+  bool held = false;
   
   // Empty base methods
   public virtual void Use(int action){}
@@ -30,6 +31,8 @@ public class Item : MonoBehaviour{
   // Implemented base methods
   /* Bonds an item to  an item */
   public void Hold(Actor a){
+    if(held){ return; }
+    held = true;
     holder = a;
     
     Rigidbody rb = transform.GetComponent<Rigidbody>();
@@ -49,6 +52,7 @@ public class Item : MonoBehaviour{
   
   /* Drop item from actor's hand. */
   public void Drop(){
+    held = false;
     Rigidbody rb = transform.GetComponent<Rigidbody>();
     if(rb){
       rb.isKinematic = false;

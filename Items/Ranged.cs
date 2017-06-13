@@ -28,7 +28,7 @@ public class Ranged : Weapon{
   public override void Use(int action){
     if(action == 0 || action == 3){
       if(chargeable){ ChargeFire(); }
-      else{ Fire(); }
+      else if(action == 0){ Fire(); }
     }
     else if(action == 1){ ToggleAim(); }
     else if(action == 2){ 
