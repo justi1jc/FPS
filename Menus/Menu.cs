@@ -29,6 +29,9 @@ public class Menu{
   public int pxMax, pyMax, pxMin, pyMin; // Primary focus boundaries.
   public int sx, sy; // secondary focus (ie which item in a table is selected.)
   public int sxMax, syMax, sxMin, syMin; // Secondary focus boundaries.
+  public Vector2 scrollPosition = Vector2.zero;  // Primary scroll position
+  public Vector3 scrollPositionB = Vector2.zero; // Secondary scroll position
+  
   
   public Menu(MenuManager manager){
     this.manager = manager;
@@ -42,7 +45,7 @@ public class Menu{
   }
 
   /* Height of the screen. */
-  int Height(){
+  public int Height(){
     return Screen.height;
   }
 
