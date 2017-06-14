@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 public class StatsMenu : Menu{
   
-  public MainMenu(MenuManager manager){
+  public StatsMenu(MenuManager manager){
     this.manager = manager;
     this.split = this.manager.split;
     this.right = this.manager.right;
@@ -18,6 +18,6 @@ public class StatsMenu : Menu{
   
   public override void UpdateFocus(){}
   
-  public override void Input(){}
+  public override void Input(int button){}
   
 }

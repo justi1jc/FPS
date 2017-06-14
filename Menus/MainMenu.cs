@@ -18,6 +18,6 @@ public class MainMenu : Menu{
   
   public override void UpdateFocus(){}
   
-  public override void Input(){}
+  public override void Input(int button){}
   
 }

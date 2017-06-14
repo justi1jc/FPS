@@ -18,6 +18,6 @@ public class HUDMenu : Menu{
   
   public override void UpdateFocus(){}
   
-  public override void Input(){}
+  public override void Input(int button){}
   
 }

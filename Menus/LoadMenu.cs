@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-public class MainMenu : Menu{
+public class LoadMenu : Menu{
   
   public LoadMenu(MenuManager manager){
     this.manager = manager;
@@ -18,6 +18,6 @@ public class MainMenu : Menu{
   
   public override void UpdateFocus(){}
   
-  public override void Input(){}
+  public override void Input(int button){}
   
 }

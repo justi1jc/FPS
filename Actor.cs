@@ -44,7 +44,7 @@ public class Actor : MonoBehaviour{
 
   
   //UI
-  public Menu menu;
+  public MenuManager menu;
   bool menuMove = true;// Used to govern joystick menu inputs.
   float menuMovementDelay = 0.15f; // How long to delay between menu movements
   
@@ -191,8 +191,8 @@ public class Actor : MonoBehaviour{
     StartCoroutine(RegenRoutine());
     if(player <5 && player > 0){
       SetMenuOpen(false);
-      if(head){ menu = head.GetComponent<Menu>(); }
-      if(menu){ menu.Change(Menu.HUD);  menu.actor = this; }
+      if(head){ menu = head.GetComponent<MenuManager>(); }
+      if(menu){ menu.Change("HUD");  menu.actor = this; }
       if(Session.session){ Session.session.RegisterPlayer(this, player, head.GetComponent<Camera>()); }
       if(player == 1){ StartCoroutine(KeyboardInputRoutine()); }
       else{StartCoroutine(ControllerInputRoutine()); }
@@ -299,7 +299,7 @@ public class Actor : MonoBehaviour{
     Turn(new Vector3(rotx, roty, 0f));
     
     //Special use keys
-    if(Input.GetKeyDown(KeyCode.Escape)){ menu.Change(Menu.OPTIONS); }
+    if(Input.GetKeyDown(KeyCode.Escape)){ menu.Change("OPTIONS"); }
     if(Input.GetKeyDown(KeyCode.R)){ Use(2); }
     if(Input.GetKeyDown(KeyCode.Q)){ Drop(); }
     if(Input.GetKeyDown(KeyCode.E)){ Interact(); }
@@ -311,7 +311,7 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(KeyCode.F)){ Use(7); }
     if(Input.GetKeyDown(KeyCode.Tab)){ 
       SetMenuOpen(true);
-      if(menu){ menu.Change(Menu.INVENTORY); }
+      if(menu){ menu.Change("INVENTORY"); }
     }
   }
   
@@ -358,13 +358,13 @@ public class Actor : MonoBehaviour{
     Turn(new Vector3(yr, xr, 0f));
     
     //Buttons
-    if(Input.GetKeyDown(Session.START)){ menu.Change(Menu.OPTIONS); }
+    if(Input.GetKeyDown(Session.START)){ menu.Change("OPTIONS"); }
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(Session.B)){ Use(7); }
     if(Input.GetKeyDown(Session.X)){ Interact(); }
     else if(Input.GetKeyDown(Session.X)){ Use(2); }
     if(Input.GetKeyDown(Session.Y)){ SetMenuOpen(true);
-    if(menu){ menu.Change(Menu.INVENTORY); } }
+    if(menu){ menu.Change("INVENTORY"); } }
     if(rt > 0 && !rt_down){ Use(0); rt_down = true;}    // Use right
     else if(rt > 0){ Use(3); }                          // Hold right
     if(rt == 0 && rt_down){ rt_down = false; Use(5); }  // Release right
@@ -1226,14 +1226,14 @@ public class Actor : MonoBehaviour{
       Actor actor = actorInReach.GetComponent<Actor>();
       if(actor && actor.speechTree != null && mode == -1 && actor.health > 0){
         interlocutor = actor;
-        menu.Change(Menu.SPEECH);
+        menu.Change("SPEECH");
       }
       else if(actor && mode == 0 && actor.health > 0){
         print("Steal from " + actor.gameObject.name);
       }
       else if(actor && mode == -1){
         menu.contents = actor.inventory;
-        menu.Change(Menu.LOOT);
+        menu.Change("LOOT");
       }
       else{
         if(!actor){ print("Actor null"); }

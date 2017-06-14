@@ -25,7 +25,7 @@ public class MenuManager: MonoBehaviour{
   }
   
   /* Send notification to menu. */
-  public Notify(string message){ menu.Notify(message); }
+  public void Notify(string message){ menu.Notify(message); }
   
   /* Change the active menu */
   public void Change(string selection){
