@@ -19,7 +19,7 @@ public class InventoryMenu : Menu{
   }
   
   public override void Render(){
-    Box("", XOffset(), 0, Width(), Height()); //Draw Background
+    //Box("", XOffset(), 0, Width(), Height()); //Draw Background
     List<Data> inv = manager.actor.inventory;
     int iw = Width()/4;
     int ih = Height()/20;

@@ -25,8 +25,10 @@ public class MenuManager: MonoBehaviour{
   
   /* Called once per frame. */
   void OnGUI(){
-    active.RenderNotifications();
-    active.Render();
+    if(active != null){
+      active.RenderNotifications();
+      active.Render();
+    }
   }
   
   /* Send notification to menu. */

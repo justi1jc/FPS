@@ -59,6 +59,29 @@ public class SpeechMenu : Menu{
     if(st != null && st.Option(sy) == ""){ sy--; }
   }
   
-  public override void Input(int button){}
+  public override void Input(int button){
+    DefaultExit(button);
+    if(manager.actor == null || manager.actor.interlocutor == null){ return; }
+    SpeechTree st = manager.actor.interlocutor.speechTree;
+    if(button == A){
+      if(st.Option(sy) == ""){ return; }
+      switch(sy){
+        case 0:
+          st.SelectOption(0);
+          break;
+        case 1:
+          st.SelectOption(1);
+          break;
+        case 2:
+          st.SelectOption(2);
+          break;
+        case 3:
+          st.SelectOption(3);
+          break;
+      }
+      sy = 0;
+    }
+    
+  }
   
 }

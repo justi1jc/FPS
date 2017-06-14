@@ -46,8 +46,9 @@ public class AbilityMenu : Menu{
     for(int i = 0; i < selections.Count; i++){
       int ability = selections[i];
       string selected = "";
-      if(i == manager.actor.rightAbility){ selected += "Right Hand "; }
-      if(i == manager.actor.leftAbility){ selected += "Left Hand "; }
+      selected += manager.actor.AbilityInfo(i);
+      if(i == manager.actor.rightAbility){ selected += " Right Hand "; }
+      if(i == manager.actor.leftAbility){ selected += " Left Hand "; }
       if(Button(selected, 0, ih * i, iw, ih, 0, i)){
         manager.actor.EquipAbility(ability);
       }

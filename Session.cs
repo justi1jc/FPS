@@ -25,6 +25,7 @@ public class Session : MonoBehaviour {
   public string sessionName; //Name Used in save file.
   public List<Quest> quests;
   
+  
   // Controller one linux values
   public static string C1 = "Joystick 1"; //Controller 1
   public static string XL = "XL"; // "X Axis" DeadZone: 0.2 Accuracy: 1

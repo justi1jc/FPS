@@ -21,7 +21,7 @@ public class Menu{
   public const int LT    = 9;
   
   public MenuManager manager;
-  public List<string> notifications; // Notifications that must be displayed.
+  public List<string> notifications = new List<string>(); // Notifications that must be displayed.
   public bool split; // True if screen is split.
   public bool right; // True if this screen is on the right side of the sceen.
   public float notificationTimer = 6f; // Duration of each notification's display.

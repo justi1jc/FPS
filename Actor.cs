@@ -30,6 +30,7 @@ using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
 public class Actor : MonoBehaviour{
+  private bool pickupCooldown = true;
   public string displayName;
   public string prefabName;
   public int playerNumber; // 1 for keyboard, 3-4 for controller, 5 for NPC
@@ -154,6 +155,7 @@ public class Actor : MonoBehaviour{
     laItem.holder = this;
     AssignPlayer(playerNumber);
     if(level == 0){ LevelUp(); xp = 50; }
+    
   }
   
   
@@ -191,7 +193,9 @@ public class Actor : MonoBehaviour{
     StartCoroutine(RegenRoutine());
     if(player <5 && player > 0){
       SetMenuOpen(false);
-      if(head){ menu = head.GetComponent<MenuManager>(); }
+      if(head){ 
+        menu = head.GetComponent<MenuManager>(); 
+      }
       if(menu){ menu.Change("HUD");  menu.actor = this; }
       if(Session.session){ Session.session.RegisterPlayer(this, player, head.GetComponent<Camera>()); }
       if(player == 1){ StartCoroutine(KeyboardInputRoutine()); }
@@ -299,7 +303,10 @@ public class Actor : MonoBehaviour{
     Turn(new Vector3(rotx, roty, 0f));
     
     //Special use keys
-    if(Input.GetKeyDown(KeyCode.Escape)){ menu.Change("OPTIONS"); }
+    if(Input.GetKeyDown(KeyCode.Escape)){ 
+      menu.Change("OPTIONS");
+      SetMenuOpen(true); 
+    }
     if(Input.GetKeyDown(KeyCode.R)){ Use(2); }
     if(Input.GetKeyDown(KeyCode.Q)){ Drop(); }
     if(Input.GetKeyDown(KeyCode.E)){ Interact(); }
@@ -311,7 +318,10 @@ public class Actor : MonoBehaviour{
     if(Input.GetKeyDown(KeyCode.F)){ Use(7); }
     if(Input.GetKeyDown(KeyCode.Tab)){ 
       SetMenuOpen(true);
-      if(menu){ menu.Change("INVENTORY"); }
+      if(menu){ 
+        menu.Change("INVENTORY");
+        SetMenuOpen(true); 
+      }
     }
   }
   
@@ -358,13 +368,18 @@ public class Actor : MonoBehaviour{
     Turn(new Vector3(yr, xr, 0f));
     
     //Buttons
-    if(Input.GetKeyDown(Session.START)){ menu.Change("OPTIONS"); }
+    if(Input.GetKeyDown(Session.START) && menu){ 
+      menu.Change("OPTIONS"); 
+      SetMenuOpen(true);
+    }
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(Session.B)){ Use(7); }
     if(Input.GetKeyDown(Session.X)){ Interact(); }
     else if(Input.GetKeyDown(Session.X)){ Use(2); }
-    if(Input.GetKeyDown(Session.Y)){ SetMenuOpen(true);
-    if(menu){ menu.Change("INVENTORY"); } }
+    if(Input.GetKeyDown(Session.Y) && menu){ 
+      menu.Change("INVENTORY");
+      SetMenuOpen(true); 
+    }
     if(rt > 0 && !rt_down){ Use(0); rt_down = true;}    // Use right
     else if(rt > 0){ Use(3); }                          // Hold right
     if(rt == 0 && rt_down){ rt_down = false; Use(5); }  // Release right
@@ -1227,6 +1242,7 @@ public class Actor : MonoBehaviour{
       if(actor && actor.speechTree != null && mode == -1 && actor.health > 0){
         interlocutor = actor;
         menu.Change("SPEECH");
+        SetMenuOpen(true);
       }
       else if(actor && mode == 0 && actor.health > 0){
         print("Steal from " + actor.gameObject.name);
@@ -1234,6 +1250,7 @@ public class Actor : MonoBehaviour{
       else if(actor && mode == -1){
         menu.contents = actor.inventory;
         menu.Change("LOOT");
+        SetMenuOpen(true);
       }
       else{
         if(!actor){ print("Actor null"); }
@@ -1244,11 +1261,20 @@ public class Actor : MonoBehaviour{
   
   /* Pick up item in world. */
   public void PickUp(Item item){
-    if(!item){ return; }
+    if(!item || !pickupCooldown){ return; }
+    StartCoroutine(PickupCooldown());
     Data dat = item.GetData();
     Destroy(item.gameObject);
     StoreItem(dat);
     Destroy(item.gameObject);
+    
+  }
+  
+  /* Prevents picking up the same items. */
+  public IEnumerator PickupCooldown(){
+    pickupCooldown = false;
+    yield return new WaitForSeconds(0.1f);
+    pickupCooldown = true;
   }
   
   /* Returns data not stored in prefab for this Actor */
