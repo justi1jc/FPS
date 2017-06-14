@@ -38,7 +38,7 @@ public class Menu{
   
   /* Queue a notification. */
   public void Notify(string message){
-    notifications.Add(messages);
+    notifications.Add(message);
   }
 
   /* Height of the screen. */
@@ -94,6 +94,21 @@ public class Menu{
   /* Menu render logic goes here. */
   public virtual void Render(){}
   
+  /* Renders all active notifications. */
+  public void RenderNotifications(){
+    if(notifications.Count == 0){ return; }
+    notificationTimer -= Time.deltaTime;
+    if(notificationTimer < 0f){
+      notifications.Remove(notifications[0]);
+      notificationTimer = 6f;
+      return;
+    }
+    string str = notifications[0];
+    int x = Width()/2;
+    int y = Height()/6;
+    Box(str, XOffset()+x, y, x, y);
+  }
+  
   /* Logic for focus movement goes here */
   public virtual void UpdateFocus(){}
   
@@ -125,7 +140,7 @@ public class Menu{
         UpdateFocus();
         break;
     }
-    if(button <= LT && button >= A){ MenuInput(button); }
+    if(button <= LT && button >= A){ Input(button); }
   }
   
   /* Performing actions according to focus goes here. */
@@ -135,7 +150,7 @@ public class Menu{
   public void DefaultExit(int button){
     if(button == B || button == Y){
       manager.Change("HUD");
-      actor.SetMenuOpen(false);
+      manager.actor.SetMenuOpen(false);
     }
   }
   

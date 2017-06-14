@@ -8,10 +8,7 @@ using System.Collections.Generic;
 
 public class InventoryMenu : Menu{
   
-  public InventoryMenu(MenuManager manager){
-    this.manager = manager;
-    this.split = this.manager.split;
-    this.right = this.manager.right;
+  public InventoryMenu(MenuManager manager) : base(manager){
   }
   
   public override void Render(){}

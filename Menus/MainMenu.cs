@@ -8,10 +8,7 @@ using System.Collections.Generic;
 
 public class MainMenu : Menu{
   
-  public MainMenu(MenuManager manager){
-    this.manager = manager;
-    this.split = this.manager.split;
-    this.right = this.manager.right;
+  public MainMenu(MenuManager manager) : base(manager){
   }
   
   public override void Render(){}

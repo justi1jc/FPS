@@ -16,7 +16,7 @@ public class Container : Decor{
   public override void Interact(Actor a, int mode = -1, string message = ""){
     if(a != null && a.menu != null){
       a.menu.contents = contents;
-      a.menu.Change(Menu.LOOT);
+      a.menu.Change("LOOT");
       return;
     }
   }

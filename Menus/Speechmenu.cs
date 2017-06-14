@@ -8,10 +8,7 @@ using System.Collections.Generic;
 
 public class SpeechMenu : Menu{
   
-  public SpeechMenu(MenuManager manager){
-    this.manager = manager;
-    this.split = this.manager.split;
-    this.right = this.manager.right;
+  public SpeechMenu(MenuManager manager) : base(manager){
   }
   
   public override void Render(){}
