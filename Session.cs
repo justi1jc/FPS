@@ -25,6 +25,7 @@ public class Session : MonoBehaviour {
   public string sessionName; //Name Used in save file.
   public List<Quest> quests;
   
+  
   // Controller one linux values
   public static string C1 = "Joystick 1"; //Controller 1
   public static string XL = "XL"; // "X Axis" DeadZone: 0.2 Accuracy: 1
@@ -65,7 +66,7 @@ public class Session : MonoBehaviour {
   bool mainMenu; // True when main menu is active.
   HoloCell menuCell;
   Camera sesCam;
-  Menu sesMenu;
+  MenuManager sesMenu;
   
   void Awake(){
     if(Session.session){ Destroy(this); }
@@ -199,19 +200,19 @@ public class Session : MonoBehaviour {
     if(split){
       cam1.rect = new Rect(0f, 0f, 0.5f, 1f);
       cam2.rect = new Rect(0.5f, 0, 0.5f, 1f);
-      Menu menu = cam1.gameObject.GetComponent<Menu>();
+      MenuManager menu = cam1.gameObject.GetComponent<MenuManager>();
       if(menu){ menu.split = true; menu.right = false; }
-      menu = cam2.gameObject.GetComponent<Menu>();
+      menu = cam2.gameObject.GetComponent<MenuManager>();
       if(menu){ menu.split = true; menu.right = true; }
     }
     else if(cam1){
       cam1.rect = new Rect(0f, 0f, 1f, 1f);
-      Menu menu = cam1.gameObject.GetComponent<Menu>();
+      MenuManager menu = cam1.gameObject.GetComponent<MenuManager>();
       if(menu){ menu.split = false; menu.right = false; }
     }
     else if(cam2){
       cam2.rect = new Rect(0f, 0f, 1f, 1f);
-      Menu menu = cam2.gameObject.GetComponent<Menu>();
+      MenuManager menu = cam2.gameObject.GetComponent<MenuManager>();
       if(menu){ menu.split = false; menu.right = false; }
     }   
   }
@@ -227,8 +228,8 @@ public class Session : MonoBehaviour {
     go.transform.position = transform.position + new Vector3(10f, 50f, 0f);
     go.transform.LookAt(transform);
     sesCam = go.AddComponent(typeof(Camera)) as Camera;
-    sesMenu = go.AddComponent(typeof(Menu)) as Menu;
-    sesMenu.Change(Menu.MAIN);
+    sesMenu = go.AddComponent(typeof(MenuManager)) as MenuManager;
+    sesMenu.Change("MAIN");
     menuCell = new HoloCell(transform.position);
     map = Cartographer.GetMaster();
     Cell c = GetMasterInterior(MENU_BUILDING, MENU_INTERIOR);

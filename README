@@ -25,7 +25,6 @@ player in a rich game world.
 Tentative roadmap:
 
 Refactor
-  -Use polymorphism for menus.
   -Break reusable or excessive logic up into components
 
 React to feedback:
@@ -76,20 +75,6 @@ ______      __           _               _____             _
 \_| \_\___|_| \__,_|\___|\__\___/|_|     \____/\___/ \__,_|_|___/
 
 ********************************************************************************
-
--Break menu into multiple classes
-Menu
-HUD
-Main
-Inventory
-Options
-Speech
-Trade
-Quest
-Ability
-Stats
-Loot
-Load
 
 -Break logic out into re-usable components
 ItemSlot
