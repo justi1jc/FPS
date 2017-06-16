@@ -78,6 +78,6 @@ ______      __           _               _____             _
 
 -Break logic out into re-usable components
 ItemSlot
-Inventory
+*Inventory
 StatHandler
 ConditionHandler

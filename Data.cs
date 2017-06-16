@@ -1,9 +1,8 @@
 /*
-*     Author: James Justice
-*       
-*     Data:
-*     This is a serializable data object used to store instances
-*     of other classes.
+       
+     Data:
+     This is a serializable multi-purpose record made for storing a variety of
+     arbitrary data.
 */
 
 
@@ -33,7 +32,7 @@ public class Data
    public int baseValue;
    public Inventory inventory;
    public Cell lastPos = null;
-   public SpeechTree speechTree; 
+   public SpeechTree speechTree;
    public Data(){
       ints = new List<int>();
       strings = new List<string>();
