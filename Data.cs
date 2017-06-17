@@ -12,8 +12,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 [System.Serializable]
-public class Data
-{
+public class Data{
    public bool readyToRead;
    public string prefabName;
    public string displayName;
