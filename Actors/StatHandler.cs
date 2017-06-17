@@ -93,7 +93,7 @@ public class StatHandler{
         threshold = 10 * (strength + strengthMod);
         break;
       case "RANGED":
-        threshhold = ranged + rangedMod;
+        threshold = ranged + rangedMod;
         break;
       case "MELEE":
         threshold = melee + meleeMod;
@@ -125,12 +125,12 @@ public class StatHandler{
   public void LevelUp(){
     xp = 0;
     level++;
-    nextLevel = NextLevel();
+    nextLevel = NextLevel(level);
     skillPoints += intelligence + 10;
   }
   
   /* Returns the xp required for the next level. */
-  public int NextLevel(int currentLevel = level){
+  public int NextLevel(int currentLevel){
     return ((currentLevel + 1) * (currentLevel + 1)) * 100;
   }
   
