@@ -22,7 +22,7 @@ public class Item : MonoBehaviour{
   public int weight;
   public Actor holder;
   public bool ready = true;
-  public int oneHanded = true; // True if this item can be held in one hand.
+  public bool oneHanded = true; // True if this item can be held in one hand.
   bool held = false;
   
   

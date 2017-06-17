@@ -59,7 +59,7 @@ public class EquipSlot{
       }
     }
     else{
-      if(offHandITem != null){
+      if(offHandItem != null){
         ret.Add(Remove(true));
       }
     }
@@ -87,7 +87,7 @@ public class EquipSlot{
       }
     }
     else if(handAbility != -1){
-      switch(){
+      switch(use){
         case 0:
           UseAbility(0, true);
           break;
@@ -169,29 +169,43 @@ public class EquipSlot{
   public Data Remove(bool primary = true){
     if(primary && handItem != null){
       Data ret = handItem.GetData();
-      Destroy(handItem.gameObject);
+      MonoBehaviour.Destroy(handItem.gameObject);
       handItem = null;
       return ret;
     }
     else if(!primary && offHandItem != null){
       Data ret = offHandItem.GetData();
-      Destroy(handItem.gameObject);
+      MonoBehaviour.Destroy(handItem.gameObject);
       offHandItem = null;
       return ret;
     }
     return null;
   }
   
-  /* Initializes an ability. If primary is false, the offHand will be equipped. */
-  public List<Data> EquipAbility(int ability, bool primary = true){
+  /* Initializes an ability. If primary is false, the offHand will be equipped.
+     Returns a displaced item or null.
+   */
+  public Data EquipAbility(int ability, bool primary = true){
     GameObject selectedHand = null;
-    if(hand != null && primary){ selectedHand = hand; }
-    else if(offHand != null && !primary){ selectedHand = offHand; }
-    if(selectedHand == null){ return; }
+    Item displacedItem = null;
+    Data ret = null;
+    if(hand != null && primary){
+      selectedHand = hand;
+      displacedItem = handItem; 
+    }
+    else if(offHand != null && !primary){
+      selectedHand = offHand;
+      displacedItem = offHandItem;
+    }
+    if(selectedHand == null){ return null; }
+    if(displacedItem != null){
+      ret = displacedItem.GetData();
+      MonoBehaviour.Destroy(displacedItem.gameObject);
+    }
     Item oldAbility = selectedHand.GetComponent<Item>();
-    if(oldAbility){ Destroy(oldAbility); }
+    if(oldAbility){ MonoBehaviour.Destroy(oldAbility); }
     
-    switch(int ability){
+    switch(ability){
       case 0:
         InitPunch(selectedHand);
         break;
@@ -205,6 +219,7 @@ public class EquipSlot{
         InitHealOther(selectedHand);
         break;
     }
+    return ret;
   }
   
   /* Performs unarmed attack. */
@@ -231,26 +246,25 @@ public class EquipSlot{
     fist.stack = 2;
     fist.Use(use);
     Light l = user.gameObject.GetComponent<Light>();
-    if(l){StartCoroutine(Glow(0.25f, Color.blue, l)); }
-    //TODO: Consume stamina
+    if(l && use == 0){
+      l.intensity = 2f;
+      l.range = 10f;
+      l.color = Color.blue;
+      
+    }
+    else if(l && use == 4){
+      l.intensity = 0f;
+      l.range = 0f;
+    }
+    
   }
   
   /* Performs heal other spell. */
-  void UseHealother(GameObject user, int use){
+  void UseHealOther(GameObject user, int use){
     Ranged fist = user.GetComponent<Ranged>();
     if(fist == null){ return; }
     fist.ammo = 2;
     fist.Use(use);
-    //TODO: Consume mana
-  }
-  
-  IEnumerator Glow(float time, Color color, Light light){
-    light.intensity = 2f;
-    light.range = 10f;
-    light.color = color;
-    yield return new WaitForSeconds(time);
-    light.intensity = 0f;
-    light.range = 0f;
     //TODO: Consume mana
   }
   
@@ -296,7 +310,7 @@ public class EquipSlot{
   /* Initializes heal other spell. */
   void InitHealOther(GameObject user){
     Ranged item = user.AddComponent<Ranged>();
-    item.cooldown = 1.5f);
+    item.cooldown = 1.5f;
     item.chargeable = true;
     item.executeOnCharge = false;
     item.projectile = "HealBall";
