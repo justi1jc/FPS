@@ -8,9 +8,9 @@ using System.Collections;
 using System.Collections.Generic;
 [System.Serializable]
 public class EquipSlot{
-  Actor actor = null; // Actor, if one is associated with this EquipSlot
-  GameObject hand, offHand;
-  Item handItem, offHandItem; // Equipped item
+  public Actor actor = null; // Actor, if one is associated with this EquipSlot
+  public GameObject hand, offHand;
+  public Item handItem, offHandItem; // Equipped item
   Data handData = null;
   Data offHandData = null;
   int handAbility, offHandAbility;
@@ -185,10 +185,10 @@ public class EquipSlot{
   /* Initializes an ability. If primary is false, the offHand will be equipped.
      Returns a displaced item or null.
    */
-  public Data EquipAbility(int ability, bool primary = true){
+  public List<Data> EquipAbility(int ability, bool primary = true){
+    List<Data> ret = new List<Data>();
     GameObject selectedHand = null;
     Item displacedItem = null;
-    Data ret = null;
     if(hand != null && primary){
       selectedHand = hand;
       displacedItem = handItem; 
@@ -197,9 +197,9 @@ public class EquipSlot{
       selectedHand = offHand;
       displacedItem = offHandItem;
     }
-    if(selectedHand == null){ return null; }
+    if(selectedHand == null){ return ret; }
     if(displacedItem != null){
-      ret = displacedItem.GetData();
+      ret.Add(displacedItem.GetData());
       MonoBehaviour.Destroy(displacedItem.gameObject);
     }
     Item oldAbility = selectedHand.GetComponent<Item>();
@@ -228,6 +228,45 @@ public class EquipSlot{
     if(fist == null){ return; }
     fist.Use(use);
     //TODO: Consume stamina
+  }
+  
+  /* Returns info on the selected items or abilities. */
+  public string Info(){
+    string ret = "";
+    if(handItem != null){
+      ret += handItem.AddInfo();
+    }
+    else if(handAbility != -1){
+      ret += AbilityInfo(handAbility);
+    }
+    ret += "\n";
+    if(offHandItem != null){
+      ret += offHandItem.AddInfo();
+    }
+    else if(offHandAbility != -1){
+      ret += AbilityInfo(offHandAbility);
+    }
+    return ret;
+  }
+  
+  /* Returns the name of the ability. */
+  string AbilityInfo(int ability){
+    string ret = "";
+    switch(ability){
+        case 0:
+          ret += "Unarmed";
+          break;
+        case 1:
+          ret += "Fireball";
+          break;
+        case 2:
+          ret += "Heal Self";
+          break;
+        case 3:
+          ret += "Heal other";
+          break;
+      }
+      return ret;
   }
   
   /* Performs fireball spell. */

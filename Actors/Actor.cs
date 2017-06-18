@@ -48,6 +48,11 @@ public class Actor : MonoBehaviour{
   public MenuManager menu;
   bool menuMove = true;// Used to govern joystick menu inputs.
   float menuMovementDelay = 0.15f; // How long to delay between menu movements
+  public bool menuOpen;
+  public GameObject actorInReach;
+  public string actorInReachName;
+  public GameObject itemInReach;
+  public string itemInReachName;
   
   //Looking
   public bool rt_down = false;
@@ -65,7 +70,7 @@ public class Actor : MonoBehaviour{
   bool walking = false;
   bool sprinting = false;
   bool crouched = false;
-
+  
   //Jumping
   public bool jumpReady = true;
   public bool falling;
@@ -76,62 +81,14 @@ public class Actor : MonoBehaviour{
   public Animator anim;
   
   //Inventory
-  public static readonly string[] currencies = {"Penny", "Nickel"};
-  public int currency;
-  public bool menuOpen;
-  public GameObject primaryItem;
-  public GameObject secondaryItem;
-  public int primaryIndex = -1;
-  public int secondaryIndex = -1;
-  public GameObject actorInReach;
-  public string actorInReachName;
-  public GameObject itemInReach;
-  public string itemInReachName;
   public List<Data> inventory = new List<Data>();
-  public int weight = 0;
-  public int weightMax = 100;
-  
-  //Player vitals
+    
+  //Stats
+  public StatHandler stats = new StatHandler();
   public int id = -1;
-  public int health     = 100;
-  public int mana       = 100;
-  public int stamina    = 100;
-  public int healthMax  = 100;
-  public int manaMax    = 100;
-  public int staminaMax = 100;
   
-  // ICEPAWS attributes, max 10
-  public int intelligence = 5; // Max mana
-  public int charisma     = 5; //
-  public int endurance    = 5; // Stamina, health regen
-  public int perception   = 5; // accuracy
-  public int agility      = 5; // speed, jump height
-  public int willpower    = 5; // mana regen
-  public int strength     = 5; // maxweight
-
-  
-  // Skill levels, max 100
-  public int skillPoints = 100;
-  public int ranged  = 50;
-  public int melee   = 50;
-  public int unarmed = 50;
-  public int magic   = 50;
-  public int stealth = 50;
-
-  
-  // Leveling
-  public int nextLevel = 0;
-  public int level = 0;
-  public int xp    = 0;
-  
-  // abilities
-  public bool[] abilities = {true, false, false, false, false};
-  public int rightAbility = 0;   // Ability in right hand.
-  public int leftAbility  = 0;   // Ability in left hand.
-  public Item raItem = null;     // Ability Item in right hand.
-  public Item laItem = null;     // Ability item in left hand.
-  public bool raReady = true;    // Is right hand busy?
-  public bool laReady = true;    // Is left hand busy?
+  // Equipped items and abilities.
+  public EquipSlot arms = new EquipSlot(hand, offHand);
   
   // Speech
   public Actor interlocutor; // Conversation partner
@@ -149,13 +106,7 @@ public class Actor : MonoBehaviour{
   
   /* Before rest of code */
   void Start(){
-    laItem = hand.GetComponent<Item>(); 
-    raItem = offHand.GetComponent<Item>();
-    raItem.holder = this;
-    laItem.holder = this;
-    AssignPlayer(playerNumber);
-    if(level == 0){ LevelUp(); xp = 50; }
-    
+    if(stats.level == 0){ stats.LevelUp();}
   }
   
   
@@ -210,16 +161,7 @@ public class Actor : MonoBehaviour{
   
   /* Returns an empty string or the info of the active item. */
   public string ItemInfo(){
-    string info = "";
-    if(primaryItem){
-      Item item = primaryItem.GetComponent<Item>();
-      if(item){ info = item.GetInfo(); }
-    }
-    if(secondaryItem){
-      Item item = secondaryItem.GetComponent<Item>();
-      if(item){ info = item.GetInfo(); }
-    }
-    return info;
+    return arms.Info();
   }
   
   /* Returns an empty string, or info about interacting with the actor in reach */
@@ -242,8 +184,8 @@ public class Actor : MonoBehaviour{
   }
   
   IEnumerator RegenRoutine(){
-    while(health >= 0){
-      RegenCondition();
+    while(stats.health >= 0){
+      stats.Update();
       yield return new WaitForSeconds(0.2f);
     }
   }
@@ -482,13 +424,9 @@ public class Actor : MonoBehaviour{
     Vector3 dest = body.transform.position +  dir * pace;
     Rigidbody rb = body.GetComponent<Rigidbody>();
     int runCost = (int)Vector3.Magnitude(pace * dir * 6);
-    if(EnduranceCheck(50)){ runCost = 0; }
+    if(stats.StatCheck("ENDURANCE", 50)){ runCost = 0; }
     if(MoveCheck(dir, pace * 3)){
-      if(StaminaCheck(runCost)){ rb.MovePosition(dest); }
-      else{
-        dest = body.transform.position +  speed * dir;
-        rb.MovePosition(dest);
-      }
+      rb.MovePosition(dest);
       return;
     }
     dir += body.transform.up;
@@ -496,11 +434,7 @@ public class Actor : MonoBehaviour{
     if(MoveCheck(dir, pace * 3)){
       pace = speed;
       dest = body.transform.position +  dir * pace;
-      if(StaminaCheck(runCost)){ rb.MovePosition(dest); }
-      else{
-        dest = body.transform.position + dir * speed;
-        rb.MovePosition(dest);
-      }
+      rb.MovePosition(dest);
     }
   }
   
@@ -547,8 +481,7 @@ public class Actor : MonoBehaviour{
     for(int i = 0; i < found.Length; i++){
       Item item = found[i].collider.gameObject.GetComponent<Item>();
       bool holding = false;
-      if(item && item.gameObject == primaryItem){ holding = true; }
-      if(item && item.gameObject == secondaryItem){ holding = true; }
+      if(item == arms.handItem || item == arms.offHandItem){ holding = true; }
       if(item && !holding){
         itemInReach = item.gameObject;
         itemFound = true;
@@ -628,53 +561,30 @@ public class Actor : MonoBehaviour{
   
   /* Add xp and check for levelup conditions. */
   public void ReceiveXp(int amount){
-    xp += amount;
-    if(xp > nextLevel){ LevelUp(); }
+    stats.AwardXP(amount);
   }
-  
-  /* Apply skill points, calculate xp for next level. */
-  public void LevelUp(){
-    level++;
-    nextLevel = level * level * level * 100;
-    skillPoints += 25;
-  }
-  
   
   /* Applies damage from attack. Ignores active weapon. */
   public void ReceiveDamage(int damage, GameObject weapon){
-    
-    if(health < 1 || (weapon == primaryItem && damage > 0)){ return; }
-    health -= damage;
-    if(health < 1){
-      health = 0;
-      StopAllCoroutines();
-      Ragdoll(true);
-      if(ai){ ai.Pause(); }
-      Item item = weapon.GetComponent<Item>();
-      if(item && item.holder){ item.holder.ReceiveXp(xp); }
-      if(playerNumber < 5 && playerNumber > 0){
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-      }
-      PopulateCurrencyLoot();
-    }
-    else{
-      bool check = EnduranceCheck(damage);
+    if(stats.health < 1 || (weapon == arms.handItem && damage > 0)){ return; }
+    stats.DrainCondition("HEALTH", damage);
+    if(stats.health < 1){ Die(weapon); }
+    else if (damage > 0){
+      bool check = stats.StatCheck("ENDURANCE", damage);
       if(check){ StartCoroutine(Stagger()); }
       else{ StartCoroutine(FallDown()); }
     }
-    if(health > healthMax){ health = healthMax; }
   }
   
-  /* Reduce stamina.*/
-  public void ReceiveFatigue(int amount){
-    stamina -= amount;
-    if(stamina < 0){ stamina = 0; }
-  }
-  
-  /* Reduces mana. */
-  public void ReceiveManaDrain(int amount){
-    mana -= amount;
-    if(mana < 0){ mana = 0; }
+  /* Enter dead state, warding experience to the killder. */
+  public void Die(GameObject weapon){
+    StopAllCoroutines();
+    Ragdoll(true);
+    if(ai){ ai.Pause(); }
+    Item item = weapon.GetComponent<Item>();
+    if(item && item.holder){
+      item.holder.ReceiveXp(stats.NextLevel(stats.level -1)); 
+    }
   }
   
   /* Actor rocks a bit. */
@@ -692,7 +602,7 @@ public class Actor : MonoBehaviour{
   /* Actor is knocked over */
   IEnumerator FallDown(){
     Ragdoll(true);
-    int delay = 100 - health - Random.Range(0, (endurance * agility));
+    int delay = 100 - stats.health - Random.Range(0, (stats.endurance * stats.agility));
     if(delay < 3){ delay = 3; }
     yield return new WaitForSeconds(Random.Range(0, (float)delay));
     float x = Mathf.Abs(body.transform.rotation.eulerAngles.x);
@@ -736,223 +646,15 @@ public class Actor : MonoBehaviour{
     }
   }
   
-  /* Returns a string describing a given special ability */
-  public string AbilityInfo(int ability){
-    switch(ability){
-      case 0:
-        return "Unarmed";
-      case 1:
-        return "Fireball";
-      case 2:
-        return "Heal Self";
-      case 3:
-        return "Heal Other";
-      case 4:
-        return "AbilityE";
-    }
-    return "";
-  }
-  
-  /* Performs a given ability. */
-  void Ability(int ability, bool right, int use = 0){
-    switch(ability){
-      case 0:
-          Punch(right, use);
-        break;
-      case 1:
-        FireBall(right, use);
-        break;
-      case 2:
-        HealSelf(right, use);
-        break;
-      case 3:
-        HealOther(right, use);
-        break;
-      case 4:
-        print("AbilityE");
-        break;
-      case 5:
-        print("AbilityF");
-        break;
-      case 6:
-        print("AbilityG");
-
-        break;
+  /* Equips ability to selected hand, storing items displaced. */
+  public void EquipAbility(int ability, bool primary){
+    Item displaced = arms.EquipAbility(ability);
+    if(displaced != null){
+      inventory.Add(displaced);
     }
   }
   
-  /* Melee attack
-     0 Charges punch.
-     4 executes punch.
-  */
-  void Punch(bool right, int use){
-    GameObject user = right ? offHand : hand;
-    Item item = right ? raItem : laItem;
-    if(!(item is Melee)){
-      Destroy(item);
-      InitPunch(user);
-      if(right){ 
-        raItem = user.GetComponent<Item>();
-        raItem.Use(use);
-      }
-      else{ 
-        laItem = user.GetComponent<Item>();
-        laItem.Use(use); 
-      }
-    }
-    else{
-      Melee m = item as Melee;
-      if(m.charge >= m.chargeMax -1 || use == 4){
-        int dmg = (m.damage * m.charge) / m.chargeMax;
-        if(StaminaCheck(dmg)){ m.Use(use); }
-        else{ m.charge = 0; }
-      }
-    }
-    item.Use(use);
-  }
-  
-  /* Initializes unarmed ability on selected hand. */
-  void InitPunch(GameObject user){
-    Melee item = user.AddComponent<Melee>();
-    item.cooldown = 0.5f;
-    item.damageStart = 0f;
-    item.damageEnd = 0.25f;
-    item.knockBack = strength * 50;
-    item.chargeable = true;
-    item.executeOnCharge = true;
-    item.charge = 0;
-    item.chargeMax = 25;
-    item.damage = strength * (unarmed / 10 + 1);
-  }
-  
-  /* Charges a fireball, then launches it. */
-  void FireBall(bool right, int use){
-    GameObject user = right ? offHand : hand;
-    Item item = right ? raItem : laItem;
-    if(!(item is Ranged)){
-      Destroy(item);
-      InitFireBall(user);
-      item = user.GetComponent<Item>();
-      if(right){ 
-        raItem = item;
-        raItem.Use(use);
-      }
-      else{ 
-        laItem = item;
-        laItem.Use(use); 
-      }
-      Ranged r = user.GetComponent<Ranged>();
-      r.ammo = 1;
-    }
-    if(use == 4){
-      Ranged r = (Ranged)item;
-      int dmg = (r.damage * r.charge) / r.chargeMax;
-      if(ManaCheck(dmg)){ r.ammo = 1; r.Use(use); }
-      else{ r.charge = 10; }
-      r.ammo = 1;
-      return;
-    }
-    item.Use(use);
-  }
-  
-  /* Initializes fireball ability on selected hand */
-  void InitFireBall(GameObject user){
-    Ranged item = user.AddComponent<Ranged>();
-    item.cooldown = 1.1f - (float)(willpower/10f);
-    item.chargeable = true;
-    item.executeOnCharge = false;
-    item.projectile = "FireBall";
-    item.charge = 10;
-    item.chargeMax = 25;
-    item.muzzleVelocity = 50;
-    item.impactForce = willpower * 50;
-    item.damage = intelligence * (magic / 10 + 1);
-    item.effectiveDamage = 0;
-  }
-  
-  /* Instant health boost. */
-  void HealSelf(bool right, int use){
-    GameObject user = right ? offHand : hand;
-    if(use != 0){ return; }
-    Item item = right ? raItem : laItem;
-    if(!(item is Food)){
-      Destroy(item);
-      InitHealSelf(user);
-      if(right){ 
-        raItem = user.GetComponent<Item>();
-        item = raItem;
-      }
-      else{ 
-        laItem = user.GetComponent<Item>();
-        item = laItem; 
-      }
-    }
-    Food f = user.GetComponent<Food>();
-    f.stack = 2;
-    if(!ManaCheck(f.healing)){ return; }
-    Light l = item.gameObject.GetComponent<Light>();
-    if(l){StartCoroutine(Glow(0.25f, Color.blue, l)); }
-    f.Use(0);
-  }
-  
-  void InitHealSelf(GameObject user){
-    Light l = user.GetComponent<Light>();
-    if(!l){ user.AddComponent<Light>(); }
-    Food item  = user.AddComponent<Food>();
-    item.healing = intelligence * (magic / 10 + 1);
-    item.cooldown = 1f;
-  }
-  
-  void HealOther(bool right, int use){
-    GameObject user = right ? offHand : hand;
-    Item item = right ? raItem : laItem;
-    if(!(item is Ranged)){
-      Destroy(item);
-      InitHealOther(user);
-      if(right){ 
-        raItem = user.GetComponent<Item>();
-        item = raItem;
-      }
-      else{
-        laItem = user.GetComponent<Item>();
-        item = laItem; 
-      }
-    }
-    Ranged r = user.GetComponent<Ranged>();
-    if(use == 4){
-      int hl = -1 * (r.damage * r.charge) / r.chargeMax;
-      if(ManaCheck(hl)){ r.ammo = 1; r.Use(use); }
-      else{ r.charge = 0; }
-      return;
-    }
-    r.ammo = 1;
-    r.Use(use);
-  }
-  
-  void InitHealOther(GameObject user){
-    Ranged item = user.AddComponent<Ranged>();
-    item.cooldown = 1.1f - (float)(willpower/10f);
-    item.chargeable = true;
-    item.executeOnCharge = false;
-    item.projectile = "HealBall";
-    item.charge = 0;
-    item.chargeMax = 200 / willpower;
-    item.muzzleVelocity = 50;
-    item.impactForce = willpower * 50;
-    item.damage = -(intelligence * (magic / 10 + 1));
-    item.effectiveDamage = 0;
-  }
-  
-  IEnumerator Glow(float time, Color color, Light light){
-    light.intensity = 2f;
-    light.range = 10f;
-    light.color = color;
-    yield return new WaitForSeconds(time);
-    light.intensity = 0f;
-    light.range = 0f;
-  }
-  
-  public void EquipAbility( int ability){
+  public void EquipAbility(int ability){
     if(primaryItem){ StorePrimary(); rightAbility = ability; return; }
     if(rightAbility == ability){ rightAbility = 0; return; }
     rightAbility = ability;
@@ -1229,6 +931,10 @@ public class Actor : MonoBehaviour{
     return item;
   }
   
+  /* Convenience method. */
+  public bool Alive(){
+    return stats.health >= 1;
+  }
   
   /* Interact with item in reach.
      i is the argument for the interaction, if relevant */
@@ -1239,12 +945,12 @@ public class Actor : MonoBehaviour{
     }
     if(actorInReach){
       Actor actor = actorInReach.GetComponent<Actor>();
-      if(actor && actor.speechTree != null && mode == -1 && actor.health > 0){
+      if(actor && actor.speechTree != null && mode == -1 && actor.Alive()){
         interlocutor = actor;
         menu.Change("SPEECH");
         SetMenuOpen(true);
       }
-      else if(actor && mode == 0 && actor.health > 0){
+      else if(actor && mode == 0 && actor.Alive()){
         print("Steal from " + actor.gameObject.name);
       }
       else if(actor && mode == -1){
@@ -1351,71 +1057,5 @@ public class Actor : MonoBehaviour{
   /* Respond to being talked to by other Actor. */
   public void ReceiveSpeech(int option = -1){
     //TODO Make one response for NPC, one for Player
-  }
-
-
-  /* Returns true and subtracts stamina if sufficient. */
-  public bool StaminaCheck(int cost){
-    if(stamina == 0){ return false; }
-    if(cost <= stamina){ stamina-= cost; return true; }
-    return false;
-  }
-
-  /* Rolls to regenerate different conditions */
-  public void RegenCondition(){
-    if(health != 0 && Random.Range(0, 100) <= health){
-      health++;
-      if(health > 100){ health = 100; }
-    }
-    
-    if(EnduranceCheck(20)){
-      stamina++;
-      if(stamina > 100){ stamina = 100; }
-    }
-    
-    if(MagicCheck(25)){
-      mana++;
-      if(mana > 100){ mana = 100; }
-    }
-  }
-  
-  /* Returns true and subtracts mana if sufficient. */
-  public bool ManaCheck(int cost){
-    if(mana == 0){ return false; }
-    if(cost <= mana){ mana-= cost; return true; }
-    return false;
-  }
-  
-  /* Returns true if player passes stealth check. */
-  public bool StealthCheck(int viewerPerception = 0, int viewerDistance = 3){
-    int sneakBonus = crouched ? 25 : 0;     // Max 25
-    int sprintPenalty = sprinting ? -25 : 0;
-    int skillBonus = stealth / 4;           // Max: 25
-    int agilityBonus = agility * 2;         // Max: 20
-    int distanceBonus = viewerDistance < 3 ? -1 : viewerDistance; 
-    int viewerPenalty = viewerPerception * -1;
-    int successSpace = sneakBonus + skillBonus + agilityBonus + distanceBonus;
-    successSpace += sprintPenalty + viewerPenalty; // Penalties
-    int roll = Random.Range(0, 100);
-    if(roll <= successSpace){ return true; }
-    return false;
-  }
-  
-  /* Returns true if player passes endurance check. */
-  public bool EnduranceCheck(int damage = 5){
-    int enduranceBonus = health +  endurance * 5;
-    int successSpace = enduranceBonus - damage; // Max 95
-    int roll = Random.Range(0, 100);
-    if(roll <= successSpace){ return true; }
-    return false;
-  }
-  
-  /* Returns true if player passes magic test.  */
-  public bool MagicCheck(int difficulty = 0){
-    int successSpace = willpower * magic;
-    successSpace -= difficulty;
-    int roll = Random.Range(0, 100);
-    if(roll <= successSpace){ return true; }
-    return false;
   }
 }

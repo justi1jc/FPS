@@ -104,7 +104,7 @@ public class AI: MonoBehaviour{
       yield return StartCoroutine(SearchFor(enemy));
       if(!CanSee(enemy.body)){ yield break;}
     }
-    while(!paused && CanSee(enemy.body) && enemy.health > 0){
+    while(!paused && CanSee(enemy.body) && enemy.Alive()){
       if(!pursuing){ StartCoroutine(Pursue(enemy)); }
       if(!aiming){ StartCoroutine(AimAt(enemy)); }
       Vector3 pos = host.body.transform.position;
@@ -218,7 +218,8 @@ public class AI: MonoBehaviour{
           actor.body.transform.position
         );
         if(actor.head && CanSee(actor.body)){
-          bool check = !actor.StealthCheck(host.perception, dist);
+          bool check = actor.stats != null 
+            && !actor.stats.StatCheck("STEALTH", host.stats.perception);
           if(check){ return actor; }
         }
       }

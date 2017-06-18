@@ -30,7 +30,7 @@ public class KillXQuest: Quest{
     for(int i = 0; i < actors.Count; i++){
       if(actors[i] != null && actors[i].displayName == targetName){
         bool exists = !UniqueDead(actors[i].id);
-        bool isDead = actors[i].health <= 0;
+        bool isDead = !actors[i].Alive();
         if(!exists && isDead){ 
           dead.Add(actors[i].id);
           Session.session.Notify(Objectives()[0]);

@@ -12,7 +12,8 @@ public class HUDMenu : Menu{
   
   public override void Render(){
     Actor actor = manager.actor;
-    if(actor == null){ return; }
+    if(actor == null || actor.stats == null){ return; }
+    StatHandler stats = actor.stats;
     // Display Condition bars
     int cbsx = 3;  // condition bar width scale
     int cbsy = 20; // condition bar height scale
@@ -21,13 +22,13 @@ public class HUDMenu : Menu{
     int x, y;
     string str;
     
-    str = "Health: " + actor.health;
+    str = "Health: " + stats.health;
     Box(str, XOffset(), 12 * ch, cw, ch);
     
-    str = "Stamina: " + actor.stamina;
+    str = "Stamina: " + stats.stamina;
     Box(str, XOffset(), 13 * ch, cw, ch);
     
-    str = "Mana: " + actor.mana;
+    str = "Mana: " + stats.mana;
     Box(str, XOffset(), 14 * ch, cw, ch);
     
     

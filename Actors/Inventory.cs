@@ -8,13 +8,18 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+
+
 [System.Serializable]
 public class Inventory{
   public List<Data> inv;
-  int slots; // Max number of slides.
+  int slots = 20; // Max number of slides.
   
   public Inventory(){
     inv = new List<Data>();
+    for(int i = 0 ; i < slots; i++){
+      inv.Add(null);
+    }
   }
   
   public Inventory(List<Data> _inv){

@@ -41,6 +41,7 @@ public class StatHandler{
     intelligence = charisma = endurance = perception = agility = willpower = strength = 1;
     ranged = melee = unarmed = magic = stealth = skillPoints = xp = 0;
     level = nextLevel = 0;
+    health = healthMax = stamina = staminaMax = mana = manaMax = 100;
     LevelUp();
   }
   
@@ -133,5 +134,27 @@ public class StatHandler{
   public int NextLevel(int currentLevel){
     return ((currentLevel + 1) * (currentLevel + 1)) * 100;
   }
+  
+  /* Reduce a particular condition. */
+  public void DrainCondition(string condition, int drain){
+    switch(condition.ToUpper()){
+      case "HEALTH":
+        health -= drain;
+        if(health < 0){ health = 0; }
+        if(health > healthMax){ health = healthMax; }
+        break;
+      case "STAMINA":
+        stamina -= drain;
+        if(stamina < 0){ stamina = 0; }
+        if(stamina > staminaMax){ stamina = staminaMax; }
+        break;
+      case "MANA":
+        mana -= drain;
+        if(mana < 0){ mana = 0; }
+        if(mana > manaMax){ mana = manaMax; }
+        break;
+    }
+  }
+  
   
 }
