@@ -32,6 +32,7 @@ public class Data{
    public Inventory inventory;
    public Cell lastPos = null;
    public SpeechTree speechTree;
+   public EquipSlot equipSlot;
    public Data(){
       ints = new List<int>();
       strings = new List<string>();
@@ -39,6 +40,7 @@ public class Data{
       inventory = new Inventory();
       bools = new List<bool>();
       speechTree = null;
+      equipSlot = null;
    }
    
 

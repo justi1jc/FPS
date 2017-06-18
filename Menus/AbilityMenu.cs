@@ -15,12 +15,8 @@ public class AbilityMenu : Menu{
     syMax = 1;
     
     selections = new List<int>();
-    if(manager.actor == null){ return; }
-    for(int i = 0; i < manager.actor.abilities.Length; i++){
-      if(manager.actor.abilities[i]){
-        selections.Add(i);
-      }
-    }
+    if(manager.actor == null || manager.actor.stats != null){ return; }
+    selections = manager.actor.stats.abilities;
   }
   
   public override void Render(){
@@ -42,18 +38,19 @@ public class AbilityMenu : Menu{
       scrollPosition,
       new Rect(0, 0, 200, 200)
     );
-    
+    if(manager.actor == null || manager.actor.arms == null){ return; }
+    Actor actor = manager.actor;
     for(int i = 0; i < selections.Count; i++){
       int ability = selections[i];
       string selected = "";
-      selected += manager.actor.AbilityInfo(i);
-      if(i == manager.actor.rightAbility){ selected += " Right Hand "; }
-      if(i == manager.actor.leftAbility){ selected += " Left Hand "; }
+      selected += actor.arms.AbilityInfo(i);
+      if(i == actor.arms.handAbility){ selected += " Right Hand "; }
+      if(i == actor.arms.offHandAbility){ selected += " Left Hand "; }
       if(Button(selected, 0, ih * i, iw, ih, 0, i)){
-        manager.actor.EquipAbility(ability);
+        actor.arms.EquipAbility(ability, true);
       }
       if(Button("EquipLeft", iw, ih * i, iw, ih, 0, i)){
-        manager.actor.EquipAbilitySecondary(ability);
+        actor.arms.EquipAbility(ability, false);
       }
     }
     GUI.EndScrollView();
@@ -68,13 +65,19 @@ public class AbilityMenu : Menu{
   
   public override void Input(int button){
     DefaultExit(button);
+    if(manager.actor == null || manager.actor.arms == null){ return; }
+    Actor actor = manager.actor;
     switch(sx){
       case -1:
         if(button == A){ manager.Change("INVENTORY"); }
         break;
       case 0:
-        if(button == A || button == RT){ manager.actor.EquipAbility(selections[sy]); }
-        if(button == LT){ manager.actor.EquipAbilitySecondary(selections[sy]); }
+        if(button == A || button == RT){ 
+          actor.arms.EquipAbility(selections[sy], true); 
+        }
+        if(button == LT){ 
+          actor.arms.EquipAbility(selections[sy], false); 
+        }
         break;
       case 1:
         if(button == A){ manager.Change("STATS"); }

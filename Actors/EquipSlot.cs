@@ -13,7 +13,7 @@ public class EquipSlot{
   public Item handItem, offHandItem; // Equipped item
   Data handData = null;
   Data offHandData = null;
-  int handAbility, offHandAbility;
+  public int handAbility, offHandAbility;
   
   public EquipSlot(GameObject hand = null, GameObject offHand = null){
     this.hand = hand;
@@ -31,12 +31,21 @@ public class EquipSlot{
   }
   
   /* Return to active state after being deserialized */
-  public void Load(GameObject hand = null, GameObject offHand = null){
+  public void Load(Actor actor = null, GameObject hand = null, GameObject offHand = null){
+    this.actor = actor;
     this.hand = hand;
     this.offHand = offHand;
+    if(handData != null){
+      Equip(handData, true);
+      handData = null;
+    }
+    else{ EquipAbility(handAbility, true); }
+    if(offHandData != null){
+      Equip(offHandData, false);
+      offHandData = null;
+    }
+    else{ EquipAbility(offHandAbility, true); }
   }
-  
-
   
   /* Drop item from hand, or offHand if hand is empty. */
   public void Drop(){
@@ -53,6 +62,21 @@ public class EquipSlot{
   /* Equips an item to the desired slot, returning any items displaced. */
   public List<Data> Equip(Data dat, bool primary = true){
     List<Data> ret = new List<Data>();
+    if(dat == null){ return ret; }
+    GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
+    if(!prefab){ MonoBehaviour.print("Prefab null:" + dat.displayName); return ret;}
+    Vector3 position = actor != null ? actor.transform.position : new Vector3();
+    GameObject itemGO = (GameObject)GameObject.Instantiate(
+      prefab,
+      position,
+      Quaternion.identity
+    );
+    if(!itemGO){MonoBehaviour.print("GameObject null:" + dat.displayName); return ret; }
+    Item item = itemGO.GetComponent<Item>();
+    item.LoadData(dat);
+    itemGO.transform.parent = primary ? hand.transform : offHand.transform;
+    item.Hold(actor);
+    
     if(primary){
       if(handItem != null){
         ret.Add(Remove(true));
@@ -60,9 +84,10 @@ public class EquipSlot{
     }
     else{
       if(offHandItem != null){
-        ret.Add(Remove(true));
+        ret.Add(Remove(false));
       }
     }
+    
     return ret;
   }
   
@@ -187,6 +212,7 @@ public class EquipSlot{
    */
   public List<Data> EquipAbility(int ability, bool primary = true){
     List<Data> ret = new List<Data>();
+    if(ability < 0 || ability > 4){ return ret; }
     GameObject selectedHand = null;
     Item displacedItem = null;
     if(hand != null && primary){
@@ -234,14 +260,14 @@ public class EquipSlot{
   public string Info(){
     string ret = "";
     if(handItem != null){
-      ret += handItem.AddInfo();
+      ret += handItem.GetInfo();
     }
     else if(handAbility != -1){
       ret += AbilityInfo(handAbility);
     }
     ret += "\n";
     if(offHandItem != null){
-      ret += offHandItem.AddInfo();
+      ret += offHandItem.GetInfo();
     }
     else if(offHandAbility != -1){
       ret += AbilityInfo(offHandAbility);
@@ -250,7 +276,7 @@ public class EquipSlot{
   }
   
   /* Returns the name of the ability. */
-  string AbilityInfo(int ability){
+  public string AbilityInfo(int ability){
     string ret = "";
     switch(ability){
         case 0:

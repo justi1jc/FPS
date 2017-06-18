@@ -36,6 +36,8 @@ public class StatHandler{
   public int level;
   public int xp;
   
+  //Abilities
+  public List<int> abilities = new List<int>();
   
   public StatHandler(){
     intelligence = charisma = endurance = perception = agility = willpower = strength = 1;

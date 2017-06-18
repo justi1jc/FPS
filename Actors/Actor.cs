@@ -81,14 +81,14 @@ public class Actor : MonoBehaviour{
   public Animator anim;
   
   //Inventory
-  public List<Data> inventory = new List<Data>();
+  public Inventory inventory = new Inventory();
     
   //Stats
   public StatHandler stats = new StatHandler();
   public int id = -1;
   
   // Equipped items and abilities.
-  public EquipSlot arms = new EquipSlot(hand, offHand);
+  public EquipSlot arms;
   
   // Speech
   public Actor interlocutor; // Conversation partner
@@ -648,274 +648,68 @@ public class Actor : MonoBehaviour{
   
   /* Equips ability to selected hand, storing items displaced. */
   public void EquipAbility(int ability, bool primary){
-    Item displaced = arms.EquipAbility(ability);
-    if(displaced != null){
-      inventory.Add(displaced);
+    List<Data> displaced = arms.EquipAbility(ability);
+    for(int i = 0; i < displaced.Count; i++){
+      displaced[i].stack = inventory.Store(displaced[i]);
+      if(displaced[i].stack > 0){ DiscardItem(displaced[i]); }
     }
-  }
-  
-  public void EquipAbility(int ability){
-    if(primaryItem){ StorePrimary(); rightAbility = ability; return; }
-    if(rightAbility == ability){ rightAbility = 0; return; }
-    rightAbility = ability;
-  }
-  
-  public void EquipAbilitySecondary(int ability){
-    if(secondaryItem){ StoreSecondary(); leftAbility = ability; return; }
-    if(leftAbility == ability){ leftAbility = 0; return; }
-    leftAbility = ability; return;
   }
   
   /* Use primary or secondary item */
-  public void Use(int use){
-    Item primary, secondary;
-    primary = secondary = null;
-    if(primaryItem){ primary = primaryItem.GetComponent<Item>(); }
-    if(secondaryItem){ secondary = secondaryItem.GetComponent<Item>(); }
-    bool right = (rightAbility > -1) || primary;
-    bool left  = (leftAbility > -1) || secondary;
-    if(right && left){
-      if(use==0){
-        if(primary){primary.Use(0); return; }
-        if(leftAbility > -1){ Ability(leftAbility, false); }
-      }
-      if(use==1){
-       if(secondary){secondary.Use(0); return; }
-       if(rightAbility > -1){ Ability(rightAbility, true); }
-      }
-      if(use==2){
-        if(primary){ primary.Use(2); }
-        if(secondary){ secondary.Use(2); }
-      }
-      if(use==3){
-        if(primary){ primary.Use(3); return; }
-        if(leftAbility > -1){ Ability(leftAbility, false, 3); return; }
-      }
-      if(use==4){
-        if(secondary){ secondary.Use(3); return; }
-        if(rightAbility > -1){ Ability(rightAbility, true, 3); return; }
-      }
-      if(use==5){
-        if(primary){ primary.Use(4); return; }
-        if(leftAbility > -1){ Ability(leftAbility, false, 4); return; }
-      }
-      if(use==6){
-        if(secondary){ secondary.Use(4); return; }
-        if(rightAbility > -1){ Ability(rightAbility, true, 4); return; }
-      }
-      if(use==7 && primary){ primary.Use(5); }
-    }
-  }
+  public void Use(int use){ arms.Use(use); }
   
-  /* Drops active item from hand */
-  public void Drop(bool right = true){
-    if(!right){
-      if(secondaryItem){
-        inventory.Remove(inventory[secondaryIndex]);
-        if(secondaryIndex < primaryIndex){
-          Item primary = primaryItem.GetComponent<Item>();
-          inventory.Add(primary.GetData());
-          Destroy(primaryItem);
-          primaryIndex = -1;
-          Equip(inventory.Count -1);
-        }
-        secondaryIndex = -1;
-      }
-    }
-    if(primaryItem){ 
-      primaryItem.transform.parent = null;
-      Item item = primaryItem.GetComponent<Item>();
-      if(item){ item.Drop(); }
-      if( primaryIndex > -1 && primaryIndex < inventory.Count &&
-          item.displayName == inventory[primaryIndex].displayName){
-        if( secondaryIndex > primaryIndex &&
-            secondaryIndex > -1 && secondaryIndex < inventory.Count){
-          inventory.Remove(inventory[secondaryIndex]);
-        }
-        inventory.Remove(inventory[primaryIndex]); 
-        if(secondaryIndex > primaryIndex){
-          Item secondary = secondaryItem.GetComponent<Item>();
-          inventory.Add(secondary.GetData());
-          Destroy(secondaryItem);
-          secondaryIndex = -1;
-          EquipSecondary(inventory.Count -1);
-        }
-      }
-      primaryItem = null;
-      primaryIndex = -1;
-    }
-    else if( rightAbility > 0){ rightAbility = 0; }
-    else if(secondaryItem){
-      secondaryItem.transform.parent = null;
-      Item item = secondaryItem.GetComponent<Item>();
-      if(item){ item.Drop(); }
-      if( secondaryIndex > -1 && secondaryIndex < inventory.Count &&
-          item.displayName == inventory[secondaryIndex].displayName){
-        if(primaryIndex < primaryIndex){ inventory.Remove(inventory[primaryIndex]); }
-        inventory.Remove(inventory[secondaryIndex]);
-        if(secondaryIndex < primaryIndex){
-          Item primary = primaryItem.GetComponent<Item>();
-          inventory.Add(primary.GetData());
-          Destroy(primaryItem);
-          primaryIndex = -1;
-          Equip(inventory.Count -1);
-        }
-      }
-      secondaryItem = null;
-      secondaryIndex = -1;
-    }
-    else if(leftAbility > 0){ leftAbility = 0; }
-  }
+  /* Drops an item from actor's arms.. */
+  public void Drop(){ arms.Drop(); }
   
   /* Selects an item in inventory to equip. */
-  public void Equip(int itemIndex){
-    if(itemIndex < 0 || itemIndex >= inventory.Count){ return; }
-    if(itemIndex == primaryIndex){ StorePrimary(); return; }
-    if(itemIndex == secondaryIndex){ StoreSecondary(); return; }
-    if(primaryIndex != -1 && secondaryIndex == -1){ 
-      EquipSecondary(itemIndex);
-      return;
+  public void Equip(int itemIndex, bool primary){
+    if(itemIndex < 0 || itemIndex >= inventory.slots){ return; }
+    Data dat = inventory.Retrieve(itemIndex);
+    List<Data> displaced = arms.Equip(dat, primary);
+    for(int i = 0; i < displaced.Count; i++){
+      displaced[i].stack = inventory.Store(displaced[i]);
+      if(displaced[i].stack > 0){
+        DiscardItem(displaced[i]);
+      }
     }
-    StorePrimary();
-    Data dat = inventory[itemIndex];
-    GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
-    if(!prefab){ print("Prefab null:" + dat.displayName); return;}
-    GameObject itemGO = (GameObject)GameObject.Instantiate(
-      prefab,
-      transform.position,
-      Quaternion.identity
-    );
-    if(!itemGO){print("GameObject null:" + dat.displayName); return; }
-    Item item = itemGO.GetComponent<Item>();
-    item.LoadData(dat);
-    itemGO.transform.parent = hand.transform;
-    item.Hold(this);
-    primaryItem = itemGO;
-    primaryIndex = itemIndex;
-    rightAbility = 0;
-  }
-  
-  /* Selects an item in the inventory to equip to the off-hand. */
-  public void EquipSecondary(int itemIndex){
-    if(itemIndex < 0 || itemIndex >= inventory.Count){ return; }
-    if(itemIndex == primaryIndex){ StorePrimary(); }
-    if(itemIndex == secondaryIndex){ StoreSecondary(); return;}
-    if(secondaryIndex != -1){ StoreSecondary(); }
-    Data dat = inventory[itemIndex];
-    GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
-    if(!prefab){ print("Prefab null:" + dat.displayName); return;}
-    GameObject itemGO = (GameObject)GameObject.Instantiate(
-      prefab,
-      transform.position,
-      Quaternion.identity
-    );
-    if(!itemGO){ print("GameObject null:" + dat.displayName); return; }
-    Item item = itemGO.GetComponent<Item>();
-    item.LoadData(dat);
-    itemGO.transform.parent = offHand.transform;
-    item.Hold(this);
-    secondaryItem = itemGO;
-    secondaryIndex = itemIndex;
-    leftAbility = 0;
   }
   
   /* Removes number of available ammo, up to max, and returns that number*/
   public int RequestAmmo(string ammoName,int max){
-    for(int i = 0; i < inventory.Count; i++){
-      if(inventory[i].displayName == ammoName){
-        int available = inventory[i].stack;
-        if(available <= max){
-          inventory.Remove(inventory[i]);
-          return available;
-        }
-        if(available > max){
-          available = max;
-          inventory[i].stack -= max;
-          return available;
-        }
+    for(int i = 0; i < inventory.slots; i++){
+      if(inventory.inv != null && inventory.inv[i].displayName == ammoName){
+        int available = inventory.Retrieve(i, max).stack;
+        return available;
       }
     }
     return 0;
   }
   
-  /* Stores the primary item into the inventory. */
-  public void StorePrimary(){
-    if(!primaryItem){ return; }
-    Item item = primaryItem.GetComponent<Item>();
-    if(!item){ return; }
-    if(primaryIndex == -1 || primaryIndex > inventory.Count){ StoreItem(item.GetData()); }
-    else{ inventory[primaryIndex] = item.GetData(); }
-    Destroy(primaryItem);
-    primaryItem = null;
-    primaryIndex = -1;
-  }
-  
-  /* Stores the secondary item into the inventory. */
-  public void StoreSecondary(){
-    if(!secondaryItem){ return; }
-    Item item = secondaryItem.GetComponent<Item>();
-    if(secondaryIndex == -1){ StoreItem(item.GetData()); }
-    else{ inventory[secondaryIndex] = item.GetData(); }
-    Destroy(secondaryItem);
-    secondaryItem = null;
-    secondaryIndex = -1;
-  }
+
   /* Adds item data to inventory */
   public void StoreItem(Data item){
-    if(item.stack < 1){ return; }
-    if(StoreCurrency(item.displayName, item.stack, item.baseValue)){ return; }
-    for(int i = 0; i < inventory.Count; i++){
-      if(item.stack < 1){ return; }
-      Data dat = inventory[i];
-      if(item.displayName == dat.displayName
-         && dat.stack < dat.stackSize){
-        int freeSpace = dat.stackSize - dat.stack;
-        if(freeSpace > item.stack){ dat.stack += item.stack; return; }
-        else{ dat.stack += freeSpace; item.stack -= freeSpace; }
-      }
-    }
-    inventory.Add(item);
-  }
-  
-  /* If provided currency, adds said currency and returns true.
-     otherwise returns false. */
-  public bool StoreCurrency(string displayName, int amount, int val){
-    int index = -1;
-    for(int i = 0; i < currencies.Length; i++){
-      if(displayName == currencies[i]){ index = i; break; }
-    }
-    if(index == -1){ return false; }
-    currency +=  amount * val;
-    return true;
-  }
-  
-  /* Adds currency items to inventory.
-     TODO: Make this optional. */
-  public void PopulateCurrencyLoot(){
-    /*
-    GameObject igo = Session.session.Spawn(currencies[0], Vector3.zero);
-    Data item = igo.GetComponent<Item>().GetData();
-    while(currency > 0){
-      if(item.stackSize <= currency){
-        item.stack = item.stackSize;
-        currency -= item.stack;
-        StoreItem(item);
-      }
-      else{
-        item.stack = currency;
-        currency = 0;
-        StoreItem(item);
-      }
-    }
-    */
+    item.stack = inventory.Store(item);
+    if(item.stack > 0){ DiscardItem(item); }
   }
   
   /* Drops item onto ground from inventory. */
-  public Item DiscardItem(int itemIndex){
-    if(itemIndex < 0 || itemIndex > inventory.Count){ return null; }
-    if(itemIndex == primaryIndex){ StorePrimary(); }
-    if(itemIndex == secondaryIndex){ StoreSecondary(); }
-    Data dat = inventory[itemIndex];
+  public Item DiscardItem(int slot){
+    Data dat = inventory.Retrieve(slot);
+    if(dat == null){ return null;  }    
+    GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
+    GameObject itemGO = (GameObject)GameObject.Instantiate(
+      prefab,
+      hand.transform.position,
+      Quaternion.identity
+    );
+    Item item = itemGO.GetComponent<Item>();
+    item.LoadData(dat);
+    return item;
+  }
+  
+  /* Drops item onto ground based on data. */
+  public void DiscardItem(Data dat){
+    if(dat == null){ return; }
     GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
     GameObject itemGO = (GameObject)GameObject.Instantiate(
       prefab,
@@ -926,9 +720,6 @@ public class Actor : MonoBehaviour{
     item.LoadData(dat);
     item.stack = 1;
     itemGO.transform.position = hand.transform.position;
-    dat.stack--;
-    if(dat.stack < 1){ inventory.Remove(dat); }
-    return item;
   }
   
   /* Convenience method. */
@@ -997,22 +788,12 @@ public class Actor : MonoBehaviour{
     dat.zr = rot.z;
     dat.stack = 1;
     dat.stackSize = 1;
-    dat.ints.Add(leftAbility);
-    dat.ints.Add(rightAbility);
-    dat.ints.Add(primaryIndex);
-    dat.ints.Add(secondaryIndex);
     dat.ints.Add(id);
-    int pIndex = primaryIndex;
-    int sIndex = secondaryIndex;
-    StorePrimary();
-    StoreSecondary();
-    dat.inventory = new Inventory(inventory);
-    primaryIndex = -1;
-    secondaryIndex = -1;
+    arms.Save();
+    dat.equipSlot = arms;
+    dat.inventory = inventory;
     dat.lastPos = lastPos;
     dat.strings.Add(speechTreeFile);
-    if(pIndex > -1){ Equip(pIndex); }
-    if(sIndex > -1){ EquipSecondary(sIndex); }
     dat.speechTree = speechTree;
     return dat;
   }
@@ -1026,17 +807,10 @@ public class Actor : MonoBehaviour{
     headRoty = dat.yr;
     bodyRoty = dat.yr;
     int i = 0;
-    int lAbility = dat.ints[i]; i++;
-    int rAbility = dat.ints[i]; i++;
-    int pIndex = dat.ints[i]; i++;
-    int sIndex = dat.ints[i]; i++;
+    arms = dat.equipSlot;
+    arms.Load(this, hand, offHand);
+    inventory = dat.inventory;
     id = dat.ints[i]; i++;
-    if(dat.inventory != null){ inventory.AddRange(dat.inventory.inv); }
-    else{ print(displayName + "inventory data null");}
-    if(pIndex > -1){ Equip(pIndex); }
-    else{ EquipAbility(rAbility); }
-    if(sIndex > -1){ EquipSecondary(sIndex); }
-    else{ EquipAbilitySecondary(lAbility); }
     lastPos = dat.lastPos;
     speechTree = dat.speechTree;
   }

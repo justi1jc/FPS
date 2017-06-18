@@ -20,8 +20,8 @@ public class TradeMenu : Menu{
       return;
     }
     
-    selling = new List<Data>(manager.actor.inventory);
-    buying = new List<Data>(manager.actor.interlocutor.inventory);
+    selling = new List<Data>(manager.actor.inventory.inv);
+    buying = new List<Data>(manager.actor.interlocutor.inventory.inv);
     sold = new List<Data>();
     bought = new List<Data>();
     balance = 0;
@@ -35,15 +35,9 @@ public class TradeMenu : Menu{
     int ih = Height()/20;
     if(manager.actor == null || manager.actor.interlocutor == null){ return; }
     Actor actor = manager.actor;
-    str = actor.displayName + ": " + actor.currency;
     x = XOffset() + iw;
     y = (Height()/2) - (2*ih);
-    Box(str, x, y, iw, 2*ih);
     
-    str = actor.interlocutor.displayName + ": " + actor.interlocutor.currency;
-    x = XOffset() + 2* iw;
-    y = (Height()/2) - (2*ih);
-    Box(str, x, y, iw, 2*ih);
 
     scrollPosition = GUI.BeginScrollView(
       new Rect(XOffset() + iw, Height()/2, iw, Height()/2),
@@ -94,7 +88,7 @@ public class TradeMenu : Menu{
     y = Height()/4;
     Box(str, x, y, iw, ih);
     
-    if((balance > 0 || -balance <= actor.currency) && (bought.Count > 0 || sold.Count > 0)){
+    if((balance >= 0) && (bought.Count > 0 || sold.Count > 0)){
       str = "Complete trade";
       x = XOffset();
       y = Height()/4;
@@ -145,29 +139,25 @@ public class TradeMenu : Menu{
     if(manager.actor == null){ return; }
     if(manager.actor.interlocutor == null){ return; }
     Actor actor = manager.actor;
+    Actor interlocutor = manager.actor.interlocutor;
+    Inventory inv = actor.inventory;
+    Inventory invB = interlocutor.inventory;
     for(int i = 0; i < bought.Count; i++){
       Data item = bought[i];
-      actor.interlocutor.inventory.Remove(item);
-      actor.inventory.Add(item);
+      item.stack = inv.Store(invB.Retrieve(invB.IndexOf(item)));
+      if(item.stack > 0){ inv.DiscardItem(item, manager.transform.position); }
     }
     for(int i = 0; i < sold.Count; i++){
       Data item = sold[i];
-      actor.inventory.Remove(item);
-      actor.interlocutor.inventory.Add(item);
+      item.stack = invB.Store(inv.Retrieve(inv.IndexOf(item)));
+      if(item.stack > 0){ invB.DiscardItem(item, manager.transform.position); }
     }
-    if(balance > actor.interlocutor.currency){
-      balance = actor.interlocutor.currency;
-    }
-    actor.interlocutor.currency -= balance;
-    actor.currency += balance;
-    
     balance = 0;
     sold = new List<Data>();
     bought = new List<Data>();
-    selling = new List<Data>(actor.inventory);
-    buying = new List<Data>(actor.interlocutor.inventory);
+    selling = new List<Data>(actor.inventory.inv);
+    buying = new List<Data>(actor.interlocutor.inventory.inv);
   }
-
   
   public override void UpdateFocus(){
     if(buying == null || selling == null){ return; }
@@ -192,6 +182,12 @@ public class TradeMenu : Menu{
         manager.Change("SPEECH");
         break;
     }
+  }
+  
+  /* Stores item in targeted inventory and drops overflow. */
+  public void Store(Inventory target, Data dat){
+    dat.stack = target.Store(dat);
+    if(dat.stack > 0){ target.DiscardItem(dat, manager.transform.position); }
   }
   
 }

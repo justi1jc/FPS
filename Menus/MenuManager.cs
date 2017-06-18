@@ -17,7 +17,7 @@ public class MenuManager: MonoBehaviour{
   public bool right; // True if this screen is on the right side of the sceen.
   
   /* Subclass variables */
-  public List<Data> contents;
+  public Inventory contents;
   
   
   /* Send input to menu.. */

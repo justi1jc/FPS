@@ -13,7 +13,7 @@ using System.Collections.Generic;
 [System.Serializable]
 public class Inventory{
   public List<Data> inv;
-  int slots = 20; // Max number of slides.
+  public int slots = 20; // Max number of slides.
   
   public Inventory(){
     inv = new List<Data>();
@@ -24,6 +24,13 @@ public class Inventory{
   
   public Inventory(List<Data> _inv){
     inv = _inv;
+  }
+  
+  public int IndexOf(Data dat){
+    for(int i = 0; i < inv.Count; i++){
+      if(dat == inv[i]){ return i; }
+    }
+    return -1;
   }
   
   /* Stores this item and returns the overflow if it can't fit */
@@ -79,5 +86,19 @@ public class Inventory{
   public Data Peek(int slot){
     if(slot < 0 || slot >= inv.Count || inv[slot] == null){ return null; }
     return inv[slot];
+  }
+  
+  /* Drops item onto ground based on data. */
+  public void DiscardItem(Data dat, Vector3 position = new Vector3()){
+    if(dat == null){ return; }
+    GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
+    GameObject itemGO = (GameObject)GameObject.Instantiate(
+      prefab,
+      position,
+      Quaternion.identity
+    );
+    Item item = itemGO.GetComponent<Item>();
+    item.LoadData(dat);
+    item.stack = 1;
   }
 }

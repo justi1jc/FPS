@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 
 public class LootMenu : Menu{
-  List<Data> inv, invB;
+  Inventory inv, invB;
   public LootMenu(MenuManager manager) : base(manager){
     if(manager.actor != null){ inv = manager.actor.inventory; }
     else{ inv = null; }
@@ -28,7 +28,7 @@ public class LootMenu : Menu{
     // Render player inventory
     if(inv == null || invB == null || manager.actor == null){ return; }
     Actor actor = manager.actor;
-    str = "Currency: " + actor.currency; 
+    if(actor == null){ return; }
     
     Box(str, XOffset(), 0, iw, 2*ih);
     scrollPosition = GUI.BeginScrollView(
@@ -36,18 +36,12 @@ public class LootMenu : Menu{
       scrollPosition,
       new Rect(0, 0, iw, 200)
     );
-    for(int i = 0; i < inv.Count; i++){ 
-      Data item = inv[i];
-      string selected ="";
-      if(i == manager.actor.primaryIndex){ selected += "Right Hand "; }
-      else if(i == manager.actor.secondaryIndex){ selected += "Left Hand "; }
-      string name = item.displayName;
-      string info = " " + item.stack + "/" + item.stackSize;
-      str = selected + name + info;
+    for(int i = 0; i < inv.slots; i++){
+      Data item = inv.Peek(i);
+      str = item != null ? item.displayName + item.stack + "/" + item.stackSize : "EMPTY";
       y = ih * i;
       if(Button(str, 0, y, iw, ih, 0, i)){
-        invB.Add(item);
-        inv.Remove(item);
+        Store(invB, inv.Retrieve(i));
       }
     }
     GUI.EndScrollView();
@@ -58,24 +52,18 @@ public class LootMenu : Menu{
       scrollPositionB,
       new Rect(0, 0, iw, 200)
     );    
-    for(int i = 0; i < invB.Count; i++){ 
-      Data item = invB[i];
-      string selected ="";
-      string name = item.displayName;
-      string info = " " + item.stack + "/" + item.stackSize;
-      str = selected + name + info;
+    for(int i = 0; i < invB.slots; i++){ 
+      Data item = invB.Peek(i);
+      str = item != null ? item.displayName + item.stack + "/" + item.stackSize : "EMPTY";
       y = ih * i;
-      if(Button(str, 0, y, iw, ih, 1, i)){
-        actor.StoreItem(item);
-        invB.Remove(item);
-      }
+      if(Button(str, 0, y, iw, ih, 1, i)){ Store(inv, invB.Retrieve(i)); }
     }
     GUI.EndScrollView();
   }
   
   public override void UpdateFocus(){
-    if(sx == 0){ syMax = inv.Count -1; }
-    else if(sx == 1){ syMax = invB.Count -1; }
+    if(sx == 0){ syMax = inv.slots -1; }
+    else if(sx == 1){ syMax = invB.slots -1; }
     SecondaryBounds();
   }
   
@@ -84,19 +72,22 @@ public class LootMenu : Menu{
     if(sy < 0){ return; }
     if(manager.actor == null){ return; }
     if(inv == null || invB == null){ return; }
-    if(sx == 0 && sy > inv.Count){ return; }
-    if(sx == 1 && sy > invB.Count){ return; }
+    if(sx == 0 && sy > inv.slots){ return; }
+    if(sx == 1 && sy > invB.slots){ return; }
     Data item;
     if(sx == 0 && button == A){
-      item = inv[sy];
-      invB.Add(item);
-      inv.Remove(item);
+      item = inv.Retrieve(sy);
+      Store(invB, item);
     }
     if(sx == 1 && button == A){
-      item = invB[sy];
-      manager.actor.StoreItem(item);
-      invB.Remove(item);
+      item = invB.Retrieve(sy);
+      Store(inv, item);
     }
   }
   
+  /* Stores item in targeted inventory and drops overflow. */
+  public void Store(Inventory target, Data dat){
+    dat.stack = target.Store(dat);
+    if(dat.stack > 0){ target.DiscardItem(dat, manager.transform.position); }
+  }
 }
