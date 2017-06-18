@@ -9,7 +9,7 @@ using System.Collections.Generic;
 public class Container : Decor{
   Inventory contents = null;
   
-  public void Start(){
+  public void Wake(){
     if(contents == null){ contents = new Inventory(); }
   }
   
@@ -23,14 +23,14 @@ public class Container : Decor{
   
   public override Data GetData(){
     Data dat = GetBaseData();
-    dat.inventory = contents;
+    dat.inventoryRecord = contents.GetData();
     return dat;
   }
   
   public override void LoadData(Data dat){
     LoadBaseData(dat);
-    if(dat.inventory != null){ contents = dat.inventory; }
-    else{ contents = new Inventory(); }
+    if(contents == null){ contents = new Inventory(); }
+    if(dat.inventoryRecord != null){ contents.LoadData(dat.inventoryRecord); }
   }
   
 }

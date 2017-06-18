@@ -29,7 +29,7 @@ public class Data{
    public List<float> floats;
    public List<bool> bools;
    public int baseValue;
-   public Inventory inventory;
+   public InventoryRecord inventoryRecord;
    public Cell lastPos = null;
    public SpeechTree speechTree;
    public EquipSlot equipSlot;
@@ -37,7 +37,7 @@ public class Data{
       ints = new List<int>();
       strings = new List<string>();
       floats = new List<float>();
-      inventory = new Inventory();
+      inventoryRecord = null;
       bools = new List<bool>();
       speechTree = null;
       equipSlot = null;

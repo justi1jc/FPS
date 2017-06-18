@@ -793,7 +793,7 @@ public class Actor : MonoBehaviour{
     dat.ints.Add(id);
     arms.Save();
     dat.equipSlot = arms;
-    dat.inventory = inventory;
+    dat.inventoryRecord = inventory.GetData();
     dat.lastPos = lastPos;
     dat.strings.Add(speechTreeFile);
     dat.speechTree = speechTree;
@@ -811,7 +811,7 @@ public class Actor : MonoBehaviour{
     int i = 0;
     arms = dat.equipSlot;
     arms.Load(this, hand, offHand);
-    inventory = dat.inventory;
+    inventory.LoadData(dat.inventoryRecord);
     id = dat.ints[i]; i++;
     lastPos = dat.lastPos;
     speechTree = dat.speechTree;

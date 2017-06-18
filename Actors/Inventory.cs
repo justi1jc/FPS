@@ -10,7 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-[System.Serializable]
+//[System.Serializable]
 public class Inventory{
   public List<Data> inv;
   public int slots = 20; // Max number of slides.
@@ -100,5 +100,15 @@ public class Inventory{
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
     item.stack = 1;
+  }
+  
+  /* Load from serialized record */
+  public void LoadData(InventoryRecord rec){
+    inv = new List<Data>(rec.inv);
+  }
+  
+  /* Returns a record for serialization. */
+  public InventoryRecord GetData(){
+    return new InventoryRecord(inv); 
   }
 }
