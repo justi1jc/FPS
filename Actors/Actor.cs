@@ -81,10 +81,10 @@ public class Actor : MonoBehaviour{
   public Animator anim;
   
   //Inventory
-  public Inventory inventory = new Inventory();
+  public Inventory inventory;
     
   //Stats
-  public StatHandler stats = new StatHandler();
+  public StatHandler stats;
   public int id = -1;
   
   // Equipped items and abilities.
@@ -107,6 +107,8 @@ public class Actor : MonoBehaviour{
   /* Before rest of code */
   void Start(){
     if(stats.level == 0){ stats.LevelUp();}
+    inventory = new Inventory();
+    arms = new EquipSlot();
   }
   
   
