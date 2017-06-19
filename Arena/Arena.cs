@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 
 public class Arena : MonoBehaviour{
-  GameObject[] spawnPoints; //Stores direction and position to spawn players in.
+  public GameObject[] spawnPoints; //Stores direction and position to spawn players in.
   MenuManager menu;
   public void Start(){
     Initialize();
@@ -16,6 +16,7 @@ public class Arena : MonoBehaviour{
   /* Begin a new round. */
   public void Initialize(){
     menu = gameObject.AddComponent<MenuManager>();
+    menu.Change("ARENAHUD");
   }
   
 
