@@ -27,6 +27,7 @@ public class InventoryMenu : Menu{
     Box("", XOffset(), 0, Width(), Height()); //Draw Background
     int iw = Width()/4;
     int ih = Height()/20;
+    int x, y;
     string str = "";
     
     // Display Navigation buttons
@@ -42,44 +43,53 @@ public class InventoryMenu : Menu{
     Actor actor = manager.actor;
     if(actor == null || inv == null || arms == null){ return; }
     
+    
+    if(arms.handItem != null){
+      str = "Left" + arms.handItem.GetInfo();
+      y = (Height()/2) - (2*ih);
+      x = XOffset() + iw;
+      if(Button(str, x, y, iw + iw/2, ih, 0, -2)){ UnEquip(true); }
+    }
+    if(arms.offHandItem != null){
+      str = "Right" + arms.offHandItem.GetInfo();
+      y = (Height()/2) -ih;
+      x = XOffset() + iw;
+      if(Button(str, x, y, iw + iw/2, ih, 0, -1)){ UnEquip(false); }
+    }
+    
     scrollPosition = GUI.BeginScrollView(
       new Rect(XOffset() +iw, Height()/2, Width()-iw, ih * inv.slots),
       new Vector2(0, ih * sy),
       new Rect(0, 0, 200, 200)
     );
-    
-    if(arms.handItem != null){
-      str = "Left" + arms.handItem.GetInfo();
-      if(Button(str, XOffset(), -2*ih, iw + iw/2, ih, 0, -2)){ UnEquip(true); }
-    }
-    if(arms.offHandItem != null){
-      str = "Right" + arms.offHandItem.GetInfo();
-      if(Button(str, XOffset(), -1*ih, iw + iw/2, ih, 0, -1)){ UnEquip(false); }
-    }
-    for(int i = 0; i < inv.inv.Count; i++){
+    for(int i = 0; i < inv.slots; i++){
       Data item = inv.Peek(i);
       string name = item == null ? "EMPTY" : item.displayName;
       string info = item == null ? "" : " " + item.stack + "/" + item.stackSize;
       str = name + info;
-      if(Button(str, XOffset(), ih * i, iw + iw/2, ih, 0, i)){ 
+      if(Button(str, XOffset(), ih * i, iw, ih, 0, i)){ 
         Equip(inv.Retrieve(i), true); 
       }
-      if(Button("OffHand", XOffset() + iw + iw/2, ih * i, iw/2, ih, i, 1)){ 
+      if(Button("OffHand", XOffset() + iw, ih * i, iw/2, ih, i, 1)){ 
         Equip(inv.Retrieve(i), false);
       }
-      if(Button("Drop", XOffset() + (2*iw), ih * i, iw/2, ih, i, 2)){ 
+      if(Button("Drop", XOffset() + iw + iw/2, ih * i, iw/2, ih, i, 2)){ 
         actor.DiscardItem(i); 
       }
     }
     GUI.EndScrollView();
   }
   
-  void Equip(Data dat, bool right){
+  void Equip(Data dat, bool primary){
     List<Data> discarded;
-    discarded = arms.Equip(dat);
+    discarded = arms.Equip(dat, primary);
     for(int i = 0; i < discarded.Count; i++){
-      discarded[i].stack = inv.Store(discarded[i]);
-      if(discarded[i].stack > 0){ manager.actor.DiscardItem(discarded[i]); }
+      int remainder = inv.Store(discarded[i]);
+      if(remainder > 0){ 
+        discarded[i] = new Data(discarded[i]);
+        discarded[i].stack = remainder;
+        manager.actor.DiscardItem(discarded[i]); 
+      }
     }
   }
   
@@ -133,7 +143,11 @@ public class InventoryMenu : Menu{
   /* Return to inventory or drop. */
   public void UnEquip(bool primary){
     Data displaced = arms.Remove(primary);
-    displaced.stack = inv.Store(displaced);
-    if(displaced.stack > 0){ manager.actor.DiscardItem(displaced); }
+    int remainder = inv.Store(displaced);
+    if(remainder > 0){
+      displaced = new Data(displaced);
+      displaced.stack = remainder;
+      manager.actor.DiscardItem(displaced); 
+    }
   }
 }

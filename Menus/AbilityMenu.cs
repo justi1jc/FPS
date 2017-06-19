@@ -40,6 +40,7 @@ public class AbilityMenu : Menu{
     );
     if(manager.actor == null || manager.actor.arms == null){ return; }
     Actor actor = manager.actor;
+    selections = manager.actor.stats.abilities;
     for(int i = 0; i < selections.Count; i++){
       int ability = selections[i];
       string selected = "";

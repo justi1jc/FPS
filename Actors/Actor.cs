@@ -102,13 +102,15 @@ public class Actor : MonoBehaviour{
   /* Before Start */
   void Awake(){
     body = gameObject;
+    inventory = new Inventory();
+    arms = new EquipSlot();
+    stats = new StatHandler();
   }
   
   /* Before rest of code */
   void Start(){
     if(stats.level == 0){ stats.LevelUp();}
-    inventory = new Inventory();
-    arms = new EquipSlot();
+    AssignPlayer(playerNumber);
   }
   
   
@@ -145,6 +147,10 @@ public class Actor : MonoBehaviour{
     playerNumber = player;
     StartCoroutine(RegenRoutine());
     if(player <5 && player > 0){
+      stats.abilities.Add(0);
+      stats.abilities.Add(1);
+      stats.abilities.Add(2);
+      stats.abilities.Add(3);
       SetMenuOpen(false);
       if(head){ 
         menu = head.GetComponent<MenuManager>(); 
@@ -679,7 +685,11 @@ public class Actor : MonoBehaviour{
   /* Removes number of available ammo, up to max, and returns that number*/
   public int RequestAmmo(string ammoName,int max){
     for(int i = 0; i < inventory.slots; i++){
-      if(inventory.inv != null && inventory.inv[i].displayName == ammoName){
+      if(
+          inventory.inv != null 
+          && inventory.inv[i] != null
+          && inventory.inv[i].displayName == ammoName
+        ){
         int available = inventory.Retrieve(i, max).stack;
         return available;
       }
@@ -690,8 +700,12 @@ public class Actor : MonoBehaviour{
 
   /* Adds item data to inventory */
   public void StoreItem(Data item){
-    item.stack = inventory.Store(item);
-    if(item.stack > 0){ DiscardItem(item); }
+    int remainder = inventory.Store(item);
+    if(remainder > 0){
+      item = new Data(item);
+      item.stack = remainder;
+      DiscardItem(item); 
+    }
   }
   
   /* Drops item onto ground from inventory. */

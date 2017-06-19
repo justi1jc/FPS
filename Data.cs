@@ -43,6 +43,29 @@ public class Data{
       equipSlot = null;
    }
    
+   public Data(Data dat){
+     readyToRead = dat.readyToRead;
+     prefabName = dat.prefabName;
+     displayName = dat.displayName;
+     x = dat.x;
+     y = dat.y;
+     z = dat.z;
+     xr = dat.xr;
+     yr = dat.yr;
+     zr = dat.zr;
+     stack = dat.stack;
+     stackSize = dat.stackSize;
+     lastPos = dat.lastPos;
+     baseValue = dat.baseValue;
+     ints = dat.ints;
+     strings = dat.strings;
+     floats = dat.floats;
+     inventoryRecord = dat.inventoryRecord;
+     bools = dat.bools;
+     speechTree = dat.speechTree;
+     equipSlot = dat.equipSlot;
+   }
+   
 
 }
 

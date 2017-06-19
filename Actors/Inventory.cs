@@ -35,6 +35,7 @@ public class Inventory{
   
   /* Stores this item and returns the overflow if it can't fit */
   public int Store(Data dat){
+    
     for(int i = 0; i < inv.Count; i++){ 
       if(dat.stack == 0){ return 0; }
       if(
@@ -70,7 +71,7 @@ public class Inventory{
      or null. */
   public Data Retrieve(int slot, int quantity = 1){
     if(slot < 0 || slot >= inv.Count || inv[slot] == null){ return null; }
-    Data ret = inv[slot];
+    Data ret = new Data(inv[slot]);
     if(quantity < inv[slot].stack){ 
       ret.stack = quantity;
       inv[slot].stack -= quantity;
@@ -79,7 +80,6 @@ public class Inventory{
       inv[slot] = null; 
     }
     return ret;
-    
   }
   
   /* Return the contents of a slot, or null */

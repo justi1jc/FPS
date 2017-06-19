@@ -8,9 +8,9 @@ using System.Collections;
 using System.Collections.Generic;
 [System.Serializable]
 public class EquipSlot{
-  public Actor actor = null; // Actor, if one is associated with this EquipSlot
-  public GameObject hand, offHand;
-  public Item handItem, offHandItem; // Equipped item
+  [System.NonSerialized]public Actor actor = null; // Actor, if one is associated with this EquipSlot
+  [System.NonSerialized]public GameObject hand, offHand;
+  [System.NonSerialized]public Item handItem, offHandItem; // Equipped item
   Data handData = null;
   Data offHandData = null;
   public int handAbility, offHandAbility;
@@ -25,7 +25,7 @@ public class EquipSlot{
   public void Save(){
     if(handItem != null){ handData = handItem.GetData(); }
     else{ handData = null;}
-    if(offHand != null){  offHandData = offHandItem.GetData(); }
+    if(offHandItem != null){  offHandData = offHandItem.GetData(); }
     else{ offHandData = null; }
     
   }
@@ -62,7 +62,7 @@ public class EquipSlot{
   /* Equips an item to the desired slot, returning any items displaced. */
   public List<Data> Equip(Data dat, bool primary = true){
     List<Data> ret = new List<Data>();
-    if(dat == null){ return ret; }
+    if(dat == null){ MonoBehaviour.print("Equipped null data"); return ret; }
     GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
     if(!prefab){ MonoBehaviour.print("Prefab null:" + dat.displayName); return ret;}
     Vector3 position = actor != null ? actor.transform.position : new Vector3();
@@ -81,11 +81,13 @@ public class EquipSlot{
       if(handItem != null){
         ret.Add(Remove(true));
       }
+      handItem = item;
     }
     else{
       if(offHandItem != null){
         ret.Add(Remove(false));
       }
+      offHandItem = item;
     }
     
     return ret;
