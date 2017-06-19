@@ -145,7 +145,7 @@ public class TradeMenu : Menu{
     }
   }
 
-    /* Distribute items that were bought and sold. */
+  /* Distribute items that were bought and sold. */
   void FinalizeTrade(){
     if(manager.actor == null){ return; }
     if(manager.actor.interlocutor == null){ return; }
