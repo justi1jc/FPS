@@ -13,12 +13,12 @@ public class EquipSlot{
   [System.NonSerialized]public Item handItem, offHandItem; // Equipped item
   Data handData = null;
   Data offHandData = null;
-  public int handAbility, offHandAbility;
+  public int handAbility = -1;
+  public int offHandAbility = -1;
   
   public EquipSlot(GameObject hand = null, GameObject offHand = null){
     this.hand = hand;
     this.offHand = hand;
-    handAbility = offHandAbility = -1;
   }
   
   /* Enters a dormant state to be serialized. */
@@ -114,7 +114,6 @@ public class EquipSlot{
       }
     }
     else if(handAbility != -1){
-      MonoBehaviour.print("Using ability " + handAbility);
       switch(use){
         case 0:
           UseAbility(0, true);
@@ -175,7 +174,6 @@ public class EquipSlot{
     if(user == false){ return; }
     int ability = primary ? handAbility : offHandAbility;
     if(ability == -1){ return; }
-    
     switch(ability){
       case 0:
         UsePunch(user, use);
@@ -226,7 +224,7 @@ public class EquipSlot{
       selectedHand = offHand;
       displacedItem = offHandItem;
     }
-    if(selectedHand == null){ return ret; }
+    if(selectedHand == null){ MonoBehaviour.print("selected hand is null."); return ret; }
     if(displacedItem != null){
       ret.Add(displacedItem.GetData());
       MonoBehaviour.Destroy(displacedItem.gameObject);
@@ -249,6 +247,7 @@ public class EquipSlot{
         InitHealOther(selectedHand);
         break;
     }
+    MonoBehaviour.print(handAbility + ":" + offHandAbility);
     return ret;
   }
   

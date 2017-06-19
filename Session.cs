@@ -53,7 +53,7 @@ public class Session : MonoBehaviour {
   
   // Arena
   public int playerCount;
-  
+  public int gameMode = -1;
   
   // players
   List<Data> playerData;
@@ -102,6 +102,7 @@ public class Session : MonoBehaviour {
   */
   public void CreateGame(string sesName){
     sessionName = sesName;
+    gameMode = 0;
     currentID = 0;
     if(mainMenu){ DestroyMenu();}
     CreateLoadingScreen();

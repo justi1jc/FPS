@@ -104,6 +104,8 @@ public class Actor : MonoBehaviour{
     body = gameObject;
     inventory = new Inventory();
     arms = new EquipSlot();
+    arms.hand = hand;
+    arms.offHand = offHand;
     stats = new StatHandler();
   }
   
@@ -151,8 +153,8 @@ public class Actor : MonoBehaviour{
       stats.abilities.Add(1);
       stats.abilities.Add(2);
       stats.abilities.Add(3);
-      arms.EquipAbility(0, true);
-      arms.EquipAbility(0, false);
+      EquipAbility(0, true);
+      EquipAbility(0, false);
       SetMenuOpen(false);
       if(head){ 
         menu = head.GetComponent<MenuManager>(); 
@@ -164,8 +166,8 @@ public class Actor : MonoBehaviour{
     }
     else if(player == 5){
       stats.abilities.Add(0);
-      arms.EquipAbility(0, true);
-      arms.EquipAbility(0, false);
+      EquipAbility(0, true);
+      EquipAbility(0, false);
       ai = gameObject.GetComponent<AI>();
       if(ai){ ai.Begin(this); }
       if(speechTreeFile != ""){ speechTree = new SpeechTree(speechTreeFile); }
@@ -661,7 +663,7 @@ public class Actor : MonoBehaviour{
   
   /* Equips ability to selected hand, storing items displaced. */
   public void EquipAbility(int ability, bool primary){
-    List<Data> displaced = arms.EquipAbility(ability);
+    List<Data> displaced = arms.EquipAbility(ability, primary);
     for(int i = 0; i < displaced.Count; i++){
       displaced[i].stack = inventory.Store(displaced[i]);
       if(displaced[i].stack > 0){ DiscardItem(displaced[i]); }

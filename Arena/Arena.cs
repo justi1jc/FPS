@@ -43,7 +43,13 @@ public class Arena : MonoBehaviour{
     if(HUD == null){ print("Menu null"); return; }
     HUD.message = "Arena deathmatch\n" + Time();
     time--;
-    if(time < 1){ HUD.subMenu = 1; }
+    if(time < 1){ 
+      HUD.subMenu = 1;
+      for(int i = 0; i < players.Count; i++){
+        players[i].SetMenuOpen(true);
+        Destroy(players[i].gameObject);
+      }
+    }
   }
   
   void HandleKills(){
@@ -68,6 +74,7 @@ public class Arena : MonoBehaviour{
     for(int i = respawnTimer; i > 0; i--){
       if(playerHUD != null){
         playerHUD.message = "Respawn in \n" + i;
+        yield return new WaitForSeconds(1f);
       }
     }
     Data dat = player.GetData();
@@ -121,7 +128,10 @@ public class Arena : MonoBehaviour{
   string Time(){
     int minutes = time/60;
     int seconds = time%60;
-    return minutes + ":" + seconds;
+    string secs = "";
+    if(seconds < 10){ secs += "0"; }
+    secs += seconds;
+    return minutes + ":" + secs;
   }
   
 
