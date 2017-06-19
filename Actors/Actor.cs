@@ -151,6 +151,8 @@ public class Actor : MonoBehaviour{
       stats.abilities.Add(1);
       stats.abilities.Add(2);
       stats.abilities.Add(3);
+      arms.EquipAbility(0, true);
+      arms.EquipAbility(0, false);
       SetMenuOpen(false);
       if(head){ 
         menu = head.GetComponent<MenuManager>(); 
@@ -161,6 +163,9 @@ public class Actor : MonoBehaviour{
       else{StartCoroutine(ControllerInputRoutine()); }
     }
     else if(player == 5){
+      stats.abilities.Add(0);
+      arms.EquipAbility(0, true);
+      arms.EquipAbility(0, false);
       ai = gameObject.GetComponent<AI>();
       if(ai){ ai.Begin(this); }
       if(speechTreeFile != ""){ speechTree = new SpeechTree(speechTreeFile); }

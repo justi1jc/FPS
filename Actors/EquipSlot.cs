@@ -39,12 +39,12 @@ public class EquipSlot{
       Equip(handData, true);
       handData = null;
     }
-    else{ EquipAbility(handAbility, true); }
+    else if(handAbility != -1){ EquipAbility(handAbility, true); }
     if(offHandData != null){
       Equip(offHandData, false);
       offHandData = null;
     }
-    else{ EquipAbility(offHandAbility, true); }
+    else if(offHandAbility != -1){ EquipAbility(offHandAbility, true); }
   }
   
   /* Drop item from hand, or offHand if hand is empty. */
@@ -114,6 +114,7 @@ public class EquipSlot{
       }
     }
     else if(handAbility != -1){
+      MonoBehaviour.print("Using ability " + handAbility);
       switch(use){
         case 0:
           UseAbility(0, true);
@@ -232,7 +233,8 @@ public class EquipSlot{
     }
     Item oldAbility = selectedHand.GetComponent<Item>();
     if(oldAbility){ MonoBehaviour.Destroy(oldAbility); }
-    
+    if(primary){ handAbility = ability; }
+    else{ offHandAbility = ability; }
     switch(ability){
       case 0:
         InitPunch(selectedHand);

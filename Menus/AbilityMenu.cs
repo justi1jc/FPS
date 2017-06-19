@@ -44,14 +44,14 @@ public class AbilityMenu : Menu{
     for(int i = 0; i < selections.Count; i++){
       int ability = selections[i];
       string selected = "";
+      if(ability == actor.arms.offHandAbility){ selected += "Right "; }
+      if(ability == actor.arms.handAbility){ selected += "Left "; }
       selected += actor.arms.AbilityInfo(i);
-      if(i == actor.arms.handAbility){ selected += " Right Hand "; }
-      if(i == actor.arms.offHandAbility){ selected += " Left Hand "; }
       if(Button(selected, 0, ih * i, iw, ih, 0, i)){
-        actor.arms.EquipAbility(ability, true);
-      }
-      if(Button("EquipLeft", iw, ih * i, iw, ih, 0, i)){
         actor.arms.EquipAbility(ability, false);
+      }
+      if(Button("Equip Left", iw, ih * i, iw, ih, 0, i)){
+        actor.arms.EquipAbility(ability, true);
       }
     }
     GUI.EndScrollView();
