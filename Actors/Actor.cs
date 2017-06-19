@@ -160,7 +160,10 @@ public class Actor : MonoBehaviour{
         menu = head.GetComponent<MenuManager>(); 
       }
       if(menu){ menu.Change("HUD");  menu.actor = this; }
-      if(Session.session){ Session.session.RegisterPlayer(this, player, head.GetComponent<Camera>()); }
+      if(Session.session != null && head.GetComponent<Camera>() != null){
+        Session.session.RegisterPlayer(this, player, head.GetComponent<Camera>()); 
+      }
+      else{ print("Session or cam is null"); }
       if(player == 1){ StartCoroutine(KeyboardInputRoutine()); }
       else{StartCoroutine(ControllerInputRoutine()); }
     }

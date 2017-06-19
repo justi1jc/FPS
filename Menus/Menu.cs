@@ -22,8 +22,6 @@ public class Menu{
   
   public MenuManager manager;
   public List<string> notifications = new List<string>(); // Notifications that must be displayed.
-  public bool split; // True if screen is split.
-  public bool right; // True if this screen is on the right side of the sceen.
   public float notificationTimer = 6f; // Duration of each notification's display.
   public int px, py; // Primary focus (ie which table or is selected.)
   public int pxMax, pyMax, pxMin, pyMin; // Primary focus boundaries.
@@ -35,8 +33,6 @@ public class Menu{
   
   public Menu(MenuManager manager){
     this.manager = manager;
-    this.split = this.manager.split;
-    this.right = this.manager.right;
   }
   
   /* Queue a notification. */
@@ -52,13 +48,13 @@ public class Menu{
   /* Width of the screen. */
   public int Width(){
     int x = Screen.width;
-    if(split){ x /= 2; }
+    if(manager.split){ x /= 2; }
     return x;
   }
   
   /* Width Offset for splitscreen.  */
   public int XOffset(){
-    if(right){ return Width(); }
+    if(manager.right){ return Width(); }
     return 0;
   }
   

@@ -247,7 +247,6 @@ public class EquipSlot{
         InitHealOther(selectedHand);
         break;
     }
-    MonoBehaviour.print(handAbility + ":" + offHandAbility);
     return ret;
   }
   

@@ -17,6 +17,8 @@ public class ArenaLobbyMenu : Menu{
     int ih = Height()/10;
     int iw = Width()/5; 
     Box("Arena Lobby", 2*iw, ih, iw, ih);
+    string str = "Players: " + Session.session.playerCount;
+    if(Button(str, 2*iw, 2*ih, iw, ih)){ TogglePlayers(); }
     if(Button("Start", Width()-iw, Height()-ih, iw, ih)){ 
       manager.Change("NONE");
       SceneManager.LoadScene("Arena_Empty");
@@ -26,6 +28,12 @@ public class ArenaLobbyMenu : Menu{
     }
   }
   
+  void TogglePlayers(){
+    int players = Session.session.playerCount;
+    if(players == 1){ players = 2; }
+    else{ players = 1; }
+    Session.session.playerCount = players;
+  }
   public override void UpdateFocus(){}
   
   public override void Input(int button){}
