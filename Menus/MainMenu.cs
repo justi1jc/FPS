@@ -21,6 +21,11 @@ public class MainMenu : Menu{
     int ih = Height()/4;
     int x = XOffset() + iw;
     string str;
+    
+    if(Button("Arena", x, 0, 4*iw, ih)){
+      manager.Change("ARENALOBBY");
+    }
+    
     switch(subMenu){
       case 0:
         str = "New Game";

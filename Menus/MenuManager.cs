@@ -73,6 +73,12 @@ public class MenuManager: MonoBehaviour{
       case "LOAD":
         active = (Menu)(new LoadMenu(this));
         break;
+      case "ARENALOBBY":
+        active = (Menu)(new ArenaLobbyMenu(this));
+        break;
+      case "ARENAHUD":
+        active = (Menu)(new ArenaHUDMenu(this));
+        break;
     }
   
   }

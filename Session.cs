@@ -66,7 +66,7 @@ public class Session : MonoBehaviour {
   bool mainMenu; // True when main menu is active.
   HoloCell menuCell;
   Camera sesCam;
-  MenuManager sesMenu;
+  public MenuManager sesMenu;
   
   void Awake(){
     if(Session.session){ Destroy(this); }
