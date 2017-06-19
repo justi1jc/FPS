@@ -8,7 +8,6 @@ using System.Collections.Generic;
 
 public class Food : Item{
   public int healing; // Health gained by consumption.
-  bool ready = true;
   public float cooldown; // Delay between uses
   
   public override void Use(int action){

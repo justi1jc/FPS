@@ -24,13 +24,12 @@ player in a rich game world.
 
 Tentative roadmap:
 
-Refactor
-  -Break reusable or excessive logic up into components
+Add Arena gamemode(V0.5.1):
+  -Create an Arena gamemode to better test core gameplay features with. 
 
 React to feedback:
-  -Determine format for Models/Animation
-  -Determine Priority of existing V1.0 Goals
-  -Determine new V1.0 Goals.
+  -Determine Priority of existing V0.6 Goals
+  -Determine new V0.6 Goals.
 
 ********************************************************************************
 ______ _       _     _              _   _____             _     
@@ -64,20 +63,3 @@ Speech(Speech tree, trade system)
 Save&Load(GameData, interior cells, Actor data)
 World(interior cells, exterior cells, random generation)
 Quest(Quest interface, hello world quest)
-
-
-********************************************************************************
-______      __           _               _____             _     
-| ___ \    / _|         | |             |  __ \           | |    
-| |_/ /___| |_ __ _  ___| |_ ___  _ __  | |  \/ ___   __ _| |___ 
-|    // _ \  _/ _` |/ __| __/ _ \| '__| | | __ / _ \ / _` | / __|
-| |\ \  __/ || (_| | (__| || (_) | |    | |_\ \ (_) | (_| | \__ \
-\_| \_\___|_| \__,_|\___|\__\___/|_|     \____/\___/ \__,_|_|___/
-
-********************************************************************************
-
--Break logic out into re-usable components
-ItemSlot
-Inventory
-StatHandler
-ConditionHandler

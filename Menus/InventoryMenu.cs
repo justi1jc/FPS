@@ -7,22 +7,27 @@ using System.Collections.Generic;
 
 
 public class InventoryMenu : Menu{
-  List<Data> inv;
+  Inventory inv;
+  EquipSlot arms;
   public InventoryMenu(MenuManager manager) : base(manager){
-    if(manager.actor != null){
+    if(manager.actor != null && manager.actor.inventory != null){
       inv = manager.actor.inventory;
+      arms = manager.actor.arms;
     }
-    else{ inv = null; }
-    syMin = 0;
-    sxMax = 1;
+    else{ 
+      inv = null; 
+      arms = null;
+    }
+    syMin = -1;
+    sxMax = 3;
     sxMin = -1;
   }
   
   public override void Render(){
-    //Box("", XOffset(), 0, Width(), Height()); //Draw Background
-    List<Data> inv = manager.actor.inventory;
+    Box("", XOffset(), 0, Width(), Height()); //Draw Background
     int iw = Width()/4;
     int ih = Height()/20;
+    int x, y;
     string str = "";
     
     // Display Navigation buttons
@@ -36,62 +41,113 @@ public class InventoryMenu : Menu{
     
     // Display Inventory
     Actor actor = manager.actor;
-    if(actor == null || inv == null){ return; }
-    str = "Currency: " + actor.currency; 
-    Box(str, XOffset(), 0, iw, 2*ih);
+    if(actor == null || inv == null || arms == null){ return; }
+    
+    
+    if(arms.handItem != null){
+      str = "Left" + arms.handItem.GetInfo();
+      y = (Height()/2) - (2*ih);
+      x = XOffset() + iw;
+      if(Button(str, x, y, iw + iw/2, ih, 0, -2)){ UnEquip(true); }
+    }
+    if(arms.offHandItem != null){
+      str = "Right" + arms.offHandItem.GetInfo();
+      y = (Height()/2) -ih;
+      x = XOffset() + iw;
+      if(Button(str, x, y, iw + iw/2, ih, 0, -1)){ UnEquip(false); }
+    }
     
     scrollPosition = GUI.BeginScrollView(
-      new Rect(XOffset() +iw, Height()/2, Width()-iw, ih * inv.Count),
+      new Rect(XOffset() +iw, Height()/2, Width()-iw, ih * inv.slots),
       new Vector2(0, ih * sy),
       new Rect(0, 0, 200, 200)
     );
-    
-    for(int i = 0; i < inv.Count; i++){ 
-      Data item = inv[i];
-      string selected = "";
-      if(i == actor.primaryIndex){ selected += "Right Hand "; }
-      if(i == actor.secondaryIndex){ selected += "Left Hand "; }
-      string name = item.displayName;
-      string info = " " + item.stack + "/" + item.stackSize;
-      if(i == sy && sx == 0){ GUI.color = Color.yellow; }
-      str = selected + name + info;
-      if(Button(str, XOffset(), ih * i, iw + iw/2, ih, 0, i)){ 
-        actor.Equip(i); 
+    for(int i = 0; i < inv.slots; i++){
+      Data item = inv.Peek(i);
+      string name = item == null ? "EMPTY" : item.displayName;
+      string info = item == null ? "" : " " + item.stack + "/" + item.stackSize;
+      str = name + info;
+      if(Button(str, XOffset(), ih * i, iw, ih, 0, i)){ 
+        Equip(inv.Retrieve(i), true); 
       }
-      if(Button("DROP", XOffset() + iw + iw/2, ih * i, iw/2, ih)){ 
+      if(Button("OffHand", XOffset() + iw, ih * i, iw/2, ih, i, 1)){ 
+        Equip(inv.Retrieve(i), false);
+      }
+      if(Button("Drop", XOffset() + iw + iw/2, ih * i, iw/2, ih, i, 2)){ 
         actor.DiscardItem(i); 
       }
     }
     GUI.EndScrollView();
   }
   
+  void Equip(Data dat, bool primary){
+    List<Data> discarded;
+    discarded = arms.Equip(dat, primary);
+    for(int i = 0; i < discarded.Count; i++){
+      int remainder = inv.Store(discarded[i]);
+      if(remainder > 0){ 
+        discarded[i] = new Data(discarded[i]);
+        discarded[i].stack = remainder;
+        manager.actor.DiscardItem(discarded[i]); 
+      }
+    }
+  }
+  
   public override void UpdateFocus(){
-    if(inv != null){ syMax = inv.Count-1; }
-    if(sx != 0){ sy = 0; }
+    if(inv != null){ syMax = inv.slots-1; }
     SecondaryBounds();
   }
   
   public override void Input(int button){
     DefaultExit(button);
+    if(manager.actor == null || inv == null || arms == null){ return; }
+    Actor actor = manager.actor;
+    
     switch(sx){
       case -1:
         if(button == A){ manager.Change("QUEST"); }
         break;
       case 0:
-        if(inv == null){ return; }
-        if(sy < inv.Count){
-          if(manager.actor == null){ return; }
-          Actor actor = manager.actor;
-          if(button == A){ actor.Equip(sy); }
-          else if(button == X){ actor.DiscardItem(sy); }
-          else if(button == RT){ actor.Equip(sy); }
-          else if(button == LT){ actor.EquipSecondary(sy); }
+        if(sy == -2){ UnEquip(true); }
+        else if(sy == -1){ UnEquip(false); }
+        else if(sy < inv.slots){
+          if(button == A){ Equip(inv.Retrieve(sy), false); }
+          DefaultItemInput(button);
         }
         break;
       case 1:
+        if(sy < inv.slots){
+          if(button == A){ Equip(inv.Retrieve(sy), true); }
+          DefaultItemInput(button);
+        }
+        break;
+      case 2:
+        if(sy < inv.slots){
+          if(button == A){ actor.DiscardItem(sy); }
+          DefaultItemInput(button);
+        }
+        break;
+      case 3:
         if(button == A){ manager.Change("ABILITY"); }
         break;
     }
   }
   
+  /*  Controller actions for an item. */
+  public void DefaultItemInput(int button){
+    if(button == X){ manager.actor.DiscardItem(sy); }
+    else if(button == RT){ Equip(inv.Retrieve(sy), false); }
+    else if(button == LT){ Equip(inv.Retrieve(sy), true); }
+  }
+  
+  /* Return to inventory or drop. */
+  public void UnEquip(bool primary){
+    Data displaced = arms.Remove(primary);
+    int remainder = inv.Store(displaced);
+    if(remainder > 0){
+      displaced = new Data(displaced);
+      displaced.stack = remainder;
+      manager.actor.DiscardItem(displaced); 
+    }
+  }
 }

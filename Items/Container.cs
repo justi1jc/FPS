@@ -7,10 +7,10 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class Container : Decor{
-  List<Data> contents = null;
+  Inventory contents = null;
   
-  public void Start(){
-    if(contents == null){ contents = new List<Data>(); }
+  public void Wake(){
+    if(contents == null){ contents = new Inventory(); }
   }
   
   public override void Interact(Actor a, int mode = -1, string message = ""){
@@ -23,16 +23,14 @@ public class Container : Decor{
   
   public override Data GetData(){
     Data dat = GetBaseData();
-    for(int j = 0; j < contents.Count; j++){
-      dat.inventory.inv.Add(contents[j]);
-    }
+    dat.inventoryRecord = contents.GetData();
     return dat;
   }
   
   public override void LoadData(Data dat){
     LoadBaseData(dat);
-    if(dat.inventory != null){ contents = new List<Data>(dat.inventory.inv); }
-    else{ contents = new List<Data>(); }
+    if(contents == null){ contents = new Inventory(); }
+    if(dat.inventoryRecord != null){ contents.LoadData(dat.inventoryRecord); }
   }
   
 }
