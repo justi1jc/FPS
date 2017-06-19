@@ -22,9 +22,20 @@ public class TradeMenu : Menu{
     
     selling = new List<Data>(manager.actor.inventory.inv);
     buying = new List<Data>(manager.actor.interlocutor.inventory.inv);
+    ClearNulls(selling);
+    ClearNulls(buying);
     sold = new List<Data>();
     bought = new List<Data>();
     balance = 0;
+  }
+  
+  public void ClearNulls(List<Data> dats){
+    for(int i = 0; i < dats.Count; i++){
+      if(dats[i] == null){
+        dats.Remove(dats[i]);
+        i--;
+      }
+    }
   }
   
   public override void Render(){
@@ -48,8 +59,8 @@ public class TradeMenu : Menu{
 
     for(int i = 0; i < selling.Count; i++){
       y = i*ih;
-      str = selling[i].displayName;
-      if(selling[i].stack > 1){ str += "(" + selling[i].stack + ")"; }
+      str = selling[i] != null ? selling[i].displayName : "";
+      if(selling[i] != null && selling[i].stack > 1){ str += "(" + selling[i].stack + ")"; }
       if(Button(str, 0, y, iw, ih, 0, i)){
         Sell(i);
       }
@@ -65,8 +76,8 @@ public class TradeMenu : Menu{
 
     for(int i = 0; i < buying.Count; i++){
       y = i*ih;
-      str = buying[i].displayName;
-      if(buying[i].stack > 1){ str += "(" + buying[i].stack + ")"; }
+      str = buying[i] != null ? buying[i].displayName : "Null";
+      if(buying[i] != null && buying[i].stack > 1){ str += "(" + buying[i].stack + ")"; }
       if(Button(str, 0, y, iw, ih, 0, i)){
         Buy(i);
       }
@@ -144,19 +155,29 @@ public class TradeMenu : Menu{
     Inventory invB = interlocutor.inventory;
     for(int i = 0; i < bought.Count; i++){
       Data item = bought[i];
-      item.stack = inv.Store(invB.Retrieve(invB.IndexOf(item)));
-      if(item.stack > 0){ inv.DiscardItem(item, manager.transform.position); }
+      int remainder = inv.Store(invB.Retrieve(invB.IndexOf(item)));
+      if(remainder > 0){ 
+        item = new Data(item);
+        item.stack = remainder;
+        inv.DiscardItem(item, manager.transform.position);
+      }
     }
     for(int i = 0; i < sold.Count; i++){
       Data item = sold[i];
-      item.stack = invB.Store(inv.Retrieve(inv.IndexOf(item)));
-      if(item.stack > 0){ invB.DiscardItem(item, manager.transform.position); }
+      int remainder = invB.Store(inv.Retrieve(inv.IndexOf(item)));
+      if(remainder > 0){ 
+        item = new Data(item);
+        item.stack = remainder;
+        invB.DiscardItem(item, manager.transform.position); 
+      }
     }
     balance = 0;
     sold = new List<Data>();
     bought = new List<Data>();
     selling = new List<Data>(actor.inventory.inv);
     buying = new List<Data>(actor.interlocutor.inventory.inv);
+    ClearNulls(selling);
+    ClearNulls(buying);
   }
   
   public override void UpdateFocus(){
