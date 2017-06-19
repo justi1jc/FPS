@@ -51,6 +51,10 @@ public class Session : MonoBehaviour {
   public static string RSC = "joystick button 10"; // 10  Right stick click
   public static string LSC = "joystick button 9";  // 9   left stick click
   
+  // Arena
+  public int playerCount;
+  
+  
   // players
   List<Data> playerData;
   Camera cam1;

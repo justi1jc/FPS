@@ -1,5 +1,6 @@
 /*
     HUDMenu
+    Serves to display the player's heads-up display.
 */
 using UnityEngine;
 using System.Collections;
@@ -7,10 +8,18 @@ using System.Collections.Generic;
 
 
 public class HUDMenu : Menu{
+  public string message = "";
   
   public HUDMenu(MenuManager manager) : base(manager){}
   
   public override void Render(){
+    Actor actor = manager.actor;
+    if(actor == null){ return; }
+    if(actor.Alive()){ RenderAlive(); }
+    else{ RenderDead(); }
+  }
+  
+  void RenderAlive(){
     Actor actor = manager.actor;
     if(actor == null || actor.stats == null){ return; }
     StatHandler stats = actor.stats;
@@ -51,6 +60,12 @@ public class HUDMenu : Menu{
       y = 9 * Height()/cbsy;
       Box(str, x, y, Width()/cbsx, Height()/cbsy); 
     }
+  }
+  
+  void RenderDead(){
+    int iw = Width()/2;
+    int ih = Height()/3;
+    Box(message, iw/2, Height()/2, iw, ih);
   }
   
   public override void UpdateFocus(){}
