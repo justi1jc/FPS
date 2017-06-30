@@ -21,7 +21,6 @@ public class HUDMenu : Menu{
   
   void RenderAlive(){
     Actor actor = manager.actor;
-    MonoBehaviour.print(Width());
     if(actor == null || actor.stats == null){ return; }
     StatHandler stats = actor.stats;
     // Display Condition bars

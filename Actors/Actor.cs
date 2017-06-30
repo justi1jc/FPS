@@ -119,6 +119,11 @@ public class Actor : MonoBehaviour{
     foreach(Rigidbody rb in rbs){ 
       if(rb != GetComponent<Rigidbody>()){rb.isKinematic = true;} 
     }
+    Collider[] colliders = GetComponentsInChildren<Collider>();
+    Collider col = GetComponent<Collider>();
+    foreach(Collider c in colliders){
+      if(c != col){ Physics.IgnoreCollision(c, col); }
+    }
   }
   
   
@@ -178,9 +183,6 @@ public class Actor : MonoBehaviour{
       EquipAbility(0, true);
       EquipAbility(0, false);
       SetMenuOpen(false);
-      if(head){ 
-        menu = head.GetComponent<MenuManager>(); 
-      }
       if(menu){ menu.Change("HUD");  menu.actor = this; }
       if(Session.session != null && cam != null){
         Session.session.RegisterPlayer(this, player, cam); 
