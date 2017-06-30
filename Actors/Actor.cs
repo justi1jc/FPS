@@ -41,11 +41,13 @@ public class Actor : MonoBehaviour{
   public GameObject hand;    // GameObject where items are attached.
   public GameObject offHand; // Secondary hand where items are attached.
   public GameObject spine;   // Pivot point of toros
-  public GameObject body;           // The base gameobject of the actor
+  public GameObject body;    // The base gameobject of the actor, for external use
+  public GameObject rFoot;    // Used for jumping.
 
   
   //UI
   public MenuManager menu;
+  public Camera cam; // Camera used for players.
   bool menuMove = true;// Used to govern joystick menu inputs.
   float menuMovementDelay = 0.15f; // How long to delay between menu movements
   public bool menuOpen;
@@ -113,32 +115,52 @@ public class Actor : MonoBehaviour{
   void Start(){
     if(stats.level == 0){ stats.LevelUp();}
     AssignPlayer(playerNumber);
+    Rigidbody[] rbs = GetComponentsInChildren<Rigidbody>();
+    foreach(Rigidbody rb in rbs){ 
+      if(rb != GetComponent<Rigidbody>()){rb.isKinematic = true;} 
+    }
   }
   
   
   /* Cycle loop. Listens for falling. */
   void Update(){
     UpdateReach();
-    Rigidbody rb = body.GetComponent<Rigidbody>();
+    Rigidbody rb = GetComponent<Rigidbody>();
     if(!falling && rb && rb.velocity.y < 0f){
       falling = true;
-      fallOrigin = transform.position.y;
 		}
   }
   
   /* Late-cycle loop. Orients the model before render.*/
   void LateUpdate(){
     if(spine && !ragdoll){
-      spine.transform.rotation = Quaternion.Euler(new Vector3(
-        headRotx,
-        headRoty,
-        spine.transform.rotation.z));
-    }                                    
+      float offset = -90; // Offset of model's spine.
+      Vector3 rot = new Vector3(headRotx, headRoty, offset);
+      spine.transform.rotation = Quaternion.Euler(rot);
+    }
   }
   
   /* Notifies menu, if it exists. */
   public void Notify(string message){
     if(menu != null){ menu.Notify(message); }
+  }
+  
+  /* Sets the animator boolean if the animator exists. */
+  public void SetAnimBool(string boolean, bool val){
+    if(!anim){ print("animator null"); return; }
+    anim.SetBool(boolean, val);
+  }
+  
+  /* Returns the value of the boolean, or false. */
+  public bool GetAnimBool(string boolean){
+    if(!anim){ return false; }
+    return anim.GetBool(boolean);
+  }
+  
+  /* Sets the specified trigger if the animator exists. */
+  public void SetAnimTrigger(string trigger){
+    if(!anim){ return; }
+    anim.SetTrigger(trigger);
   }
   
   /* 0 No AI
@@ -160,8 +182,8 @@ public class Actor : MonoBehaviour{
         menu = head.GetComponent<MenuManager>(); 
       }
       if(menu){ menu.Change("HUD");  menu.actor = this; }
-      if(Session.session != null && head.GetComponent<Camera>() != null){
-        Session.session.RegisterPlayer(this, player, head.GetComponent<Camera>()); 
+      if(Session.session != null && cam != null){
+        Session.session.RegisterPlayer(this, player, cam); 
       }
       else{ print("Session or cam is null"); }
       if(player == 1){ StartCoroutine(KeyboardInputRoutine()); }
@@ -246,6 +268,10 @@ public class Actor : MonoBehaviour{
     else if(Input.GetKey(KeyCode.S)){ z = -1f; walk = true; }
     if(Input.GetKey(KeyCode.A)){ x = -1f; walk = true; }
     else if(Input.GetKey(KeyCode.D)){ x = 1f; walk = true; }
+    if(walk != walking){
+      walking = walk;
+      SetAnimBool("walking", walk);
+    }
     if(x != 0f || z != 0f){ StickMove(x, z); }
     if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(KeyCode.LeftControl)){ToggleCrouch(); }
@@ -309,6 +335,7 @@ public class Actor : MonoBehaviour{
       menu.Press(Menu.X);
     }
   }
+
   
   /* Handles controller input when not paused. */
   void ControllerActorInput(){
@@ -317,12 +344,16 @@ public class Actor : MonoBehaviour{
     float yl = Input.GetAxis(Session.YL);
     float xr = Input.GetAxis(Session.XR);
     float yr = Input.GetAxis(Session.YR);
-    float rt = Input.GetAxis(Session.RT);
-    float lt = Input.GetAxis(Session.LT);
+    float rt = Input.GetAxis(Session.LT);
+    float lt = Input.GetAxis(Session.RT);
     
     // Basic movement
     bool shift = Input.GetKey(Session.LB);
     bool walk = xl != 0f || yl != 0;
+    if(walk != walking){
+      walking = walk;
+      SetAnimBool("walking", walk);
+    }
     sprinting = shift;
     StickMove(xl, -yl);
     Turn(new Vector3(yr, xr, 0f));
@@ -388,25 +419,25 @@ public class Actor : MonoBehaviour{
   */
   public void Move(int direction){
     if(ragdoll){ return; }
-    Rigidbody rb = body.GetComponent<Rigidbody>();
+    Rigidbody rb = GetComponent<Rigidbody>();
     if(rb == null){ return; }
     float pace = speed;
-    Vector3 pos = body.transform.position;
+    Vector3 pos = transform.position;
     Vector3 dir  = new Vector3();
     if(sprinting){ pace *= 1.75f; }
     if(!jumpReady){ pace *= 0.75f; }
     switch(direction){
       case 0:
-        dir = body.transform.forward;
+        dir = transform.forward;
         break;
       case 1:
-        dir = -body.transform.forward;
+        dir = -transform.forward;
         break;
       case 2:
-        dir = -body.transform.right;
+        dir = -transform.right;
         break;
       case 3:
-        dir = body.transform.right;
+        dir = transform.right;
         break;
     }
     ExecuteMove(pace, dir);
@@ -415,10 +446,10 @@ public class Actor : MonoBehaviour{
   /* Move relative to transform.forward and transform.right */
   public void StickMove(float x, float y){
     if(ragdoll){  return; }
-    Vector3 xdir = x * body.transform.right;
-    Vector3 ydir = y * body.transform.forward;
+    Vector3 xdir = x * transform.right;
+    Vector3 ydir = y * transform.forward;
     Vector3 dir = (xdir + ydir).normalized;
-    Rigidbody rb =  body.GetComponent<Rigidbody>();
+    Rigidbody rb =  GetComponent<Rigidbody>();
     float pace = speed;
     if(sprinting){ pace *= 1.75f; }
     if(!jumpReady){ pace *= 0.75f; }
@@ -429,7 +460,7 @@ public class Actor : MonoBehaviour{
   public void AxisMove(float x, float z){
     if(ragdoll){  return; }
     Vector3 dir = new Vector3(x, 0f, z).normalized;
-    Rigidbody rb = body.GetComponent<Rigidbody>();
+    Rigidbody rb = GetComponent<Rigidbody>();
     float pace = speed;
     if(sprinting){ pace *= 1.75f; }
     if(!jumpReady){ pace *= 0.75f; }
@@ -439,42 +470,54 @@ public class Actor : MonoBehaviour{
   /* Attempts to move the Actor. Applies stamina limitations.
      If cannot move, tries to move at 45 degree angle */
   void ExecuteMove(float pace, Vector3 dir){
-    Vector3 dest = body.transform.position +  dir * pace;
-    Rigidbody rb = body.GetComponent<Rigidbody>();
+    Vector3 dest = transform.position +  dir * pace;
+    Vector3 pos = transform.position;
+    Rigidbody rb = GetComponent<Rigidbody>();
     int runCost = (int)Vector3.Magnitude(pace * dir * 6);
     if(stats.StatCheck("ENDURANCE", 50)){ runCost = 0; }
     if(MoveCheck(dir, pace * 3)){
-      rb.MovePosition(dest);
+      transform.position += (dir * pace);
       return;
     }
-    dir += body.transform.up;
+    dir += transform.up;
     dir = dir.normalized;
-    if(MoveCheck(dir, pace * 3)){
-      pace = speed;
-      dest = body.transform.position +  dir * pace;
-      rb.MovePosition(dest);
+    dest = transform.position +  dir * pace;
+    if(MoveCheck(dir, pace * 3)){ transform.position += (dir * pace); }
+  }
+  
+  /* Returns the root transform for a given transform. */
+  Transform GetRoot(Transform t){
+    Transform current = t;
+    Transform last = t;
+    while(current != null){
+      last = current;
+      current = current.parent;
     }
+    return last;
   }
   
   /* Returns true if the Actor has clearance to move in a particular direction
   a particular distance. */
   bool MoveCheck(Vector3 direction, float distance){
-    Vector3 center = body.transform.position;
-    Vector3 halfExtents = body.transform.localScale / 2;
-    Quaternion orientation = body.transform.rotation;
+    Vector3 center = transform.position + new Vector3(0,3f,0);
+    Vector3 halfExtents = transform.localScale / 2f;
+    Quaternion orientation = transform.rotation;
     int layerMask = ~(1 << 8);
     RaycastHit hit;
-    bool check = !Physics.BoxCast(
+    RaycastHit[] found = Physics.BoxCastAll(
       center,
       halfExtents,
       direction,
-      out hit,
       orientation,
       distance,
       layerMask,
       QueryTriggerInteraction.Ignore
     );
-    return check;
+    for(int i = 0; i < found.Length; i++){
+      Transform f = found[i].collider.gameObject.transform;
+      if(GetRoot(f) != transform){ return false; } 
+    }
+    return true;
   }
   
   /* Boxcasts to find the current item in reach, updating itemInReach if they
@@ -483,7 +526,7 @@ public class Actor : MonoBehaviour{
     Vector3 center = hand.transform.position;
     Vector3 halfExtents = hand.transform.localScale / 2;
     Vector3 direction = hand.transform.forward;
-    Quaternion orientation = body.transform.rotation;
+    Quaternion orientation = transform.rotation;
     float distance = 1f;
     int layerMask = ~(1 << 8);
     RaycastHit[] found = Physics.BoxCastAll(
@@ -533,48 +576,51 @@ public class Actor : MonoBehaviour{
     if(head){
       head.transform.rotation = Quaternion.Euler(headRotx, headRoty, 0f);
     }
-    body.transform.rotation = Quaternion.Euler(0f, bodyRoty, 0f);
+    transform.rotation = Quaternion.Euler(0f, bodyRoty, 0f);
+  }
+  
+  /* Collider behaviour for body. */
+  public void OnCollisionEnter(Collision col){LandCheck(col.collider); }
+  public void OnColisionStay(Collision col){ LandCheck(col.collider); }
+  
+  void LandCheck(Collider col){
+    if(col == null){ return; }
+    if(falling && transform.position.y > col.transform.position.y){ 
+      Land(fallOrigin - transform.position.y);
+    }
   }
   
   /* Jumps */
   IEnumerator JumpRoutine(){
     if(jumpReady){
       jumpReady = false;
-      Rigidbody rb = body.GetComponent<Rigidbody>();
+      Rigidbody rb = GetComponent<Rigidbody>();
       int lifts = 5;
       int jumpForce = 60;
       while(lifts > 0){
         lifts--;
-        rb.AddForce(body.transform.up * jumpForce);
+        rb.AddForce(transform.up * jumpForce);
         yield return new WaitForSeconds(0.001f);
       }
     }
     yield return new WaitForSeconds(0f);
   }
   
-  /* Restores Jump upon landing. */
-  void OnCollisionEnter(Collision col){
-    if(falling){ Land(fallOrigin - transform.position.y); }
-  }
-  
-  /* Restores jump upon standing still. */
-  void OnCollisionStay(Collision col){
-    if(falling){ Land(fallOrigin - transform.position.y); }
-  }
-  
   /* Replenishes Jump and applies fall damage. */
-  void Land(float distanceFallen){
+  public void Land(float distanceFallen){
     falling = false;
     jumpReady = true;
     if(distanceFallen > safeFallDistance){
       int damage = (int)(distanceFallen - safeFallDistance) * 5;
       ReceiveDamage(damage, gameObject);
     }
+    
   }
   
   /* Toggles model's crouch */
   void ToggleCrouch(){
     crouched = !crouched;
+    SetAnimBool("crouching", crouched);
   }
   
   /* Add xp and check for levelup conditions. */
@@ -603,55 +649,28 @@ public class Actor : MonoBehaviour{
     if(item && item.holder){
       item.holder.ReceiveXp(stats.NextLevel(stats.level -1)); 
     }
+    GetComponent<BoxCollider>().isTrigger = false;
+    BoxCollider[] colliders = GetComponentsInChildren<BoxCollider>();
+    foreach(BoxCollider bc in colliders){ bc.isTrigger = false; }
+    if(anim){ anim.enabled = false; }
+    Rigidbody[] rbs = GetComponentsInChildren<Rigidbody>();
+    foreach(Rigidbody rb in rbs){ rb.isKinematic = false; }
   }
   
   /* Actor rocks a bit. */
   IEnumerator Stagger(){
-    float sa = 10; // Stagger angle
-    Vector3 rot = body.transform.rotation.eulerAngles;
-    body.transform.rotation = Quaternion.Euler(rot.x+ sa, rot.y, rot.z);
-    speed -= 0.1f;
-    yield return new WaitForSeconds(0.1f);
-    speed += 0.1f;
-    rot = body.transform.rotation.eulerAngles;
-    body.transform.rotation = Quaternion.Euler(rot.x- sa, rot.y, rot.z);
+    yield return null;
   }
   
   /* Actor is knocked over */
   IEnumerator FallDown(){
-    Ragdoll(true);
-    int delay = 100 - stats.health - Random.Range(0, (stats.endurance * stats.agility));
-    if(delay < 3){ delay = 3; }
-    yield return new WaitForSeconds(Random.Range(0, (float)delay));
-    float x = Mathf.Abs(body.transform.rotation.eulerAngles.x);
-    float z = Mathf.Abs(body.transform.rotation.eulerAngles.z);
-    Vector3 rot = new Vector3();
-    while(z > 0 && x > 0){
-      rot = body.transform.rotation.eulerAngles;
-      if(rot.x > 0f){ x = -1f; }
-      else if(rot.x < 0f){ x = 1f; }
-      if(rot.z > 0f){ z = -1f; }
-      else if(rot.z < 0f){ z = 1f; }
-      body.transform.rotation = Quaternion.Euler(rot.x+x, rot.y, rot.z+z);
-      rot = body.transform.rotation.eulerAngles;      
-      x = Mathf.Abs(rot.x);
-      z = Mathf.Abs(rot.y);
-      if(x < 1f || z < 1f){
-        body.transform.rotation = Quaternion.Euler(0f, rot.y, 0f);
-        x = 0f;
-        z = 0f;
-      }
-      yield return new WaitForSeconds(0.01f);
-    }
-    Vector3 pos = body.transform.position;
-    body.transform.position = new Vector3( pos.x, pos.y+1f, pos.z);
-    Ragdoll(false);
+    yield return null;
   }
   
   /* Adds or removes the ragdoll effect on the actor. */
   void Ragdoll(bool state){
     ragdoll = state;
-    Rigidbody rb = body.GetComponent<Rigidbody>();
+    Rigidbody rb = GetComponent<Rigidbody>();
     if(state){
       if(ai){ ai.Pause(); }
       rb.constraints = RigidbodyConstraints.None; 

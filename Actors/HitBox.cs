@@ -8,6 +8,7 @@ using UnityEngine;
 using System.Collections;
 
 public class HitBox : MonoBehaviour {
+  public bool foot; // If true, this hitbox will check for landing.
   public Actor body;
   public void ReceiveDamage(int damage, GameObject weapon){
     if(!body){ return; }
