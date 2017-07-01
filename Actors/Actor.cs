@@ -105,9 +105,8 @@ public class Actor : MonoBehaviour{
   void Awake(){
     body = gameObject;
     inventory = new Inventory();
-    arms = new EquipSlot();
-    arms.hand = hand;
-    arms.offHand = offHand;
+    arms = new EquipSlot(hand, offHand);
+    arms.actor = this;
     stats = new StatHandler();
   }
   
@@ -126,14 +125,17 @@ public class Actor : MonoBehaviour{
     }
   }
   
-  
-  /* Cycle loop. Listens for falling. */
+  /* Cycle loop. Runs once per frame. */
   void Update(){
     UpdateReach();
+    UpdateFall();
+    
+  }
+  
+  /* Listens for faling. */
+  void UpdateFall(){
     Rigidbody rb = GetComponent<Rigidbody>();
-    if(!falling && rb && rb.velocity.y < 0f){
-      falling = true;
-		}
+    if(!falling && rb && rb.velocity.y < 0f){ falling = true; }
   }
   
   /* Late-cycle loop. Orients the model before render.*/
@@ -165,6 +167,7 @@ public class Actor : MonoBehaviour{
   /* Sets the specified trigger if the animator exists. */
   public void SetAnimTrigger(string trigger){
     if(!anim){ return; }
+    print(trigger);
     anim.SetTrigger(trigger);
   }
   

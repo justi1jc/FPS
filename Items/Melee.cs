@@ -17,24 +17,7 @@ public class Melee : Weapon{
   }
   
   public override void Use(int action){
-    if((action == 0 || action == 3)){ 
-      chargeable = true;
-      ChargeSwing();
-    }
-    if(action == 4 && ready){ StartCoroutine(Swing()); }
-  }
-  
-  /* Charges up a swing. */
-  void ChargeSwing(){
-    if(chargeable && charge < chargeMax){
-      charge++;
-      effectiveDamage = (damage * charge) / chargeMax;
-    }
-    if(chargeable && executeOnCharge && (charge >= chargeMax) && ready){
-      charge = chargeMax/3;
-      chargeable = false;
-      StartCoroutine(Swing());
-    }
+    if(action == 0 && ready){ StartCoroutine(Swing()); }
   }
   
   /* Swings melee weapon. */
@@ -43,11 +26,9 @@ public class Melee : Weapon{
     damageActive = false;
     yield return new WaitForSeconds(damageStart);
     damageActive = true;
-    transform.position += transform.forward;
     yield return new WaitForSeconds(damageEnd);
     damageActive = false;
     ready = true;
-    transform.position -= transform.forward;
   }
   
   void OnTriggerEnter(Collider col){ Strike(col); }
@@ -59,9 +40,7 @@ public class Melee : Weapon{
       HitBox hb = col.gameObject.GetComponent<HitBox>();
       if(hb){
         StartCoroutine(CoolDown(cooldown));
-        hb.ReceiveDamage(effectiveDamage, gameObject);
-        chargeable = false;
-        effectiveDamage = 0;
+        hb.ReceiveDamage(damage, gameObject);
       }
       Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
       if(rb){ rb.AddForce(transform.forward * knockBack); }

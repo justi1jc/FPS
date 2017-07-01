@@ -61,6 +61,10 @@ public class EquipSlot{
   
   /* Equips an item to the desired slot, returning any items displaced. */
   public List<Data> Equip(Data dat, bool primary = true){
+    if(actor != null){
+      if(primary){ actor.SetAnimBool("leftEquip", true); }
+      else{ actor.SetAnimBool("rightEquip", true); }
+    }
     List<Data> ret = new List<Data>();
     if(dat == null){ MonoBehaviour.print("Equipped null data"); return ret; }
     GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
@@ -212,6 +216,10 @@ public class EquipSlot{
      Returns a displaced item or null.
    */
   public List<Data> EquipAbility(int ability, bool primary = true){
+    if(actor != null){
+      if(primary){ actor.SetAnimBool("leftEquip", true); }
+      else{ actor.SetAnimBool("rightEquip", true); }
+    }
     List<Data> ret = new List<Data>();
     if(ability < 0 || ability > 4){ return ret; }
     GameObject selectedHand = null;
@@ -252,9 +260,15 @@ public class EquipSlot{
   
   /* Performs unarmed attack. */
   void UsePunch(GameObject user, int use){
-    Item fist = user.GetComponent<Item>();
+    Item fist = user.GetComponent<Melee>();
     if(fist == null){ return; }
     fist.Use(use);
+    if(actor != null){ 
+      actor.SetAnimTrigger("punch"); 
+    }
+    else{ MonoBehaviour.print("Actor missing"); }
+    
+    
     //TODO: Consume stamina
   }
   
