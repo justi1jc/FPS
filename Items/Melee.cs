@@ -36,8 +36,12 @@ public class Melee : Weapon{
   
   /* Exert force and damage onto target.  */
   void Strike(Collider col){
-    MonoBehaviour.print("Collision");
     if(damageActive){
+      if(holder != null){
+        if(holder.GetRoot(col.gameObject.transform) == holder.transform.transform){
+          return;
+        }
+      }
       HitBox hb = col.gameObject.GetComponent<HitBox>();
       if(hb){
         StartCoroutine(CoolDown(cooldown));
