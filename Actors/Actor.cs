@@ -123,7 +123,7 @@ public class Actor : MonoBehaviour{
     foreach(Collider c in colliders){
       if(c != col){ 
         Physics.IgnoreCollision(c, col); 
-        c.isTrigger = true;
+        c.isTrigger = false;
       }
     }
   }
@@ -531,11 +531,11 @@ public class Actor : MonoBehaviour{
   /* Boxcasts to find the current item in reach, updating itemInReach if they
     do not match. */
   void UpdateReach(){
-    Vector3 center = hand.transform.position;
-    Vector3 halfExtents = hand.transform.localScale / 2;
-    Vector3 direction = hand.transform.forward;
-    Quaternion orientation = transform.rotation;
-    float distance = 1f;
+    Vector3 center = cam ? cam.transform.position : head.transform.position;
+    Vector3 halfExtents = new Vector3(0.25f,0.25f,0.25f);
+    Vector3 direction = cam ? cam.transform.forward : head.transform.forward;
+    Quaternion orientation = cam ? cam.transform.rotation : head.transform.rotation;
+    float distance = 5f;
     int layerMask = ~(1 << 8);
     RaycastHit[] found = Physics.BoxCastAll(
       center,
@@ -549,9 +549,7 @@ public class Actor : MonoBehaviour{
     bool itemFound = false;
     for(int i = 0; i < found.Length; i++){
       Item item = found[i].collider.gameObject.GetComponent<Item>();
-      bool holding = false;
-      if(item == arms.handItem || item == arms.offHandItem){ holding = true; }
-      if(item && !holding){
+      if(item && GetRoot(item.gameObject.transform) != transform && item.displayName != ""){
         itemInReach = item.gameObject;
         itemFound = true;
         break;
@@ -561,11 +559,20 @@ public class Actor : MonoBehaviour{
     bool actorFound = false;
     for(int i = 0; i < found.Length; i++){
       Actor other = found[i].collider.gameObject.GetComponent<Actor>();
+      HitBox hb = found[i].collider.gameObject.GetComponent<HitBox>();
       if(other && other != this){
         actorInReach = other.gameObject;
         actorInReachName = other.displayName;
         actorFound = true;
         break;
+      }
+      else if(hb != null){
+        if(hb.body && hb.body != this){
+          actorInReach = hb.body.gameObject;
+          actorInReachName = hb.body.displayName;
+          actorFound = true;
+          break;
+        }
       }
     }
     if(!actorFound){ actorInReach = null; }

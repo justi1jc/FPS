@@ -38,6 +38,8 @@ public class HUDMenu : Menu{
     str = "Mana: " + stats.mana;
     Box(str, XOffset(), 19*ih, iw, ih);
     
+    str = "X";
+    Box(str, XOffset() + Width()/2, Height()/2, ih, ih);    
     
     // Display Item info
     str = actor.ItemInfo();
