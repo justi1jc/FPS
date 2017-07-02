@@ -124,6 +124,7 @@ public class Actor : MonoBehaviour{
       if(c != col){ 
         Physics.IgnoreCollision(c, col); 
         c.isTrigger = false;
+        if(c.gameObject == hand || c.gameObject == offHand){ c.isTrigger = true; }
       }
     }
   }
@@ -757,6 +758,7 @@ public class Actor : MonoBehaviour{
     Data dat = inventory.Retrieve(slot);
     if(dat == null){ return null;  }    
     GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
+    if(prefab == null){ print("Prefab null:" + dat.prefabName);  return null;}
     GameObject itemGO = (GameObject)GameObject.Instantiate(
       prefab,
       hand.transform.position,
@@ -764,6 +766,7 @@ public class Actor : MonoBehaviour{
     );
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
+    itemGO.transform.position = hand.transform.position;
     return item;
   }
   

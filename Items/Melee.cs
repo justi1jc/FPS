@@ -36,6 +36,7 @@ public class Melee : Weapon{
   
   /* Exert force and damage onto target.  */
   void Strike(Collider col){
+    MonoBehaviour.print("Collision");
     if(damageActive){
       HitBox hb = col.gameObject.GetComponent<HitBox>();
       if(hb){
@@ -52,6 +53,5 @@ public class Melee : Weapon{
       Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
       if(rb){ rb.AddForce(transform.forward * knockBack); }
     }
-    else{ MonoBehaviour.print("Ready:" + ready + "Damage active:" + damageActive); }
   }
 }
