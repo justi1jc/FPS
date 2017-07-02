@@ -121,7 +121,10 @@ public class Actor : MonoBehaviour{
     Collider[] colliders = GetComponentsInChildren<Collider>();
     Collider col = GetComponent<Collider>();
     foreach(Collider c in colliders){
-      if(c != col){ Physics.IgnoreCollision(c, col); }
+      if(c != col){ 
+        Physics.IgnoreCollision(c, col); 
+        c.isTrigger = true;
+      }
     }
   }
   
@@ -167,7 +170,7 @@ public class Actor : MonoBehaviour{
   /* Sets the specified trigger if the animator exists. */
   public void SetAnimTrigger(string trigger){
     if(!anim){ return; }
-    print(trigger);
+    //print(trigger);
     anim.SetTrigger(trigger);
   }
   

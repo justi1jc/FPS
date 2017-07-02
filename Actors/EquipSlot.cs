@@ -18,7 +18,7 @@ public class EquipSlot{
   
   public EquipSlot(GameObject hand = null, GameObject offHand = null){
     this.hand = hand;
-    this.offHand = hand;
+    this.offHand = offHand;
   }
   
   /* Enters a dormant state to be serialized. */
@@ -180,7 +180,7 @@ public class EquipSlot{
     if(ability == -1){ return; }
     switch(ability){
       case 0:
-        UsePunch(user, use);
+        UsePunch(user, use, primary);
         break;
       case 1:
         UseFireBall(user, use);
@@ -259,16 +259,17 @@ public class EquipSlot{
   }
   
   /* Performs unarmed attack. */
-  void UsePunch(GameObject user, int use){
+  void UsePunch(GameObject user, int use, bool primary){
     Item fist = user.GetComponent<Melee>();
     if(fist == null){ return; }
-    fist.Use(use);
-    if(actor != null){ 
-      actor.SetAnimTrigger("punch"); 
+    if(actor != null){
+      string trigger = primary ? "leftPunch" : "rightPunch";
+      if(fist.ready){
+        actor.SetAnimTrigger(trigger);
+        fist.Use(0);
+      }
     }
     else{ MonoBehaviour.print("Actor missing"); }
-    
-    
     //TODO: Consume stamina
   }
   
@@ -352,14 +353,11 @@ public class EquipSlot{
   /* Initializes unarmed attack. */
   void InitPunch(GameObject user){
     Melee item = user.AddComponent<Melee>();
-    item.cooldown = 0.5f;
-    item.damageStart = 0f;
-    item.damageEnd = 0.25f;
+    item.cooldown = 0.25f;
+    item.damageStart = 0.25f;
+    item.damageEnd = 0.75f;
     item.knockBack = 50;
-    item.chargeable = true;
-    item.executeOnCharge = true;
-    item.charge = 20;
-    item.chargeMax = 25;
+    item.ready = true;
     item.damage = 20;
   }
   
@@ -372,7 +370,7 @@ public class EquipSlot{
     item.projectile = "FireBall";
     item.charge = 10;
     item.chargeMax = 25;
-    item.muzzleVelocity = 50;
+    item.muzzleVelocity = 100;
     item.impactForce = 150;
     item.damage = 10;
     item.effectiveDamage = 10;

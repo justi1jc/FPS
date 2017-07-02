@@ -41,9 +41,17 @@ public class Melee : Weapon{
       if(hb){
         StartCoroutine(CoolDown(cooldown));
         hb.ReceiveDamage(damage, gameObject);
+        damageActive = false;
+        if(hb.body != null){
+          Rigidbody hbrb = hb.body.gameObject.GetComponent<Rigidbody>();
+          Vector3 forward = transform.position - hb.body.transform.position;
+          forward = new Vector3(forward.x, 0f, forward.y);
+          if(hbrb){ hbrb.AddForce(forward * knockBack); }
+        }
       }
       Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
       if(rb){ rb.AddForce(transform.forward * knockBack); }
     }
+    else{ MonoBehaviour.print("Ready:" + ready + "Damage active:" + damageActive); }
   }
 }
