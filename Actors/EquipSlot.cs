@@ -78,7 +78,13 @@ public class EquipSlot{
     if(!itemGO){MonoBehaviour.print("GameObject null:" + dat.displayName); return ret; }
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
-    itemGO.transform.parent = primary ? hand.transform : offHand.transform;
+    Transform selectedHand = primary ? hand.transform : offHand.transform;
+    foreach(Transform t in selectedHand){
+      if(t.gameObject.name == "MountPoint"){ 
+        itemGO.transform.parent = t;
+        break; 
+      }
+    }
     item.Hold(actor);
     
     if(primary){
@@ -98,9 +104,15 @@ public class EquipSlot{
   }
   
   public void Use(int use){
+    Melee melee = null;
     if(handItem != null){
       switch(use){
         case 0:
+          melee = handItem.gameObject.GetComponent<Melee>();
+          if(melee != null){
+            string trigger = melee.stab ? "leftStab" : "leftSwing";
+            if(actor && melee.ready){ actor.SetAnimTrigger(trigger); }
+          }
           handItem.Use(0);
           break;
         case 2:
@@ -140,6 +152,12 @@ public class EquipSlot{
     if(offHandItem != null){
       switch(use){
         case 1:
+          melee = offHandItem.gameObject.GetComponent<Melee>();
+          if(melee != null){
+            string trigger = melee.stab ? "rightStab" : "rightSwing";
+            if(actor && melee.ready){ actor.SetAnimTrigger(trigger); }
+          }
+          else{ MonoBehaviour.print("Item is not Melee"); }
           offHandItem.Use(0);
           break;
         case 2:

@@ -11,6 +11,7 @@ public class Melee : Weapon{
   public float damageEnd;   // End of effective swing
   public bool damageActive; // True if damage can be given
   public float knockBack;   // Magnitude of force exerted on target
+  public bool stab; // Actor stabs with this item if true
   
   public void Start(){
     ready = true;
