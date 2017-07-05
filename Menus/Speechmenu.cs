@@ -38,6 +38,7 @@ public class SpeechMenu : Menu{
     string str = "";
     if(Button("Trade", XOffset(), Height()/2, iw, ih)){ 
       manager.Change("TRADE"); 
+      Sound(0);
     }
     
     // Render Prompt
@@ -47,7 +48,7 @@ public class SpeechMenu : Menu{
     int i = 0;
     while(st.Option(i) != ""){
       str = st.Option(i);
-      if(Button(str, XOffset() + iw, (7+i)*ih, 4*iw, 1*ih)){ st.SelectOption(i); }
+      if(Button(str, XOffset() + iw, (7+i)*ih, 4*iw, 1*ih)){ st.SelectOption(i); Sound(0); }
       i++;
     }
   }
@@ -64,6 +65,7 @@ public class SpeechMenu : Menu{
     if(manager.actor == null || manager.actor.interlocutor == null){ return; }
     SpeechTree st = manager.actor.interlocutor.speechTree;
     if(button == A){
+      Sound(0);
       if(st.Option(sy) == ""){ return; }
       switch(sy){
         case 0:

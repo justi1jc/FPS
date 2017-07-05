@@ -33,9 +33,11 @@ public class InventoryMenu : Menu{
     // Display Navigation buttons
     if(Button("Abilities", XOffset() + Width() - iw, Height()/2, iw, ih, 1, 0)){
       manager.Change("ABILITY");
+      Sound(0);
     }
     if(Button("Quests", XOffset(), Height()/2, iw, ih, -1, 0)){
-      manager.Change("QUEST");
+      manager.Change("QUEST"); 
+      Sound(0);
     }
     
     
@@ -48,13 +50,13 @@ public class InventoryMenu : Menu{
       str = "Left" + arms.handItem.GetInfo();
       y = (Height()/2) - (2*ih);
       x = XOffset() + iw;
-      if(Button(str, x, y, iw + iw/2, ih, 0, -2)){ UnEquip(true); }
+      if(Button(str, x, y, iw + iw/2, ih, 0, -2)){ UnEquip(true); Sound(0);}
     }
     if(arms.offHandItem != null){
       str = "Right" + arms.offHandItem.GetInfo();
       y = (Height()/2) -ih;
       x = XOffset() + iw;
-      if(Button(str, x, y, iw + iw/2, ih, 0, -1)){ UnEquip(false); }
+      if(Button(str, x, y, iw + iw/2, ih, 0, -1)){ UnEquip(false); Sound(0);}
     }
     
     scrollPosition = GUI.BeginScrollView(
@@ -68,13 +70,16 @@ public class InventoryMenu : Menu{
       string info = item == null ? "" : " " + item.stack + "/" + item.stackSize;
       str = name + info;
       if(Button(str, XOffset(), ih * i, iw, ih, 0, i)){ 
-        Equip(inv.Retrieve(i), true); 
+        Equip(inv.Retrieve(i), true);
+        Sound(0); 
       }
       if(Button("OffHand", XOffset() + iw, ih * i, iw/2, ih, i, 1)){ 
         Equip(inv.Retrieve(i), false);
+        Sound(0);
       }
       if(Button("Drop", XOffset() + iw + iw/2, ih * i, iw/2, ih, i, 2)){ 
-        actor.DiscardItem(i); 
+        actor.DiscardItem(i);
+        Sound(0);
       }
     }
     GUI.EndScrollView();
@@ -102,7 +107,7 @@ public class InventoryMenu : Menu{
     DefaultExit(button);
     if(manager.actor == null || inv == null || arms == null){ return; }
     Actor actor = manager.actor;
-    
+    if(button == A){ Sound(0); }
     switch(sx){
       case -1:
         if(button == A){ manager.Change("QUEST"); }

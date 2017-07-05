@@ -63,6 +63,7 @@ public class TradeMenu : Menu{
       if(selling[i] != null && selling[i].stack > 1){ str += "(" + selling[i].stack + ")"; }
       if(Button(str, 0, y, iw, ih, 0, i)){
         Sell(i);
+        Sound(0);
       }
     }
     
@@ -80,6 +81,7 @@ public class TradeMenu : Menu{
       if(buying[i] != null && buying[i].stack > 1){ str += "(" + buying[i].stack + ")"; }
       if(Button(str, 0, y, iw, ih, 0, i)){
         Buy(i);
+        Sound(0);
       }
     }
     GUI.EndScrollView();
@@ -105,6 +107,7 @@ public class TradeMenu : Menu{
       y = Height()/4;
       if(Button(str, x, y, iw, ih, -1)){
         FinalizeTrade();
+        Sound(0);
       }
     }
     
@@ -113,6 +116,7 @@ public class TradeMenu : Menu{
     y = Height()/2;
     if(Button(str, x, y, iw, ih, 1)){
       manager.Change("SPEECH");
+      Sound(0);
     }
   }
   
@@ -193,6 +197,7 @@ public class TradeMenu : Menu{
   }
   
   public override void Input(int button){
+    if(button == A){ Sound(0); }
     DefaultExit(button);
     switch(sx){
       case 0:

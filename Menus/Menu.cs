@@ -142,6 +142,10 @@ public class Menu{
     if(button <= LT && button >= A){ Input(button); }
   }
   
+  public void Sound(int i){
+    if(manager != null){ manager.Sound(i); }
+  }
+  
   /* Performing actions according to focus goes here. */
   public virtual void Input(int button){}
   

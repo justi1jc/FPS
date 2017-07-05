@@ -171,7 +171,6 @@ public class Actor : MonoBehaviour{
   /* Sets the specified trigger if the animator exists. */
   public void SetAnimTrigger(string trigger){
     if(!anim){ return; }
-    print(trigger);
     anim.SetTrigger(trigger);
   }
   
@@ -649,7 +648,6 @@ public class Actor : MonoBehaviour{
     if(GetRoot(weapon.transform) == transform){ return; }
     if(stats.health < 1 || (weapon == arms.handItem && damage > 0)){ return; }
     stats.DrainCondition("HEALTH", damage);
-    print("drained" + damage + " health");
     if(stats.health < 1){ Die(weapon); }
     else if (damage > 0){
       bool check = stats.StatCheck("ENDURANCE", damage);

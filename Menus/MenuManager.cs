@@ -15,6 +15,7 @@ public class MenuManager: MonoBehaviour{
   public Menu active; // Active menu
   public bool split; // True if screen is split.
   public bool right; // True if this screen is on the right side of the sceen.
+  public AudioClip[] sounds;
   
   /* Subclass variables */
   public Inventory contents;
@@ -23,6 +24,14 @@ public class MenuManager: MonoBehaviour{
   /* Send input to menu.. */
   public void Press(int button){ active.Press(button); }
   
+  public void Awake(){
+    InitSounds();
+  }
+  
+  public void InitSounds(){
+    sounds = new AudioClip[1];
+    sounds[0] = (AudioClip)Resources.Load("Sounds/SFX/menubing1") as AudioClip;
+  }
   /* Called once per frame. */
   void OnGUI(){
     if(active != null){
@@ -80,6 +89,13 @@ public class MenuManager: MonoBehaviour{
         active = (Menu)(new ArenaHUDMenu(this));
         break;
     }
+  }
   
+  public void Sound(int i){
+    if(i < 0 || sounds == null || i >= sounds.Length || sounds[i] == null){ 
+      MonoBehaviour.print("Invalid sound:" + i); 
+      return; 
+    }
+    AudioSource.PlayClipAtPoint(sounds[i], transform.position);
   }
 }

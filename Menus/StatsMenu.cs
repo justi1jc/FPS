@@ -75,31 +75,31 @@ public class StatsMenu : Menu{
     str = "Ranged: " + stats.ranged;
     if(Button(str, sOff, sh, aw, sh, 0, 0)){
       if(stats.skillPoints > 0 && stats.ranged < 100){
-        stats.skillPoints--; stats.ranged++;
+        stats.skillPoints--; stats.ranged++; Sound(0);
       }
     }
     str = "Melee: " + stats.melee;
     if(Button(str, sOff, 2*sh, aw, sh, 0, 1)){
       if(stats.skillPoints > 0 && stats.melee < 100){
-        stats.skillPoints--; stats.melee++;
+        stats.skillPoints--; stats.melee++; Sound(0);
       }
     }
     str = "Unarmed: " + stats.unarmed;
     if(Button(str, sOff, 3*sh, aw, sh, 0, 2)){
       if(stats.skillPoints > 0 && stats.unarmed < 100){
-        stats.skillPoints--; stats.unarmed++;
+        stats.skillPoints--; stats.unarmed++; Sound(0);
       }
     }
     str = "Magic: " + stats.magic;
     if(Button(str, sOff, 4*sh, aw, sh, 0, 3)){
       if(stats.skillPoints > 0 && stats.magic < 100){
-        stats.skillPoints--; stats.magic++;
+        stats.skillPoints--; stats.magic++; Sound(0);
       }
     }
     str = "Stealth: " + stats.stealth;
     if(Button(str, sOff, 5*sh, aw, sh, 0, 4)){
       if(stats.skillPoints > 0 && stats.stealth < 100){
-        stats.skillPoints--; stats.stealth++;
+        stats.skillPoints--; stats.stealth++; Sound(0);
       }
     }
     
@@ -116,6 +116,7 @@ public class StatsMenu : Menu{
   
   public override void Input(int button){
     DefaultExit(button);
+    if(button == A){ Sound(0); }
     if(manager.actor == null || manager.actor.stats == null){ return; }
     Actor actor = manager.actor;
     StatHandler stats = actor.stats;

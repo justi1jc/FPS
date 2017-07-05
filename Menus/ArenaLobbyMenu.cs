@@ -21,10 +21,12 @@ public class ArenaLobbyMenu : Menu{
     if(Button(str, 2*iw, 2*ih, iw, ih)){ TogglePlayers(); }
     if(Button("Start", Width()-iw, Height()-ih, iw, ih)){ 
       manager.Change("NONE");
+      Sound(0);
       SceneManager.LoadScene("Arena_Empty");
     }
     if(Button("Back", 0, Height()-ih, iw, ih)){ 
-      manager.Change("MAIN");
+      manager.Change("MAIN"); 
+      Sound(0);
     }
   }
   

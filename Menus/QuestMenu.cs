@@ -22,7 +22,7 @@ public class QuestMenu : Menu{
     string str = "";
     
     str = "Inventory";
-    if(Button(str, Width() - iw, Height()/2, iw, ih, 1, 0)){ manager.Change("INVENTORY"); }
+    if(Button(str, Width() - iw, Height()/2, iw, ih, 1, 0)){ manager.Change("INVENTORY"); Sound(0);}
     
     scrollPosition = GUI.BeginScrollView(
       new Rect(XOffset() +iw, Height()/2, iw, Height()),
@@ -58,6 +58,7 @@ public class QuestMenu : Menu{
   
   public override void Input(int button){
     DefaultExit(button);
+    if(button == A){ Sound(0); }
     switch(sx){
       case 0:
         if(sy < 0 || sy > Session.session.quests.Count -1){ return; }
