@@ -67,6 +67,15 @@ public class Item : MonoBehaviour{
     holder = null;
   }
   
+  /* Play a sound, if possible. */
+  public void Sound(int i){
+    if(i < 0 || sounds == null || i >= sounds.Length || sounds[i] == null){ 
+      MonoBehaviour.print("Invalid sound:" + i); 
+      return; 
+    }
+    AudioSource.PlayClipAtPoint(sounds[i], transform.position);
+  }
+  
   /* Pick up item. */
   public virtual void Interact(Actor a, int mode = -1, string message = ""){
     a.PickUp(this);

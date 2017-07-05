@@ -1,5 +1,6 @@
 /*
     A Melee weapon delivers damage upon contact for the duration of its swing.
+    sounds[0] is striking sound
 */
 
 ﻿using UnityEngine;
@@ -56,7 +57,7 @@ public class Melee : Weapon{
         }
       }
       Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
-      if(rb){ rb.AddForce(transform.forward * knockBack); }
+      if(rb){ rb.AddForce(transform.forward * knockBack); Sound(0); }
     }
   }
 }

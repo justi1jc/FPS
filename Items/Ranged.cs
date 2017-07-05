@@ -1,5 +1,7 @@
 /*
     Ranged is a Weapon that fires a projectile in order to inflict damage.
+    sounds[0] = firing sound
+    sounds[1] = reloading sound
 */
 
 ﻿using UnityEngine;
@@ -63,6 +65,7 @@ public class Ranged : Weapon{
     if(ammo < 1){ return; }    
     StartCoroutine(CoolDown(cooldown));
     ammo--;
+    Sound(0);
     Vector3 relPos = transform.forward;
     Vector3 spawnPos = transform.position + transform.forward;
     Quaternion projRot = Quaternion.LookRotation(relPos);
@@ -109,6 +112,7 @@ public class Ranged : Weapon{
   
   /* Reloading process. */
   IEnumerator Reload(){
+    Sound(1);
     yield return new WaitForSeconds(reloadDelay);
     LoadAmmo();
   }
