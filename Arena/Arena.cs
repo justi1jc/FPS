@@ -72,10 +72,8 @@ public class Arena : MonoBehaviour{
       if(playerMenu){ playerHUD = (HUDMenu)playerMenu.active; }
     }
     for(int i = respawnTimer; i > 0; i--){
-      if(playerHUD != null){
-        playerHUD.message = "Respawn in \n" + i;
-        yield return new WaitForSeconds(1f);
-      }
+      if(playerHUD != null){ playerHUD.message = "Respawn in \n" + i; }  
+      yield return new WaitForSeconds(1f);
     }
     Data dat = player.GetData();
     Destroy(player.gameObject);

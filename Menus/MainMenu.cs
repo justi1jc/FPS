@@ -24,6 +24,7 @@ public class MainMenu : Menu{
     
     if(Button("Arena", x, 0, 4*iw, ih)){
       manager.Change("ARENALOBBY");
+      Sound(0);
     }
     
     switch(subMenu){

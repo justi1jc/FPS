@@ -2,6 +2,7 @@
     Ranged is a Weapon that fires a projectile in order to inflict damage.
     sounds[0] = firing sound
     sounds[1] = reloading sound
+    sounds[2] = dry fire
 */
 
 ﻿using UnityEngine;
@@ -12,35 +13,23 @@ using System.Collections.Generic;
 public class Ranged : Weapon{
   public int ammo;
   public int maxAmmo;
-  public int activeAmmoType;
   public string projectile;
-  public string aimString;
-  public string fireString;
-  public int aimHash;
-  public int rangedType;
-  public int fireHash;
   public float reloadDelay;
   public float muzzleVelocity;
   public float impactForce;
+  public string ammunition;
+  public bool fullAuto = false;
   
   public void Start(){
     ready = true;
   }
   
   public override void Use(int action){
-    if(action == 0 || action == 3){
-      if(chargeable){ ChargeFire(); }
-      else if(action == 0){ Fire(); }
-    }
+    if(action == 0 && ammo < 1){ Sound(2); }
+    if(action == 0 || (fullAuto && action == 3)){ Fire(); }
     else if(action == 1){ ToggleAim(); }
     else if(action == 2){ 
       if(ready){ StartCoroutine(Reload()); }
-    }
-    else if(action == 4){
-      if(chargeable && ready){
-        effectiveDamage = (damage * charge) / chargeMax;
-        Fire();
-      }
     }
   }
   
@@ -48,21 +37,9 @@ public class Ranged : Weapon{
     return displayName + " " + ammo + "/" + maxAmmo;
   }
   
-  /* Charges projectile */
-  void ChargeFire(){
-    if(chargeable && charge < chargeMax){
-      charge++;
-    }
-    if(chargeable && executeOnCharge && (charge >- chargeMax) && ready){
-      effectiveDamage = (damage * charge) / chargeMax;
-      charge = 0;
-      Fire();
-    }
-  }
-  
   /* Fires ranged weapon. */
   void Fire(){
-    if(ammo < 1){ return; }    
+    if(ammo < 1 || !ready){ return; }
     StartCoroutine(CoolDown(cooldown));
     ammo--;
     Sound(0);
@@ -104,7 +81,6 @@ public class Ranged : Weapon{
           }
         }
       }
-      
     }
     proj.GetComponent<Rigidbody>().velocity = relPos * muzzleVelocity;
     StartCoroutine(CoolDown(cooldown));
@@ -119,12 +95,14 @@ public class Ranged : Weapon{
   
   /* Adds ammo to weapon externally */
   public void LoadAmmo(){
-    int available = holder.RequestAmmo(projectile, (maxAmmo - ammo));
+    if(holder == null){ return; }
+    int available = holder.RequestAmmo(ammunition, (maxAmmo - ammo));
     if(available > 0){ ammo = ammo + available; return; }
   }
   
   /* Aims weapon or returns it to the hip.*/
   public void ToggleAim(){
+    /*
     if(!holder || !holder.anim){ return; }
     if(holder.anim.GetBool(aimHash)){
    	   holder.anim.SetBool(aimHash, false);
@@ -132,6 +110,7 @@ public class Ranged : Weapon{
    	else{
    	   holder.anim.SetBool(aimHash, true);
    	}
+   	*/
   }
   
   public override Data GetData(){

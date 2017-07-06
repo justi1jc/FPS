@@ -25,7 +25,8 @@ public class Projectile : Item{
   void Impact(Collider col){
     damageActive = false;
     HitBox hb = col.gameObject.GetComponent<HitBox>();
-    if(hb){ hb.ReceiveDamage(damage, weaponOfOrigin);}
+    if(hb){ hb.ReceiveDamage(damage, weaponOfOrigin); print("Damage applied.");}
+    else{ print(col.gameObject.name + "was not damaged");}
     Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
     if(rb) rb.AddForce(transform.forward * impactForce);
     Sound(0);

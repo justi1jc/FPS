@@ -105,7 +105,7 @@ public class Actor : MonoBehaviour{
   void Awake(){
     body = gameObject;
     inventory = new Inventory();
-    arms = new EquipSlot(hand, offHand);
+    arms = new EquipSlot(hand, offHand, this);
     arms.actor = this;
     stats = new StatHandler();
   }
@@ -645,6 +645,7 @@ public class Actor : MonoBehaviour{
   
   /* Applies damage from attack. Ignores active weapon. */
   public void ReceiveDamage(int damage, GameObject weapon){
+    print("Received" + damage);
     if(GetRoot(weapon.transform) == transform){ return; }
     if(stats.health < 1 || (weapon == arms.handItem && damage > 0)){ return; }
     stats.DrainCondition("HEALTH", damage);
@@ -741,7 +742,6 @@ public class Actor : MonoBehaviour{
     }
     return 0;
   }
-  
 
   /* Adds item data to inventory */
   public void StoreItem(Data item){

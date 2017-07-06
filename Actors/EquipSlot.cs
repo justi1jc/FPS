@@ -16,9 +16,10 @@ public class EquipSlot{
   public int handAbility = -1;
   public int offHandAbility = -1;
   
-  public EquipSlot(GameObject hand = null, GameObject offHand = null){
+  public EquipSlot(GameObject hand = null, GameObject offHand = null, Actor actor = null){
     this.hand = hand;
     this.offHand = offHand;
+    this.actor = actor;
   }
   
   /* Enters a dormant state to be serialized. */
@@ -59,6 +60,18 @@ public class EquipSlot{
     }
   }
   
+  /* Returns the current point ranged weapons should aim at. */
+  public Vector3 TrackPoint(){
+    GameObject vision = actor.cam.gameObject;
+    return vision.transform.position + 100f*vision.transform.forward;
+  }
+  
+  /* Aims the selected ranged weapon at the given track point. */
+  public void Track(Ranged weapon, Vector3 trackPoint){
+    Transform t = weapon.gameObject.transform;
+    t.rotation = Quaternion.LookRotation(trackPoint - t.position);
+  }
+  
   /* Equips an item to the desired slot, returning any items displaced. */
   public List<Data> Equip(Data dat, bool primary = true){
     if(actor != null){
@@ -86,7 +99,7 @@ public class EquipSlot{
       }
     }
     item.Hold(actor);
-    
+    if(actor != null && item is Ranged){ Track((Ranged)item, TrackPoint()); }
     if(primary){
       if(handItem != null){
         ret.Add(Remove(true));
@@ -105,6 +118,11 @@ public class EquipSlot{
   
   public void Use(int use){
     Melee melee = null;
+    if(use == 2){
+      if(handItem != null){ handItem.Use(2); }
+      if(offHandItem != null){ offHandItem.Use(2); }
+    }
+    
     if(handItem != null){
       switch(use){
         case 0:
@@ -114,9 +132,6 @@ public class EquipSlot{
             if(actor && melee.ready){ actor.SetAnimTrigger(trigger); }
           }
           handItem.Use(0);
-          break;
-        case 2:
-          handItem.Use(2);
           break;
         case 3:
           handItem.Use(3);
@@ -133,9 +148,6 @@ public class EquipSlot{
       switch(use){
         case 0:
           UseAbility(0, true);
-          break;
-        case 2:
-          UseAbility(2, true);
           break;
         case 3:
           UseAbility(3, true);
@@ -157,11 +169,7 @@ public class EquipSlot{
             string trigger = melee.stab ? "rightStab" : "rightSwing";
             if(actor && melee.ready){ actor.SetAnimTrigger(trigger); }
           }
-          else{ MonoBehaviour.print("Item is not Melee"); }
           offHandItem.Use(0);
-          break;
-        case 2:
-          offHandItem.Use(2);
           break;
         case 4:
           offHandItem.Use(3);
@@ -175,9 +183,6 @@ public class EquipSlot{
       switch(use){
         case 1:
           UseAbility(0, false);
-          break;
-        case 2:
-          UseAbility(2, false);
           break;
         case 4:
           UseAbility(3, false);
@@ -223,7 +228,7 @@ public class EquipSlot{
     }
     else if(!primary && offHandItem != null){
       Data ret = offHandItem.GetData();
-      MonoBehaviour.Destroy(handItem.gameObject);
+      MonoBehaviour.Destroy(offHandItem.gameObject);
       offHandItem = null;
       return ret;
     }
