@@ -25,6 +25,7 @@ public class Session : MonoBehaviour {
   public string sessionName; //Name Used in save file.
   public List<Quest> quests;
   
+  
   // Controller one linux values
   public static string C1 = "Joystick 1"; //Controller 1
   public static string XL = "XL"; // "X Axis" DeadZone: 0.2 Accuracy: 1
@@ -33,8 +34,8 @@ public class Session : MonoBehaviour {
   public static string YR = "YR"; // "5th Axis" DeadZone: 0.2 Accuracy: 1
   public static string RT = "RT"; // "6th Axis" DeadZone: 0.1 
   public static string LT = "LT"; // "3rd Axis" DeadZone: 0.1
-  public static string DX = "DX";  // "7th Axis" for wired controllers
-  public static string DY = "DY";  // "8th Axis"
+  public static string DX = "DX"; // "7th Axis" for wired controllers
+  public static string DY = "DY"; // "8th Axis"
   public static string RB = "joystick button 5"; // 5 Right bumper
   public static string LB = "joystick button 4"; // 4 Left bumper
   public static string A = "joystick button 0"; // 0
@@ -49,6 +50,10 @@ public class Session : MonoBehaviour {
   public static string DLB = "joystick button 12"; // 12  D-pad left
   public static string RSC = "joystick button 10"; // 10  Right stick click
   public static string LSC = "joystick button 9";  // 9   left stick click
+  
+  // Arena
+  public int playerCount = 1;
+  public int gameMode = -1;
   
   // players
   List<Data> playerData;
@@ -65,10 +70,11 @@ public class Session : MonoBehaviour {
   bool mainMenu; // True when main menu is active.
   HoloCell menuCell;
   Camera sesCam;
-  Menu sesMenu;
+  public MenuManager sesMenu;
   
   void Awake(){
-    if(Session.session){ Destroy(this); }
+    DontDestroyOnLoad(gameObject);
+    if(Session.session != null){ Destroy(this); }
     else{ Session.session = this; }
     decks = new List<HoloDeck>();
     quests = new List<Quest>();
@@ -77,6 +83,7 @@ public class Session : MonoBehaviour {
   
   /* Updates cameras and associates player with appropriate HoloDeck. */
   public void RegisterPlayer(Actor actor, int player, Camera cam){
+    print("Player " + player + " registered");
     if(player == 1){ cam1 = cam; }
     else if(player == 2){ cam2 = cam; }
     UpdateCameras();
@@ -97,6 +104,7 @@ public class Session : MonoBehaviour {
   */
   public void CreateGame(string sesName){
     sessionName = sesName;
+    gameMode = 0;
     currentID = 0;
     if(mainMenu){ DestroyMenu();}
     CreateLoadingScreen();
@@ -195,23 +203,29 @@ public class Session : MonoBehaviour {
   
   /* Sets up each player's Menu */
   void UpdateCameras(){
-    bool split = cam1 && cam2;
+    bool split = playerCount == 2;
+    print("PlayerCount:" + playerCount);
     if(split){
-      cam1.rect = new Rect(0f, 0f, 0.5f, 1f);
-      cam2.rect = new Rect(0.5f, 0, 0.5f, 1f);
-      Menu menu = cam1.gameObject.GetComponent<Menu>();
-      if(menu){ menu.split = true; menu.right = false; }
-      menu = cam2.gameObject.GetComponent<Menu>();
-      if(menu){ menu.split = true; menu.right = true; }
+      if(cam1 != null){ cam1.rect = new Rect(0f, 0f, 0.5f, 1f); }
+      if(cam2 != null){ cam2.rect = new Rect(0.5f, 0, 0.5f, 1f); }
+      MenuManager menu = null;
+      if(cam1 != null){ 
+        menu = cam1.gameObject.GetComponent<MenuManager>();
+        if(menu){ menu.split = true; menu.right = false; }
+      }
+      if(cam2 != null){ 
+        menu = cam2.gameObject.GetComponent<MenuManager>(); 
+        if(menu){ menu.split = true; menu.right = true; }
+      }
     }
     else if(cam1){
       cam1.rect = new Rect(0f, 0f, 1f, 1f);
-      Menu menu = cam1.gameObject.GetComponent<Menu>();
+      MenuManager menu = cam1.gameObject.GetComponent<MenuManager>();
       if(menu){ menu.split = false; menu.right = false; }
     }
     else if(cam2){
       cam2.rect = new Rect(0f, 0f, 1f, 1f);
-      Menu menu = cam2.gameObject.GetComponent<Menu>();
+      MenuManager menu = cam2.gameObject.GetComponent<MenuManager>();
       if(menu){ menu.split = false; menu.right = false; }
     }   
   }
@@ -227,8 +241,8 @@ public class Session : MonoBehaviour {
     go.transform.position = transform.position + new Vector3(10f, 50f, 0f);
     go.transform.LookAt(transform);
     sesCam = go.AddComponent(typeof(Camera)) as Camera;
-    sesMenu = go.AddComponent(typeof(Menu)) as Menu;
-    sesMenu.Change(Menu.MAIN);
+    sesMenu = go.AddComponent(typeof(MenuManager)) as MenuManager;
+    sesMenu.Change("MAIN");
     menuCell = new HoloCell(transform.position);
     map = Cartographer.GetMaster();
     Cell c = GetMasterInterior(MENU_BUILDING, MENU_INTERIOR);

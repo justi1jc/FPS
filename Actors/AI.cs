@@ -24,7 +24,7 @@ public class AI: MonoBehaviour{
   bool paused;
   Actor host;
   float pace = 0.01f;
-  float sightDistance = 20f;
+  float sightDistance = 40f;
   float aimMargin = 1f;   // Acceptable deviation in aim.
   float turnSpeed = 0.01f; // Delay between turning
   public int profile;     // What sort of AI is this?
@@ -104,15 +104,10 @@ public class AI: MonoBehaviour{
       yield return StartCoroutine(SearchFor(enemy));
       if(!CanSee(enemy.body)){ yield break;}
     }
-    while(!paused && CanSee(enemy.body) && enemy.health > 0){
+    while(!paused && CanSee(enemy.body) && enemy.Alive()){
       if(!pursuing){ StartCoroutine(Pursue(enemy)); }
-      if(!aiming){ StartCoroutine(AimAt(enemy)); }
-      Vector3 pos = host.body.transform.position;
-      Vector3 targetPos = enemy.body.transform.position;
-      if(Vector3.Distance(pos, targetPos) < 4f){
-        host.Use(0);
-        
-      }
+      if(!aiming){ yield return StartCoroutine(AimAt(enemy)); }
+      host.Use(0);
       yield return new WaitForSeconds(0.1f);
     }
     yield break;
@@ -128,30 +123,29 @@ public class AI: MonoBehaviour{
   /* Aim at the target */
   IEnumerator AimAt(Actor target){
     if(paused){ yield break; }
-    aiming = true;
-    Vector3 relRot = (target.head.transform.position - host.hand.transform.position).normalized;
-    Quaternion realRot = Quaternion.LookRotation(relRot, host.hand.transform.up);
-    Quaternion desiredRot = host.hand.transform.rotation;
-    float angle = Quaternion.Angle(realRot, desiredRot);
+    Transform head = host.head.transform;
+    Transform thead = target.head.transform;
+    Quaternion desired = Quaternion.LookRotation(head.position - thead.position);
+    Quaternion actual = head.rotation;
+    float angle = Quaternion.Angle(desired, actual);
     while(angle > aimMargin && !paused && CanSee(target.body)){
-    
-      Vector3 realEulers = realRot.eulerAngles;
-      Vector3 desiredEulers = desiredRot.eulerAngles;
-      float x = realEulers.x - desiredEulers.x;
-      float y = realEulers.y - desiredEulers.y;
-      if(Mathf.Abs(x) > 180){ x *= -1f; }
+      Vector3 actualEulers = actual.eulerAngles;
+      Vector3 desiredEulers = desired.eulerAngles;
+      float x = actualEulers.x - desiredEulers.y;
+      float y = actualEulers.y - desiredEulers.y;
+      //if(Mathf.Abs(x) > 180){ x *= -1f; }
       if(Mathf.Abs(y) > 180){ y *= -1f; }
       host.Turn(new Vector3(x, y, 0f).normalized);
       yield return new WaitForSeconds(turnSpeed);
       if(!target){ yield break; }
-      relRot = (target.head.transform.position - host.hand.transform.position).normalized;
-      realRot = Quaternion.LookRotation(relRot, host.hand.transform.up);
-      desiredRot = host.hand.transform.rotation;
-      angle = Quaternion.Angle(realRot, desiredRot);
+      desired = Quaternion.LookRotation(head.position - thead.position);
+      actual = head.rotation;
+      
     }
-    aiming = false;
+    
     yield break;
   }
+  
   
   /* Move directly at target. */
   IEnumerator Pursue(Actor target){
@@ -196,7 +190,7 @@ public class AI: MonoBehaviour{
   /* Returns an Actor in sight, or null.  */
   Actor ScanForActor(){
     Vector3 center = host.body.transform.position;
-    Vector3 halfExtents = new Vector3(10f, 10f, 1f);
+    Vector3 halfExtents = new Vector3(20f, 20f, 20f);
     Vector3 direction = host.body.transform.forward;
     Quaternion orientation = host.body.transform.rotation;
     float distance = sightDistance;
@@ -218,7 +212,8 @@ public class AI: MonoBehaviour{
           actor.body.transform.position
         );
         if(actor.head && CanSee(actor.body)){
-          bool check = !actor.StealthCheck(host.perception, dist);
+          bool check = actor.stats != null 
+            && !actor.stats.StatCheck("STEALTH", host.stats.perception);
           if(check){ return actor; }
         }
       }
