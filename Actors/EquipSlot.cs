@@ -62,7 +62,7 @@ public class EquipSlot{
   
   /* Returns the current point ranged weapons should aim at. */
   public Vector3 TrackPoint(){
-    GameObject vision = actor.cam.gameObject;
+    GameObject vision = actor.cam != null ? actor.cam.gameObject : actor.head;
     return vision.transform.position + 100f*vision.transform.forward;
   }
   

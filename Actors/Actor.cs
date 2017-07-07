@@ -129,6 +129,12 @@ public class Actor : MonoBehaviour{
     }
   }
   
+  /* Equips unarmed melee to actor if no items are currently held. */
+  void InitFists(){
+    if(arms.handItem == null){ EquipAbility(0, true); }
+    if(arms.offHandItem == null ){ EquipAbility(0, false); }
+  }
+  
   /* Cycle loop. Runs once per frame. */
   void Update(){
     UpdateReach();
@@ -186,8 +192,7 @@ public class Actor : MonoBehaviour{
       stats.abilities.Add(1);
       stats.abilities.Add(2);
       stats.abilities.Add(3);
-      EquipAbility(0, true);
-      EquipAbility(0, false);
+      InitFists();
       SetMenuOpen(false);
       if(menu){ menu.Change("HUD");  menu.actor = this; }
       if(Session.session != null && cam != null){
@@ -199,8 +204,7 @@ public class Actor : MonoBehaviour{
     }
     else if(player == 5){
       stats.abilities.Add(0);
-      EquipAbility(0, true);
-      EquipAbility(0, false);
+      InitFists();
       ai = gameObject.GetComponent<AI>();
       if(ai){ ai.Begin(this); }
       if(speechTreeFile != ""){ speechTree = new SpeechTree(speechTreeFile); }
@@ -645,7 +649,6 @@ public class Actor : MonoBehaviour{
   
   /* Applies damage from attack. Ignores active weapon. */
   public void ReceiveDamage(int damage, GameObject weapon){
-    print("Received" + damage);
     if(GetRoot(weapon.transform) == transform){ return; }
     if(stats.health < 1 || (weapon == arms.handItem && damage > 0)){ return; }
     stats.DrainCondition("HEALTH", damage);
@@ -661,6 +664,8 @@ public class Actor : MonoBehaviour{
   public void Die(GameObject weapon){
     StopAllCoroutines();
     Ragdoll(true);
+    arms.Drop();
+    arms.Drop();
     if(ai){ ai.Pause(); }
     Item item = weapon.GetComponent<Item>();
     if(item && item.holder){

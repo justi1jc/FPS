@@ -115,12 +115,9 @@ public class Arena : MonoBehaviour{
     Actor actor = go.GetComponent<Actor>();
     if(actor != null){
       players.Add(actor);
-      ApplyKit(actor);
+      LootTable.Kit("GUNRUNNER", actor);
     }
   }
-  
-  /* Give starting equipment to player. */
-  void ApplyKit(Actor player){}
   
   /* Returns remaining time in minutes and seconds. */
   string Time(){
