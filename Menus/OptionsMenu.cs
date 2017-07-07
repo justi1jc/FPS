@@ -21,33 +21,42 @@ public class OptionsMenu : Menu{
     str = "Resume";
     if(Button(str, x, 0, 2*iw, ih, 0, 0)){
       manager.Change("HUD");
+      if(manager.actor != null){ manager.actor.SetMenuOpen(false);}
     }
     
+    if(Session.session != null && Session.session.gameMode == 0){
     str = "Load";
     if(Button(str, x, ih, 2*iw, ih, 0, 1)){
       Session.session.LoadFiles();
       manager.Change("LOAD");
+      Sound(0);
+    }
     }
     
     str = "Settings";
     if(Button(str, x, 2*ih, 2*iw, ih, 0, 2)){
       MonoBehaviour.print("Settings");
+      Sound(0);
     }
     
-    str = "Save";
-    if(Button(str, x, 3*ih, 2*iw, ih, 0, 3)){
-      Session.session.SaveGame(Session.session.sessionName);
+    if(Session.session.gameMode == 0){
+      str = "Save";
+      if(Button(str, x, 3*ih, 2*iw, ih, 0, 3)){
+        Session.session.SaveGame(Session.session.sessionName);
+        Sound(0);
+      }
+      
+      str = "Save and Quit.";
+      if(Button(str, x, 4*ih, 2*iw, ih, 0, 4)){
+        Session.session.SaveGame(Session.session.sessionName);
+        Application.Quit();
+        Sound(0);
+      }
     }
-    
-    str = "Save and Quit.";
-    if(Button(str, x, 4*ih, 2*iw, ih, 0, 4)){
-      Session.session.SaveGame(Session.session.sessionName);
-      Application.Quit();
-    }
-    
     str = "Quit.";
     if(Button(str, x, 5*ih, 2*iw, ih, 0, 5)){
       Application.Quit();
+      Sound(0);
     }
   }
   
@@ -59,6 +68,7 @@ public class OptionsMenu : Menu{
   public override void Input(int button){
     DefaultExit(button);
     if(button == A){
+      Sound(0);
       switch(sy){
         case 0:
           manager.Change("HUD");

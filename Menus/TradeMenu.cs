@@ -63,6 +63,7 @@ public class TradeMenu : Menu{
       if(selling[i] != null && selling[i].stack > 1){ str += "(" + selling[i].stack + ")"; }
       if(Button(str, 0, y, iw, ih, 0, i)){
         Sell(i);
+        Sound(0);
       }
     }
     
@@ -80,6 +81,7 @@ public class TradeMenu : Menu{
       if(buying[i] != null && buying[i].stack > 1){ str += "(" + buying[i].stack + ")"; }
       if(Button(str, 0, y, iw, ih, 0, i)){
         Buy(i);
+        Sound(0);
       }
     }
     GUI.EndScrollView();
@@ -105,6 +107,7 @@ public class TradeMenu : Menu{
       y = Height()/4;
       if(Button(str, x, y, iw, ih, -1)){
         FinalizeTrade();
+        Sound(0);
       }
     }
     
@@ -113,6 +116,7 @@ public class TradeMenu : Menu{
     y = Height()/2;
     if(Button(str, x, y, iw, ih, 1)){
       manager.Change("SPEECH");
+      Sound(0);
     }
   }
   
@@ -120,13 +124,15 @@ public class TradeMenu : Menu{
     if(manager.actor == null){ return; }
     if(manager.actor.interlocutor == null){ return; }
     Actor actor = manager.actor;
-    Data item = buying[i];
-    balance -= item.baseValue;
-    selling.Add(item);
-    buying.Remove(item);
-    sold.Remove(item);
-    if(actor.inventory.IndexOf(item) == -1){
-      bought.Add(item);
+    Data item = i < buying.Count ? buying[i] : null;
+    if(item != null){  
+      balance -= item.baseValue;
+      selling.Add(item);
+      buying.Remove(item);
+      sold.Remove(item);
+      if(actor.inventory.IndexOf(item) == -1){
+        bought.Add(item);
+      }
     }
   }
 
@@ -135,13 +141,15 @@ public class TradeMenu : Menu{
     if(manager.actor == null){ return; }
     if(manager.actor.interlocutor == null){ return; }
     Actor actor = manager.actor;
-    Data item = selling[i];
-    balance += item.baseValue;
-    buying.Add(item);
-    selling.Remove(item);
-    bought.Remove(item);
-    if(actor.interlocutor.inventory.IndexOf(item) == -1){
-      sold.Add(item);
+    Data item = i < selling.Count ? selling[i] : null;
+    if(item != null){
+      balance += item.baseValue;
+      buying.Add(item);
+      selling.Remove(item);
+      bought.Remove(item);
+      if(actor.interlocutor.inventory.IndexOf(item) == -1){
+        sold.Add(item);
+      }
     }
   }
 
@@ -189,6 +197,7 @@ public class TradeMenu : Menu{
   }
   
   public override void Input(int button){
+    if(button == A){ Sound(0); }
     DefaultExit(button);
     switch(sx){
       case 0:

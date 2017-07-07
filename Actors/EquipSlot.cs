@@ -13,12 +13,13 @@ public class EquipSlot{
   [System.NonSerialized]public Item handItem, offHandItem; // Equipped item
   Data handData = null;
   Data offHandData = null;
-  public int handAbility, offHandAbility;
+  public int handAbility = -1;
+  public int offHandAbility = -1;
   
-  public EquipSlot(GameObject hand = null, GameObject offHand = null){
+  public EquipSlot(GameObject hand = null, GameObject offHand = null, Actor actor = null){
     this.hand = hand;
-    this.offHand = hand;
-    handAbility = offHandAbility = -1;
+    this.offHand = offHand;
+    this.actor = actor;
   }
   
   /* Enters a dormant state to be serialized. */
@@ -52,15 +53,33 @@ public class EquipSlot{
     if(handItem != null){
       handItem.Drop();
       handItem = null;
+      EquipAbility(0, true);
     }
     else if(offHandItem != null){
       offHandItem.Drop();
       offHandItem = null;
+      EquipAbility(0, false);
     }
+  }
+  
+  /* Returns the current point ranged weapons should aim at. */
+  public Vector3 TrackPoint(){
+    GameObject vision = actor.cam != null ? actor.cam.gameObject : actor.head;
+    return vision.transform.position + 100f*vision.transform.forward;
+  }
+  
+  /* Aims the selected ranged weapon at the given track point. */
+  public void Track(Ranged weapon, Vector3 trackPoint){
+    Transform t = weapon.gameObject.transform;
+    t.rotation = Quaternion.LookRotation(trackPoint - t.position);
   }
   
   /* Equips an item to the desired slot, returning any items displaced. */
   public List<Data> Equip(Data dat, bool primary = true){
+    if(actor != null){
+      if(primary){ actor.SetAnimBool("leftEquip", true); }
+      else{ actor.SetAnimBool("rightEquip", true); }
+    }
     List<Data> ret = new List<Data>();
     if(dat == null){ MonoBehaviour.print("Equipped null data"); return ret; }
     GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
@@ -74,9 +93,15 @@ public class EquipSlot{
     if(!itemGO){MonoBehaviour.print("GameObject null:" + dat.displayName); return ret; }
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
-    itemGO.transform.parent = primary ? hand.transform : offHand.transform;
+    Transform selectedHand = primary ? hand.transform : offHand.transform;
+    foreach(Transform t in selectedHand){
+      if(t.gameObject.name == "MountPoint"){ 
+        itemGO.transform.parent = t;
+        break;
+      }
+    }
     item.Hold(actor);
-    
+    if(actor != null && item is Ranged){ Track((Ranged)item, TrackPoint()); }
     if(primary){
       if(handItem != null){
         ret.Add(Remove(true));
@@ -94,13 +119,21 @@ public class EquipSlot{
   }
   
   public void Use(int use){
+    Melee melee = null;
+    if(use == 2){
+      if(handItem != null){ handItem.Use(2); }
+      if(offHandItem != null){ offHandItem.Use(2); }
+    }
+    
     if(handItem != null){
       switch(use){
         case 0:
+          melee = handItem.gameObject.GetComponent<Melee>();
+          if(melee != null){
+            string trigger = melee.stab ? "leftStab" : "leftSwing";
+            if(actor && melee.ready){ actor.SetAnimTrigger(trigger); }
+          }
           handItem.Use(0);
-          break;
-        case 2:
-          handItem.Use(2);
           break;
         case 3:
           handItem.Use(3);
@@ -114,13 +147,9 @@ public class EquipSlot{
       }
     }
     else if(handAbility != -1){
-      MonoBehaviour.print("Using ability " + handAbility);
       switch(use){
         case 0:
           UseAbility(0, true);
-          break;
-        case 2:
-          UseAbility(2, true);
           break;
         case 3:
           UseAbility(3, true);
@@ -137,10 +166,12 @@ public class EquipSlot{
     if(offHandItem != null){
       switch(use){
         case 1:
+          melee = offHandItem.gameObject.GetComponent<Melee>();
+          if(melee != null){
+            string trigger = melee.stab ? "rightStab" : "rightSwing";
+            if(actor && melee.ready){ actor.SetAnimTrigger(trigger); }
+          }
           offHandItem.Use(0);
-          break;
-        case 2:
-          offHandItem.Use(2);
           break;
         case 4:
           offHandItem.Use(3);
@@ -154,9 +185,6 @@ public class EquipSlot{
       switch(use){
         case 1:
           UseAbility(0, false);
-          break;
-        case 2:
-          UseAbility(2, false);
           break;
         case 4:
           UseAbility(3, false);
@@ -175,10 +203,9 @@ public class EquipSlot{
     if(user == false){ return; }
     int ability = primary ? handAbility : offHandAbility;
     if(ability == -1){ return; }
-    
     switch(ability){
       case 0:
-        UsePunch(user, use);
+        UsePunch(user, use, primary);
         break;
       case 1:
         UseFireBall(user, use);
@@ -203,7 +230,7 @@ public class EquipSlot{
     }
     else if(!primary && offHandItem != null){
       Data ret = offHandItem.GetData();
-      MonoBehaviour.Destroy(handItem.gameObject);
+      MonoBehaviour.Destroy(offHandItem.gameObject);
       offHandItem = null;
       return ret;
     }
@@ -214,6 +241,10 @@ public class EquipSlot{
      Returns a displaced item or null.
    */
   public List<Data> EquipAbility(int ability, bool primary = true){
+    if(actor != null){
+      if(primary){ actor.SetAnimBool("leftEquip", true); }
+      else{ actor.SetAnimBool("rightEquip", true); }
+    }
     List<Data> ret = new List<Data>();
     if(ability < 0 || ability > 4){ return ret; }
     GameObject selectedHand = null;
@@ -226,7 +257,7 @@ public class EquipSlot{
       selectedHand = offHand;
       displacedItem = offHandItem;
     }
-    if(selectedHand == null){ return ret; }
+    if(selectedHand == null){ MonoBehaviour.print("selected hand is null."); return ret; }
     if(displacedItem != null){
       ret.Add(displacedItem.GetData());
       MonoBehaviour.Destroy(displacedItem.gameObject);
@@ -253,10 +284,17 @@ public class EquipSlot{
   }
   
   /* Performs unarmed attack. */
-  void UsePunch(GameObject user, int use){
-    Item fist = user.GetComponent<Item>();
+  void UsePunch(GameObject user, int use, bool primary){
+    Item fist = user.GetComponent<Melee>();
     if(fist == null){ return; }
-    fist.Use(use);
+    if(actor != null){
+      string trigger = primary ? "leftPunch" : "rightPunch";
+      if(fist.ready){
+        actor.SetAnimTrigger(trigger);
+        fist.Use(0);
+      }
+    }
+    else{ MonoBehaviour.print("Actor missing"); }
     //TODO: Consume stamina
   }
   
@@ -340,14 +378,11 @@ public class EquipSlot{
   /* Initializes unarmed attack. */
   void InitPunch(GameObject user){
     Melee item = user.AddComponent<Melee>();
-    item.cooldown = 0.5f;
-    item.damageStart = 0f;
-    item.damageEnd = 0.25f;
+    item.cooldown = 0.25f;
+    item.damageStart = 0.25f;
+    item.damageEnd = 0.75f;
     item.knockBack = 50;
-    item.chargeable = true;
-    item.executeOnCharge = true;
-    item.charge = 20;
-    item.chargeMax = 25;
+    item.ready = true;
     item.damage = 20;
   }
   
@@ -360,7 +395,7 @@ public class EquipSlot{
     item.projectile = "FireBall";
     item.charge = 10;
     item.chargeMax = 25;
-    item.muzzleVelocity = 50;
+    item.muzzleVelocity = 100;
     item.impactForce = 150;
     item.damage = 10;
     item.effectiveDamage = 10;

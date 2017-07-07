@@ -1,5 +1,6 @@
 /*
     A Melee weapon delivers damage upon contact for the duration of its swing.
+    sounds[0] is striking sound
 */
 
 ﻿using UnityEngine;
@@ -11,30 +12,14 @@ public class Melee : Weapon{
   public float damageEnd;   // End of effective swing
   public bool damageActive; // True if damage can be given
   public float knockBack;   // Magnitude of force exerted on target
+  public bool stab; // Actor stabs with this item if true
   
   public void Start(){
     ready = true;
   }
   
   public override void Use(int action){
-    if((action == 0 || action == 3)){ 
-      chargeable = true;
-      ChargeSwing();
-    }
-    if(action == 4 && ready){ StartCoroutine(Swing()); }
-  }
-  
-  /* Charges up a swing. */
-  void ChargeSwing(){
-    if(chargeable && charge < chargeMax){
-      charge++;
-      effectiveDamage = (damage * charge) / chargeMax;
-    }
-    if(chargeable && executeOnCharge && (charge >= chargeMax) && ready){
-      charge = chargeMax/3;
-      chargeable = false;
-      StartCoroutine(Swing());
-    }
+    if(action == 0 && ready){ StartCoroutine(Swing()); }
   }
   
   /* Swings melee weapon. */
@@ -43,11 +28,9 @@ public class Melee : Weapon{
     damageActive = false;
     yield return new WaitForSeconds(damageStart);
     damageActive = true;
-    transform.position += transform.forward;
     yield return new WaitForSeconds(damageEnd);
     damageActive = false;
     ready = true;
-    transform.position -= transform.forward;
   }
   
   void OnTriggerEnter(Collider col){ Strike(col); }
@@ -56,15 +39,25 @@ public class Melee : Weapon{
   /* Exert force and damage onto target.  */
   void Strike(Collider col){
     if(damageActive){
+      if(holder != null){
+        if(holder.GetRoot(col.gameObject.transform) == holder.transform.transform){
+          return;
+        }
+      }
       HitBox hb = col.gameObject.GetComponent<HitBox>();
       if(hb){
         StartCoroutine(CoolDown(cooldown));
-        hb.ReceiveDamage(effectiveDamage, gameObject);
-        chargeable = false;
-        effectiveDamage = 0;
+        hb.ReceiveDamage(damage, gameObject);
+        damageActive = false;
+        if(hb.body != null){
+          Rigidbody hbrb = hb.body.gameObject.GetComponent<Rigidbody>();
+          Vector3 forward = transform.position - hb.body.transform.position;
+          forward = new Vector3(forward.x, 0f, forward.y);
+          if(hbrb){ hbrb.AddForce(forward * knockBack); }
+        }
       }
       Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
-      if(rb){ rb.AddForce(transform.forward * knockBack); }
+      if(rb){ rb.AddForce(transform.forward * knockBack); Sound(0); }
     }
   }
 }

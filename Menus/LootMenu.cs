@@ -42,6 +42,7 @@ public class LootMenu : Menu{
       y = ih * i;
       if(Button(str, 0, y, iw, ih, 0, i)){
         Store(invB, inv.Retrieve(i));
+        Sound(0);
       }
     }
     GUI.EndScrollView();
@@ -56,7 +57,7 @@ public class LootMenu : Menu{
       Data item = invB.Peek(i);
       str = item != null ? item.displayName + item.stack + "/" + item.stackSize : "EMPTY";
       y = ih * i;
-      if(Button(str, 0, y, iw, ih, 1, i)){ Store(inv, invB.Retrieve(i)); }
+      if(Button(str, 0, y, iw, ih, 1, i)){ Store(inv, invB.Retrieve(i)); Sound(0);}
     }
     GUI.EndScrollView();
   }
@@ -69,6 +70,7 @@ public class LootMenu : Menu{
   
   public override void Input(int button){
     DefaultExit(button);
+    if(button == A){ Sound(0); }
     if(sy < 0){ return; }
     if(manager.actor == null){ return; }
     if(inv == null || invB == null){ return; }

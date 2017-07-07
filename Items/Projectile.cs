@@ -1,5 +1,6 @@
 /*
     Projectile is an Item that inflicts damage and disappers upon collision.
+    sound[0] = Impact sound.
 */
 
 ﻿using UnityEngine;
@@ -24,9 +25,10 @@ public class Projectile : Item{
   void Impact(Collider col){
     damageActive = false;
     HitBox hb = col.gameObject.GetComponent<HitBox>();
-    if(hb){ hb.ReceiveDamage(damage, weaponOfOrigin);}
+    if(hb){ hb.ReceiveDamage(damage, weaponOfOrigin); }
     Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
     if(rb) rb.AddForce(transform.forward * impactForce);
+    Sound(0);
     Destroy(this.gameObject);
   }
   

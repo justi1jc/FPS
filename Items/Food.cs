@@ -1,5 +1,6 @@
 /*
     Food is an item that imparts health onto its user.
+    sounds[0] = eating sound
 */
 
 ﻿using UnityEngine;
@@ -19,6 +20,7 @@ public class Food : Item{
     if(!ready || holder == null){ return; }
     holder.ReceiveDamage(-healing, gameObject);
     this.stack--;
+    Sound(0);
     if(stack < 1){
       holder.Drop();
       Destroy(this.gameObject);

@@ -26,10 +26,10 @@ public class AbilityMenu : Menu{
     
     // Display navigation buttons.
     if(Button("Stats", XOffset() + Width() - iw, Height()/2, iw, ih, 1, 0)){
-      manager.Change("STATS");
+      manager.Change("STATS");Sound(0);
     }
     if(Button("Inventory", XOffset(), Height()/2, iw, ih, -1, 0)){
-      manager.Change("INVENTORY");
+      manager.Change("INVENTORY"); Sound(0);
     }
     
     // Display ability buttons.
@@ -51,7 +51,7 @@ public class AbilityMenu : Menu{
         actor.arms.EquipAbility(ability, false);
       }
       if(Button("Equip Left", iw, ih * i, iw, ih, 0, i)){
-        actor.arms.EquipAbility(ability, true);
+        actor.arms.EquipAbility(ability, true); Sound(0);
       }
     }
     GUI.EndScrollView();
@@ -68,6 +68,7 @@ public class AbilityMenu : Menu{
     DefaultExit(button);
     if(manager.actor == null || manager.actor.arms == null){ return; }
     Actor actor = manager.actor;
+    if(button == A){ Sound(0); }
     switch(sx){
       case -1:
         if(button == A){ manager.Change("INVENTORY"); }

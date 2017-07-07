@@ -24,7 +24,7 @@ public class LoadMenu : Menu{
     Box("Load Menu", x, 0, iw, ih);
     string dest = manager.actor != null ? "OPTIONS" : "MAIN";
     int back = files != null ? files.Count : 0;
-    if(Button("Back", x, 3*ih, iw, ih, 0, back)){ manager.Change(dest); }
+    if(Button("Back", x, 3*ih, iw, ih, 0, back)){ manager.Change(dest); Sound(0);}
     
     // Render file buttons
     if(files == null){ return; }
@@ -36,7 +36,7 @@ public class LoadMenu : Menu{
     for(int i = 0; i < files.Count; i++){
       y = i * ih / 2;
       str = files[i].sessionName;
-      if(Button(str, 0, y, iw, ih/2, 0, i)){ py = i; }
+      if(Button(str, 0, y, iw, ih/2, 0, i)){ py = i; Sound(0); }
     }
     GUI.EndScrollView();
     
@@ -53,13 +53,15 @@ public class LoadMenu : Menu{
       str = "Load";
       y = ih;
       if(Button(str, x, y, iw, ih/2, 1, 0)){ 
-        Session.session.LoadGame(files[py].sessionName); 
+        Session.session.LoadGame(files[py].sessionName);
+        Sound(0);
       }
       str = "Delete";
       y = ih + ih/2;
       if(Button(str, x, y, iw, ih/2, 1, 1)){ 
         Session.session.DeleteFile(files[py].sessionName);
         files.Remove(files[py]);
+        Sound(0);
       }
     }
   }
@@ -79,6 +81,7 @@ public class LoadMenu : Menu{
   
   public override void Input(int button){
     string dest = manager.actor != null ? "OPTIONS" : "MAIN";
+    if(button == A){ Sound(0); }
     if(button == B || button == Y){ manager.Change(dest); }
     if(sx == 0 && button == A){
       if(sy < 0 || files == null){ return; }
