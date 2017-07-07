@@ -4,7 +4,7 @@
 */
 
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 
 public class LootTable{
@@ -37,11 +37,15 @@ public class LootTable{
   }
   
   /* Equips an actor with a specified starter kit. */
-  public static void Kit(string name, Actor actor){
-    
+  public static void Kit(string name, ref Actor actor){
+    actor.StartCoroutine(KitRoutine(name, actor));
+  }
+  
+  /* Enables waiting */
+  static IEnumerator KitRoutine(string name, Actor actor){
+    yield return new WaitForSeconds(0.5f);
     switch(name.ToUpper()){
       case "GUNRUNNER":
-        MonoBehaviour.print("Gunrunner selected");
         Data dat = GetItem("Weapons/Caster_Pistol");
         dat.ints[1] = 60; // Give full mag.
         actor.arms.Equip(new Data(dat), true);
@@ -53,6 +57,7 @@ public class LootTable{
         actor.inventory.Store(new Data(dat));
         break;
     }
+    yield return new WaitForSeconds(0f);
   }
   
   

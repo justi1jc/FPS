@@ -53,10 +53,12 @@ public class EquipSlot{
     if(handItem != null){
       handItem.Drop();
       handItem = null;
+      EquipAbility(0, true);
     }
     else if(offHandItem != null){
       offHandItem.Drop();
       offHandItem = null;
+      EquipAbility(0, false);
     }
   }
   
@@ -95,7 +97,7 @@ public class EquipSlot{
     foreach(Transform t in selectedHand){
       if(t.gameObject.name == "MountPoint"){ 
         itemGO.transform.parent = t;
-        break; 
+        break;
       }
     }
     item.Hold(actor);

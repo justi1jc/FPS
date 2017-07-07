@@ -115,7 +115,7 @@ public class Arena : MonoBehaviour{
     Actor actor = go.GetComponent<Actor>();
     if(actor != null){
       players.Add(actor);
-      LootTable.Kit("GUNRUNNER", actor);
+      LootTable.Kit("GUNRUNNER", ref actor);
     }
   }
   

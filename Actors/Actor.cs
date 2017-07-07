@@ -31,6 +31,8 @@ using System.Collections.Generic;
 
 public class Actor : MonoBehaviour{
   private bool pickupCooldown = true;
+  public bool init = false; // True after Start() has finished.
+  
   public string displayName;
   public string prefabName;
   public int playerNumber; // 1 for keyboard, 3-4 for controller, 5 for NPC
@@ -127,12 +129,13 @@ public class Actor : MonoBehaviour{
         if(c.gameObject == hand || c.gameObject == offHand){ c.isTrigger = true; }
       }
     }
+    init = true;
   }
   
   /* Equips unarmed melee to actor if no items are currently held. */
-  void InitFists(){
+  void InitEquipment(){
     if(arms.handItem == null){ EquipAbility(0, true); }
-    if(arms.offHandItem == null ){ EquipAbility(0, false); }
+    if(arms.offHandItem == null){ EquipAbility(0, false); }
   }
   
   /* Cycle loop. Runs once per frame. */
@@ -192,7 +195,7 @@ public class Actor : MonoBehaviour{
       stats.abilities.Add(1);
       stats.abilities.Add(2);
       stats.abilities.Add(3);
-      InitFists();
+      InitEquipment();
       SetMenuOpen(false);
       if(menu){ menu.Change("HUD");  menu.actor = this; }
       if(Session.session != null && cam != null){
@@ -204,7 +207,7 @@ public class Actor : MonoBehaviour{
     }
     else if(player == 5){
       stats.abilities.Add(0);
-      InitFists();
+      InitEquipment();
       ai = gameObject.GetComponent<AI>();
       if(ai){ ai.Begin(this); }
       if(speechTreeFile != ""){ speechTree = new SpeechTree(speechTreeFile); }
