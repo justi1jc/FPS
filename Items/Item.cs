@@ -73,7 +73,8 @@ public class Item : MonoBehaviour{
       MonoBehaviour.print("Invalid sound:" + i); 
       return; 
     }
-    AudioSource.PlayClipAtPoint(sounds[i], transform.position);
+    float vol = PlayerPrefs.HasKey("masterVolume") ? PlayerPrefs.GetFloat("masterVolume") : 1f; 
+    AudioSource.PlayClipAtPoint(sounds[i], transform.position, vol);
   }
   
   /* Pick up item. */

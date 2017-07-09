@@ -113,7 +113,7 @@ public class Actor : MonoBehaviour{
   }
   
   /* Before rest of code */
-  void Start(){
+  void Start(){    
     if(stats.level == 0){ stats.LevelUp();}
     AssignPlayer(playerNumber);
     Rigidbody[] rbs = GetComponentsInChildren<Rigidbody>();
@@ -202,8 +202,30 @@ public class Actor : MonoBehaviour{
         Session.session.RegisterPlayer(this, player, cam); 
       }
       else{ print("Session or cam is null"); }
-      if(player == 1){ StartCoroutine(KeyboardInputRoutine()); }
-      else{StartCoroutine(ControllerInputRoutine()); }
+      if(player == 1){ 
+        StartCoroutine(KeyboardInputRoutine());
+        if(PlayerPrefs.HasKey("mouseSensitivity")){
+          sensitivityX = PlayerPrefs.GetFloat("mouseSensitivity");
+          sensitivityY = PlayerPrefs.GetFloat("mouseSensitivity");
+        } 
+        else{
+          sensitivityX = 1f;
+          sensitivityY = 1f;
+        }
+      }
+      else{
+        StartCoroutine(ControllerInputRoutine()); 
+        if(PlayerPrefs.HasKey("controllerSensitivity")){
+          sensitivityX = PlayerPrefs.GetFloat("controllerSensitivity");
+          sensitivityY = PlayerPrefs.GetFloat("controllerSensitivity");
+        } 
+        else{
+          sensitivityX = 1f;
+          sensitivityY = 1f;
+        }
+      }
+      
+      
     }
     else if(player == 5){
       stats.abilities.Add(0);
@@ -253,6 +275,10 @@ public class Actor : MonoBehaviour{
       }
       else{
         KeyboardMenuInput();
+        if(PlayerPrefs.HasKey("mouseSensitivity")){
+          sensitivityX = PlayerPrefs.GetFloat("mouseSensitivity");
+          sensitivityY = PlayerPrefs.GetFloat("mouseSensitivity");
+        }
       }
       yield return new WaitForSeconds(0.01f);
     }
@@ -266,6 +292,10 @@ public class Actor : MonoBehaviour{
       }
       else{
         ControllerMenuInput();
+        if(PlayerPrefs.HasKey("controllerSensitivity")){
+          sensitivityX = PlayerPrefs.GetFloat("controllerSensitivity");
+          sensitivityY = PlayerPrefs.GetFloat("controllerSensitivity");
+        }
       }
       yield return new WaitForSeconds(0.01f);
     }
@@ -805,7 +835,7 @@ public class Actor : MonoBehaviour{
       Item item = itemInReach.GetComponent<Item>();
       if(item){ item.Interact(this, mode); }
     }
-    if(actorInReach){
+    else if(actorInReach){
       Actor actor = actorInReach.GetComponent<Actor>();
       if(actor && actor.speechTree != null && mode == -1 && actor.Alive()){
         interlocutor = actor;
@@ -825,6 +855,10 @@ public class Actor : MonoBehaviour{
         if(actor && actor.speechTree == null){ print("Speech tree null"); }
       }
     }
+    else{
+      Use(2);
+    }
+    
   }
   
   /* Pick up item in world. */
