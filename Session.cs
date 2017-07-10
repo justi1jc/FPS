@@ -24,6 +24,7 @@ public class Session : MonoBehaviour {
   private readonly object syncLock = new object(); // Mutex lock
   public string sessionName; //Name Used in save file.
   public List<Quest> quests;
+  public Data arenaData = null;
   
   
   // Controller one linux values
