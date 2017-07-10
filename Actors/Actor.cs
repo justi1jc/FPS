@@ -207,7 +207,7 @@ public class Actor : MonoBehaviour{
         if(PlayerPrefs.HasKey("mouseSensitivity")){
           sensitivityX = PlayerPrefs.GetFloat("mouseSensitivity");
           sensitivityY = PlayerPrefs.GetFloat("mouseSensitivity");
-        } 
+        }
         else{
           sensitivityX = 1f;
           sensitivityY = 1f;

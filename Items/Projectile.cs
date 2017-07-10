@@ -21,8 +21,21 @@ public class Projectile : Item{
     if(damageActive && weaponOfOrigin != col.gameObject){ Impact(col); }
   }
   
+  public void FixedUpdate(){
+    Rigidbody rb = GetComponent<Rigidbody>();
+    Vector3 dir = rb.velocity.normalized;
+    float dist = rb.velocity.magnitude;
+    Vector3 hExt = transform.lossyScale/2f;
+    RaycastHit hit;
+    Vector3 pos = transform.position;
+    if(Physics.Raycast(pos, dir, out hit, dist)){
+      Impact(hit.collider);
+    }
+  }
+  
   /* Exert damage and impulse, then destroy self. */
   void Impact(Collider col){
+    if(col == null){ return; }
     damageActive = false;
     HitBox hb = col.gameObject.GetComponent<HitBox>();
     if(hb){ hb.ReceiveDamage(damage, weaponOfOrigin); }
