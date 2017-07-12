@@ -19,6 +19,7 @@ public class Ranged : Weapon{
   public float impactForce;
   public string ammunition;
   public bool fullAuto = false;
+  public bool hitScan = false; // True if this weapon doesn't use a projectile.
   
   public void Start(){
     ready = true;
@@ -40,6 +41,12 @@ public class Ranged : Weapon{
   /* Fires ranged weapon. */
   void Fire(){
     if(ammo < 1 || !ready){ return; }
+    if(hitScan){ FireHitScan(); }
+    else{ FireProjectile(); }
+  }
+  
+  /* Creates and propels a projectile */
+  void FireProjectile(){
     StartCoroutine(CoolDown(cooldown));
     ammo--;
     Sound(0);
@@ -83,7 +90,26 @@ public class Ranged : Weapon{
       }
     }
     proj.GetComponent<Rigidbody>().velocity = relPos * muzzleVelocity;
+  }
+  
+  /* Does a raycast and impacts a target. */
+  void FireHitScan(){
+    Sound(0);
+    Vector3 dir = transform.rotation.eulerAngles;
+    Vector3 pos = transform.position;
+    float dist = Mathf.Infinity;
+    RaycastHit hit;
+    if(Physics.Raycast(pos, dir, out hit, dist)){ Impact(hit.collider.gameObject); }
     StartCoroutine(CoolDown(cooldown));
+  }
+  
+  /* Applies damage if the target has a HitBox and force if it has a rigidBody */
+  void Impact(GameObject target){
+    HitBox hb = target.GetComponent<HitBox>();
+    if(hb != null){ hb.ReceiveDamage(damage, gameObject); }
+    Rigidbody rb = target.GetComponent<Rigidbody>();
+    if(rb != null){ rb.AddForce(impactForce * transform.forward); }
+    print("Hit " + target.name);
   }
   
   /* Reloading process. */

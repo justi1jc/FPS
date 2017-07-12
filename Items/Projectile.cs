@@ -25,7 +25,6 @@ public class Projectile : Item{
     Rigidbody rb = GetComponent<Rigidbody>();
     Vector3 dir = rb.velocity.normalized;
     float dist = rb.velocity.magnitude;
-    Vector3 hExt = transform.lossyScale/2f;
     RaycastHit hit;
     Vector3 pos = transform.position;
     if(Physics.Raycast(pos, dir, out hit, dist)){
