@@ -62,15 +62,38 @@ public class EquipSlot{
     }
   }
   
+  public void Update(){
+    Vector3 point = TrackPoint();
+    if(handItem != null ){ Track(handItem.gameObject, point); }
+    if(offHandItem != null){ Track(offHandItem.gameObject, point); }
+  }
+  
+  /* Tracks weapons at fixed rate. */
+  public IEnumerator TrackRoutine(){
+    while(actor != null && actor.Alive()){
+      Vector3 point = TrackPoint();
+      if(handItem != null){ Track(handItem.gameObject, point); }
+      if(offHandItem != null){ Track(offHandItem.gameObject, point); }
+      yield return new WaitForSeconds(0.1f);
+    }
+    yield return null;
+  }
+  
   /* Returns the current point ranged weapons should aim at. */
   public Vector3 TrackPoint(){
     GameObject vision = actor.cam != null ? actor.cam.gameObject : actor.head;
-    return vision.transform.position + 100f*vision.transform.forward;
+    Vector3 pos = vision.transform.position;
+    Vector3 dir = vision.transform.forward;
+    RaycastHit hit; 
+    if(Physics.Raycast(pos, dir, out hit) && hit.distance > 1f){ 
+      return hit.point; 
+    }
+    else{ return pos + 100f*vision.transform.forward; }
   }
   
   /* Aims the selected ranged weapon at the given track point. */
-  public void Track(Ranged weapon, Vector3 trackPoint){
-    Transform t = weapon.gameObject.transform;
+  public void Track(GameObject weapon, Vector3 trackPoint){
+    Transform t = weapon.transform;
     t.rotation = Quaternion.LookRotation(trackPoint - t.position);
   }
   
@@ -101,7 +124,7 @@ public class EquipSlot{
       }
     }
     item.Hold(actor);
-    if(actor != null && item is Ranged){ Track((Ranged)item, TrackPoint()); }
+    if(actor != null && item is Ranged){ Track(item.gameObject, TrackPoint()); }
     if(primary){
       if(handItem != null){
         ret.Add(Remove(true));
