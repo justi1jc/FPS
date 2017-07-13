@@ -68,6 +68,7 @@ public class Ranged : Weapon{
     if(item is Projectile){
       Projectile p = (Projectile)item;
       p.weaponOfOrigin = gameObject;
+      p.holder = holder;
       p.impactForce = impactForce;
       p.damageActive = true;
       p.damage = damage;

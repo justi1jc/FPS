@@ -100,8 +100,8 @@ public class Actor : MonoBehaviour{
   public SpeechTree speechTree; // Speech tree if this is an NPC Actor
   
   // AI
-  public AI ai;
-
+  public AIManager ai;
+  public string defaultAI = "";
   
   /* Before Start */
   void Awake(){
@@ -231,8 +231,8 @@ public class Actor : MonoBehaviour{
     else if(player == 5){
       stats.abilities.Add(0);
       InitEquipment();
-      ai = gameObject.GetComponent<AI>();
-      if(ai){ ai.Begin(this); }
+      if(defaultAI == ""){ ai = new AIManager(this, "PASSIVE"); }
+      else{ ai = new AIManager(this, defaultAI); }
       if(speechTreeFile != ""){ speechTree = new SpeechTree(speechTreeFile); }
     }
   }
@@ -667,7 +667,6 @@ public class Actor : MonoBehaviour{
       int damage = (int)(distanceFallen - safeFallDistance) * 5;
       ReceiveDamage(damage, gameObject);
     }
-    
   }
   
   /* Toggles model's crouch */
@@ -686,6 +685,8 @@ public class Actor : MonoBehaviour{
     if(GetRoot(weapon.transform) == transform){ return; }
     if(stats.health < 1 || (weapon == arms.handItem && damage > 0)){ return; }
     stats.DrainCondition("HEALTH", damage);
+    Actor attacker = Attacker(weapon);
+    if(ai != null && attacker != null){ ai.ReceiveDamage(damage, attacker); }
     if(stats.health < 1){ Die(weapon); }
     else if (damage > 0){
       bool check = stats.StatCheck("ENDURANCE", damage);
@@ -694,13 +695,21 @@ public class Actor : MonoBehaviour{
     }
   }
   
+  /* Returns the actor responsible for damage, provided it is not this actor. */
+  public Actor Attacker(GameObject weapon){
+    Item item = weapon.GetComponent<Item>();
+    if(item == null){ return null; }
+    if(item.holder == this || item.holder == null){ return null; }
+    return item.holder;
+  }
+  
   /* Enter dead state, warding experience to the killder. */
   public void Die(GameObject weapon){
     StopAllCoroutines();
     Ragdoll(true);
     arms.Drop();
     arms.Drop();
-    if(ai){ ai.Pause(); }
+    if(ai != null){ ai.Pause(); }
     Item item = weapon.GetComponent<Item>();
     if(item && item.holder){
       item.holder.ReceiveXp(stats.NextLevel(stats.level -1)); 
@@ -728,11 +737,11 @@ public class Actor : MonoBehaviour{
     ragdoll = state;
     Rigidbody rb = GetComponent<Rigidbody>();
     if(state){
-      if(ai){ ai.Pause(); }
+      if(ai != null){ ai.Pause(); }
       rb.constraints = RigidbodyConstraints.None; 
     }
     else{
-      if(ai){ ai.Resume(); }
+      if(ai != null){ ai.Resume(); }
       rb.constraints = RigidbodyConstraints.FreezeRotationX |
                       RigidbodyConstraints.FreezeRotationY |
                       RigidbodyConstraints.FreezeRotationZ;
