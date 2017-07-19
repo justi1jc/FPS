@@ -35,7 +35,7 @@ public class Inventory{
   
   /* Stores this item and returns the overflow if it can't fit */
   public int Store(Data dat){
-    
+    if(dat == null){ return 0; }
     for(int i = 0; i < inv.Count; i++){ 
       if(dat.stack == 0){ return 0; }
       if(

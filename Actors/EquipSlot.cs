@@ -1,6 +1,10 @@
 /*
     An EquipSlot is a component that uses up to two gameObjects as mount points
     as anchor points for held items and manages the equipment and use of abilities.
+    
+    The current mapping is as follows
+    dual wield: primary = left(hand), secondary = right(offHand)
+    single wield: primary = right(offHand)
 */
 
 using UnityEngine;
@@ -104,28 +108,20 @@ public class EquipSlot{
       else{ actor.SetAnimBool("rightEquip", true); }
     }
     List<Data> ret = new List<Data>();
-    if(dat == null){ MonoBehaviour.print("Equipped null data"); return ret; }
-    GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
-    if(!prefab){ MonoBehaviour.print("Prefab null:" + dat.displayName); return ret;}
-    Vector3 position = actor != null ? actor.transform.position : new Vector3();
-    GameObject itemGO = (GameObject)GameObject.Instantiate(
-      prefab,
-      position,
-      Quaternion.identity
-    );
-    if(!itemGO){MonoBehaviour.print("GameObject null:" + dat.displayName); return ret; }
-    Item item = itemGO.GetComponent<Item>();
-    item.LoadData(dat);
+    Item item = GetItem(dat);
+    if(item == null){ return ret; }
+    GameObject itemGO = item.gameObject;
+    
     Transform selectedHand = primary ? hand.transform : offHand.transform;
-    foreach(Transform t in selectedHand){
-      if(t.gameObject.name == "MountPoint"){ 
-        itemGO.transform.parent = t;
-        break;
-      }
-    }
+    if(!item.oneHanded){ selectedHand = offHand.transform; }
+    item.transform.parent = MountPoint(selectedHand);
     item.Hold(actor);
-    if(actor != null && item is Ranged){ Track(item.gameObject, TrackPoint()); }
-    if(primary){
+    if(!item.oneHanded){
+      ret.Add(Remove(true));
+      ret.Add(Remove(false));
+      offHandItem = item;
+    }
+    else if(primary){
       if(handItem != null){
         ret.Add(Remove(true));
       }
@@ -139,6 +135,29 @@ public class EquipSlot{
     }
     
     return ret;
+  }
+  
+  /* Returns mount point from hand. */
+  Transform MountPoint(Transform selectedHand){
+    foreach(Transform t in selectedHand){ if(t.gameObject.name == "MountPoint"){ return t; } }
+    return null;
+  }
+  
+  /* Returns an Item from data */
+  Item GetItem(Data dat){
+    if(dat == null){ MonoBehaviour.print("Equipped null data"); return null; }
+    GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
+    if(!prefab){ MonoBehaviour.print("Prefab null:" + dat.displayName); return null;}
+    Vector3 position = actor != null ? actor.transform.position : new Vector3();
+    GameObject itemGO = (GameObject)GameObject.Instantiate(
+      prefab,
+      position,
+      Quaternion.identity
+    );
+    if(!itemGO){MonoBehaviour.print("GameObject null:" + dat.displayName); return null; }
+    Item item = itemGO.GetComponent<Item>();
+    item.LoadData(dat);
+    return item;
   }
   
   public void Use(int use){
