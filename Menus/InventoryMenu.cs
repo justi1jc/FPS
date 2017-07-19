@@ -69,15 +69,15 @@ public class InventoryMenu : Menu{
       string name = item == null ? "EMPTY" : item.displayName;
       string info = item == null ? "" : " " + item.stack + "/" + item.stackSize;
       str = name + info;
-      if(Button(str, XOffset(), ih * i, iw, ih, 0, i)){ 
+      if(Button(str, 0, ih * i, iw, ih, 0, i)){ 
         Equip(inv.Retrieve(i), true);
         Sound(0); 
       }
-      if(Button("OffHand", XOffset() + iw, ih * i, iw/2, ih, i, 1)){ 
+      if(Button("OffHand", iw, ih * i, iw/2, ih, i, 1)){ 
         Equip(inv.Retrieve(i), false);
         Sound(0);
       }
-      if(Button("Drop", XOffset() + iw + iw/2, ih * i, iw/2, ih, i, 2)){ 
+      if(Button("Drop", iw + iw/2, ih * i, iw/2, ih, i, 2)){ 
         actor.DiscardItem(i);
         Sound(0);
       }

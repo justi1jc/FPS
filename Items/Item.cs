@@ -8,6 +8,17 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class Item : MonoBehaviour{
+  // Constants to reference class within Data
+  public const int ITEM = 0;
+  public const int FOOD = 1;
+  public const int DECOR = 2;
+  public const int CONTAINER = 3;
+  public const int SPAWNER = 4;
+  public const int WARPDOOR = 5;
+  public const int WEAPON = 6;
+  public const int MELEE = 7;
+  public const int RANGED = 8;
+  public const int PROJECTILE = 9;
   
   // Base variables
   public string prefabName;
@@ -73,7 +84,8 @@ public class Item : MonoBehaviour{
       MonoBehaviour.print("Invalid sound:" + i); 
       return; 
     }
-    AudioSource.PlayClipAtPoint(sounds[i], transform.position);
+    float vol = PlayerPrefs.HasKey("masterVolume") ? PlayerPrefs.GetFloat("masterVolume") : 1f; 
+    AudioSource.PlayClipAtPoint(sounds[i], transform.position, vol);
   }
   
   /* Pick up item. */
@@ -100,6 +112,7 @@ public class Item : MonoBehaviour{
     dat.stackSize = stackSize;
     dat.ints.Add(weight);
     dat.baseValue = baseValue;
+    dat.itemType = Item.ITEM;
     return dat;
   }
   

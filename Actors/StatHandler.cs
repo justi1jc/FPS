@@ -36,8 +36,18 @@ public class StatHandler{
   public int level;
   public int xp;
   
-  //Abilities
+  // Abilities
   public List<int> abilities;
+  
+  /* Faction id 
+     0 = neutral(only retaliates)
+     1 = feral(attacks anything)
+     2 = team Red(Arena)
+     3 = team Blue(Arena)
+  */
+  public int faction = 0;
+  
+  
   
   public StatHandler(){
     abilities = new List<int>();

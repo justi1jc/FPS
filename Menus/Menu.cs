@@ -45,6 +45,12 @@ public class Menu{
     return Screen.height;
   }
 
+  /* Convenience method to use a horizontal slider  */
+  public float Slider(int x, int y, int width, int height, float val, float left, float right){
+    Rect r = new Rect(x, y, width, height);
+    return GUI.HorizontalSlider(r, val, left, right);
+  }
+
   /* Width of the screen. */
   public int Width(){
     int x = Screen.width;
@@ -142,6 +148,7 @@ public class Menu{
     if(button <= LT && button >= A){ Input(button); }
   }
   
+  /* Plays sound through manager. */
   public void Sound(int i){
     if(manager != null){ manager.Sound(i); }
   }

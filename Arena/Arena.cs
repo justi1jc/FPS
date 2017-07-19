@@ -21,9 +21,10 @@ public class Arena : MonoBehaviour{
   
   /* Begin a new round. */
   public void Initialize(){
+    Data dat = Session.session.arenaData;
     menu = gameObject.AddComponent<MenuManager>();
     menu.Change("ARENAHUD");
-    time = startingTime = 600;
+    time = startingTime = dat != null ? 60 * dat.ints[0] : 600;
     PopulateSpawnPoints();
     InitPlayers();
     StartCoroutine(UpdateRoutine());
