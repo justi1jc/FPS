@@ -26,6 +26,7 @@ public class MenuManager: MonoBehaviour{
   
   public void Awake(){
     InitSounds();
+    
   }
   
   public void InitSounds(){
@@ -60,6 +61,9 @@ public class MenuManager: MonoBehaviour{
         break;
       case "OPTIONS":
         active = (Menu)(new OptionsMenu(this));
+        break;
+      case "SETTINGS":
+        active = (Menu)(new SettingsMenu(this));
         break;
       case "SPEECH":
         active = (Menu)(new SpeechMenu(this));
@@ -96,6 +100,7 @@ public class MenuManager: MonoBehaviour{
       MonoBehaviour.print("Invalid sound:" + i); 
       return; 
     }
-    AudioSource.PlayClipAtPoint(sounds[i], transform.position);
+    float vol = PlayerPrefs.HasKey("masterVolume") ? PlayerPrefs.GetFloat("masterVolume") : 1f; 
+    AudioSource.PlayClipAtPoint(sounds[i], transform.position, vol);
   }
 }

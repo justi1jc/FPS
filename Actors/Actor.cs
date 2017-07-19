@@ -100,8 +100,8 @@ public class Actor : MonoBehaviour{
   public SpeechTree speechTree; // Speech tree if this is an NPC Actor
   
   // AI
-  public AI ai;
-
+  public AIManager ai;
+  public string defaultAI = "";
   
   /* Before Start */
   void Awake(){
@@ -113,7 +113,7 @@ public class Actor : MonoBehaviour{
   }
   
   /* Before rest of code */
-  void Start(){
+  void Start(){    
     if(stats.level == 0){ stats.LevelUp();}
     AssignPlayer(playerNumber);
     Rigidbody[] rbs = GetComponentsInChildren<Rigidbody>();
@@ -158,6 +158,7 @@ public class Actor : MonoBehaviour{
       Vector3 rot = new Vector3(headRotx, headRoty, offset);
       spine.transform.rotation = Quaternion.Euler(rot);
     }
+    if(arms != null){ arms.Update();}
   }
   
   /* Notifies menu, if it exists. */
@@ -202,14 +203,36 @@ public class Actor : MonoBehaviour{
         Session.session.RegisterPlayer(this, player, cam); 
       }
       else{ print("Session or cam is null"); }
-      if(player == 1){ StartCoroutine(KeyboardInputRoutine()); }
-      else{StartCoroutine(ControllerInputRoutine()); }
+      if(player == 1){ 
+        StartCoroutine(KeyboardInputRoutine());
+        if(PlayerPrefs.HasKey("mouseSensitivity")){
+          sensitivityX = PlayerPrefs.GetFloat("mouseSensitivity");
+          sensitivityY = PlayerPrefs.GetFloat("mouseSensitivity");
+        }
+        else{
+          sensitivityX = 1f;
+          sensitivityY = 1f;
+        }
+      }
+      else{
+        StartCoroutine(ControllerInputRoutine()); 
+        if(PlayerPrefs.HasKey("controllerSensitivity")){
+          sensitivityX = PlayerPrefs.GetFloat("controllerSensitivity");
+          sensitivityY = PlayerPrefs.GetFloat("controllerSensitivity");
+        } 
+        else{
+          sensitivityX = 1f;
+          sensitivityY = 1f;
+        }
+      }
+      
+      
     }
     else if(player == 5){
       stats.abilities.Add(0);
       InitEquipment();
-      ai = gameObject.GetComponent<AI>();
-      if(ai){ ai.Begin(this); }
+      if(defaultAI == ""){ ai = new AIManager(this, "PASSIVE"); }
+      else{ ai = new AIManager(this, defaultAI); }
       if(speechTreeFile != ""){ speechTree = new SpeechTree(speechTreeFile); }
     }
   }
@@ -253,6 +276,10 @@ public class Actor : MonoBehaviour{
       }
       else{
         KeyboardMenuInput();
+        if(PlayerPrefs.HasKey("mouseSensitivity")){
+          sensitivityX = PlayerPrefs.GetFloat("mouseSensitivity");
+          sensitivityY = PlayerPrefs.GetFloat("mouseSensitivity");
+        }
       }
       yield return new WaitForSeconds(0.01f);
     }
@@ -266,6 +293,10 @@ public class Actor : MonoBehaviour{
       }
       else{
         ControllerMenuInput();
+        if(PlayerPrefs.HasKey("controllerSensitivity")){
+          sensitivityX = PlayerPrefs.GetFloat("controllerSensitivity");
+          sensitivityY = PlayerPrefs.GetFloat("controllerSensitivity");
+        }
       }
       yield return new WaitForSeconds(0.01f);
     }
@@ -595,9 +626,6 @@ public class Actor : MonoBehaviour{
     bodyRoty += direction.y;
     if(headRotx > rotxMax){ headRotx = rotxMax; }
     if(headRotx < -rotxMax){ headRotx = -rotxMax; }
-    if(head){
-      head.transform.rotation = Quaternion.Euler(headRotx, headRoty, 0f);
-    }
     transform.rotation = Quaternion.Euler(0f, bodyRoty, 0f);
   }
   
@@ -636,7 +664,6 @@ public class Actor : MonoBehaviour{
       int damage = (int)(distanceFallen - safeFallDistance) * 5;
       ReceiveDamage(damage, gameObject);
     }
-    
   }
   
   /* Toggles model's crouch */
@@ -655,6 +682,8 @@ public class Actor : MonoBehaviour{
     if(GetRoot(weapon.transform) == transform){ return; }
     if(stats.health < 1 || (weapon == arms.handItem && damage > 0)){ return; }
     stats.DrainCondition("HEALTH", damage);
+    Actor attacker = Attacker(weapon);
+    if(ai != null && attacker != null){ ai.ReceiveDamage(damage, attacker); }
     if(stats.health < 1){ Die(weapon); }
     else if (damage > 0){
       bool check = stats.StatCheck("ENDURANCE", damage);
@@ -663,13 +692,21 @@ public class Actor : MonoBehaviour{
     }
   }
   
+  /* Returns the actor responsible for damage, provided it is not this actor. */
+  public Actor Attacker(GameObject weapon){
+    Item item = weapon.GetComponent<Item>();
+    if(item == null){ return null; }
+    if(item.holder == this || item.holder == null){ return null; }
+    return item.holder;
+  }
+  
   /* Enter dead state, warding experience to the killder. */
   public void Die(GameObject weapon){
     StopAllCoroutines();
     Ragdoll(true);
     arms.Drop();
     arms.Drop();
-    if(ai){ ai.Pause(); }
+    if(ai != null){ ai.Pause(); }
     Item item = weapon.GetComponent<Item>();
     if(item && item.holder){
       item.holder.ReceiveXp(stats.NextLevel(stats.level -1)); 
@@ -697,11 +734,11 @@ public class Actor : MonoBehaviour{
     ragdoll = state;
     Rigidbody rb = GetComponent<Rigidbody>();
     if(state){
-      if(ai){ ai.Pause(); }
+      if(ai != null){ ai.Pause(); }
       rb.constraints = RigidbodyConstraints.None; 
     }
     else{
-      if(ai){ ai.Resume(); }
+      if(ai != null){ ai.Resume(); }
       rb.constraints = RigidbodyConstraints.FreezeRotationX |
                       RigidbodyConstraints.FreezeRotationY |
                       RigidbodyConstraints.FreezeRotationZ;
@@ -805,7 +842,7 @@ public class Actor : MonoBehaviour{
       Item item = itemInReach.GetComponent<Item>();
       if(item){ item.Interact(this, mode); }
     }
-    if(actorInReach){
+    else if(actorInReach){
       Actor actor = actorInReach.GetComponent<Actor>();
       if(actor && actor.speechTree != null && mode == -1 && actor.Alive()){
         interlocutor = actor;
@@ -825,6 +862,10 @@ public class Actor : MonoBehaviour{
         if(actor && actor.speechTree == null){ print("Speech tree null"); }
       }
     }
+    else{
+      Use(2);
+    }
+    
   }
   
   /* Pick up item in world. */

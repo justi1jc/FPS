@@ -35,7 +35,7 @@ public class OptionsMenu : Menu{
     
     str = "Settings";
     if(Button(str, x, 2*ih, 2*iw, ih, 0, 2)){
-      MonoBehaviour.print("Settings");
+      manager.Change("SETTINGS");
       Sound(0);
     }
     

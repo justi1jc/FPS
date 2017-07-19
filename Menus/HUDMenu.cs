@@ -39,7 +39,7 @@ public class HUDMenu : Menu{
     Box(str, XOffset(), 19*ih, iw, ih);
     
     str = "X";
-    Box(str, XOffset() + Width()/2 - (ih/2), Height()/2 + (ih/2), ih, ih);    
+    Box(str, XOffset() + Width()/2 - (ih/2), Height()/2, ih, ih);    
     
     // Display Item info
     str = actor.ItemInfo();
