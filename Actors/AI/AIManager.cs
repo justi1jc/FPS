@@ -12,7 +12,7 @@ using System.Collections.Generic;
 [System.Serializable]
 public class AIManager{
   public bool paused = false;
-  AI ai;
+  public AI ai;
   public Actor actor;
   [System.NonSerialized]public GameObject target;
   [System.NonSerialized]public List<Actor> sighted;
@@ -21,7 +21,6 @@ public class AIManager{
     this.actor = actor;
     sighted = new List<Actor>();
     Change(initial);
-    MonoBehaviour.print("constructor");
   }
   
   /* Informs active script of receiving damage from an Actor */
@@ -34,7 +33,6 @@ public class AIManager{
   
   /* Swaps the active ai script */
   public void Change(string behaviour){
-    MonoBehaviour.print("Changing to" + behaviour);
     switch(behaviour.ToUpper()){
       case "PASSIVE": // Inert AI
         ai = new AI(actor, this);
@@ -42,12 +40,14 @@ public class AIManager{
       case "IDLE": // Stands around until attacked.
         ai = (AI)new IdleAI(actor, this);
         break;
-      case "HoSTILE":
+      case "HOSTILE":
         ai = (AI)new HostileAI(actor, this);
         break;
       case "MELEECOMBAT":
+        ai = (AI)new MeleeCombatAI(actor, this);
         break;
       case "RANGEDCOMBAT":
+        ai = (AI)new RangedCombatAI(actor, this);
         break;
     }
   }

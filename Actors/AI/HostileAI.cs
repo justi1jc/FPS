@@ -22,26 +22,61 @@ public class HostileAI : AI{
   /* Locates a new enemy. */
   IEnumerator FindEnemy(){
     while(manager.target == null){
-      
+      manager.sighted = ScanForActors();
+      if(manager.sighted.Count > 0){ 
+        manager.target = manager.sighted[0].gameObject; 
+      }
+      yield return new WaitForSeconds(0.1f);
     }
-    yield return null;
+    yield return new WaitForSeconds(0);
+  }
+  
+  /* Returns true if this ranged weapon has ammo in it, or in the actor's
+     inventory. */
+  public bool HasAmmo(Ranged r){
+    if(r.ammo > 0){ return true; }
+    Inventory inv = actor.inventory;
+    for(int i = 0; i < inv.slots; i++){
+      Data dat = inv.Peek(i);
+      if(dat != null && dat.displayName == r.ammunition){ return true; }
+    }
+    return false;
+  }
+  
+  /* overloaded to accept data */
+  public bool HasAmmo(Data rdat){
+    if(rdat.ints[1] > 0){ return true; }
+    Inventory inv = actor.inventory;
+    for(int i = 0; i < inv.slots; i++){
+      Data dat = inv.Peek(i);
+      if(dat.displayName == rdat.strings[0]){ return true; }
+    }
+    return false;
   }
   
   /* Selects either a ranged or melee weapon, then changes to
      the appropriate combat ai. */
   void Equip(){
     bool ranged = false;
+    Ranged r = null;
+    Inventory inv = actor.inventory;
     if(actor.arms.handItem != null && actor.arms.handItem is Ranged){
+      r = (Ranged)actor.arms.handItem;
+    }
+    if(r != null && HasAmmo(r)){
       ranged = true;
     }
     else{
       List<int> rangedWeapons = RangedWeapons();
-      if(rangedWeapons.Count > 0){
-        actor.Equip(rangedWeapons[0], true);
-        ranged = true;
+      for(int i = 0; i < rangedWeapons.Count; i++){
+        if(HasAmmo(inv.Peek(rangedWeapons[i]))){
+          actor.Equip(rangedWeapons[0], true);
+          ranged = true;
+          break;
+        }
       }
     }
-    if(ranged = true){
+    if(ranged == true){
       manager.Change("RANGEDCOMBAT");
       return;
     }

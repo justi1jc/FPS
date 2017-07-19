@@ -407,6 +407,7 @@ public class EquipSlot{
     item.knockBack = 50;
     item.ready = true;
     item.damage = 20;
+    item.holder = actor;
   }
   
   /* Initializes fireball spell. */

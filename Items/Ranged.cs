@@ -143,6 +143,7 @@ public class Ranged : Weapon{
   public override Data GetData(){
     Data dat = GetBaseData();
     dat.ints.Add(ammo);
+    dat.strings.Add(ammunition);
     return dat;
   }
   

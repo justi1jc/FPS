@@ -626,9 +626,6 @@ public class Actor : MonoBehaviour{
     bodyRoty += direction.y;
     if(headRotx > rotxMax){ headRotx = rotxMax; }
     if(headRotx < -rotxMax){ headRotx = -rotxMax; }
-    if(head){
-      head.transform.rotation = Quaternion.Euler(headRotx, headRoty, 0f);
-    }
     transform.rotation = Quaternion.Euler(0f, bodyRoty, 0f);
   }
   

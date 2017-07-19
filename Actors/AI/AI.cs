@@ -13,8 +13,7 @@ public class AI{
   public AIManager manager;
   float pace = 0.01f;
   float sightDistance = 40f;
-  float aimMargin = 1f;   // Acceptable deviation in aim.
-  float turnSpeed = 0.01f; // Delay between turning
+  float turnSpeed = 0.0005f; // Delay between turning
   public bool pursuing;
   public bool moving;
   
@@ -30,7 +29,7 @@ public class AI{
   public virtual void ReceiveDamage(int damage, Actor damager){}
   
   /* Move directly at target. */
-  public IEnumerator Pursue(Actor target){
+  public IEnumerator Pursue(Actor target, float dist = 3f){
     if(!target){ yield break; }
     pursuing = true;
     Vector3 pos = actor.body.transform.position;
@@ -38,7 +37,7 @@ public class AI{
     Vector3 dest = new Vector3();
     if(target){ dest = target.body.transform.position; }
     dest = new Vector3(dest.x, 0f, dest.z); 
-    while(Vector3.Distance(dest, pos) > 3f && CanSee(target.body) && !manager.paused){
+    while(Vector3.Distance(dest, pos) > dist && CanSee(target.body) && !manager.paused){
       if(!target){ yield break; }
       Vector3 move = dest - pos;
       actor.AxisMove(move.x, move.z);
@@ -106,45 +105,45 @@ public class AI{
   
   
   /* Aim at the target */
-  public IEnumerator AimAt(Actor target){
+  public IEnumerator AimAt(Actor target, float aimMargin = 1f){
     if(manager.paused){ yield break; }
     Transform head = actor.head.transform;
     Transform thead = target.head.transform;
-    Quaternion desired = Quaternion.LookRotation(head.position - thead.position);
-    Quaternion actual = head.rotation;
+    Quaternion desired = Quaternion.LookRotation(thead.position - head.position);
+    Vector3 hrot = head.rotation.eulerAngles;
+    Quaternion actual = Quaternion.Euler(hrot.x, hrot.y, 0f);
     float angle = Quaternion.Angle(desired, actual);
-    while(angle > aimMargin && !manager.paused && CanSee(target.body)){
+    while(angle > aimMargin && !manager.paused){
       Vector3 actualEulers = actual.eulerAngles;
       Vector3 desiredEulers = desired.eulerAngles;
-      float x = actualEulers.x - desiredEulers.y;
-      float y = actualEulers.y - desiredEulers.y;
-      //if(Mathf.Abs(x) > 180){ x *= -1f; }
+      float x = desiredEulers.x - actualEulers.x;
+      float y = desiredEulers.y - actualEulers.y;
+      if(Mathf.Abs(x) > 180){ x *= -1f; }
       if(Mathf.Abs(y) > 180){ y *= -1f; }
       actor.Turn(new Vector3(x, y, 0f).normalized);
       yield return new WaitForSeconds(turnSpeed);
       if(!target){ yield break; }
-      desired = Quaternion.LookRotation(head.position - thead.position);
-      actual = head.rotation;
-      
+      desired = Quaternion.LookRotation(thead.position - head.position);
+      hrot = head.rotation.eulerAngles;
+      actual = Quaternion.Euler(hrot.x, hrot.y, 0f);
+      angle = Quaternion.Angle(desired, actual);
     }
-    
     yield break;
   }
   
-  public void Update(){
-    
-  }
-  
   /* Returns true if one of five raycasts reaches the target's collider */
-  public bool CanSee(GameObject target){
+  public bool CanSee(GameObject target, Vector3 pos = new Vector3()){
     if(!target){ return false; }
     Transform trans = manager.actor.head.transform;
+    if(pos == new Vector3()){
+      pos = manager.actor.head.transform.position;
+    }
     Vector3[] origins = {
-      trans.position,               // Center
-      trans.position + trans.up,    // Up
-      trans.position - trans.up,    // Down
-      trans.position + trans.right, // Right
-      trans.position - trans.right   // Left
+      pos,               // Center
+      pos + trans.up,    // Up
+      pos - trans.up,    // Down
+      pos + trans.right, // Right
+      pos - trans.right  // Left
     };
     for(int i = 0; i < origins.Length; i++){
       if(!target){ return false; }
