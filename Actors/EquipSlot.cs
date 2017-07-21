@@ -58,11 +58,16 @@ public class EquipSlot{
       handItem.Drop();
       handItem = null;
       EquipAbility(0, true);
+      if(offHandItem != null || offHandAbility > 0){ 
+        actor.SetAnimBool("twoHanded", true);
+      }
+      else{ actor.SetAnimBool("twoHanded", false); }
     }
     else if(offHandItem != null){
       offHandItem.Drop();
       offHandItem = null;
       EquipAbility(0, false);
+      actor.SetAnimBool("twoHanded", false);
     }
   }
   
@@ -89,8 +94,9 @@ public class EquipSlot{
     Vector3 pos = vision.transform.position;
     Vector3 dir = vision.transform.forward;
     RaycastHit hit; 
-    if(Physics.Raycast(pos, dir, out hit) && hit.distance > 1f){ 
-      return hit.point; 
+    if(Physics.Raycast(pos, dir, out hit) && hit.distance > 1f){
+      MonoBehaviour.print(hit.collider.gameObject.name); 
+      return hit.point;
     }
     else{ return pos + 100f*vision.transform.forward; }
   }
@@ -119,19 +125,40 @@ public class EquipSlot{
     if(!item.oneHanded){
       ret.Add(Remove(true));
       ret.Add(Remove(false));
+      handAbility = 0;
+      offHandAbility = 0;
       offHandItem = item;
+      if(actor != null){ actor.SetAnimBool("twoHanded", true); }
     }
     else if(primary){
       if(handItem != null){
         ret.Add(Remove(true));
+        handAbility = 0;
       }
-      handItem = item;
+      if(offHandItem == null && offHandAbility < 1){
+        GameObject.Destroy(item.gameObject);
+        ret.AddRange(Equip(dat, false));
+        return ret;
+      }
+      else{
+        if(actor != null){ actor.SetAnimBool("twoHanded", false); }
+        handItem = item;
+      }
     }
     else{
-      if(offHandItem != null){
-        ret.Add(Remove(false));
+      if(offHandItem != null){ 
+        ret.Add(Remove(false)); 
+        offHandAbility = 0;
       }
       offHandItem = item;
+      if(actor != null){ 
+        if(handItem == null && handAbility < 1){ 
+          actor.SetAnimBool("twoHanded", true); 
+        }
+        else{
+          actor.SetAnimBool("twoHanded", false);
+        }
+      }
     }
     
     return ret;
@@ -167,6 +194,23 @@ public class EquipSlot{
       if(offHandItem != null){ offHandItem.Use(2); }
     }
     
+    if(offHandItem != null && (!offHandItem.oneHanded || handItem == null && handAbility < 1)){
+      switch(use){
+        case 0:
+          melee = offHandItem.gameObject.GetComponent<Melee>();
+          if(melee != null){
+            string trigger = melee.stab ? "rightStab" : "rightSwing";
+            if(actor && melee.ready){ actor.SetAnimTrigger(trigger); }
+          }
+          offHandItem.Use(0);
+          break;
+        case 3: offHandItem.Use(3); break;
+        case 5: offHandItem.Use(4); break;
+        case 7: offHandItem.Use(5); break;
+      }
+      return;
+    }
+    
     if(handItem != null){
       switch(use){
         case 0:
@@ -177,31 +221,17 @@ public class EquipSlot{
           }
           handItem.Use(0);
           break;
-        case 3:
-          handItem.Use(3);
-          break;
-        case 5:
-          handItem.Use(4);
-          break;
-        case 7:
-          handItem.Use(5);
-          break;
+        case 3: handItem.Use(3); break;
+        case 5: handItem.Use(4); break;
+        case 7: handItem.Use(5); break;
       }
     }
     else if(handAbility != -1){
       switch(use){
-        case 0:
-          UseAbility(0, true);
-          break;
-        case 3:
-          UseAbility(3, true);
-          break;
-        case 5:
-          UseAbility(4, true);
-          break;
-        case 7:
-          UseAbility(5, true);
-          break;
+        case 0: UseAbility(0, true); break;
+        case 3: UseAbility(3, true); break;
+        case 5: UseAbility(4, true); break;
+        case 7: UseAbility(5, true); break;
       }
     }
     
@@ -215,25 +245,15 @@ public class EquipSlot{
           }
           offHandItem.Use(0);
           break;
-        case 4:
-          offHandItem.Use(3);
-          break;
-        case 6:
-          offHandItem.Use(4);
-          break;
+        case 4: offHandItem.Use(3); break;
+        case 6: offHandItem.Use(4); break;
       }
     }
     else if(offHandAbility != -1){
       switch(use){
-        case 1:
-          UseAbility(0, false);
-          break;
-        case 4:
-          UseAbility(3, false);
-          break;
-        case 6:
-          UseAbility(4, false);
-          break;
+        case 1: UseAbility(0, false); break;
+        case 4: UseAbility(3, false); break;
+        case 6: UseAbility(4, false); break;
       }
     }
   }
@@ -246,18 +266,10 @@ public class EquipSlot{
     int ability = primary ? handAbility : offHandAbility;
     if(ability == -1){ return; }
     switch(ability){
-      case 0:
-        UsePunch(user, use, primary);
-        break;
-      case 1:
-        UseFireBall(user, use);
-        break;
-      case 2:
-        UseHealSelf(user, use);
-        break;
-      case 3:
-        UseHealOther(user, use);
-        break;
+      case 0: UsePunch(user, use, primary); break;
+      case 1: UseFireBall(user, use); break;
+      case 2: UseHealSelf(user, use); break;
+      case 3: UseHealOther(user, use); break;
     }
   }
   
