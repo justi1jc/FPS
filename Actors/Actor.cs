@@ -218,8 +218,6 @@ public class Actor : MonoBehaviour{
           sensitivityY = 1f;
         }
       }
-      
-      
     }
     else if(player == 5){
       stats.abilities.Add(0);

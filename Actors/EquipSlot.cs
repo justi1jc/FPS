@@ -76,21 +76,17 @@ public class EquipSlot{
     }
   }
   
-  public void Update(){
-    Vector3 point = TrackPoint();
-    if(handItem != null ){ Track(handItem.gameObject, point); }
-    if(offHandItem != null){ Track(offHandItem.gameObject, point); }
-  }
   
-  /* Tracks weapons at fixed rate. */
-  public IEnumerator TrackRoutine(){
-    while(actor != null && actor.Alive()){
+  /* Called from late update */
+  public void Update(){
+    bool lr = handItem != null && handItem is Ranged; 
+    bool rr = offHand != null && handItem is Ranged;
+    if(lr || rr){
+      MonoBehaviour.print(lr + "," + rr);
       Vector3 point = TrackPoint();
-      if(handItem != null){ Track(handItem.gameObject, point); }
-      if(offHandItem != null){ Track(offHandItem.gameObject, point); }
-      yield return new WaitForSeconds(0.1f);
+      if(handItem != null && lr){ Track(handItem.gameObject, point); }
+      if(offHandItem != null && rr){ Track(offHandItem.gameObject, point); }
     }
-    yield return null;
   }
   
   /* Returns the current point ranged weapons should aim at. */
