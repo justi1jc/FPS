@@ -15,6 +15,7 @@ public class EquipSlot{
   [System.NonSerialized]public Actor actor = null; // Actor, if one is associated with this EquipSlot
   [System.NonSerialized]public GameObject hand, offHand;
   [System.NonSerialized]public Item handItem, offHandItem; // Equipped item
+  [System.NonSerialized]private Vector3 prevTrackPoint = new Vector3();
   Data handData = null;
   Data offHandData = null;
   public int handAbility = -1;
@@ -99,9 +100,19 @@ public class EquipSlot{
     Vector3 dir = vision.transform.forward;
     RaycastHit hit; 
     if(Physics.Raycast(pos, dir, out hit) && hit.distance > 1f){ 
+      GameObject go = hit.collider.gameObject;
+      if((handItem != null && handItem.gameObject == go)
+        || (offHandItem != null && offHandItem.gameObject == go)
+      ){
+        return prevTrackPoint; 
+      }
+      prevTrackPoint = hit.point;
       return hit.point;
     }
-    else{ return pos + 100f*vision.transform.forward; }
+    else{
+      prevTrackPoint = pos + 100f*vision.transform.forward;
+      return pos + 100f*vision.transform.forward; 
+    }
   }
   
   /* Aims the selected ranged weapon at the given track point. */
