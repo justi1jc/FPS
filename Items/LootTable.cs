@@ -38,16 +38,35 @@ public class LootTable{
   
   /* Equips an actor with a specified starter kit. */
   public static void Kit(string name, ref Actor actor){
-        switch(name.ToUpper()){
-      case "GUNRUNNER":
-        Data dat = GetItem("Weapons/Caster_Pistol");
-        dat.ints[1] = 60; // Give full mag.
+    Data dat = null;
+    switch(name.ToUpper()){
+      case "GUNRUNNER": // Dual pistols
+        dat = GetItem("Weapons/Caster_Rifle");
+        dat.ints[1] = 20; // Give full mag.
         actor.arms.Equip(new Data(dat), true);
         actor.arms.Equip(new Data(dat), false);
-        dat = GetItem("Weapons/Ammo/Caster_Pistol_Magazine", 60);
+        dat = GetItem("Weapons/Ammo/Caster_Pistol_Magazine", 20);
         actor.inventory.Store(new Data(dat));
         actor.inventory.Store(new Data(dat));
         actor.inventory.Store(new Data(dat));
+        actor.inventory.Store(new Data(dat));
+        break;
+      case "ASSAULT": // Rifle, Pistol, and Knife.
+        dat = GetItem("Weapons/Caster_Rifle");
+        dat.ints[1] = 60; // Give full mag.
+        actor.arms.Equip(new Data(dat), true);
+        dat = GetItem("Weapons/Ammo/Caster_Rifle_magazine", 60);
+        actor.inventory.Store(new Data(dat));
+        actor.inventory.Store(new Data(dat));
+        
+        dat = GetItem("Weapons/Caster_Pistol");
+        dat.ints[1] = 20; // Give full mag.
+        actor.inventory.Store(new Data(dat));
+        dat = GetItem("Weapons/Ammo/Caster_Pistol_Magazine", 20);
+        actor.inventory.Store(new Data(dat));
+        actor.inventory.Store(new Data(dat));
+        
+        dat = GetItem("Weapons/Knife");
         actor.inventory.Store(new Data(dat));
         break;
     }

@@ -132,12 +132,6 @@ public class Actor : MonoBehaviour{
     init = true;
   }
   
-  /* Equips unarmed melee to actor if no items are currently held. */
-  void InitEquipment(){
-    if(arms.handItem == null){ EquipAbility(0, true); }
-    if(arms.offHandItem == null){ EquipAbility(0, false); }
-  }
-  
   /* Cycle loop. Runs once per frame. */
   void Update(){
     UpdateReach();
@@ -196,7 +190,6 @@ public class Actor : MonoBehaviour{
       stats.abilities.Add(1);
       stats.abilities.Add(2);
       stats.abilities.Add(3);
-      InitEquipment();
       SetMenuOpen(false);
       if(menu){ menu.Change("HUD");  menu.actor = this; }
       if(Session.session != null && cam != null){
@@ -230,7 +223,6 @@ public class Actor : MonoBehaviour{
     }
     else if(player == 5){
       stats.abilities.Add(0);
-      InitEquipment();
       if(defaultAI == ""){ ai = new AIManager(this, "PASSIVE"); }
       else{ ai = new AIManager(this, defaultAI); }
       if(speechTreeFile != ""){ speechTree = new SpeechTree(speechTreeFile); }

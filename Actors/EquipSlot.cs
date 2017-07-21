@@ -24,6 +24,10 @@ public class EquipSlot{
     this.hand = hand;
     this.offHand = offHand;
     this.actor = actor;
+    if(actor){
+      EquipAbility(0, true);
+      EquipAbility(0, false);
+    }
   }
   
   /* Enters a dormant state to be serialized. */
@@ -94,8 +98,7 @@ public class EquipSlot{
     Vector3 pos = vision.transform.position;
     Vector3 dir = vision.transform.forward;
     RaycastHit hit; 
-    if(Physics.Raycast(pos, dir, out hit) && hit.distance > 1f){
-      MonoBehaviour.print(hit.collider.gameObject.name); 
+    if(Physics.Raycast(pos, dir, out hit) && hit.distance > 1f){ 
       return hit.point;
     }
     else{ return pos + 100f*vision.transform.forward; }
