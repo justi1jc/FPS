@@ -341,7 +341,7 @@ public class Actor : MonoBehaviour{
     }
     if(Input.GetKeyDown(KeyCode.R)){ Use(2); }
     if(Input.GetKeyDown(KeyCode.Q)){ Drop(); }
-    if(Input.GetKeyDown(KeyCode.E)){ Interact(); }
+    if(Input.GetKeyDown(KeyCode.E)){ Interact(-2); }
     if(shift && Input.GetKeyDown(KeyCode.E)){ Interact(0); }
     if(Input.GetKeyDown(KeyCode.LeftArrow)){ Interact(1); }
     if(Input.GetKeyDown(KeyCode.RightArrow)){ Interact(2); }
@@ -836,7 +836,9 @@ public class Actor : MonoBehaviour{
   }
   
   /* Interact with item in reach.
-     i is the argument for the interaction, if relevant */
+     i is the argument for the interaction, if relevant 
+     -2 will not reload.
+  */
   public void Interact(int mode = -1){
     if(itemInReach){
       Item item = itemInReach.GetComponent<Item>();
@@ -862,7 +864,7 @@ public class Actor : MonoBehaviour{
         if(actor && actor.speechTree == null){ print("Speech tree null"); }
       }
     }
-    else{
+    else if( mode != -2){
       Use(2);
     }
     
