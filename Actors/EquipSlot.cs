@@ -80,9 +80,9 @@ public class EquipSlot{
   /* Called from late update */
   public void Update(){
     bool lr = handItem != null && handItem is Ranged; 
-    bool rr = offHand != null && handItem is Ranged;
+    bool rr = offHand != null && offHandItem is Ranged;
+    MonoBehaviour.print("LR is " + lr + " and rr is " + rr);
     if(lr || rr){
-      MonoBehaviour.print(lr + "," + rr);
       Vector3 point = TrackPoint();
       if(handItem != null && lr){ Track(handItem.gameObject, point); }
       if(offHandItem != null && rr){ Track(offHandItem.gameObject, point); }
