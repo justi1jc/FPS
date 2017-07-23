@@ -58,7 +58,12 @@ public class EquipSlot{
   }
   
   /* Drop item from hand, or offHand if hand is empty. */
-  public void Drop(){
+  public void Drop(Item item = null){
+    if(item != null){
+      item.transform.position = hand.transform.position;
+      item.Drop();
+      return;
+    }
     if(handItem != null){
       handItem.Drop();
       handItem = null;
@@ -79,12 +84,42 @@ public class EquipSlot{
   /* Equips the next item from the player's inventory, if one exists. */
   public void NextWeapon(){
     Data dat = actor.inventory.NextWeapon();
-    MonoBehaviour.print("Equipping next weapon:" + dat);
+    if(dat != null){ SwapWeapon(dat); }
   }
   
   /* Equips the previous item from the player's inventory, if one exists. */
   public void PreviousWeapon(){
-    MonoBehaviour.print("Previous Weapon");
+    Data dat = actor.inventory.PreviousWeapon();
+    if(dat != null){ SwapWeapon(dat); }
+  }
+  
+  /* Stores current items and Equips selected item. */
+  void SwapWeapon(Data dat){
+    if(dat == null){ MonoBehaviour.print("Swapped weapon null"); }
+    if(handItem != null){ Store(true); }
+    if(offHandItem != null){ Store(false); }
+    Equip(dat);
+  }
+  
+  /* Attempts to store item into actor's inventory, else drops item. */
+  void Store(bool primary){
+    if(actor == null){
+      MonoBehaviour.print("Actor null");
+      return;
+    }
+    Data dat = Remove(primary);
+    if(dat == null){ 
+      MonoBehaviour.print("Data null");
+      return;
+    }
+    int stack = actor.inventory.Store(dat);
+    if(stack > 0){
+      Data dropped = new Data(dat);
+      dat.stack = stack;
+      Item item = GetItem(dropped);
+      if(item != null){ Drop(item); }
+      else{ MonoBehaviour.print("Null item to drop"); }
+    }
   }
   
   /* Called from late update */
@@ -125,7 +160,7 @@ public class EquipSlot{
     Transform t = weapon.transform;
     t.rotation = Quaternion.LookRotation(trackPoint - t.position);
   }
-  
+
   /* Equips an item to the desired slot, returning any items displaced. */
   public List<Data> Equip(Data dat, bool primary = true){
     if(actor != null){
@@ -299,6 +334,12 @@ public class EquipSlot{
       Data ret = handItem.GetData();
       MonoBehaviour.Destroy(handItem.gameObject);
       handItem = null;
+      return ret;
+    }
+    else if(primary && offHandItem != null && !offHandItem.oneHanded){
+      Data ret = offHandItem.GetData();
+      MonoBehaviour.Destroy(offHandItem.gameObject);
+      offHandItem = null;
       return ret;
     }
     else if(!primary && offHandItem != null){

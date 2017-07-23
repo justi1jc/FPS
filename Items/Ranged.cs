@@ -144,6 +144,7 @@ public class Ranged : Weapon{
     Data dat = GetBaseData();
     dat.ints.Add(ammo);
     dat.strings.Add(ammunition);
+    dat.itemType = Item.RANGED;
     return dat;
   }
   
