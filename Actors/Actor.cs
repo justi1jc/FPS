@@ -308,6 +308,11 @@ public class Actor : MonoBehaviour{
       walking = walk;
       SetAnimBool("walking", walk);
     }
+    
+    float mw = Input.GetAxis("Mouse ScrollWheel");
+    if(mw > 0){ arms.NextWeapon(); }
+    else if(mw < 0){ arms.PreviousWeapon(); }
+    
     if(x != 0f || z != 0f){ StickMove(x, z); }
     if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(KeyCode.LeftControl)){ToggleCrouch(); }

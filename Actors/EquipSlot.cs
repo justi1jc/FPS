@@ -19,7 +19,7 @@ public class EquipSlot{
   Data handData = null;
   Data offHandData = null;
   public int handAbility = -1;
-  public int offHandAbility = -1;
+  public int offHandAbility = -1; 
   
   public EquipSlot(GameObject hand = null, GameObject offHand = null, Actor actor = null){
     this.hand = hand;
@@ -76,12 +76,21 @@ public class EquipSlot{
     }
   }
   
+  /* Equips the next item from the player's inventory, if one exists. */
+  public void NextWeapon(){
+    Data dat = actor.inventory.NextWeapon();
+    MonoBehaviour.print("Equipping next weapon:" + dat);
+  }
+  
+  /* Equips the previous item from the player's inventory, if one exists. */
+  public void PreviousWeapon(){
+    MonoBehaviour.print("Previous Weapon");
+  }
   
   /* Called from late update */
   public void Update(){
     bool lr = handItem != null && handItem is Ranged; 
     bool rr = offHand != null && offHandItem is Ranged;
-    MonoBehaviour.print("LR is " + lr + " and rr is " + rr);
     if(lr || rr){
       Vector3 point = TrackPoint();
       if(handItem != null && lr){ Track(handItem.gameObject, point); }

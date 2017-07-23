@@ -9,7 +9,7 @@ ____________  _____  ______
 ********************************************************************************
 
 This is boiler-plate code for an open-world first-person shooter game.
-These scripts work with Unity3D editor 5.6.1f1. Ubuntu link below.
+These scripts work with Unity3D editor 5.6.1f3. Ubuntu link below.
 https://forum.unity3d.com/threads/unity-on-linux-release-notes-and-known-issues.350256/
 
 Vision: Provide first-person shooter roleplaying gameplay similar to the recent
@@ -17,18 +17,15 @@ installments of The Elder Scrolls and Fallout series, albeit with the addition
 of couch-multiplayer coop.
 
 Strategy:
-I aim to improve the user-experience by revisiting existing features.
-After this stage, my aim will be to provide compelling content to immerse the
-player in a rich game world.
+Basic gameplay mechanics will be solidified in the tech demo phase. Once
+the tech demo is finished, content will be developed in order to experience
+the 
 
 Tentative roadmap:
+0.5.X- FPS Features Update
+0.6.X- World features Update
+0.7.X- RPG Features update
 
-Add Arena Mode(V0.5.1):
-  -Create an Arena gamemode to better test core gameplay features with. 
-
-React to feedback:
-  -Determine Priority of existing V0.6 Goals
-  -Determine new V0.6 Goals.
 
 ********************************************************************************
 ______ _       _     _              _   _____             _     

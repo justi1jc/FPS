@@ -13,13 +13,58 @@ using System.Collections.Generic;
 //[System.Serializable]
 public class Inventory{
   public List<Data> inv;
-  public int slots = 20; // Max number of slides.
+  public int slots = 20; // Max number of slots.
+  public int nextSlot = 0; // Slot to start searching from.
   
   public Inventory(){
     inv = new List<Data>();
     for(int i = 0 ; i < slots; i++){
       inv.Add(null);
     }
+  }
+  
+  
+  /* Returns next weapon starting from nextSlot or null. */
+  public Data NextWeapon(){
+    Data fromBeginning = null;
+    for(int i = 0; i < slots; i++){
+      if(inv[i] != null && (inv[i].itemType == Item.WEAPON ||
+        inv[i].itemType == Item.MELEE ||
+        inv[i].itemType == Item.WEAPON)
+      ){
+        if(i < nextSlot && fromBeginning == null){ 
+          MonoBehaviour.print("Setting beginning.");
+          fromBeginning = inv[i]; 
+        }
+        else if(i >= nextSlot){
+          if(i < slots){ nextSlot = i; }
+          else{ nextSlot = 0; }
+          MonoBehaviour.print("Next slt found at " + i);
+          return inv[i];
+        }
+      }
+    }
+    MonoBehaviour.print("Setting from beginning");
+    return fromBeginning;
+  }
+  
+  /* Returns the previous weapon starting from next slot or null. */
+  public Data PreviousWeapon(){
+    Data fromEnd = null;
+    for(int i = slots-1; i > 0; i--){
+      if(inv[i] != null && (inv[i].itemType == Item.WEAPON ||
+        inv[i].itemType == Item.MELEE ||
+        inv[i].itemType == Item.WEAPON)
+      ){
+        if(i > nextSlot && fromEnd == null){ fromEnd = inv[i]; }
+        else if(i < nextSlot){
+          if(i == 0){ nextSlot = slots-1; }
+          else{ nextSlot = i; }
+          return inv[i];
+        }
+      }
+    }
+    return fromEnd;
   }
   
   public Inventory(List<Data> _inv){
