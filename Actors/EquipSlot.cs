@@ -258,6 +258,7 @@ public class EquipSlot{
           }
           offHandItem.Use(0);
           break;
+        case 1: offHandItem.Use(1); break;
         case 3: offHandItem.Use(3); break;
         case 5: offHandItem.Use(4); break;
         case 7: offHandItem.Use(5); break;

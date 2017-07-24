@@ -20,6 +20,7 @@ public class Ranged : Weapon{
   public string ammunition;
   public bool fullAuto = false;
   public bool hitScan = false; // True if this weapon doesn't use a projectile.
+  public bool aiming = false;
   Transform muzzlePoint; // Source of projectile
   
   public void Start(){
@@ -40,22 +41,22 @@ public class Ranged : Weapon{
     if(action == 0 && ammo < 1){ Sound(2); }
     if(action == 0 || (fullAuto && action == 3)){ Fire(); }
     else if(action == 1){ ToggleAim(); }
-    else if(action == 2){ 
+    else if(action == 2){
       if(ready){ StartCoroutine(Reload()); }
     }
   }
-  
+
   public override string GetInfo(){
     return displayName + " " + ammo + "/" + maxAmmo;
   }
-  
+
   /* Fires ranged weapon. */
   void Fire(){
     if(ammo < 1 || !ready){ return; }
     if(hitScan){ FireHitScan(); }
     else{ FireProjectile(); }
   }
-  
+
   /* Creates and propels a projectile */
   void FireProjectile(){
     StartCoroutine(CoolDown(cooldown));
@@ -142,15 +143,11 @@ public class Ranged : Weapon{
 
   /* Aims weapon or returns it to the hip.*/
   public void ToggleAim(){
-    /*
-    if(!holder || !holder.anim){ return; }
-    if(holder.anim.GetBool(aimHash)){
-   	   holder.anim.SetBool(aimHash, false);
+   	aiming = !aiming;
+   	if(holder != null && holder.cam != null){
+   	  if(aiming){ holder.cam.fieldOfView = 30;}
+   	  else{ holder.cam.fieldOfView = 60; }
    	}
-   	else{
-   	   holder.anim.SetBool(aimHash, true);
-   	}
-   	*/
   }
 
   public override Data GetData(){

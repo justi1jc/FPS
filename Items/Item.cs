@@ -1,5 +1,11 @@
 /*
     Item serves as the base class for specic types of items.
+    Use codes
+    0 Main Click
+    1 Secondary Click
+    2 Reload
+    3 Charge
+    4 Relase
 */
 
 
