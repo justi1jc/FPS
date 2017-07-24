@@ -110,7 +110,7 @@ public class Ranged : Weapon{
   void FireHitScan(){
     Sound(0);
     Vector3 dir = transform.rotation.eulerAngles;
-    Vector3 pos = transform.position;
+    Vector3 pos = muzzlePoint != null ? muzzlePoint.position : transform.position;
     float dist = Mathf.Infinity;
     RaycastHit hit;
     if(Physics.Raycast(pos, dir, out hit, dist)){ Impact(hit.collider.gameObject); }
