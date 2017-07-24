@@ -20,11 +20,22 @@ public class Ranged : Weapon{
   public string ammunition;
   public bool fullAuto = false;
   public bool hitScan = false; // True if this weapon doesn't use a projectile.
+  Transform muzzlePoint; // Source of projectile
   
   public void Start(){
+    InitMuzzlePoint();
     ready = true;
   }
-  
+
+  void InitMuzzlePoint(){
+    foreach(Transform t in transform){
+      if(t.gameObject.name == "MountPoint"){ 
+        muzzlePoint = t;
+        return;
+      }
+    }
+  }
+
   public override void Use(int action){
     if(action == 0 && ammo < 1){ Sound(2); }
     if(action == 0 || (fullAuto && action == 3)){ Fire(); }
@@ -51,7 +62,7 @@ public class Ranged : Weapon{
     ammo--;
     Sound(0);
     Vector3 relPos = transform.forward;
-    Vector3 spawnPos = transform.position + transform.forward;
+    Vector3 spawnPos = muzzlePoint != null ? muzzlePoint.position : transform.position;
     Quaternion projRot = Quaternion.LookRotation(relPos);
     GameObject pref = (GameObject)Resources.Load(
       "Prefabs/"+projectile,
@@ -62,7 +73,9 @@ public class Ranged : Weapon{
       spawnPos,
       projRot
     );
-    proj.GetComponent<Collider>().isTrigger = true;
+    Collider col = proj.GetComponent<Collider>();
+    col.isTrigger = true;
+    Physics.IgnoreCollision(col, GetComponent<Collider>());
     Item item = proj.GetComponent<Item>();
     
     if(item is Projectile){
@@ -92,7 +105,7 @@ public class Ranged : Weapon{
     }
     proj.GetComponent<Rigidbody>().velocity = relPos * muzzleVelocity;
   }
-  
+
   /* Does a raycast and impacts a target. */
   void FireHitScan(){
     Sound(0);
@@ -103,7 +116,7 @@ public class Ranged : Weapon{
     if(Physics.Raycast(pos, dir, out hit, dist)){ Impact(hit.collider.gameObject); }
     StartCoroutine(CoolDown(cooldown));
   }
-  
+
   /* Applies damage if the target has a HitBox and force if it has a rigidBody */
   void Impact(GameObject target){
     HitBox hb = target.GetComponent<HitBox>();
@@ -112,21 +125,21 @@ public class Ranged : Weapon{
     if(rb != null){ rb.AddForce(impactForce * transform.forward); }
     print("Hit " + target.name);
   }
-  
+
   /* Reloading process. */
   IEnumerator Reload(){
     Sound(1);
     yield return new WaitForSeconds(reloadDelay);
     LoadAmmo();
   }
-  
+
   /* Adds ammo to weapon externally */
   public void LoadAmmo(){
     if(holder == null){ return; }
     int available = holder.RequestAmmo(ammunition, (maxAmmo - ammo));
     if(available > 0){ ammo = ammo + available; return; }
   }
-  
+
   /* Aims weapon or returns it to the hip.*/
   public void ToggleAim(){
     /*
@@ -139,7 +152,7 @@ public class Ranged : Weapon{
    	}
    	*/
   }
-  
+
   public override Data GetData(){
     Data dat = GetBaseData();
     dat.ints.Add(ammo);
@@ -147,7 +160,7 @@ public class Ranged : Weapon{
     dat.itemType = Item.RANGED;
     return dat;
   }
-  
+
   public override void LoadData(Data dat){
     LoadBaseData(dat);
     ammo = dat.ints[1];

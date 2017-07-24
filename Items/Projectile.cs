@@ -35,11 +35,15 @@ public class Projectile : Item{
   /* Exert damage and impulse, then destroy self. */
   void Impact(Collider col){
     if(col == null){ return; }
+    if(col.gameObject == weaponOfOrigin){ return; }
     damageActive = false;
     HitBox hb = col.gameObject.GetComponent<HitBox>();
-    if(hb){ hb.ReceiveDamage(damage, weaponOfOrigin); }
+    if(hb){
+      if(hb.body == holder){ return; } 
+      hb.ReceiveDamage(damage, weaponOfOrigin);
+    }
     Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
-    if(rb) rb.AddForce(transform.forward * impactForce);
+    if(rb){ rb.AddForce(transform.forward * impactForce); }
     Sound(0);
     Destroy(this.gameObject);
   }

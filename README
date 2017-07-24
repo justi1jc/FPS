@@ -71,15 +71,8 @@ Quest(Quest interface, hello world quest)
 ********************************************************************************
 
 Arena.cs
-  -Spawns players and enemies on random spawnpoint from a list.
   -Keeps track of kills and scores.
-  -Respawns players and enemies after timer.
   -After time runs out, display final scores through ArenaHUD
 
-ArenaLobbyMenu
-  -Allows player to begin Arena mode or return to the main menu
-
 ArenaHUD
-  -Displays atop all screens
-  -Shows match timer
   -Shows final scores with button leading to ArenaLobbyMenu

@@ -10,20 +10,20 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-//[System.Serializable]
+[System.Serializable]
 public class Inventory{
   public List<Data> inv;
   public int slots = 20; // Max number of slots.
-  public int nextSlot = 0; // Slot to start searching from.
+  public int hotSlots = 3;
+  int nextSlot = 0;
   
   public Inventory(){
     inv = new List<Data>();
-    for(int i = 0 ; i < slots; i++){
+    for(int i = 0 ; i < slots+hotSlots; i++){
       inv.Add(null);
     }
   }
-  
-  
+
   /* Returns next weapon starting from nextSlot or null. */
   public Data NextWeapon(){
     int fromBeginning = -1;
@@ -73,7 +73,7 @@ public class Inventory{
   }
 
   public int IndexOf(Data dat){
-    for(int i = 0; i < inv.Count; i++){
+    for(int i = 0; i < slots; i++){
       if(dat == inv[i]){ return i; }
     }
     return -1;
@@ -82,7 +82,7 @@ public class Inventory{
   /* Stores this item and returns the overflow if it can't fit */
   public int Store(Data dat){
     if(dat == null){ return 0; }
-    for(int i = 0; i < inv.Count; i++){ 
+    for(int i = 0; i < slots; i++){ 
       if(dat.stack == 0){ return 0; }
       if(
           inv[i] != null &&
@@ -94,7 +94,7 @@ public class Inventory{
     }
     if(dat.stack == 0){ return 0; }
     
-    for(int i = 0; i < inv.Count; i++){
+    for(int i = 0; i < slots; i++){
       if(inv[i] == null){
         inv[i] = dat;
         return 0;
@@ -116,7 +116,7 @@ public class Inventory{
   /* Removes up to the quantity of items from a given slot, and returns it
      or null. */
   public Data Retrieve(int slot, int quantity = 1){
-    if(slot < 0 || slot >= inv.Count || inv[slot] == null){ return null; }
+    if(slot < 0 || slot >= slots || inv[slot] == null){ return null; }
     Data ret = new Data(inv[slot]);
     if(quantity < inv[slot].stack){ 
       ret.stack = quantity;
@@ -130,7 +130,7 @@ public class Inventory{
   
   /* Return the contents of a slot, or null */
   public Data Peek(int slot){
-    if(slot < 0 || slot >= inv.Count || inv[slot] == null){ return null; }
+    if(slot < 0 || slot >= slots || inv[slot] == null){ return null; }
     return inv[slot];
   }
   
