@@ -22,6 +22,7 @@ public class Ranged : Weapon{
   public bool hitScan = false; // True if this weapon doesn't use a projectile.
   public bool aiming = false;
   Transform muzzlePoint; // Source of projectile
+  public float recoil; // Muzzle climb of the weapon when fired.
   
   public void Start(){
     InitMuzzlePoint();
@@ -45,7 +46,7 @@ public class Ranged : Weapon{
       if(ready){ StartCoroutine(Reload()); }
     }
   }
-
+  
   public override string GetInfo(){
     return displayName + " " + ammo + "/" + maxAmmo;
   }
@@ -53,6 +54,7 @@ public class Ranged : Weapon{
   /* Fires ranged weapon. */
   void Fire(){
     if(ammo < 1 || !ready){ return; }
+    if(holder != null){ holder.Recoil(recoil); }
     if(hitScan){ FireHitScan(); }
     else{ FireProjectile(); }
   }
@@ -126,7 +128,25 @@ public class Ranged : Weapon{
     if(rb != null){ rb.AddForce(impactForce * transform.forward); }
     print("Hit " + target.name);
   }
-
+  
+  /* Drop item from actor's hand, unzooming. */
+  public override void Drop(){
+    held = false;
+    if(holder != null && holder.cam != null){
+      holder.cam.fieldOfView = 60;
+    }
+    Rigidbody rb = transform.GetComponent<Rigidbody>();
+    if(rb){
+      rb.isKinematic = false;
+      rb.useGravity = true;
+      rb.constraints = RigidbodyConstraints.None;
+    }
+    Collider c = transform.GetComponent<Collider>();
+    c.isTrigger = false;
+    transform.parent = null;
+    holder = null;
+  }
+  
   /* Reloading process. */
   IEnumerator Reload(){
     Sound(1);

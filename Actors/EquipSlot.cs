@@ -19,7 +19,7 @@ public class EquipSlot{
   Data handData = null;
   Data offHandData = null;
   public int handAbility = -1;
-  public int offHandAbility = -1; 
+  public int offHandAbility = -1;
   
   public EquipSlot(GameObject hand = null, GameObject offHand = null, Actor actor = null){
     this.hand = hand;
@@ -132,9 +132,25 @@ public class EquipSlot{
       if(offHandItem != null && rr){ Track(offHandItem.gameObject, point); }
     }
   }
+
+  /* Get offset for trackpoint. */
+  public Vector3 TrackPointOffset(){
+    float offset = 0.001f;
+    float x = Random.Range(-offset, offset);
+    float y = Random.Range(-offset, offset);
+    float z = Random.Range(-offset, offset);
+    return new Vector3(x, y, z);
+  }
   
   /* Returns the current point ranged weapons should aim at. */
   public Vector3 TrackPoint(){
+    Vector3 offset = new Vector3();
+    if(actor != null){
+      if(!actor.stats.StatCheck("PERCEPTION") && !actor.stats.StatCheck("RANGED")){
+        offset = TrackPointOffset();
+      }
+    }
+    
     GameObject vision = actor.cam != null ? actor.cam.gameObject : actor.head;
     Vector3 pos = vision.transform.position;
     Vector3 dir = vision.transform.forward;
@@ -146,12 +162,14 @@ public class EquipSlot{
       ){
         return prevTrackPoint; 
       }
-      prevTrackPoint = hit.point;
-      return hit.point;
+      offset *= Vector3.Distance(pos, hit.point);
+      prevTrackPoint = offset + hit.point;
+      return offset + hit.point;
     }
     else{
+      offset *= 100;
       prevTrackPoint = pos + 100f*vision.transform.forward;
-      return pos + 100f*vision.transform.forward; 
+      return offset + pos + 100f*vision.transform.forward; 
     }
   }
   

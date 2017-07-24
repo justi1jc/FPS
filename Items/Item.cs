@@ -40,7 +40,7 @@ public class Item : MonoBehaviour{
   public Actor holder;
   public bool ready = true;
   public bool oneHanded = true; // True if this item can be held in one hand.
-  bool held = false;
+  public bool held = false;
   
   
   // Empty base methods
@@ -70,7 +70,7 @@ public class Item : MonoBehaviour{
   }
   
   /* Drop item from actor's hand. */
-  public void Drop(){
+  public virtual void Drop(){
     held = false;
     Rigidbody rb = transform.GetComponent<Rigidbody>();
     if(rb){
