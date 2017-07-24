@@ -22,7 +22,7 @@ public class ArenaHUDMenu : Menu{
   public void RenderHUD(){
     int ih = Height()/10;
     int iw = Width()/5;
-    Box(message, (Width()-iw)/2, 0, iw, ih);
+    Box(message, (Width()-iw)/2, 0, iw, 2*ih);
   }
   
   public void RenderEndGame(){

@@ -15,6 +15,7 @@ public class Arena : MonoBehaviour{
   public List<Actor> players;
   int time;// Remaining round time in seconds.
   int startingTime; // Total round duration.
+  bool respawns; // True if players respawn.
   MenuManager menu;
 
   public void Start(){
@@ -46,13 +47,20 @@ public class Arena : MonoBehaviour{
     ArenaHUDMenu HUD = (ArenaHUDMenu)menu.active;
     if(HUD == null){ print("Menu null"); return; }
     HUD.message = "Arena deathmatch\n" + Time();
+    if(!respawns){
+      HUD.message += ("\nPlayers remaining: \n" + players.Count);
+    }
     time--;
-    if(time < 1){ 
-      HUD.subMenu = 1;
-      for(int i = 0; i < players.Count; i++){
-        players[i].SetMenuOpen(true);
-        Destroy(players[i].gameObject);
-      }
+    if(time < 1){ EndGame(); }
+  }
+  
+  /* Stop gameplay and display end game message. */
+  void EndGame(){
+    ArenaHUDMenu HUD = (ArenaHUDMenu)menu.active;
+    HUD.subMenu = 1;
+    for(int i = 0; i < players.Count; i++){
+      players[i].SetMenuOpen(true);
+      Destroy(players[i].gameObject);
     }
   }
 
@@ -78,14 +86,22 @@ public class Arena : MonoBehaviour{
       MenuManager playerMenu = player.menu;
       if(playerMenu){ playerHUD = (HUDMenu)playerMenu.active; }
     }
-    for(int i = respawnTimer; i > 0; i--){
-      if(playerHUD != null){ playerHUD.message = "Respawn in \n" + i; }  
-      yield return new WaitForSeconds(1f);
+    if(respawns){
+      for(int i = respawnTimer; i > 0; i--){
+        if(playerHUD != null){ playerHUD.message = "Respawn in \n" + i; }  
+        yield return new WaitForSeconds(1f);
+      }
+      Data dat = player.GetData();
+      int id = player.id;
+      Destroy(player.gameObject);
+      SpawnPlayer(dat.prefabName, id);
     }
-    Data dat = player.GetData();
-    int id = player.id;
-    Destroy(player.gameObject);
-    SpawnPlayer(dat.prefabName, id);
+    else{ 
+      if(playerHUD != null){ playerHUD.message = "You are dead."; }
+      players.Remove(player);
+      player.SetMenuOpen(true);
+      if(players.Count <= 1){ EndGame(); }
+    }
     yield return new WaitForSeconds(0f);
   }
 

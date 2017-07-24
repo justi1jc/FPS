@@ -14,6 +14,7 @@ public class ArenaLobbyMenu : Menu{
   private int duration; // Duration in minutes.
   private string map;   // map currently selected.
   private int mapIndex; // Index of currently selected map.
+  private bool respawns = true; // True if players will respawn.
   
   public ArenaLobbyMenu(MenuManager manager) : base(manager){
     duration = 10;
@@ -31,6 +32,8 @@ public class ArenaLobbyMenu : Menu{
     if(Button(str, 0, 3*ih, iw, ih)){ NextMap(); Sound(0);}
     str = "Duration:" + duration;
     if(Button(str, 0, 4*ih, iw, ih)){ NextDuration(); }
+    str = "Respawns:" + (respawns ? "Yes" : "No");
+    if(Button(str, 0, 5*ih, iw, ih)){ respawns = !respawns; }
     if(Button("Start", Width()-iw, Height()-ih, iw, ih)){ StartArena(); }
     if(Button("Back", 0, Height()-ih, iw, ih)){ 
       manager.Change("MAIN"); 
@@ -67,6 +70,7 @@ public class ArenaLobbyMenu : Menu{
   public void StartArena(){
     Data dat = new Data();
     dat.ints.Add(duration);
+    dat.bools.Add(respawns);
     Session.session.arenaData = dat;
     
     manager.Change("NONE");
