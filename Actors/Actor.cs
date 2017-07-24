@@ -90,6 +90,7 @@ public class Actor : MonoBehaviour{
   //Stats
   public StatHandler stats;
   public int id = -1;
+  public int killerId = -1;
   
   // Equipped items and abilities.
   public EquipSlot arms;
@@ -704,7 +705,8 @@ public class Actor : MonoBehaviour{
     if(ai != null){ ai.Pause(); }
     Item item = weapon.GetComponent<Item>();
     if(item && item.holder){
-      item.holder.ReceiveXp(stats.NextLevel(stats.level -1)); 
+      item.holder.ReceiveXp(stats.NextLevel(stats.level -1));
+      killerId = item.holder.id;
     }
     GetComponent<BoxCollider>().isTrigger = false;
     BoxCollider[] colliders = GetComponentsInChildren<BoxCollider>();

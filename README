@@ -70,9 +70,4 @@ Quest(Quest interface, hello world quest)
 \_| |_/_|  \___|_| |_|\__,_|  \____/\___/ \__,_|_|___/
 ********************************************************************************
 
-Arena.cs
-  -Keeps track of kills and scores.
-  -After time runs out, display final scores through ArenaHUD
 
-ArenaHUD
-  -Shows final scores with button leading to ArenaLobbyMenu
