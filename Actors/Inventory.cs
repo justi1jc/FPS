@@ -10,7 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-[System.Serializable]
+//[System.Serializable] Prevents null slots.
 public class Inventory{
   public List<Data> inv;
   public int slots = 20; // Max number of slots.

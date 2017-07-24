@@ -240,8 +240,11 @@ public class Actor : MonoBehaviour{
   /* Returns an empty string, or info about interacting with the actor in reach */
   public string ActorInteractionText(){
     string text = "";
+    Actor a = actorInReach.GetComponent<Actor>();
+    if(a == null){ return text; }
     if(crouched){ text += "Steal from "; }
-    else{ text += "Talk to "; }
+    else if(a.Alive()){ text += "Talk to "; }
+    else{ text += "Loot "; }
     text += actorInReachName;
     return text;
   }
@@ -702,6 +705,7 @@ public class Actor : MonoBehaviour{
   
   /* Enter dead state, warding experience to the killder. */
   public void Die(GameObject weapon){
+    stats.dead = true;
     StopAllCoroutines();
     Ragdoll(true);
     arms.Drop();
@@ -833,7 +837,7 @@ public class Actor : MonoBehaviour{
   
   /* Convenience method. */
   public bool Alive(){
-    return stats.health >= 1;
+    return !stats.dead;
   }
   
   /* Interact with item in reach.
@@ -847,22 +851,19 @@ public class Actor : MonoBehaviour{
     }
     else if(actorInReach){
       Actor actor = actorInReach.GetComponent<Actor>();
-      if(actor && actor.speechTree != null && mode == -1 && actor.Alive()){
+      if(actor == null){ return; }
+      if(actor.speechTree != null && mode == -1 && actor.Alive()){
         interlocutor = actor;
         menu.Change("SPEECH");
         SetMenuOpen(true);
       }
-      else if(actor && mode == 0 && actor.Alive()){
+      else if(mode == 0 && actor.Alive()){
         print("Steal from " + actor.gameObject.name);
       }
-      else if(actor && mode == -1){
+      else if(!actor.Alive()){
         menu.contents = actor.inventory;
         menu.Change("LOOT");
         SetMenuOpen(true);
-      }
-      else{
-        if(!actor){ print("Actor null"); }
-        if(actor && actor.speechTree == null){ print("Speech tree null"); }
       }
     }
     else if( mode != -2){

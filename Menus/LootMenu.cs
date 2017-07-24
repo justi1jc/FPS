@@ -89,6 +89,7 @@ public class LootMenu : Menu{
   
   /* Stores item in targeted inventory and drops overflow. */
   public void Store(Inventory target, Data dat){
+    if(dat == null){ return; }
     dat.stack = target.Store(dat);
     if(dat.stack > 0){ target.DiscardItem(dat, manager.transform.position); }
   }

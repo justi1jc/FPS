@@ -10,6 +10,7 @@ using System.Collections.Generic;
 public class StatHandler{
   
   //Conditions
+  public bool dead;
   public int health, healthMax;
   public int stamina, staminaMax;
   public int mana, manaMax;
@@ -65,6 +66,7 @@ public class StatHandler{
   
   /* Regenerates condition. */
   public void Regen(){
+    if(dead){ return; }
     int healthDifficulty = (healthMax - health) / healthMax;
     int staminaDifficulty = (staminaMax - stamina) / staminaMax;
     int manaDifficulty = (manaMax - mana) / manaMax;
