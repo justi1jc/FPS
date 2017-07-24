@@ -94,6 +94,7 @@ public class Actor : MonoBehaviour{
   
   // Equipped items and abilities.
   public EquipSlot arms;
+  public bool armsReady = true;
   
   // Speech
   public Actor interlocutor; // Conversation partner
@@ -153,7 +154,10 @@ public class Actor : MonoBehaviour{
       Vector3 rot = new Vector3(headRotx, headRoty, offset);
       spine.transform.rotation = Quaternion.Euler(rot);
     }
-    if(arms != null){ arms.Update();}
+    if(arms != null){ 
+      if(armsReady){ arms.Update(); }
+      armsReady = !armsReady;
+    }
   }
   
   /* Notifies menu, if it exists. */
