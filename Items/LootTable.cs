@@ -42,6 +42,7 @@ public class LootTable{
     switch(name.ToUpper()){
       case "GUNRUNNER": // Dual pistols
         dat = GetItem("Weapons/Caster_Rifle");
+        MonoBehaviour.print(dat.displayName + dat.itemType);
         dat.ints[1] = 20; // Give full mag.
         actor.arms.Equip(new Data(dat), true);
         actor.arms.Equip(new Data(dat), false);

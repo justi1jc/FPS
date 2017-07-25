@@ -29,6 +29,9 @@ public class Arena : MonoBehaviour{
     menu.Change("ARENAHUD");
     menu.arena = this;
     time = startingTime = dat != null ? 60 * dat.ints[0] : 600;
+    if(dat != null){
+      respawns = dat.bools[0];
+    }
     PopulateSpawnPoints();
     InitPlayers();
     StartCoroutine(UpdateRoutine());

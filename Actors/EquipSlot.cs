@@ -91,6 +91,7 @@ public class EquipSlot{
   public void PreviousWeapon(){
     Data dat = actor.inventory.PreviousWeapon();
     if(dat != null){ SwapWeapon(dat); }
+    else{ MonoBehaviour.print("Swapped null weapon"); }
   }
   
   /* Stores current items and Equips selected item. */

@@ -54,9 +54,9 @@ public class Ranged : Weapon{
   /* Fires ranged weapon. */
   void Fire(){
     if(ammo < 1 || !ready){ return; }
-    if(holder != null){ holder.Recoil(recoil); }
     if(hitScan){ FireHitScan(); }
     else{ FireProjectile(); }
+    if(holder != null){ holder.Recoil(recoil); }
   }
 
   /* Creates and propels a projectile */
