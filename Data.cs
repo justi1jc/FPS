@@ -67,7 +67,6 @@ public class Data{
     speechTree = dat.speechTree;
     equipSlot = dat.equipSlot;
   }
-   
 
 }
 

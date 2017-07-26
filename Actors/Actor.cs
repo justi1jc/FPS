@@ -95,6 +95,7 @@ public class Actor : MonoBehaviour{
   // Equipped items and abilities.
   public EquipSlot arms;
   public bool armsReady = true;
+  public HotBar hotbar;
   
   // Speech
   public Actor interlocutor; // Conversation partner
@@ -111,6 +112,7 @@ public class Actor : MonoBehaviour{
     inventory = new Inventory();
     arms = new EquipSlot(hand, offHand, this);
     arms.actor = this;
+    hotbar = new HotBar(this);
     stats = new StatHandler();
   }
   
@@ -318,8 +320,8 @@ public class Actor : MonoBehaviour{
     }
     
     float mw = Input.GetAxis("Mouse ScrollWheel");
-    if(mw > 0){ arms.NextWeapon(); }
-    else if(mw < 0){ arms.PreviousWeapon(); }
+    if(mw > 0){ hotbar.NextSlot(); }
+    else if(mw < 0){ hotbar.PreviousSlot(); }
     
     if(x != 0f || z != 0f){ StickMove(x, z); }
     if(Input.GetKeyDown(KeyCode.Space)){ StartCoroutine(JumpRoutine()); }
@@ -771,13 +773,21 @@ public class Actor : MonoBehaviour{
   /* Drops an item from actor's arms.. */
   public void Drop(){ arms.Drop(); }
   
+  public void Equip(Data dat, bool primary){
+    if(dat == null){ return; }
+    arms.Equip(dat, primary);
+    int arm = primary ? -2 : -1;
+    hotbar.Update(-3, arm, dat);
+  }
+  
   /* Selects an item in inventory to equip. */
   public void Equip(int itemIndex, bool primary){
     if(itemIndex < 0 || itemIndex >= inventory.slots){ return; }
     Data dat = inventory.Retrieve(itemIndex);
+    hotbar.Update(itemIndex, -4);
     List<Data> displaced = arms.Equip(dat, primary);
     for(int i = 0; i < displaced.Count; i++){
-      displaced[i].stack = inventory.Store(displaced[i]);
+      displaced[i].stack = inventory.Store(new Data(displaced[i]));
       if(displaced[i].stack > 0){
         DiscardItem(displaced[i]);
       }
@@ -799,9 +809,11 @@ public class Actor : MonoBehaviour{
     return 0;
   }
 
-  /* Adds item data to inventory */
+  /* Adds item data to inventory. */
   public void StoreItem(Data item){
     int remainder = inventory.Store(item);
+    int slot = inventory.IndexOf(item);
+    if(slot > -1){ hotbar.Update(-3, slot, item); }
     if(remainder > 0){
       item = new Data(item);
       item.stack = remainder;
@@ -812,7 +824,8 @@ public class Actor : MonoBehaviour{
   /* Drops item onto ground from inventory. */
   public Item DiscardItem(int slot){
     Data dat = inventory.Retrieve(slot);
-    if(dat == null){ return null;  }    
+    if(dat == null){ return null;  }
+    hotbar.Update(slot, -3);   
     GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
     if(prefab == null){ print("Prefab null:" + dat.prefabName);  return null;}
     GameObject itemGO = (GameObject)GameObject.Instantiate(
@@ -886,7 +899,6 @@ public class Actor : MonoBehaviour{
     Destroy(item.gameObject);
     StoreItem(dat);
     Destroy(item.gameObject);
-    
   }
   
   /* Prevents picking up the same items. */

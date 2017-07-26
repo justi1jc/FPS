@@ -65,6 +65,7 @@ public class EquipSlot{
       return;
     }
     if(handItem != null){
+      actor.hotbar.Update(-1, -3);
       handItem.Drop();
       handItem = null;
       EquipAbility(0, true);
@@ -74,6 +75,7 @@ public class EquipSlot{
       else{ actor.SetAnimBool("twoHanded", false); }
     }
     else if(offHandItem != null){
+      actor.hotbar.Update(-2, -3);
       offHandItem.Drop();
       offHandItem = null;
       EquipAbility(0, false);
@@ -103,16 +105,13 @@ public class EquipSlot{
   }
   
   /* Attempts to store item into actor's inventory, else drops item. */
-  void Store(bool primary){
+  public void Store(bool primary){
     if(actor == null){
       MonoBehaviour.print("Actor null");
       return;
     }
     Data dat = Remove(primary);
-    if(dat == null){ 
-      MonoBehaviour.print("Data null");
-      return;
-    }
+    if(dat == null){ return; }
     int stack = actor.inventory.Store(dat);
     if(stack > 0){
       Data dropped = new Data(dat);
@@ -197,6 +196,8 @@ public class EquipSlot{
     item.Hold(actor);
     if(!item.oneHanded){
       ret.Add(Remove(true));
+      actor.hotbar.Update(-1, -5);
+      actor.hotbar.Update(-2, -6);
       ret.Add(Remove(false));
       handAbility = 0;
       offHandAbility = 0;
@@ -206,6 +207,7 @@ public class EquipSlot{
     else if(primary){
       if(handItem != null){
         ret.Add(Remove(true));
+        actor.hotbar.Update(-1, -5);
         handAbility = 0;
       }
       if(offHandItem == null && offHandAbility < 1){
@@ -220,7 +222,8 @@ public class EquipSlot{
     }
     else{
       if(offHandItem != null){ 
-        ret.Add(Remove(false)); 
+        ret.Add(Remove(false));
+        actor.hotbar.Update(-2, -6);
         offHandAbility = 0;
       }
       offHandItem = item;

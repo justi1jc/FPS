@@ -60,4 +60,10 @@ public class Melee : Weapon{
       if(rb){ rb.AddForce(transform.forward * knockBack); Sound(0); }
     }
   }
+  
+  public override Data GetData(){
+    Data dat = GetBaseData();
+    dat.itemType = Item.MELEE;
+    return dat;
+  }
 }

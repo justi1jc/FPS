@@ -5,6 +5,8 @@
     Weapons are automatically added to empty slots in the hotbar 
     and slots are emptied when the selected item is dropped.
     
+    The EquipSlot and Inventory are responsible for updating
+    the HotBar as they gain and lose items.
     
     The eventual use of the hotbar will be to represent items
     that are holstered, slung, or otherwise quick-access. 
@@ -19,6 +21,9 @@ public class HotBar{
   public int slots = 3; // Number of slots in HotBar
   public int selectedSlot;
   /*
+    -6 transitioning from left hand
+    -5 transitioning from right hand
+    -4 transitioning from inventory 
     -3 is Empty
     -2 is left hand
     -1 is right hand
@@ -30,9 +35,6 @@ public class HotBar{
     actor = a;
     bar = new List<int>();
     for(int i = 0; i < slots; i++){ bar.Add(-3); }
-  }
-
-  public void NextSlot(){
   }
 
   public Data Peek(int slot){
@@ -54,29 +56,66 @@ public class HotBar{
       return actor.inventory.Peek(bar[slot]);
     }
     return null;
+  } 
+
+  /* Equips the item in the next slot. */
+  public void NextSlot(){
+    selectedSlot++;
+    if(selectedSlot >= slots){ selectedSlot = 0; }
+    Equip(selectedSlot);
   }
 
-  /* Adds item into new slot if it is a weapon. */
-  public void ItemStored(Data dat, int location){
-    if(dat.itemType != Item.WEAPON 
-      && dat.itemType != Item.MELEE 
-      && dat.itemType != Item.RANGED
-    ){
-      int slot = -1;
-      for(int i = 0; i < slots; i++){
-        if(bar[i] == -3){ slot = i; break;}
-      }
-      if(slot == -1){ return; }
-      bar[slot] = location;
+  /* Equips the item in the previous slot. */
+  public void PreviousSlot(){
+    selectedSlot--;
+    if(selectedSlot < 0){ selectedSlot = slots-1; }
+    Equip(selectedSlot);
+  }
+  
+  /* Equips a specific item to the player's EquipSlot */
+  public void Equip(int slot){
+    MonoBehaviour.print("Slot " + slot);
+    Data item = GetItem(slot);
+    if(item == null){ 
+      MonoBehaviour.print("Slot " + slot + " null");
+      return; 
     }
+    actor.arms.Store(true);
+    actor.arms.Store(false);
+    actor.arms.Equip(item);
+  }
+  
+  /* Returns the item in a slot, or null. */
+  private Data GetItem(int slot){
+    if(actor == null){ return null; }
+    int loc = bar[slot];
+    switch(loc){
+      case -3: return null; break;
+      case -2: return actor.arms.Remove(true); break;
+      case -1: return actor.arms.Remove(false); break;
+    }
+    if(loc > -1){ return actor.inventory.Retrieve(loc); }
+    return null;
   }
 
-  public void UpdateSlot(int before, int after){
+  /* Updates items as they move between inventory and arms. */
+  public void Update(int before, int after, Data dat = null){
+    //MonoBehaviour.print("Hotbar Updated from " + before + " to " + after);
     int slot = -1;
     for(int i = 0; i < slots; i++){
       if(before == bar[i]){ slot = i; break; }
     }
     if(slot == -1){ return; }
+    if(bar[slot] == -3 && dat != null && dat.itemType != Item.WEAPON 
+      && dat.itemType != Item.MELEE 
+      && dat.itemType != Item.RANGED
+    ){
+      MonoBehaviour.print(dat.displayName + dat.itemType + " Not a weapon."); 
+      return; 
+    }
+    if(dat != null){
+      MonoBehaviour.print(dat.displayName + " was added to slot" + slot);
+    }
     bar[slot] = after;
   }
 }
