@@ -9,6 +9,8 @@ using System.Collections.Generic;
 [System.Serializable]
 public class StatHandler{
   
+  public Actor actor;
+  
   //Conditions
   public bool dead;
   public int health, healthMax;
@@ -48,15 +50,27 @@ public class StatHandler{
   */
   public int faction = 0;
   
+  // Accuracy
+  public int aimPenalty = 0;
   
-  
-  public StatHandler(){
+  public StatHandler(Actor actor){
+    this.actor = actor;
     abilities = new List<int>();
     intelligence = charisma = endurance = perception = agility = willpower = strength = 1;
     ranged = melee = unarmed = magic = stealth = skillPoints = xp = 0;
     level = nextLevel = 0;
     health = healthMax = stamina = staminaMax = mana = manaMax = 100;
     LevelUp();
+  }
+  
+    /* Offset of trackpoint based on accuracy. */
+  public float AccuracyOffset(){
+    int mp = actor.walking ? 20 : 0;
+    int rp = actor.sprinting ? 30 : 0;
+    if(aimPenalty > 50){ aimPenalty = 50; }
+    float numerator = (float)(mp + rp + aimPenalty); 
+    float offset = numerator/1000f;
+    return offset;
   }
   
   /* Updates condition. */
@@ -78,6 +92,11 @@ public class StatHandler{
     }
     if(mana < manaMax && StatCheck("WILLPOWER", manaDifficulty+5)){ 
       mana++; 
+    }
+    if(aimPenalty > 0 && (StatCheck("PERCEPTION") || StatCheck("RANGED"))){
+      aimPenalty -= 2;
+      if(aimPenalty < 0){ aimPenalty = 0; }
+      MonoBehaviour.print("aimPenalty decreased");
     }
   }
   

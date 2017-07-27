@@ -41,6 +41,7 @@ public class Item : MonoBehaviour{
   public bool ready = true;
   public bool oneHanded = true; // True if this item can be held in one hand.
   public bool held = false;
+  public bool ability = false;
   
   
   // Empty base methods

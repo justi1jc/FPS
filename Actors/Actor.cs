@@ -71,9 +71,9 @@ public class Actor : MonoBehaviour{
   //Movement
   public bool ragdoll = false;
   public float speed;
-  bool walking = false;
-  bool sprinting = false;
-  bool crouched = false;
+  public bool walking = false;
+  public bool sprinting = false;
+  public bool crouched = false;
   
   //Jumping
   public bool jumpReady = true;
@@ -113,7 +113,7 @@ public class Actor : MonoBehaviour{
     arms = new EquipSlot(hand, offHand, this);
     arms.actor = this;
     hotbar = new HotBar(this);
-    stats = new StatHandler();
+    stats = new StatHandler(this);
   }
   
   /* Before rest of code */
@@ -621,8 +621,9 @@ public class Actor : MonoBehaviour{
     if(!actorFound){ actorInReach = null; }
     return;
   }  
-
+  
   public void Recoil(float recoil){
+    stats.aimPenalty += 1;
     float x = recoil;
     x = Random.Range(-x, x);
     float y = Random.Range(recoil, recoil*1.5f);
@@ -893,7 +894,7 @@ public class Actor : MonoBehaviour{
   
   /* Pick up item in world. */
   public void PickUp(Item item){
-    if(!item || !pickupCooldown){ return; }
+    if(!item || !pickupCooldown || item.ability){ return; }
     StartCoroutine(PickupCooldown());
     Data dat = item.GetData();
     Destroy(item.gameObject);

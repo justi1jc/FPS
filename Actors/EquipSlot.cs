@@ -20,7 +20,7 @@ public class EquipSlot{
   Data offHandData = null;
   public int handAbility = -1;
   public int offHandAbility = -1;
-  
+
   public EquipSlot(GameObject hand = null, GameObject offHand = null, Actor actor = null){
     this.hand = hand;
     this.offHand = offHand;
@@ -135,7 +135,7 @@ public class EquipSlot{
 
   /* Get offset for trackpoint. */
   public Vector3 TrackPointOffset(){
-    float offset = 0.001f;
+    float offset = actor.stats.AccuracyOffset();
     float x = Random.Range(-offset, offset);
     float y = Random.Range(-offset, offset);
     float z = Random.Range(-offset, offset);
@@ -515,6 +515,7 @@ public class EquipSlot{
   /* Initializes unarmed attack. */
   void InitPunch(GameObject user){
     Melee item = user.AddComponent<Melee>();
+    item.ability = true;
     item.cooldown = 0.25f;
     item.damageStart = 0.25f;
     item.damageEnd = 0.75f;
@@ -527,6 +528,7 @@ public class EquipSlot{
   /* Initializes fireball spell. */
   void InitFireBall(GameObject user){
     Ranged item = user.AddComponent<Ranged>();
+    item.ability = true;
     item.cooldown = 0.5f;
     item.chargeable = true;
     item.executeOnCharge = false;
@@ -545,6 +547,7 @@ public class EquipSlot{
     Light l = user.GetComponent<Light>();
     if(!l){ user.AddComponent<Light>(); }
     Food item  = user.AddComponent<Food>();
+    item.ability = true;
     item.healing = 25;
     item.cooldown = 3f;
   }
@@ -552,6 +555,7 @@ public class EquipSlot{
   /* Initializes heal other spell. */
   void InitHealOther(GameObject user){
     Ranged item = user.AddComponent<Ranged>();
+    item.ability = true;
     item.cooldown = 1.5f;
     item.chargeable = true;
     item.executeOnCharge = false;

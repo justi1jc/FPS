@@ -74,12 +74,8 @@ public class HotBar{
   
   /* Equips a specific item to the player's EquipSlot */
   public void Equip(int slot){
-    MonoBehaviour.print("Slot " + slot);
     Data item = GetItem(slot);
-    if(item == null){ 
-      MonoBehaviour.print("Slot " + slot + " null");
-      return; 
-    }
+    if(item == null){ return; }
     actor.arms.Store(true);
     actor.arms.Store(false);
     actor.arms.Equip(item);
@@ -109,13 +105,8 @@ public class HotBar{
     if(bar[slot] == -3 && dat != null && dat.itemType != Item.WEAPON 
       && dat.itemType != Item.MELEE 
       && dat.itemType != Item.RANGED
-    ){
-      MonoBehaviour.print(dat.displayName + dat.itemType + " Not a weapon."); 
-      return; 
-    }
-    if(dat != null){
-      MonoBehaviour.print(dat.displayName + " was added to slot" + slot);
-    }
+    ){ return; }
+    
     bar[slot] = after;
   }
 }
