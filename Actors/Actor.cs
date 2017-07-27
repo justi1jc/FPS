@@ -771,7 +771,7 @@ public class Actor : MonoBehaviour{
   public void Use(int use){ arms.Use(use); }
   
   /* Drops an item from actor's arms.. */
-  public void Drop(){ arms.Drop(); }
+  public void Drop(bool primary = true){ arms.Drop(); }
   
   public void Equip(Data dat, bool primary){
     if(dat == null){ return; }
