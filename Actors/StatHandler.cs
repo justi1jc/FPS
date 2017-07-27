@@ -96,7 +96,6 @@ public class StatHandler{
     if(aimPenalty > 0 && (StatCheck("PERCEPTION") || StatCheck("RANGED"))){
       aimPenalty -= 2;
       if(aimPenalty < 0){ aimPenalty = 0; }
-      MonoBehaviour.print("aimPenalty decreased");
     }
   }
   

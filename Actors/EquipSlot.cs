@@ -202,6 +202,7 @@ public class EquipSlot{
       handAbility = 0;
       offHandAbility = 0;
       offHandItem = item;
+      MonoBehaviour.print("OffhandItem 2");
       if(actor != null){ actor.SetAnimBool("twoHanded", true); }
     }
     else if(primary){
@@ -210,14 +211,20 @@ public class EquipSlot{
         actor.hotbar.Update(-1, -5);
         handAbility = 0;
       }
-      if(offHandItem == null && offHandAbility < 1){
+      else if(offHandItem == null && offHandAbility < 1){
         GameObject.Destroy(item.gameObject);
         ret.AddRange(Equip(dat, false));
         return ret;
       }
+      else if(offHandItem != null && !offHandItem.oneHanded){
+        ret.Add(Remove(false));
+        handItem = item;
+        return ret; 
+      }
       else{
         if(actor != null){ actor.SetAnimBool("twoHanded", false); }
         handItem = item;
+        MonoBehaviour.print("Equipped Item1");
       }
     }
     else{
@@ -227,6 +234,7 @@ public class EquipSlot{
         offHandAbility = 0;
       }
       offHandItem = item;
+      MonoBehaviour.print("Equipped offhand item1.");
       if(actor != null){ 
         if(handItem == null && handAbility < 1){ 
           actor.SetAnimBool("twoHanded", true); 
