@@ -623,7 +623,7 @@ public class Actor : MonoBehaviour{
   }  
 
   public void Recoil(float recoil){
-    float x = recoil /2;
+    float x = recoil;
     x = Random.Range(-x, x);
     float y = Random.Range(recoil, recoil*1.5f);
     Turn(new Vector3(-y, x, 0f) );
