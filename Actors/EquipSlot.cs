@@ -190,10 +190,9 @@ public class EquipSlot{
     if(item == null){ return ret; }
     GameObject itemGO = item.gameObject;
     
-    Transform selectedHand = primary ? hand.transform : offHand.transform;
-    if(!item.oneHanded){ selectedHand = offHand.transform; }
-    item.transform.parent = MountPoint(selectedHand);
-    item.Hold(actor);
+    GameObject selectedHand = primary ? hand : offHand;
+    if(primary && handItem != null && !item.oneHanded){ selectedHand = offHand; }
+    Mount(item, selectedHand);
     if(!item.oneHanded){
       ret.Add(Remove(true));
       actor.hotbar.Update(-1, -5);
@@ -202,7 +201,6 @@ public class EquipSlot{
       handAbility = 0;
       offHandAbility = 0;
       offHandItem = item;
-      MonoBehaviour.print("OffhandItem 2");
       if(actor != null){ actor.SetAnimBool("twoHanded", true); }
     }
     else if(primary){
@@ -210,6 +208,7 @@ public class EquipSlot{
         ret.Add(Remove(true));
         actor.hotbar.Update(-1, -5);
         handAbility = 0;
+        offHandItem = item;
       }
       else if(offHandItem == null && offHandAbility < 1){
         GameObject.Destroy(item.gameObject);
@@ -218,13 +217,14 @@ public class EquipSlot{
       }
       else if(offHandItem != null && !offHandItem.oneHanded){
         ret.Add(Remove(false));
-        handItem = item;
-        return ret; 
+        offHandItem = item;
+        return ret;
       }
       else{
         if(actor != null){ actor.SetAnimBool("twoHanded", false); }
         handItem = item;
-        MonoBehaviour.print("Equipped Item1");
+        selectedHand = offHand;
+        Mount(item, selectedHand);
       }
     }
     else{
@@ -234,7 +234,6 @@ public class EquipSlot{
         offHandAbility = 0;
       }
       offHandItem = item;
-      MonoBehaviour.print("Equipped offhand item1.");
       if(actor != null){ 
         if(handItem == null && handAbility < 1){ 
           actor.SetAnimBool("twoHanded", true); 
@@ -246,6 +245,11 @@ public class EquipSlot{
     }
     
     return ret;
+  }
+  
+  public void Mount(Item item, GameObject hand){
+    item.transform.parent = MountPoint(hand.transform);
+    item.Hold(actor);
   }
   
   /* Returns mount point from hand. */

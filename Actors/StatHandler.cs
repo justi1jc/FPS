@@ -94,7 +94,7 @@ public class StatHandler{
       mana++; 
     }
     if(aimPenalty > 0 && (StatCheck("PERCEPTION") || StatCheck("RANGED"))){
-      aimPenalty -= 2;
+      aimPenalty -= 5;
       if(aimPenalty < 0){ aimPenalty = 0; }
     }
   }
