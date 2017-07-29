@@ -42,7 +42,7 @@ public class Ranged : Weapon{
     if(action == 0 && ammo < 1){ Sound(2); }
     if(action == 0 || (fullAuto && action == 3)){ Fire(); }
     else if(action == 1){ ToggleAim(); }
-    else if(action == 2){
+    else if(action == 2 && ammo < maxAmmo){
       if(ready){ StartCoroutine(Reload()); }
     }
   }
@@ -52,18 +52,18 @@ public class Ranged : Weapon{
   }
 
   /* Fires ranged weapon. */
-  void Fire(){
+  public virtual void Fire(){
     if(ammo < 1 || !ready){ return; }
     if(hitScan){ FireHitScan(); }
     else{ FireProjectile(); }
+    Sound(0);
+    ammo--;
     if(holder != null){ holder.Recoil(recoil); }
   }
 
   /* Creates and propels a projectile */
-  void FireProjectile(){
+  public void FireProjectile(float spread = 0f){
     StartCoroutine(CoolDown(cooldown));
-    ammo--;
-    Sound(0);
     Vector3 relPos = transform.forward;
     Vector3 spawnPos = muzzlePoint != null ? muzzlePoint.position : transform.position;
     Quaternion projRot = Quaternion.LookRotation(relPos);
@@ -80,7 +80,7 @@ public class Ranged : Weapon{
     col.isTrigger = true;
     Physics.IgnoreCollision(col, GetComponent<Collider>());
     Item item = proj.GetComponent<Item>();
-    
+    MonoBehaviour.print("Projectile created " + col.gameObject.name);
     if(item is Projectile){
       Projectile p = (Projectile)item;
       p.weaponOfOrigin = gameObject;
@@ -106,7 +106,11 @@ public class Ranged : Weapon{
         }
       }
     }
-    proj.GetComponent<Rigidbody>().velocity = relPos * muzzleVelocity;
+    float x = Random.Range(-spread, spread);
+    float y = Random.Range(-spread, spread);
+    float z = Random.Range(-spread, spread);
+    Vector3 trajectory = new Vector3(x, y, z);
+    proj.GetComponent<Rigidbody>().velocity = (relPos + trajectory) * muzzleVelocity;
   }
 
   /* Does a raycast and impacts a target. */
@@ -148,14 +152,14 @@ public class Ranged : Weapon{
   }
   
   /* Reloading process. */
-  IEnumerator Reload(){
+  public IEnumerator Reload(){
     Sound(1);
     yield return new WaitForSeconds(reloadDelay);
     LoadAmmo();
   }
 
   /* Adds ammo to weapon externally */
-  public void LoadAmmo(){
+  public virtual void LoadAmmo(){
     if(holder == null){ return; }
     int available = holder.RequestAmmo(ammunition, (maxAmmo - ammo));
     if(available > 0){ ammo = ammo + available; return; }

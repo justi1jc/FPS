@@ -70,6 +70,10 @@ public class LootTable{
         dat = GetItem("Weapons/Knife");
         actor.StoreItem(new Data(dat));
         break;
+      case "SWORD":
+        dat = GetItem("Weapons/Sword");
+        actor.Equip(dat, true);
+        break;
     }
   }
 }

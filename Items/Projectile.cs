@@ -36,6 +36,7 @@ public class Projectile : Item{
   void Impact(Collider col){
     if(col == null){ return; }
     if(col.gameObject == weaponOfOrigin){ return; }
+    if(col.gameObject.GetComponent<Projectile>() != null){ return; }
     damageActive = false;
     HitBox hb = col.gameObject.GetComponent<HitBox>();
     if(hb){
