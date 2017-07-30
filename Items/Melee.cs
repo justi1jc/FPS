@@ -38,6 +38,7 @@ public class Melee : Weapon{
   
   /* Exert force and damage onto target.  */
   void Strike(Collider col){
+    if(col.gameObject == null){ return; }
     if(damageActive){
       if(holder != null){
         if(holder.GetRoot(col.gameObject.transform) == holder.transform.transform){
@@ -59,7 +60,7 @@ public class Melee : Weapon{
       Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
       if(rb){ rb.AddForce(transform.forward * knockBack); Sound(0); }
       Item item = col.gameObject.GetComponent<Item>();
-      if(item != null && !item.ability){
+      if(item != null && item.holder!= null && !item.ability){
         item.holder.arms.Drop(item);
       }
     }

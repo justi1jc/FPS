@@ -67,10 +67,11 @@ public class LootMenu : Menu{
     else if(sx == 1){ syMax = invB.slots -1; }
     SecondaryBounds();
   }
-  
+
   public override void Input(int button){
     DefaultExit(button);
     if(button == A){ Sound(0); }
+    if(button == X){ StoreAll(invB, inv); }
     if(sy < 0){ return; }
     if(manager.actor == null){ return; }
     if(inv == null || invB == null){ return; }
@@ -86,11 +87,18 @@ public class LootMenu : Menu{
       Store(inv, item);
     }
   }
-  
+
+  public void StoreAll(Inventory giver, Inventory receiver){
+    for(int i = 0; i < giver.slots; i++){
+      Store(receiver, giver.Retrieve(i));
+    }
+  }
+
   /* Stores item in targeted inventory and drops overflow. */
   public void Store(Inventory target, Data dat){
     if(dat == null){ return; }
-    dat.stack = target.Store(dat);
-    if(dat.stack > 0){ target.DiscardItem(dat, manager.transform.position); }
+    int remainder = target.Store(new Data(dat));
+    dat.stack = remainder;
+    if(remainder > 0){ target.DiscardItem(dat, manager.transform.position); }
   }
 }
