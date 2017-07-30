@@ -182,26 +182,25 @@ public class EquipSlot{
   /* Equips an item to the desired slot, returning any items displaced. */
   public List<Data> Equip(Data dat, bool primary = true){
     if(actor != null){
-      if(primary){ actor.SetAnimBool("leftEquip", true); }
-      else{ actor.SetAnimBool("rightEquip", true); }
+      actor.SetAnimBool("leftEquip", true);
+      actor.SetAnimBool("rightEquip", true);
     }
     List<Data> ret = new List<Data>();
     Item item = GetItem(dat);
     if(item == null){ return ret; }
     GameObject itemGO = item.gameObject;
-    
-    GameObject selectedHand = primary ? hand : offHand;
-    if(primary && handItem != null && !item.oneHanded){ selectedHand = offHand; }
-    Mount(item, selectedHand);
     if(!item.oneHanded){
       ret.Add(Remove(true));
       actor.hotbar.Update(-1, -5);
       actor.hotbar.Update(-2, -6);
       ret.Add(Remove(false));
       handAbility = 0;
+      Mount(item, offHand);
       offHandAbility = 0;
       offHandItem = item;
-      if(actor != null){ actor.SetAnimBool("twoHanded", true); }
+      if(actor != null){
+        actor.SetAnimBool("twoHanded", true);
+      }
     }
     else if(primary){
       if(handItem != null){
@@ -209,6 +208,7 @@ public class EquipSlot{
         actor.hotbar.Update(-1, -5);
         handAbility = 0;
         offHandItem = item;
+        Mount(item, offHand);
       }
       else if(offHandItem == null && offHandAbility < 1){
         GameObject.Destroy(item.gameObject);
@@ -218,13 +218,13 @@ public class EquipSlot{
       else if(offHandItem != null && !offHandItem.oneHanded){
         ret.Add(Remove(false));
         offHandItem = item;
+        Mount(item, offHand);
         return ret;
       }
       else{
         if(actor != null){ actor.SetAnimBool("twoHanded", false); }
         handItem = item;
-        selectedHand = offHand;
-        Mount(item, selectedHand);
+        Mount(item, offHand);
       }
     }
     else{
@@ -234,6 +234,7 @@ public class EquipSlot{
         offHandAbility = 0;
       }
       offHandItem = item;
+      Mount(item, offHand);
       if(actor != null){ 
         if(handItem == null && handAbility < 1){ 
           actor.SetAnimBool("twoHanded", true); 

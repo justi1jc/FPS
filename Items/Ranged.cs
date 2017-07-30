@@ -80,7 +80,6 @@ public class Ranged : Weapon{
     col.isTrigger = true;
     Physics.IgnoreCollision(col, GetComponent<Collider>());
     Item item = proj.GetComponent<Item>();
-    MonoBehaviour.print("Projectile created " + col.gameObject.name);
     if(item is Projectile){
       Projectile p = (Projectile)item;
       p.weaponOfOrigin = gameObject;
