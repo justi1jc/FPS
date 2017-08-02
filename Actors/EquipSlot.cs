@@ -224,7 +224,7 @@ public class EquipSlot{
       else{
         if(actor != null){ actor.SetAnimBool("twoHanded", false); }
         handItem = item;
-        Mount(item, offHand);
+        Mount(item, hand);
       }
     }
     else{
