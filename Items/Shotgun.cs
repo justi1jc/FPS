@@ -13,6 +13,7 @@ public class Shotgun : Ranged{
     ammo--;
     Sound(0);
     for(int i = 0; i < pellets; i++){ FireProjectile(spread); }
+    if(holder != null){ holder.Recoil(recoil); }
   }
   
   
