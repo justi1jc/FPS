@@ -12,6 +12,7 @@ public class NavNode{
   public List<int> edges;
   public int parent = -1;
   public bool empty = true;
+  public bool initialized = false;
   
   public NavNode(){
     edges = new List<int>();
