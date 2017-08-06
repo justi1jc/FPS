@@ -17,7 +17,6 @@ public class RangedCombatAI : AI{
   public RangedCombatAI(Actor actor, AIManager manager) : base(actor, manager){}
   
   public override IEnumerator Begin(){
-    MonoBehaviour.print("Ranged combat begins.");
     yield return new WaitForSeconds(0f);
     weapon = (Ranged)actor.arms.handItem;
     if(weapon == null){ weapon = (Ranged)actor.arms.offHandItem; }
@@ -29,7 +28,6 @@ public class RangedCombatAI : AI{
     while(combatant != null && combatant.Alive()){
       yield return new WaitForSeconds(1f);
     }
-    MonoBehaviour.print("Done fighting");
     firing = positioning = false;
     if(actor.defaultAI != ""){ manager.Change(actor.defaultAI); }
     else{ manager.Change("IDLE"); }
@@ -37,7 +35,6 @@ public class RangedCombatAI : AI{
   
   
   public IEnumerator Positioning(){
-    MonoBehaviour.print("Started positioning.");
     while(combatant != null && positioning){
       Vector3 pos = actor.transform.position;
       Vector3 cpos = combatant.transform.position;
@@ -49,7 +46,6 @@ public class RangedCombatAI : AI{
       }
       yield return new WaitForSeconds(0.1f);
     }
-    MonoBehaviour.print("Done positioning.");
     yield return null;
   }
   
@@ -76,9 +72,6 @@ public class RangedCombatAI : AI{
       }
       else{ reloaded = false; }
     }
-    if(weapon == null){ MonoBehaviour.print("Weapon null"); }
-    if(!firing){ MonoBehaviour.print("Firing is false"); }
-    if(combatant == null){ MonoBehaviour.print("Combatant null"); }
     yield return new WaitForSeconds(0f);
   }
   

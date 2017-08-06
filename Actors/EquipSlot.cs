@@ -62,6 +62,8 @@ public class EquipSlot{
     if(item != null){
       item.transform.position = hand.transform.position;
       item.Drop();
+      if(handItem == item){ handItem = null; }
+      else if(offHandItem == item){ offHandItem = null; }
       return;
     }
     if(handItem != null){
@@ -125,11 +127,11 @@ public class EquipSlot{
   /* Called from late update */
   public void Update(){
     bool lr = handItem != null && handItem is Ranged; 
-    bool rr = offHand != null && offHandItem is Ranged;
+    bool rr = offHandItem != null && offHandItem is Ranged;
     if(lr || rr){
       Vector3 point = TrackPoint();
-      if(handItem != null && lr){ Track(handItem.gameObject, point); }
-      if(offHandItem != null && rr){ Track(offHandItem.gameObject, point); }
+      if(lr){ Track(handItem.gameObject, point); }
+      if(rr){ Track(offHandItem.gameObject, point); }
     }
   }
 

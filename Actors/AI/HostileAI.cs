@@ -25,7 +25,6 @@ public class HostileAI : AI{
       manager.sighted = ScanForActors();
       if(manager.sighted.Count > 0){ 
         manager.target = manager.sighted[0].gameObject;
-        MonoBehaviour.print("Found enemy.");
       }
       yield return new WaitForSeconds(0.1f);
     }
