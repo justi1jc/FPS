@@ -17,6 +17,7 @@ public class Arena : MonoBehaviour{
   int bots;// Number of bots in arena.
   int startingTime; // Total round duration.
   bool respawns; // True if players respawn.
+  string kit; // Default kit for players.
   MenuManager menu;
 
   public void Start(){
@@ -33,6 +34,7 @@ public class Arena : MonoBehaviour{
     bots = dat != null ? dat.ints[1] : 0;
     if(dat != null){
       respawns = dat.bools[0];
+      kit = dat.strings[0];
     }
     PopulateSpawnPoints();
     InitPlayers();
@@ -156,7 +158,7 @@ public class Arena : MonoBehaviour{
     Actor actor = go.GetComponent<Actor>();
     if(actor != null){
       players.Add(actor);
-      LootTable.Kit("ASSAULT", ref actor);
+      if(kit != ""){ LootTable.Kit(kit, ref actor); }
       if(id != -1){ actor.id = id; }
     }
   }
