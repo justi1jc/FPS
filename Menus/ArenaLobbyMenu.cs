@@ -15,16 +15,17 @@ public class ArenaLobbyMenu : Menu{
   private string map;   // map currently selected.
   private int mapIndex; // Index of currently selected map.
   private bool respawns = true; // True if players will respawn.
+  private int bots = 15; // Number of bots;
   
   public ArenaLobbyMenu(MenuManager manager) : base(manager){
     duration = 10;
     map = "Arena_Empty";
     mapIndex = 0;
   }
-  
+
   public override void Render(){
     int ih = Height()/10;
-    int iw = Width()/5; 
+    int iw = Width()/5;
     Box("Arena Lobby", 2*iw, ih, iw, ih);
     string str = "Players: " + Session.session.playerCount;
     if(Button(str, 0, 2*ih, iw, ih)){ TogglePlayers(); Sound(0); }
@@ -39,6 +40,10 @@ public class ArenaLobbyMenu : Menu{
       manager.Change("MAIN"); 
       Sound(0);
     }
+    str = "Bots: " + bots;
+    Box(str, 0, 6*ih, iw, ih/2);
+    if(Button("-", 0, 6*ih + (ih/2), iw/2, ih/2) && bots > 0){ bots--; }
+    if(Button("+", iw/2, 6*ih + (ih/2), iw/2, ih/2) && bots < 32){ bots++; }
   }
   
   /* Cycles through valid durations. */
@@ -53,7 +58,7 @@ public class ArenaLobbyMenu : Menu{
     if(mapIndex > 1){ mapIndex = 0; }
     UpdateMap();
   }
-  
+
   /* Changes map text based on map index. */
   void UpdateMap(){
     switch(mapIndex){
@@ -70,6 +75,7 @@ public class ArenaLobbyMenu : Menu{
   public void StartArena(){
     Data dat = new Data();
     dat.ints.Add(duration);
+    dat.ints.Add(bots);
     dat.bools.Add(respawns);
     Session.session.arenaData = dat;
     

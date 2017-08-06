@@ -14,6 +14,7 @@ public class Arena : MonoBehaviour{
   public List<Transform> spawnPoints; //Stores direction and position to spawn players in.
   public List<Actor> players;
   int time;// Remaining round time in seconds.
+  int bots;// Number of bots in arena.
   int startingTime; // Total round duration.
   bool respawns; // True if players respawn.
   MenuManager menu;
@@ -29,6 +30,7 @@ public class Arena : MonoBehaviour{
     menu.Change("ARENAHUD");
     menu.arena = this;
     time = startingTime = dat != null ? 60 * dat.ints[0] : 600;
+    bots = dat != null ? dat.ints[1] : 0;
     if(dat != null){
       respawns = dat.bools[0];
     }
@@ -121,7 +123,6 @@ public class Arena : MonoBehaviour{
     scores = new List<int>();
     names = new List<string>();
     players = new List<Actor>();
-    int bots = 1;
     for(int i = 0; i < bots; i++){ 
       SpawnPlayer("Enemy", i);
       scores.Add(0);
