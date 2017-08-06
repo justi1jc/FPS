@@ -11,15 +11,16 @@ using System.Collections.Generic;
 
 public class RangedCombatAI : AI{
   bool firing = true;
-  bool reloaded = false;
   bool positioning = true;
   Ranged weapon;
   Actor combatant;
   public RangedCombatAI(Actor actor, AIManager manager) : base(actor, manager){}
   
   public override IEnumerator Begin(){
+    MonoBehaviour.print("Ranged combat begins.");
     yield return new WaitForSeconds(0f);
     weapon = (Ranged)actor.arms.handItem;
+    if(weapon == null){ weapon = (Ranged)actor.arms.offHandItem; }
     if(manager.target != null){ combatant = manager.target.GetComponent<Actor>(); }
     if(combatant != null){
       actor.StartCoroutine(FireAt());
@@ -28,6 +29,7 @@ public class RangedCombatAI : AI{
     while(combatant != null && combatant.Alive()){
       yield return new WaitForSeconds(1f);
     }
+    MonoBehaviour.print("Done fighting");
     firing = positioning = false;
     if(actor.defaultAI != ""){ manager.Change(actor.defaultAI); }
     else{ manager.Change("IDLE"); }
@@ -35,22 +37,26 @@ public class RangedCombatAI : AI{
   
   
   public IEnumerator Positioning(){
+    MonoBehaviour.print("Started positioning.");
     while(combatant != null && positioning){
       Vector3 pos = actor.transform.position;
       Vector3 cpos = combatant.transform.position;
       float dist = Vector3.Distance(pos, cpos);
-      if(dist > 10f){ 
+      if(dist > 10f){
         Vector3 dir = (cpos - pos).normalized;
         dir *= (dist - 10f);
         yield return actor.StartCoroutine( MoveTo(pos + dir));
       }
       yield return new WaitForSeconds(0.1f);
     }
+    MonoBehaviour.print("Done positioning.");
     yield return null;
   }
   
   /* Aims and fires at the combatant */
   public IEnumerator FireAt(){
+    firing = true;
+    bool reloaded = false;
     while(weapon != null && firing && combatant != null){
       yield return actor.StartCoroutine(AimAt(combatant));
       actor.Use(0);
@@ -70,6 +76,9 @@ public class RangedCombatAI : AI{
       }
       else{ reloaded = false; }
     }
+    if(weapon == null){ MonoBehaviour.print("Weapon null"); }
+    if(!firing){ MonoBehaviour.print("Firing is false"); }
+    if(combatant == null){ MonoBehaviour.print("Combatant null"); }
     yield return new WaitForSeconds(0f);
   }
   

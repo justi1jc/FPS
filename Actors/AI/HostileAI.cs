@@ -24,7 +24,8 @@ public class HostileAI : AI{
     while(manager.target == null){
       manager.sighted = ScanForActors();
       if(manager.sighted.Count > 0){ 
-        manager.target = manager.sighted[0].gameObject; 
+        manager.target = manager.sighted[0].gameObject;
+        MonoBehaviour.print("Found enemy.");
       }
       yield return new WaitForSeconds(0.1f);
     }
@@ -49,7 +50,7 @@ public class HostileAI : AI{
     Inventory inv = actor.inventory;
     for(int i = 0; i < inv.slots; i++){
       Data dat = inv.Peek(i);
-      if(dat.displayName == rdat.strings[0]){ return true; }
+      if(dat != null && dat.displayName == rdat.strings[0]){ return true; }
     }
     return false;
   }

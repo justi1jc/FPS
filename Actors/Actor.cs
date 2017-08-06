@@ -785,12 +785,15 @@ public class Actor : MonoBehaviour{
   public void Equip(int itemIndex, bool primary){
     if(itemIndex < 0 || itemIndex >= inventory.slots){ return; }
     Data dat = inventory.Retrieve(itemIndex);
+    if(dat == null){ return; }
     hotbar.Update(itemIndex, -4);
     List<Data> displaced = arms.Equip(dat, primary);
     for(int i = 0; i < displaced.Count; i++){
-      displaced[i].stack = inventory.Store(new Data(displaced[i]));
-      if(displaced[i].stack > 0){
-        DiscardItem(displaced[i]);
+      if(displaced[i] != null){
+        displaced[i].stack = inventory.Store(new Data(displaced[i]));
+        if(displaced[i].stack > 0){
+          DiscardItem(displaced[i]);
+        }
       }
     }
   }

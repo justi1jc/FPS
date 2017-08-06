@@ -121,7 +121,7 @@ public class Arena : MonoBehaviour{
     scores = new List<int>();
     names = new List<string>();
     players = new List<Actor>();
-    int bots = 15;
+    int bots = 1;
     for(int i = 0; i < bots; i++){ 
       SpawnPlayer("Enemy", i);
       scores.Add(0);

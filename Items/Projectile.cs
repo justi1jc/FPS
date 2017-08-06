@@ -44,7 +44,8 @@ public class Projectile : Item{
       hb.ReceiveDamage(damage, weaponOfOrigin);
     }
     Item item = col.gameObject.GetComponent<Item>();
-    if(item && !item.ability && item != weaponOfOrigin.GetComponent<Item>() && item.holder != null){
+    bool itemCheck = item && !item.ability;
+    if(itemCheck && weaponOfOrigin != null && item != weaponOfOrigin.GetComponent<Item>() && item.holder != null){
       item.holder.arms.Drop(item);
     }
     Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();

@@ -106,6 +106,7 @@ public class AI{
   
   /* Aim at the target */
   public IEnumerator AimAt(Actor target, float aimMargin = 1f){
+    MonoBehaviour.print("Aiming at " + target.name);
     if(manager.paused){ yield break; }
     Transform head = actor.head.transform;
     Transform thead = target.head.transform;
