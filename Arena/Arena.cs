@@ -9,27 +9,38 @@ using UnityEngine.SceneManagement;
 
 
 public class Arena : MonoBehaviour{
+  public List<int> scores;
+  public List<string> names;
   public List<Transform> spawnPoints; //Stores direction and position to spawn players in.
   public List<Actor> players;
   int time;// Remaining round time in seconds.
+  int bots;// Number of bots in arena.
   int startingTime; // Total round duration.
+  bool respawns; // True if players respawn.
+  string kit; // Default kit for players.
   MenuManager menu;
-  
+
   public void Start(){
     Initialize();
   }
-  
+
   /* Begin a new round. */
   public void Initialize(){
     Data dat = Session.session.arenaData;
     menu = gameObject.AddComponent<MenuManager>();
     menu.Change("ARENAHUD");
+    menu.arena = this;
     time = startingTime = dat != null ? 60 * dat.ints[0] : 600;
+    bots = dat != null ? dat.ints[1] : 0;
+    if(dat != null){
+      respawns = dat.bools[0];
+      kit = dat.strings[0];
+    }
     PopulateSpawnPoints();
     InitPlayers();
     StartCoroutine(UpdateRoutine());
   }
-  
+
   IEnumerator UpdateRoutine(){
     while(time > 0){
       UpdateHUD();
@@ -37,22 +48,29 @@ public class Arena : MonoBehaviour{
       yield return new WaitForSeconds(1f);
     }
   }
-  
+
   /* Updates hud with current time and objectives */
   void UpdateHUD(){
     ArenaHUDMenu HUD = (ArenaHUDMenu)menu.active;
     if(HUD == null){ print("Menu null"); return; }
     HUD.message = "Arena deathmatch\n" + Time();
-    time--;
-    if(time < 1){ 
-      HUD.subMenu = 1;
-      for(int i = 0; i < players.Count; i++){
-        players[i].SetMenuOpen(true);
-        Destroy(players[i].gameObject);
-      }
+    if(!respawns){
+      HUD.message += ("\nPlayers remaining: \n" + players.Count);
     }
+    time--;
+    if(time < 1){ EndGame(); }
   }
   
+  /* Stop gameplay and display end game message. */
+  void EndGame(){
+    ArenaHUDMenu HUD = (ArenaHUDMenu)menu.active;
+    HUD.subMenu = 1;
+    for(int i = 0; i < players.Count; i++){
+      players[i].SetMenuOpen(true);
+      Destroy(players[i].gameObject);
+    }
+  }
+
   void HandleKills(){
     for(int i = 0; i < players.Count; i++){
       Actor actor = players[i];
@@ -63,25 +81,37 @@ public class Arena : MonoBehaviour{
       }
     }
   }
-  
+
   /* Displays respawn timer and respawns the player at its completion. */
   IEnumerator RespawnPlayer(Actor player){
+    if(player.killerId != -1){
+      scores[player.killerId]++;
+    }
     int respawnTimer = 5;
     HUDMenu playerHUD = null;
     if(player.playerNumber > 0 && player.playerNumber < 5){
       MenuManager playerMenu = player.menu;
       if(playerMenu){ playerHUD = (HUDMenu)playerMenu.active; }
     }
-    for(int i = respawnTimer; i > 0; i--){
-      if(playerHUD != null){ playerHUD.message = "Respawn in \n" + i; }  
-      yield return new WaitForSeconds(1f);
+    if(respawns){
+      for(int i = respawnTimer; i > 0; i--){
+        if(playerHUD != null){ playerHUD.message = "Respawn in \n" + i; }  
+        yield return new WaitForSeconds(1f);
+      }
+      Data dat = player.GetData();
+      int id = player.id;
+      Destroy(player.gameObject);
+      SpawnPlayer(dat.prefabName, id);
     }
-    Data dat = player.GetData();
-    Destroy(player.gameObject);
-    SpawnPlayer(dat.prefabName);
+    else{ 
+      if(playerHUD != null){ playerHUD.message = "You are dead."; }
+      players.Remove(player);
+      player.SetMenuOpen(true);
+      if(players.Count <= 1){ EndGame(); }
+    }
     yield return new WaitForSeconds(0f);
   }
-  
+
   /* Populate spawnpoints from child transforms. */
   void PopulateSpawnPoints(){
     spawnPoints = new List<Transform>();
@@ -89,18 +119,30 @@ public class Arena : MonoBehaviour{
       spawnPoints.Add(t);
     }
   }
-  
+
   /* Add players to map according to starting spot. */
   void InitPlayers(){
+    scores = new List<int>();
+    names = new List<string>();
     players = new List<Actor>();
-    SpawnPlayer("player1");
-    if(Session.session.playerCount > 1){ SpawnPlayer("player2"); }
-    int bots = 15;
-    for(int i = 0; i < bots; i++){ SpawnPlayer("Enemy"); }
+    for(int i = 0; i < bots; i++){ 
+      SpawnPlayer("Enemy", i);
+      scores.Add(0);
+      names.Add("Bot " + (i+1));
+    }
+    SpawnPlayer("player1", bots);
+    scores.Add(0);
+    names.Add("Player1");
+    
+    if(Session.session.playerCount > 1){ 
+      SpawnPlayer("player2", bots + 1);
+      scores.Add(0);
+      names.Add("Player2");
+    }
   }
-  
+
   /* Spawns a player from a prefab at a random spawnpoint. */
-  void SpawnPlayer(string prefabName){
+  void SpawnPlayer(string prefabName, int id = -1){
     Transform trans = spawnPoints[Random.Range(0, spawnPoints.Count)]; 
     Vector3 pos = trans.position;
     Quaternion rot = trans.rotation; 
@@ -116,10 +158,11 @@ public class Arena : MonoBehaviour{
     Actor actor = go.GetComponent<Actor>();
     if(actor != null){
       players.Add(actor);
-      LootTable.Kit("GUNRUNNER", ref actor);
+      if(kit != ""){ LootTable.Kit(kit, ref actor); }
+      if(id != -1){ actor.id = id; }
     }
   }
-  
+
   /* Returns remaining time in minutes and seconds. */
   string Time(){
     int minutes = time/60;
@@ -129,6 +172,5 @@ public class Arena : MonoBehaviour{
     secs += seconds;
     return minutes + ":" + secs;
   }
-  
 
 }

@@ -9,7 +9,7 @@ ____________  _____  ______
 ********************************************************************************
 
 This is boiler-plate code for an open-world first-person shooter game.
-These scripts work with Unity3D editor 5.6.1f1. Ubuntu link below.
+These scripts work with Unity3D editor 5.6.1f3. Ubuntu link below.
 https://forum.unity3d.com/threads/unity-on-linux-release-notes-and-known-issues.350256/
 
 Vision: Provide first-person shooter roleplaying gameplay similar to the recent
@@ -17,72 +17,13 @@ installments of The Elder Scrolls and Fallout series, albeit with the addition
 of couch-multiplayer coop.
 
 Strategy:
-I aim to improve the user-experience by revisiting existing features.
-After this stage, my aim will be to provide compelling content to immerse the
-player in a rich game world.
+Basic gameplay mechanics will be solidified in the tech demo phase. Once
+the tech demo is finished, content will be developed in order to experience
+the 
 
 Tentative roadmap:
+0.5.X- FPS Features Update
+0.6.X- World features Update
+0.7.X- RPG Features update
 
-Add Arena Mode(V0.5.1):
-  -Create an Arena gamemode to better test core gameplay features with. 
-
-React to feedback:
-  -Determine Priority of existing V0.6 Goals
-  -Determine new V0.6 Goals.
-
-********************************************************************************
-______ _       _     _              _   _____             _     
-|  ___(_)     (_)   | |            | | |  __ \           | |    
-| |_   _ _ __  _ ___| |__   ___  __| | | |  \/ ___   __ _| |___ 
-|  _| | | '_ \| / __| '_ \ / _ \/ _` | | | __ / _ \ / _` | / __|
-| |   | | | | | \__ \ | | |  __/ (_| | | |_\ \ (_) | (_| | \__ \
-\_|   |_|_| |_|_|___/_| |_|\___|\__,_|  \____/\___/ \__,_|_|___/
-                                                                
-********************************************************************************
-
-Current version: 0.5.0
-
-    Current features
-Menus(Main, Inventory/Loot, Ability, Speech, Trade, level-up/stats,
-  Save&Load, Loot, quest)
-Input(In-Game, Menu)
-Actor
-(
-  XP/RPG Stats, Movement, Item Interaction, condition(health),
-  Combat AI, condition(fatigue, mana )
-)
-Items
-(
-  Warp doors charging, pickup, drop, use, thrown type, ranged melee, containers
-)
-Inventory(store, Looting)
-Abilities(Dual-wield, Unarmed, fireball, heal)
-Session(SpawnEntity);
-Speech(Speech tree, trade system)
-Save&Load(GameData, interior cells, Actor data)
-World(interior cells, exterior cells, random generation)
-Quest(Quest interface, hello world quest)
-
-
-********************************************************************************
-  ___                         _____             _     
- / _ \                       |  __ \           | |    
-/ /_\ \_ __ ___ _ __   __ _  | |  \/ ___   __ _| |___ 
-|  _  | '__/ _ \ '_ \ / _` | | | __ / _ \ / _` | / __|
-| | | | | |  __/ | | | (_| | | |_\ \ (_) | (_| | \__ \
-\_| |_/_|  \___|_| |_|\__,_|  \____/\___/ \__,_|_|___/
-********************************************************************************
-
-Arena.cs
-  -Spawns players and enemies on random spawnpoint from a list.
-  -Keeps track of kills and scores.
-  -Respawns players and enemies after timer.
-  -After time runs out, display final scores through ArenaHUD
-
-ArenaLobbyMenu
-  -Allows player to begin Arena mode or return to the main menu
-
-ArenaHUD
-  -Displays atop all screens
-  -Shows match timer
-  -Shows final scores with button leading to ArenaLobbyMenu
+Current version: 0.5.3

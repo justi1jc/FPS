@@ -11,7 +11,6 @@ using System.Collections.Generic;
 
 public class RangedCombatAI : AI{
   bool firing = true;
-  bool reloaded = false;
   bool positioning = true;
   Ranged weapon;
   Actor combatant;
@@ -20,6 +19,7 @@ public class RangedCombatAI : AI{
   public override IEnumerator Begin(){
     yield return new WaitForSeconds(0f);
     weapon = (Ranged)actor.arms.handItem;
+    if(weapon == null){ weapon = (Ranged)actor.arms.offHandItem; }
     if(manager.target != null){ combatant = manager.target.GetComponent<Actor>(); }
     if(combatant != null){
       actor.StartCoroutine(FireAt());
@@ -39,7 +39,7 @@ public class RangedCombatAI : AI{
       Vector3 pos = actor.transform.position;
       Vector3 cpos = combatant.transform.position;
       float dist = Vector3.Distance(pos, cpos);
-      if(dist > 10f){ 
+      if(dist > 10f){
         Vector3 dir = (cpos - pos).normalized;
         dir *= (dist - 10f);
         yield return actor.StartCoroutine( MoveTo(pos + dir));
@@ -51,12 +51,11 @@ public class RangedCombatAI : AI{
   
   /* Aims and fires at the combatant */
   public IEnumerator FireAt(){
+    firing = true;
+    bool reloaded = false;
     while(weapon != null && firing && combatant != null){
+      if(weapon.ammo > 0){ reloaded = false; }
       yield return actor.StartCoroutine(AimAt(combatant));
-      actor.Use(0);
-      yield return new WaitForSeconds(0.1f);
-      actor.Use(0);
-      yield return new WaitForSeconds(0.1f);
       actor.Use(0);
       yield return new WaitForSeconds(0.1f);
       if(!reloaded && weapon.ammo == 0){

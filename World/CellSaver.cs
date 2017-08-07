@@ -47,7 +47,7 @@ public class CellSaver : MonoBehaviour {
   // Exterior
   public bool unique;   // True if only one instance of this exterior should exist.
   public bool entrance; // True if this exterior has a door in it.
-
+  
   public void Start(){
     if(saverMode){
       PackCell();
@@ -56,6 +56,7 @@ public class CellSaver : MonoBehaviour {
       SaveMaster();
       if(cascade){ LoadNextScene(); }
     }
+    PathFinder pf = new PathFinder((MonoBehaviour)this, max.transform.position, min.transform.position);
   }
   
   

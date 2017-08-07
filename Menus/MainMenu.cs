@@ -15,7 +15,7 @@ public class MainMenu : Menu{
     syMin = 0;
     syMax = 2;
   }
-  
+
   public override void Render(){
     int iw = Width()/6;
     int ih = Height()/4;
@@ -31,7 +31,7 @@ public class MainMenu : Menu{
       case 0:
         str = "New Game";
         if(Button(str, x, ih, 4*iw, ih, 0, 1 )){ 
-          subMenu = 1;
+          //subMenu = 1;
           Sound(0);
         }
         break;
@@ -55,12 +55,12 @@ public class MainMenu : Menu{
       Sound(0);
     }
   }
-  
+
   public override void UpdateFocus(){
     sx = 0;
     SecondaryBounds();
   }
-  
+
   public override void Input(int button){
     if(button == A){ Sound(0); }
     switch(sy){
@@ -76,5 +76,5 @@ public class MainMenu : Menu{
         break;
     }
   }
-  
+
 }

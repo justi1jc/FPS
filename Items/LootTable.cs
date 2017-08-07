@@ -38,17 +38,63 @@ public class LootTable{
   
   /* Equips an actor with a specified starter kit. */
   public static void Kit(string name, ref Actor actor){
-        switch(name.ToUpper()){
-      case "GUNRUNNER":
-        Data dat = GetItem("Weapons/Caster_Pistol");
+    Data dat = null;
+    switch(name.ToUpper()){
+      case "RANDOM":
+        int choice = UnityEngine.Random.Range(0, 5);
+        switch(choice){
+          case 0: Kit("GUNRUNNER", ref actor); break;
+          case 1: Kit("RIFLEMAN", ref actor); break;
+          case 2: Kit("SHOTGUNNER", ref actor); break;
+          case 3: Kit("SWORDSMAN", ref actor); break;
+          case 4: Kit("ASSASSIN", ref actor); break;
+        }
+      break;
+      case "GUNRUNNER": // Dual pistols
+        dat = GetItem("Weapons/Caster_Pistol");
+        MonoBehaviour.print(dat.displayName + dat.itemType);
+        dat.ints[1] = 20; // Give full mag.
+        actor.Equip(new Data(dat), true);
+        actor.Equip(new Data(dat), true);
+        dat = GetItem("Weapons/Ammo/Caster_Pistol_Magazine", 20);
+        actor.StoreItem(new Data(dat));
+        actor.StoreItem(new Data(dat));
+        actor.StoreItem(new Data(dat));
+        actor.StoreItem(new Data(dat));
+        actor.StoreItem(new Data(dat));
+        actor.StoreItem(new Data(dat));
+        break;
+      case "RIFLEMAN": // Rifle, Pistol, and Knife.
+        dat = GetItem("Weapons/Caster_Rifle");
         dat.ints[1] = 60; // Give full mag.
-        actor.arms.Equip(new Data(dat), true);
-        actor.arms.Equip(new Data(dat), false);
-        dat = GetItem("Weapons/Ammo/Caster_Pistol_Magazine", 60);
-        actor.inventory.Store(new Data(dat));
-        actor.inventory.Store(new Data(dat));
-        actor.inventory.Store(new Data(dat));
-        actor.inventory.Store(new Data(dat));
+        actor.Equip(new Data(dat), true);
+        dat = GetItem("Weapons/Ammo/Caster_Rifle_magazine", 60);
+        actor.StoreItem(new Data(dat));
+        actor.StoreItem(new Data(dat));
+        actor.StoreItem(new Data(dat));
+        actor.StoreItem(new Data(dat));
+        
+        dat = GetItem("Weapons/Knife");
+        actor.StoreItem(new Data(dat));
+        break;
+      case "SWORDSMAN":
+        dat = GetItem("Weapons/Sword");
+        actor.Equip(dat, true);
+        break;
+      case "SHOTGUNNER":
+        dat = GetItem("Weapons/Shotgun");
+        dat.ints[1] = 8; // Give full tube.
+        actor.Equip(dat, true);
+        
+        dat = GetItem("Weapons/Ammo/Shotgun_Cartridge", 80);
+        actor.StoreItem(new Data(dat));
+        
+        dat = GetItem("Weapons/Knife");
+        actor.StoreItem(new Data(dat));
+        break;
+      case "ASSASSIN":
+        dat = GetItem("Weapons/Knife");
+        actor.StoreItem(new Data(dat));
         break;
     }
   }

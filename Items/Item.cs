@@ -1,5 +1,11 @@
 /*
     Item serves as the base class for specic types of items.
+    Use codes
+    0 Main Click
+    1 Secondary Click
+    2 Reload
+    3 Charge
+    4 Relase
 */
 
 
@@ -34,7 +40,8 @@ public class Item : MonoBehaviour{
   public Actor holder;
   public bool ready = true;
   public bool oneHanded = true; // True if this item can be held in one hand.
-  bool held = false;
+  public bool held = false;
+  public bool ability = false;
   
   
   // Empty base methods
@@ -64,7 +71,7 @@ public class Item : MonoBehaviour{
   }
   
   /* Drop item from actor's hand. */
-  public void Drop(){
+  public virtual void Drop(){
     held = false;
     Rigidbody rb = transform.GetComponent<Rigidbody>();
     if(rb){

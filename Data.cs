@@ -54,6 +54,7 @@ public class Data{
     xr = dat.xr;
     yr = dat.yr;
     zr = dat.zr;
+    itemType = dat.itemType;
     stack = dat.stack;
     stackSize = dat.stackSize;
     lastPos = dat.lastPos;
@@ -66,7 +67,6 @@ public class Data{
     speechTree = dat.speechTree;
     equipSlot = dat.equipSlot;
   }
-   
 
 }
 
