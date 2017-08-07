@@ -15,8 +15,7 @@ public class MeleeCombatAI : AI {
   
   public MeleeCombatAI(Actor actor, AIManager manager) : base(actor, manager){}
   
-  public override IEnumerator Begin(){ 
-    MonoBehaviour.print("Begin Melee");
+  public override IEnumerator Begin(){
     yield return new WaitForSeconds(0f);
     if(manager.target != null){ combatant = manager.target.GetComponent<Actor>(); }
     if(combatant != null){

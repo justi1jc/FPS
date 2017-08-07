@@ -55,7 +55,7 @@ public class LootTable{
         MonoBehaviour.print(dat.displayName + dat.itemType);
         dat.ints[1] = 20; // Give full mag.
         actor.Equip(new Data(dat), true);
-        actor.Equip(new Data(dat), false);
+        actor.Equip(new Data(dat), true);
         dat = GetItem("Weapons/Ammo/Caster_Pistol_Magazine", 20);
         actor.StoreItem(new Data(dat));
         actor.StoreItem(new Data(dat));

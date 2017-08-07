@@ -63,6 +63,9 @@ public class HostileAI : AI{
     if(actor.arms.handItem != null && actor.arms.handItem is Ranged){
       r = (Ranged)actor.arms.handItem;
     }
+    else if(actor.arms.offHandItem != null && actor.arms.offHandItem is Ranged){
+      r = (Ranged)actor.arms.offHandItem;
+    }
     if(r != null && HasAmmo(r)){
       ranged = true;
     }
