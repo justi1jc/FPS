@@ -72,10 +72,10 @@ public class AI{
   public List<Actor> ScanForActors(){
     List<Actor> ret = new List<Actor>();
     Vector3 center = actor.body.transform.position;
-    Vector3 halfExtents = new Vector3(20f, 20f, 20f);
+    Vector3 halfExtents = new Vector3(100f, 20f, 100f);
     Vector3 direction = actor.body.transform.forward;
     Quaternion orientation = actor.body.transform.rotation;
-    float distance = sightDistance;
+    float distance = 0.1f;
     int layerMask = ~(1 << 8);
     RaycastHit[] found = Physics.BoxCastAll(
       center,
@@ -165,4 +165,6 @@ public class AI{
     }
     return false;
   }
+  
+  
 }

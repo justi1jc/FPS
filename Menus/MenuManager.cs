@@ -16,6 +16,7 @@ public class MenuManager: MonoBehaviour{
   public bool split; // True if screen is split.
   public bool right; // True if this screen is on the right side of the sceen.
   public AudioClip[] sounds;
+  public Arena arena;
   
   /* Subclass variables */
   public Inventory contents;
