@@ -12,7 +12,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-[System.Serializable] Prevents null slots.
+[System.Serializable]
 public class PaperDoll{
   public MeshRenderer renderer = null;
   public Actor actor = null;
@@ -30,6 +30,11 @@ public class PaperDoll{
       actor = a;
       if(a.renderer != null){ renderer = a.renderer; }
     }
+    if(renderer != null){ InitRenderer(); }
+  }
+  
+  public void InitRenderer(){
+    
   }
   
   /* Shows the contents of the desired slot. */
@@ -69,10 +74,10 @@ public class PaperDoll{
   /* Returns the total modifier of equipped clothing. */
   public int Modifier(string stat){
     int sum = 0;
-    for(int i = 0; i < layers.Count; i++){
+    for(int i = 0; i < layers.Length; i++){
       Data dat = layers[i];
       if(dat != null){
-        switch(stat.ToUpper){
+        switch(stat.ToUpper()){
           case "INTELLIGENCE": sum+= dat.ints[1]; break;
           case "CHARISMA": sum+= dat.ints[2]; break;
           case "Endurance": sum+= dat.ints[3]; break;

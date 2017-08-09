@@ -13,12 +13,8 @@ public class Equipment : Item{
   public int ranged, melee, unarmed, magic, stealth;
   public int slots;
   
-  public override void Use(int action){
-    if(action == 0){ Consume(); }
-  }
-  
-  public override GetData(){
-    Data dat = baseData();
+  public void GetData(){
+    Data dat = GetBaseData();
     dat.ints.Add(intelligence);// Starts with index 1
     dat.ints.Add(charisma);
     dat.ints.Add(endurance);
