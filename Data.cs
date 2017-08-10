@@ -47,6 +47,7 @@ public class Data{
   }
    
   public Data(Data dat){
+    if(dat == null){ return; }
     readyToRead = dat.readyToRead;
     prefabName = dat.prefabName;
     displayName = dat.displayName;

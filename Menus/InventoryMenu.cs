@@ -83,8 +83,25 @@ public class InventoryMenu : Menu{
       }
     }
     GUI.EndScrollView();
+    
+    if(manager.actor.doll == null){ return; }
+    Data eq = manager.actor.doll.Peek("HEAD");
+    str = "Head : " + (eq != null ? eq.displayName : "" );
+    if(Button(str, XOffset() + 3*iw, 0, iw, ih )){ StoreEquip("HEAD"); }
+    eq = manager.actor.doll.Peek("TORSO");
+    str = "Torso : " + (eq != null ? eq.displayName : "" );
+    if(Button(str, XOffset() + 3*iw, ih, iw, ih )){ StoreEquip("TORSO"); }
+    eq = manager.actor.doll.Peek("LEGS");
+    str = "Torso : " + (eq != null ? eq.displayName : "" );
+    if(Button(str, XOffset() + 3*iw, 2*ih, iw, ih )){ StoreEquip("LEGS"); }
   }
   
+
+  void StoreEquip(string slot){
+    Data dat = manager.actor.doll.Retrieve(slot);
+    if(dat == null){ return; }
+    manager.actor.StoreItem(dat);
+  }
   void Equip(Data dat, bool primary){
     manager.actor.Equip(dat, primary);
   }

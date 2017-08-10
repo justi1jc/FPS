@@ -63,16 +63,15 @@ public class PaperDoll{
      equipment, or null. */
   public Data Equip(Data dat){
     if(dat == null){ return null; }
-    MonoBehaviour.print("Equipped" + dat.displayName);
     string slot = dat.strings[0];
     int index = -1;
     switch(slot.ToUpper()){
-      case "NONE": return dat; break;
       case "HEAD": index = 0; break;
       case "TORSO": index = 1; break;
       case "LEGS": index = 2; break;
     }
-    displaced = new Data(layers[index]);
+    if(index == -1){ return dat; }
+    Data displaced = new Data(layers[index]);
     layers[index] = dat;
     return null;
   }
