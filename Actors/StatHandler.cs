@@ -16,6 +16,7 @@ public class StatHandler{
   public int health, healthMax;
   public int stamina, staminaMax;
   public int mana, manaMax;
+  public int slots;
   
   // ICEPAWS attributes, max value is 10
   public int intelligence, intelligenceMod;
@@ -147,6 +148,32 @@ public class StatHandler{
     int roll = Random.Range(0, 100);
     if(roll < threshold){ return true; }
     return false;
+  }
+  
+  /* Returns a stat without modifiers, or -1*/
+  public int BaseStat(string stat){
+    switch(stat){
+      case "INTELLIGENCE": return intelligence; break;
+      case "CHARISMA": return charisma; break;
+      case "Endurance": return endurance; break;
+      case "PERCEPTION": return perception; break;
+      case "AGILITY": return agility; break;
+      case "WILLPOWER": return willpower; break;
+      case "STRENGTH": return strength; break;
+      case "RANGED": return ranged; break;
+      case "MELEE": return melee; break;
+      case "UNARMED": return unarmed; break;
+      case "MAGIC": return magic; break;
+      case "STEALTH": return stealth; break;
+      case "SLOTS": return slots; break;
+    }
+    return -1;
+  }
+  
+  public int Modifier(string stat){
+    int mod = 0;
+    if(actor.doll != null){ mod += actor.doll.Modifier(stat); }
+    return mod;
   }
   
   /* Applies XP and levels up if possible. */

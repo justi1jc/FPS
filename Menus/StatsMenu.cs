@@ -38,7 +38,9 @@ public class StatsMenu : Menu{
     StatHandler stats = actor.stats;
     
     // Render attribute column
+    PaperDoll doll = manager.actor.doll;
     str = "Intelligence: " + stats.intelligence;
+    if(doll != null){ str += Modifier("INTELLIGENCE"); }
     Box(str,XOffset()+aw, aOff+0, aw, ah);
     
     str = "Charisma: " + stats.charisma;
@@ -103,6 +105,13 @@ public class StatsMenu : Menu{
       }
     }
     
+  }
+  
+  public string Modifier(string stat){
+    int mod = manager.actor.doll.Modifier(stat);
+    if(mod == 0){ return ""; }
+    if(mod < 0){ return "(" + mod + ")"; }
+    return "(+" + mod + ")";
   }
   
   public override void UpdateFocus(){
