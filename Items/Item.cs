@@ -25,6 +25,7 @@ public class Item : MonoBehaviour{
   public const int MELEE = 7;
   public const int RANGED = 8;
   public const int PROJECTILE = 9;
+  public const int EQUIPMENT = 10;
   
   // Base variables
   public string prefabName;

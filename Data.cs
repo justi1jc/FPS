@@ -34,6 +34,7 @@ public class Data{
   public Cell lastPos = null;
   public SpeechTree speechTree;
   public EquipSlot equipSlot;
+  public PaperDoll doll;
   public Data(){
      ints = new List<int>();
      strings = new List<string>();
@@ -42,6 +43,7 @@ public class Data{
      bools = new List<bool>();
      speechTree = null;
      equipSlot = null;
+     doll = null;
   }
    
   public Data(Data dat){
@@ -66,6 +68,7 @@ public class Data{
     bools = dat.bools;
     speechTree = dat.speechTree;
     equipSlot = dat.equipSlot;
+    doll = dat.doll;
   }
 
 }

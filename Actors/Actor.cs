@@ -95,6 +95,7 @@ public class Actor : MonoBehaviour{
   
   // Equipped items and abilities.
   public EquipSlot arms;
+  public PaperDoll doll;
   public bool armsReady = true;
   public HotBar hotbar;
   
@@ -112,6 +113,7 @@ public class Actor : MonoBehaviour{
     body = gameObject;
     inventory = new Inventory();
     arms = new EquipSlot(hand, offHand, this);
+    doll = new PaperDoll(this);
     arms.actor = this;
     hotbar = new HotBar(this);
     stats = new StatHandler(this);
@@ -777,18 +779,15 @@ public class Actor : MonoBehaviour{
   
   public void Equip(Data dat, bool primary){
     if(dat == null){ return; }
-    arms.Equip(dat, primary);
-    int arm = primary ? -2 : -1;
-    hotbar.Update(-3, arm, dat);
-  }
-  
-  /* Selects an item in inventory to equip. */
-  public void Equip(int itemIndex, bool primary){
-    if(itemIndex < 0 || itemIndex >= inventory.slots){ return; }
-    Data dat = inventory.Retrieve(itemIndex);
-    if(dat == null){ return; }
-    hotbar.Update(itemIndex, -4);
-    List<Data> displaced = arms.Equip(dat, primary);
+    List<Data> displaced = new List<Data>();
+    if(dat.itemType == Item.EQUIPMENT){
+      displaced.Add(doll.Equip(dat));
+    }
+    else{
+      int arm = primary ? -2 : -1;
+      hotbar.Update(-3, arm, dat); 
+      displaced.AddRange(arms.Equip(dat, primary));
+    }
     for(int i = 0; i < displaced.Count; i++){
       if(displaced[i] != null){
         displaced[i].stack = inventory.Store(new Data(displaced[i]));
@@ -797,6 +796,15 @@ public class Actor : MonoBehaviour{
         }
       }
     }
+  }
+  
+  /* Selects an item in inventory to equip. */
+  public void Equip(int itemIndex, bool primary){
+    if(itemIndex < 0 || itemIndex >= inventory.slots){ return; }
+    Data dat = inventory.Retrieve(itemIndex);
+    if(dat == null){ return; }
+    hotbar.Update(itemIndex, -3);
+    Equip(dat, primary);
   }
   
   /* Removes number of available ammo, up to max, and returns that number*/
@@ -930,6 +938,7 @@ public class Actor : MonoBehaviour{
     dat.ints.Add(id);
     arms.Save();
     dat.equipSlot = arms;
+    dat.doll = doll;
     dat.inventoryRecord = inventory.GetData();
     dat.lastPos = lastPos;
     dat.strings.Add(speechTreeFile);
@@ -947,6 +956,7 @@ public class Actor : MonoBehaviour{
     bodyRoty = dat.yr;
     int i = 0;
     arms = dat.equipSlot;
+    doll = dat.doll;
     arms.Load(this, hand, offHand);
     inventory.LoadData(dat.inventoryRecord);
     id = dat.ints[i]; i++;

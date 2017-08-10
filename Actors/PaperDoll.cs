@@ -41,33 +41,39 @@ public class PaperDoll{
   public Data Peek(string slot = "NONE"){
     switch(slot.ToUpper()){
       case "NONE": return null; break;
-      case "HEAD": break;
-      case "TORSO": break;
-      case "LEGS": break; 
+      case "HEAD": return layers[0]; break;
+      case "TORSO": return layers[1]; break;
+      case "LEGS": return layers[2]; break; 
     }
     return null;
   }
 
   /* Removes and returns the contents of the desired slot. */
   public Data Retrieve(string slot = "NONE"){
+    Data ret = null;
     switch(slot.ToUpper()){
-      case "NONE": return null; break;
-      case "HEAD": break;
-      case "TORSO": break;
-      case "LEGS": break; 
+      case "HEAD": ret = layers[0]; layers[0] = null; break;
+      case "TORSO": ret = layers[1]; layers[1] = null; break;
+      case "LEGS": ret = layers[2]; layers[2] = null; break; 
     }
-    return null;
+    return ret;
   }
 
   /* Equips equipment to specified slot and returns displaced
      equipment, or null. */
-  public Data Equip(Data dat, string slot = "NONE"){
+  public Data Equip(Data dat){
+    if(dat == null){ return null; }
+    MonoBehaviour.print("Equipped" + dat.displayName);
+    string slot = dat.strings[0];
+    int index = -1;
     switch(slot.ToUpper()){
       case "NONE": return dat; break;
-      case "HEAD": break;
-      case "TORSO": break;
-      case "LEGS": break; 
+      case "HEAD": index = 0; break;
+      case "TORSO": index = 1; break;
+      case "LEGS": index = 2; break;
     }
+    displaced = new Data(layers[index]);
+    layers[index] = dat;
     return null;
   }
   

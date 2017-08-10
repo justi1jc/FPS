@@ -12,8 +12,9 @@ public class Equipment : Item{
   public int intelligence, charisma, endurance, perception, agility, willpower, strength;
   public int ranged, melee, unarmed, magic, stealth;
   public int slots;
+  public string slot; // What slot does this occupy?
   
-  public void GetData(){
+  public override Data GetData(){
     Data dat = GetBaseData();
     dat.ints.Add(intelligence);// Starts with index 1
     dat.ints.Add(charisma);
@@ -30,9 +31,13 @@ public class Equipment : Item{
     dat.ints.Add(stealth);
     
     dat.ints.Add(slots);
+    
+    dat.strings.Add(slot);
+    dat.itemType = Item.EQUIPMENT;
+    return dat;
   }
   
-  public void LoadData(Data dat){
+  public override void LoadData(Data dat){
     LoadBaseData(dat);
     
     intelligence = dat.ints[1];
@@ -49,6 +54,7 @@ public class Equipment : Item{
     magic        = dat.ints[11];
     stealth      = dat.ints[12];
     
-    slots        = dat.ints[13]; 
+    slots        = dat.ints[13];
+    slot = dat.strings[0];
   }
 }

@@ -86,16 +86,7 @@ public class InventoryMenu : Menu{
   }
   
   void Equip(Data dat, bool primary){
-    List<Data> discarded;
-    discarded = arms.Equip(dat, primary);
-    for(int i = 0; i < discarded.Count; i++){
-      int remainder = inv.Store(discarded[i]);
-      if(remainder > 0){ 
-        discarded[i] = new Data(discarded[i]);
-        discarded[i].stack = remainder;
-        manager.actor.DiscardItem(discarded[i]); 
-      }
-    }
+    manager.actor.Equip(dat, primary);
   }
   
   public override void UpdateFocus(){
