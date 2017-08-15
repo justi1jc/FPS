@@ -152,11 +152,6 @@ public class EquipSlot{
   /* Returns the current point ranged weapons should aim at. */
   public Vector3 TrackPoint(){
     Vector3 offset = new Vector3();
-    if(actor != null){
-      if(!actor.stats.StatCheck("PERCEPTION") && !actor.stats.StatCheck("RANGED")){
-        offset = TrackPointOffset();
-      }
-    }
     
     GameObject vision = actor.cam != null ? actor.cam.gameObject : actor.head;
     Vector3 pos = vision.transform.position;
