@@ -67,6 +67,8 @@ public class Actor : MonoBehaviour{
   public float headRotx = 0f;
   public float headRoty= 0f;
   float bodyRoty = 0f;
+  public bool aiming = false;
+  bool doneAiming = true;
 
   //Movement
   public bool ragdoll = false;
@@ -180,6 +182,31 @@ public class Actor : MonoBehaviour{
   public bool GetAnimBool(string boolean){
     if(!anim){ return false; }
     return anim.GetBool(boolean);
+  }
+  
+  
+  /* Toggles between 60 and 30 field of view. */
+  public void ToggleAim(){
+    aiming = !aiming;
+    if(cam != null && doneAiming){
+      StartCoroutine(SetAim());
+    }
+  }
+  
+  /* Transitions between 60 and 30 field of view for camera */
+  public IEnumerator SetAim(){
+    doneAiming = false;
+    int fov = aiming ? 30 : 60;
+    while(cam.fieldOfView != fov){
+      fov = aiming ? 30 : 60;
+      if(cam.fieldOfView > fov){ cam.fieldOfView--; }
+      else if(cam.fieldOfView < fov){ cam.fieldOfView++; }
+      if(cam.fieldOfView > fov){ cam.fieldOfView--; }
+      else if(cam.fieldOfView < fov){ cam.fieldOfView++; }
+      yield return new WaitForSeconds(1f/120f);
+    }
+    doneAiming = true;
+    yield return new WaitForSeconds(0f);
   }
   
   /* Sets the specified trigger if the animator exists. */

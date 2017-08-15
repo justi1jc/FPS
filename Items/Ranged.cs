@@ -20,7 +20,6 @@ public class Ranged : Weapon{
   public string ammunition;
   public bool fullAuto = false;
   public bool hitScan = false; // True if this weapon doesn't use a projectile.
-  public bool aiming = false;
   Transform muzzlePoint; // Source of projectile
   public float recoil; // Muzzle climb of the weapon when fired.
   
@@ -166,11 +165,7 @@ public class Ranged : Weapon{
 
   /* Aims weapon or returns it to the hip.*/
   public void ToggleAim(){
-   	aiming = !aiming;
-   	if(holder != null && holder.cam != null){
-   	  if(aiming){ holder.cam.fieldOfView = 30;}
-   	  else{ holder.cam.fieldOfView = 60; }
-   	}
+    holder.ToggleAim();
   }
 
   public override Data GetData(){
