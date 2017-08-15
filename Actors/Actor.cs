@@ -161,10 +161,7 @@ public class Actor : MonoBehaviour{
       Vector3 rot = new Vector3(headRotx, headRoty, offset);
       spine.transform.rotation = Quaternion.Euler(rot);
     }
-    if(arms != null){ 
-      if(armsReady){ arms.Update(); }
-      armsReady = !armsReady;
-    }
+    if(arms != null){ arms.Update(); }
   }
   
   /* Notifies menu, if it exists. */

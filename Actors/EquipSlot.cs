@@ -20,6 +20,7 @@ public class EquipSlot{
   Data offHandData = null;
   public int handAbility = -1;
   public int offHandAbility = -1;
+  int updateDelay = 0;
 
   public EquipSlot(GameObject hand = null, GameObject offHand = null, Actor actor = null){
     this.hand = hand;
@@ -126,15 +127,19 @@ public class EquipSlot{
   
   /* Called from late update */
   public void Update(){
-    bool lr = handItem != null && handItem is Ranged; 
-    bool rr = offHandItem != null && offHandItem is Ranged;
-    if(lr || rr){
-      Vector3 point = TrackPoint();
-      if(lr){ Track(handItem.gameObject, point); }
-      if(rr){ Track(offHandItem.gameObject, point); }
+    updateDelay++;
+    if(updateDelay > 2){
+      updateDelay = 0;
+      bool lr = handItem != null && handItem is Ranged; 
+      bool rr = offHandItem != null && offHandItem is Ranged;
+      if(lr || rr){
+        Vector3 point = TrackPoint();
+        if(lr){ Track(handItem.gameObject, point); }
+        if(rr){ Track(offHandItem.gameObject, point); }
+      }
     }
   }
-
+  
   /* Get offset for trackpoint. */
   public Vector3 TrackPointOffset(){
     float offset = actor.stats.AccuracyOffset();
