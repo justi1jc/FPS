@@ -85,7 +85,6 @@ public class Actor : MonoBehaviour{
 
   //Animation
   public Animator anim;
-  public MeshRenderer renderer;
   
   //Inventory
   public Inventory inventory;

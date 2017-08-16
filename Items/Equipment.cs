@@ -13,6 +13,8 @@ public class Equipment : Item{
   public int ranged, melee, unarmed, magic, stealth;
   public int slots;
   public string slot; // What slot does this occupy?
+  public string material; // Material for texture-based clothing.
+  public bool textureBased = true; // True for texture-based clothing.
   
   public override Data GetData(){
     Data dat = GetBaseData();
@@ -33,6 +35,7 @@ public class Equipment : Item{
     dat.ints.Add(slots);
     
     dat.strings.Add(slot);
+    dat.strings.Add(material);
     dat.itemType = Item.EQUIPMENT;
     return dat;
   }
@@ -56,5 +59,6 @@ public class Equipment : Item{
     
     slots        = dat.ints[13];
     slot = dat.strings[0];
+    material = dat.strings[1];
   }
 }

@@ -14,13 +14,11 @@ using System.Collections.Generic;
 
 [System.Serializable]
 public class PaperDoll{
-  public MeshRenderer renderer = null;
+  public SkinnedMeshRenderer renderer = null;
+  public Mesh mesh = null;
   public Actor actor = null;
   
-  
   Data[] layers;
-  
-
 
   public PaperDoll(Actor a){
     int layerCount = 3;
@@ -28,14 +26,13 @@ public class PaperDoll{
     for(int i = 0; i < layerCount; i++){ layers[i] = null; }
     if(a != null){
       actor = a;
-      if(a.renderer != null){ renderer = a.renderer; }
+      renderer = a.GetComponentInChildren<SkinnedMeshRenderer>();
+      Material[] materials = new Material[4];
+      materials[0] = renderer.materials[0];
+      renderer.materials = materials;
     }
-    if(renderer != null){ InitRenderer(); }
   }
   
-  public void InitRenderer(){
-    
-  }
   
   /* Shows the contents of the desired slot. */
   public Data Peek(string slot = "NONE"){
@@ -51,11 +48,25 @@ public class PaperDoll{
   /* Removes and returns the contents of the desired slot. */
   public Data Retrieve(string slot = "NONE"){
     Data ret = null;
+    Material[] materials = renderer.materials;
     switch(slot.ToUpper()){
-      case "HEAD": ret = layers[0]; layers[0] = null; break;
-      case "TORSO": ret = layers[1]; layers[1] = null; break;
-      case "LEGS": ret = layers[2]; layers[2] = null; break; 
+      case "HEAD":
+        ret = layers[0];
+        layers[0] = null;
+        materials[1] = null;
+        break;
+      case "TORSO":
+        ret = layers[1];
+        layers[1] = null;
+        materials[2] = null;
+        break;
+      case "LEGS":
+        ret = layers[2];
+        layers[2] = null;
+        materials[3] = null;
+        break; 
     }
+    renderer.materials = materials;
     return ret;
   }
 
@@ -73,6 +84,13 @@ public class PaperDoll{
     if(index == -1){ return dat; }
     Data displaced = new Data(layers[index]);
     layers[index] = dat;
+    if(dat.strings.Count > 1){
+      Material material = Resources.Load(dat.strings[1], typeof(Material)) as Material;
+      Material[] materials = renderer.materials;
+      materials[index+1] = material;
+      renderer.materials = materials;
+    }
+    else{ MonoBehaviour.print(dat.prefabName); }
     return null;
   }
   
