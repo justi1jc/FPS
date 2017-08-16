@@ -216,5 +216,23 @@ public class StatHandler{
     }
   }
   
+  /* Returns the id representation of a faction. */
+  public static int Faction(string factionName){
+    switch(factionName.ToUpper()){
+      case "NONE": return 0; break;
+      case "RED": return 1; break;
+      case "BLUE": return 1; break;
+    }
+    return -1;
+  }
   
+  /* Returns the name of a given faction ID */
+  public static string Faction(int factionID){
+    switch(factionID){
+      case 0: return "None"; break;
+      case 1: return "Red"; break;
+      case 2: return "Blue"; break;
+    }
+    return "Invalid ID";
+  }
 }

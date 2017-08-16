@@ -18,6 +18,9 @@ public class ArenaLobbyMenu : Menu{
   private int bots = 15; // Number of bots;
   private string kit = "RANDOM";
   private int kitId = 0;
+  private bool teams = false;
+  private bool p1red = false; // True if player1 is on the red team.
+  private bool p2red = false; // True if player2 is on the red team.
   
   public ArenaLobbyMenu(MenuManager manager) : base(manager){
     duration = 10;
@@ -48,7 +51,29 @@ public class ArenaLobbyMenu : Menu{
     if(Button("+", iw/2, 6*ih + (ih/2), iw/2, ih/2) && bots < 32){ bots++; }
     
     str = "Kit: " + kit;
-    if(Button(str, 0, 7*ih, iw, ih)){ NextKit(); } 
+    if(Button(str, 0, 7*ih, iw, ih)){ NextKit(); }
+    
+    str = "Teams: " + (teams ? "Yes" : "No");
+    if(Button(str, 0, 8*ih, iw, ih)){ teams = !teams; } 
+    
+    int players = Session.session.playerCount;
+    if(players > 0){
+      str = "Player 1";
+      Box(str, 4*iw, 0, iw, ih/2);
+      if(teams){
+        str = p2red ? "Red team" : "Blue team";
+        if(Button(str, 4*iw, 1+ih/2, iw, ih/2)){ p2red = !p2red; }
+      }
+    }
+    if(players > 1){
+      str = "Player 2";
+      Box(str, 4*iw, ih, iw, ih/2);
+      if(teams){
+        str = p1red ? "Red team" : "Blue team";
+        if(Button(str, 4*iw, ih/2, iw, ih/2)){ p1red = !p1red; }
+      }
+    }
+    
   }
   
   /* Cycles through available kits. */
@@ -97,6 +122,9 @@ public class ArenaLobbyMenu : Menu{
     dat.ints.Add(bots);
     dat.bools.Add(respawns);
     dat.strings.Add(kit);
+    dat.bools.Add(teams);
+    dat.bools.Add(p1red);
+    dat.bools.Add(p2red);
     Session.session.arenaData = dat;
     
     manager.Change("NONE");

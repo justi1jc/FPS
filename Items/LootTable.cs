@@ -52,7 +52,6 @@ public class LootTable{
       break;
       case "GUNRUNNER": // Dual pistols
         dat = GetItem("Weapons/Caster_Pistol");
-        MonoBehaviour.print(dat.displayName + dat.itemType);
         dat.ints[1] = 20; // Give full mag.
         actor.Equip(new Data(dat), true);
         actor.Equip(new Data(dat), true);
@@ -95,6 +94,17 @@ public class LootTable{
       case "ASSASSIN":
         dat = GetItem("Weapons/Knife");
         actor.StoreItem(new Data(dat));
+        break;
+      case "RED":
+        dat = GetItem("Equipment/Red_Shirt");
+        actor.Equip(new Data(dat));
+        break;
+      case "BLUE":
+        dat = GetItem("Equipment/Blue_Shirt");
+        actor.Equip(new Data(dat));
+        break;
+      default:
+        MonoBehaviour.print("Invalid kit selection:" + name.ToUpper());
         break;
     }
   }

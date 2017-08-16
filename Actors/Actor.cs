@@ -143,8 +143,7 @@ public class Actor : MonoBehaviour{
   /* Cycle loop. Runs once per frame. */
   void Update(){
     UpdateReach();
-    UpdateFall();
-    
+    UpdateFall(); 
   }
   
   /* Listens for faling. */
@@ -800,7 +799,7 @@ public class Actor : MonoBehaviour{
   /* Drops an item from actor's arms.. */
   public void Drop(bool primary = true){ arms.Drop(); }
   
-  public void Equip(Data dat, bool primary){
+  public void Equip(Data dat, bool primary = true){
     if(dat == null){ return; }
     List<Data> displaced = new List<Data>();
     if(dat.itemType == Item.EQUIPMENT){
