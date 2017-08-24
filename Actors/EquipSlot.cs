@@ -180,7 +180,15 @@ public class EquipSlot{
     Transform t = weapon.transform;
     t.rotation = Quaternion.LookRotation(trackPoint - t.position);
   }
-
+  
+  /* Returns true if both hands are used on single item. */
+  public bool Single(){
+    bool l = handItem != null;
+    bool r = offHandItem != null;
+    bool ret = l != r;
+    return ret;
+  }
+  
   /* Equips an item to the desired slot, returning any items displaced. */
   public List<Data> Equip(Data dat, bool primary = true){
     if(actor != null){

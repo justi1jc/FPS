@@ -447,12 +447,35 @@ public class Actor : MonoBehaviour{
       menu.Change("INVENTORY");
       SetMenuOpen(true); 
     }
-    if(rt > 0 && !rt_down){ Use(0); rt_down = true;}    // Use right
-    else if(rt > 0){ Use(3); }                          // Hold right
-    if(rt == 0 && rt_down){ rt_down = false; Use(5); }  // Release right
-    if(lt > 0 && !lt_down){ Use(1); lt_down = true;}    // Use left
-    else if(lt > 0){ Use(4); }                          // Hold left
-    if(lt == 0 && lt_down){ lt_down = false; Use(6); }  // Release left
+    bool single = arms.Single(); 
+    if(rt > 0 && !rt_down){ // Use Right
+      if(single){ Use(1); print("Use 1"); }
+      else{ Use(0); print("Use 0"); } 
+      rt_down = true;
+    }
+    else if(rt > 0){ // Hold Right
+      if(single){ Use(4); }
+      else{ Use(3); } 
+    }
+    if(rt == 0 && rt_down){ // Release Right
+      rt_down = false; 
+      if(single){ Use(6); }
+      else{ Use(5); } 
+    }
+    if(lt > 0 && !lt_down){ // Use Left
+      if(arms.Single()){ Use(0); }
+      else{ Use(1); } 
+      lt_down = true;
+    }    // Use left
+    else if(lt > 0){ // Hold left 
+      if(single){ Use(3); }
+      else{ Use(4); }
+    }
+    if(lt == 0 && lt_down){ // Release left 
+      lt_down = false; 
+      if(single){ Use(5); }
+      else{ Use(6); } 
+    }  
     
     if(Input.GetKeyDown(Session.LSC)){ ToggleCrouch(); }
     if(Input.GetKeyDown(Session.RB)){ Drop(); }
