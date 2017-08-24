@@ -15,6 +15,19 @@ public class Equipment : Item{
   public string slot; // What slot does this occupy?
   public string material; // Material for texture-based clothing.
   public bool textureBased = true; // True for texture-based clothing.
+  public Color mainColor; // Color for this Equipment.
+  
+  public void Start(){
+    SetColor(mainColor);
+  }
+  
+  public void SetColor(Color color){
+    mainColor = color;
+    if(color == null){ 
+      mainColor = new Color(0f, 0f, 0f, 1f);
+      MonoBehaviour.print("Color missing: " + displayName);
+    }
+  }
   
   public override Data GetData(){
     Data dat = GetBaseData();
@@ -34,9 +47,15 @@ public class Equipment : Item{
     
     dat.ints.Add(slots);
     
+    dat.floats.Add(mainColor.r);
+    dat.floats.Add(mainColor.g);
+    dat.floats.Add(mainColor.b);
+    dat.floats.Add(mainColor.a);
+    
     dat.strings.Add(slot);
     dat.strings.Add(material);
     dat.itemType = Item.EQUIPMENT;
+    
     return dat;
   }
   
@@ -58,6 +77,14 @@ public class Equipment : Item{
     stealth      = dat.ints[12];
     
     slots        = dat.ints[13];
+    
+    float r = dat.floats[0];
+    float g = dat.floats[1];
+    float b = dat.floats[2];
+    float a = dat.floats[3];
+    Color color = new Color(r, g, b, a);
+    SetColor(color);
+    
     slot = dat.strings[0];
     material = dat.strings[1];
   }

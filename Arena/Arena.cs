@@ -142,16 +142,17 @@ public class Arena : MonoBehaviour{
       scores.Add(0);
       names.Add("Bot " + (i+1));
     }
+    if(teams){ factions.Add(p1red ? 1 : 2); }
     SpawnPlayer("player1", bots);
     scores.Add(0);
     names.Add("Player1");
-    if(teams){ factions.Add(p1red ? 1 : 2); }
+    
     
     if(Session.session.playerCount > 1){ 
+      if(teams){ factions.Add(p2red ? 1 : 2); }
       SpawnPlayer("player2", bots + 1);
       scores.Add(0);
       names.Add("Player2");
-      if(teams){ factions.Add(p2red ? 1 : 2); }
     }
   }
 

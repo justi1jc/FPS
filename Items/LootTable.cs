@@ -96,11 +96,25 @@ public class LootTable{
         actor.StoreItem(new Data(dat));
         break;
       case "RED":
-        dat = GetItem("Equipment/Red_Shirt");
+        dat = GetItem("Equipment/Shirt");
+        
+        //Set shirt color to red
+        dat.floats[0] = 1f; // r
+        dat.floats[1] = 0f; // g
+        dat.floats[2] = 0f; // b
+        dat.floats[3] = 1f; // a
+        
         actor.Equip(new Data(dat));
         break;
       case "BLUE":
-        dat = GetItem("Equipment/Blue_Shirt");
+        dat = GetItem("Equipment/Shirt");
+        
+        //Set shirt color to blue
+        dat.floats[0] = 0f; // r
+        dat.floats[1] = 0f; // g
+        dat.floats[2] = 1f; // b
+        dat.floats[3] = 1f; // a
+        
         actor.Equip(new Data(dat));
         break;
       default:

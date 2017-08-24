@@ -86,11 +86,21 @@ public class PaperDoll{
     layers[index] = dat;
     if(dat.strings.Count > 1){
       Material material = Resources.Load(dat.strings[1], typeof(Material)) as Material;
+      material = new Material(material);
+      if(dat.floats.Count > 3){
+        float r = dat.floats[0];
+        float g = dat.floats[1];
+        float b = dat.floats[2];
+        float a = dat.floats[3];
+        material.color = new Color(r, g, b, a);
+      }
+      else{ MonoBehaviour.print(dat.prefabName + " lacks a color."); }
       Material[] materials = renderer.materials;
       materials[index+1] = material;
       renderer.materials = materials;
+      MonoBehaviour.print(material + " set to " + material.color);
     }
-    else{ MonoBehaviour.print(dat.prefabName); }
+    else{ MonoBehaviour.print(dat.prefabName + " lacks a material."); }
     return null;
   }
   
