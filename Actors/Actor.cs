@@ -133,10 +133,9 @@ public class Actor : MonoBehaviour{
     Collider[] colliders = GetComponentsInChildren<Collider>();
     Collider col = GetComponent<Collider>();
     foreach(Collider c in colliders){
-      if(c != col){ 
+      if(c != col){
         Physics.IgnoreCollision(c, col); 
-        c.isTrigger = false;
-        if(c.gameObject == hand || c.gameObject == offHand){ c.isTrigger = true; }
+        c.isTrigger = true;
       }
     }
     init = true;

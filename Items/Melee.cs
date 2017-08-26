@@ -38,7 +38,7 @@ public class Melee : Weapon{
   
   /* Exert force and damage onto target.  */
   void Strike(Collider col){
-    if(col.gameObject == null){ return; }
+    if(col.gameObject == null){ MonoBehaviour.print("Gameobject missing"); return; }
     if(damageActive){
       if(holder != null){
         if(holder.GetRoot(col.gameObject.transform) == holder.transform.transform){
