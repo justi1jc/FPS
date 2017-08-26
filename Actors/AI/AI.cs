@@ -36,7 +36,7 @@ public class AI{
     pos = new Vector3(pos.x, 0f, pos.z);
     Vector3 dest = new Vector3();
     if(target){ dest = target.body.transform.position; }
-    dest = new Vector3(dest.x, 0f, dest.z); 
+    dest = new Vector3(dest.x, 0f, dest.z);
     while(Vector3.Distance(dest, pos) > dist && CanSee(target.body) && !manager.paused){
       if(!target){ yield break; }
       Vector3 move = dest - pos;
@@ -76,7 +76,7 @@ public class AI{
     Vector3 direction = actor.body.transform.forward;
     Quaternion orientation = actor.body.transform.rotation;
     float distance = 0.1f;
-    int layerMask = ~(1 << 8);
+    int layerMask = LayerMask.GetMask("Person");
     RaycastHit[] found = Physics.BoxCastAll(
       center,
       halfExtents,
@@ -89,14 +89,11 @@ public class AI{
     for(int i = 0; i < found.Length; i++){
       Actor a = found[i].collider.gameObject.GetComponent<Actor>();
       if(a && a != actor && ret.IndexOf(a) == -1){
-        int dist = (int)Vector3.Distance(
-          actor.body.transform.position,
-          a.body.transform.position
-        );
-        if(a.head && CanSee(actor.body)){
+        if(a){
           bool check = a.stats != null 
             && !a.stats.StatCheck("STEALTH", actor.stats.perception);
           if(check){ ret.Add(a); }
+          else{ MonoBehaviour.print("Check failed"); }
         }
       }
     }
@@ -151,7 +148,7 @@ public class AI{
       Vector3 direction = target.transform.position - actor.head.transform.position;
       RaycastHit hit;
       float maxDistance = sightDistance;
-      int layerMask = ~(1 << 8);
+      int layerMask = LayerMask.GetMask("Person");
       if(Physics.Raycast(
           origin,
           direction,

@@ -4,6 +4,8 @@
         An actor script controls a character's stats,
         model, input/AI, inventory, and speech.
 
+      Note: Player's root collider(The one ignored by bodyparts) should be on layer 9.
+
         GameObject structure:
       Body| // Parent to others. Rigidbody, collider, Actor
           |

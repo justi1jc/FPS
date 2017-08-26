@@ -33,7 +33,7 @@ public class MeleeCombatAI : AI {
   public IEnumerator Follow(){
     while(follow && combatant != null){
       yield return actor.StartCoroutine( Pursue(combatant, 0f));
-      yield return new WaitForSeconds(0.5f);
+      yield return new WaitForSeconds(0.1f);
     }
   }
   

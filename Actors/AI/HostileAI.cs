@@ -26,7 +26,7 @@ public class HostileAI : AI{
       if(manager.sighted.Count > 0){ 
         manager.target = manager.sighted[0].gameObject;
       }
-      yield return new WaitForSeconds(0.1f);
+      yield return new WaitForSeconds(1f);
     }
     yield return new WaitForSeconds(0);
   }

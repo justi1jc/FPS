@@ -61,16 +61,16 @@ public class ArenaLobbyMenu : Menu{
       str = "Player 1";
       Box(str, 4*iw, 0, iw, ih/2);
       if(teams){
-        str = p2red ? "Red team" : "Blue team";
-        if(Button(str, 4*iw, 1+ih/2, iw, ih/2)){ p2red = !p2red; }
+        str = p1red ? "Red team" : "Blue team";
+        if(Button(str, 4*iw, ih/2, iw, ih/2)){ p1red = !p1red; }
       }
     }
     if(players > 1){
       str = "Player 2";
       Box(str, 4*iw, ih, iw, ih/2);
       if(teams){
-        str = p1red ? "Red team" : "Blue team";
-        if(Button(str, 4*iw, ih/2, iw, ih/2)){ p1red = !p1red; }
+        str = p2red ? "Red team" : "Blue team";
+        if(Button(str, 4*iw, ih + (ih/2), iw, ih/2)){ p2red = !p2red; }
       }
     }
     
