@@ -93,7 +93,7 @@ public class LootTable{
         break;
       case "ASSASSIN":
         dat = GetItem("Weapons/Knife");
-        actor.StoreItem(new Data(dat));
+        actor.Equip(new Data(dat), true);
         break;
       case "RED":
         dat = GetItem("Equipment/Shirt");
