@@ -149,6 +149,14 @@ public class Menu{
     if(button <= START && button >= A){ Input(button); }
   }
   
+  public virtual void RenderCursor(){
+    int x = (int)UnityEngine.Input.mousePosition.x;
+    int y = Screen.height - (int)UnityEngine.Input.mousePosition.y;
+    int s = 25;  // Size of cursor
+    int h = s/2; // Half-size
+    Box("X", x-h, y-h, s, s);
+  }
+  
   /* Plays sound through manager. */
   public void Sound(int i){
     if(manager != null){ manager.Sound(i); }

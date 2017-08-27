@@ -19,6 +19,8 @@ public class ArenaHUDMenu : Menu{
     else{ RenderEndGame(); }
   }
   
+  public override void RenderCursor(){}
+  
   public void RenderHUD(){
     int ih = Height()/10;
     int iw = Width()/5;

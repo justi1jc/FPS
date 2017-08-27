@@ -235,6 +235,7 @@ public class Session : MonoBehaviour {
      Warning: Is hardcoded with project-specific variables.
   */
   public void CreateMenu(){
+    Cursor.visible = false;
     string MENU_BUILDING = "House";
     string MENU_INTERIOR = "Entrance";
     mainMenu = true;

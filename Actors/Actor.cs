@@ -283,7 +283,6 @@ public class Actor : MonoBehaviour{
     if(playerNumber == 1){
       if(!val){ Cursor.lockState = CursorLockMode.Locked; }
       else{ Cursor.lockState = CursorLockMode.None; }
-      Cursor.visible = !val;
     }
   }
   

@@ -19,6 +19,8 @@ public class HUDMenu : Menu{
     else{ RenderDead(); }
   }
   
+  public override void RenderCursor(){}
+  
   void RenderAlive(){
     Actor actor = manager.actor;
     if(actor == null || actor.stats == null){ return; }
