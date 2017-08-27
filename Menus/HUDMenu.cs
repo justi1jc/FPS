@@ -70,6 +70,13 @@ public class HUDMenu : Menu{
   
   public override void UpdateFocus(){}
   
-  public override void Input(int button){}
+  public override void Input(int button){
+    MonoBehaviour.print("Pressed " + button);
+    if(button == START){ 
+      manager.Change("OPTIONS");
+      if(manager.actor != null){ manager.actor.SetMenuOpen(true); }
+    }
+  
+  }
   
 }

@@ -330,6 +330,8 @@ public class Actor : MonoBehaviour{
   
   /* Handle keyboard input when not paused. */
   void KeyboardActorInput(){
+    if(Input.GetKeyDown(KeyCode.Escape)){ menu.Press(Menu.START); }
+    if(stats.dead){ return; }
     //Basic movement
     bool shift = Input.GetKey(KeyCode.LeftShift);
     bool walk = false;
@@ -366,10 +368,6 @@ public class Actor : MonoBehaviour{
     Turn(new Vector3(rotx, roty, 0f));
     
     //Special use keys
-    if(Input.GetKeyDown(KeyCode.Escape)){ 
-      menu.Change("OPTIONS");
-      SetMenuOpen(true); 
-    }
     if(Input.GetKeyDown(KeyCode.R)){ Use(2); }
     if(Input.GetKeyDown(KeyCode.Q)){ Drop(); }
     if(Input.GetKeyDown(KeyCode.E)){ Interact(-2); }
@@ -416,6 +414,8 @@ public class Actor : MonoBehaviour{
   
   /* Handles controller input when not paused. */
   void ControllerActorInput(){
+    if(Input.GetKeyDown(Session.START) && menu){ menu.Press(Menu.START); }
+    if(stats.dead){ return; }
     //Get axis input
     float xl = Input.GetAxis(Session.XL);
     float yl = Input.GetAxis(Session.YL);
@@ -436,10 +436,6 @@ public class Actor : MonoBehaviour{
     Turn(new Vector3(yr, xr, 0f));
     
     //Buttons
-    if(Input.GetKeyDown(Session.START) && menu){ 
-      menu.Change("OPTIONS"); 
-      SetMenuOpen(true);
-    }
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(Session.B)){ Use(7); }
     if(Input.GetKeyDown(Session.X)){ Interact(); }
@@ -740,6 +736,7 @@ public class Actor : MonoBehaviour{
   
   /* Applies damage from attack. Ignores active weapon. */
   public void ReceiveDamage(int damage, GameObject weapon){
+    if(stats.dead){ return; }
     if(weapon == null || GetRoot(weapon.transform) == transform){ return; }
     if(stats.health < 1 || (weapon == arms.handItem && damage > 0)){ return; }
     stats.DrainCondition("HEALTH", damage);
@@ -764,7 +761,7 @@ public class Actor : MonoBehaviour{
   /* Enter dead state, warding experience to the killder. */
   public void Die(GameObject weapon){
     stats.dead = true;
-    StopAllCoroutines();
+    //StopAllCoroutines();
     Ragdoll(true);
     arms.Drop();
     arms.Drop();

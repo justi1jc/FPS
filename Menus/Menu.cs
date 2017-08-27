@@ -19,6 +19,7 @@ public class Menu{
   public const int Y     = 7;
   public const int RT    = 8;
   public const int LT    = 9;
+  public const int START = 10;
   
   public MenuManager manager;
   public List<string> notifications = new List<string>(); // Notifications that must be displayed.
@@ -145,7 +146,7 @@ public class Menu{
         UpdateFocus();
         break;
     }
-    if(button <= LT && button >= A){ Input(button); }
+    if(button <= START && button >= A){ Input(button); }
   }
   
   /* Plays sound through manager. */

@@ -98,6 +98,7 @@ public class Arena : MonoBehaviour{
     HUDMenu playerHUD = null;
     if(player.playerNumber > 0 && player.playerNumber < 5){
       MenuManager playerMenu = player.menu;
+      playerMenu.Change("HUD");
       if(playerMenu){ playerHUD = (HUDMenu)playerMenu.active; }
     }
     if(respawns){
