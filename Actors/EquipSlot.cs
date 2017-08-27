@@ -65,6 +65,10 @@ public class EquipSlot{
       item.Drop();
       if(handItem == item){ handItem = null; }
       else if(offHandItem == item){ offHandItem = null; }
+      if(offHandItem != null || offHandAbility > 0){ 
+        actor.SetAnimBool("twoHanded", true);
+      }
+      else{ actor.SetAnimBool("twoHanded", false); }
       return;
     }
     if(handItem != null){
