@@ -45,7 +45,7 @@ public class InventoryMenu : Menu{
     Actor actor = manager.actor;
     if(actor == null || inv == null || arms == null){ return; }
     
-    
+    RenderEquipment(XOffset() + iw, (Height()/2)-(5*ih));
     if(arms.handItem != null){
       str = "Left" + arms.handItem.GetInfo();
       y = (Height()/2) - (2*ih);
@@ -83,7 +83,6 @@ public class InventoryMenu : Menu{
       }
     }
     GUI.EndScrollView();
-    RenderEquipment(XOffset() + 3*iw, 0);
   }
   
   
@@ -94,13 +93,13 @@ public class InventoryMenu : Menu{
     string str;
     Data eq = manager.actor.doll.Peek("HEAD");
     str = "Head : " + (eq != null ? eq.displayName : "" );
-    if(Button(str, x, y, iw, ih )){ StoreEquip("HEAD"); }
+    if(Button(str, x, y, iw, ih, 0, -5 )){ StoreEquip("HEAD"); }
     eq = manager.actor.doll.Peek("TORSO");
     str = "Torso : " + (eq != null ? eq.displayName : "" );
-    if(Button(str, x, y + ih, iw, ih )){ StoreEquip("TORSO"); }
+    if(Button(str, x, y + ih, iw, ih, 0, -4)){ StoreEquip("TORSO"); }
     eq = manager.actor.doll.Peek("LEGS");
     str = "Legs : " + (eq != null ? eq.displayName : "" );
-    if(Button(str, x, y + 2*ih, iw, ih )){ StoreEquip("LEGS"); }
+    if(Button(str, x, y + 2*ih, iw, ih, 0, -3)){ StoreEquip("LEGS"); }
   }
 
   void StoreEquip(string slot){
