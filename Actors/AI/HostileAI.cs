@@ -23,12 +23,23 @@ public class HostileAI : AI{
   IEnumerator FindEnemy(){
     while(manager.target == null){
       manager.sighted = ScanForActors();
-      if(manager.sighted.Count > 0){ 
-        manager.target = manager.sighted[0].gameObject;
-      }
+      if(manager.sighted.Count > 0){ SelectTarget(); }
       yield return new WaitForSeconds(1f);
     }
     yield return new WaitForSeconds(0);
+  }
+  
+  void SelectTarget(){
+    Actor a = manager.sighted[0];
+    float leastDistance = Vector3.Distance(manager.sighted[0].transform.position, actor.transform.position);
+    for(int i = 1; i < manager.sighted.Count; i++){
+      float dist = Vector3.Distance(manager.sighted[i].transform.position, actor.transform.position);
+      if(dist < leastDistance){
+        leastDistance = dist;
+        a = manager.sighted[i];
+      }
+    }
+    manager.target = a.gameObject;
   }
   
   /* Returns true if this ranged weapon has ammo in it, or in the actor's
