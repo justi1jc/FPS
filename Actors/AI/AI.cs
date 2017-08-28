@@ -37,6 +37,7 @@ public class AI{
     Vector3 dest = new Vector3();
     if(target){ dest = target.body.transform.position; }
     dest = new Vector3(dest.x, 0f, dest.z);
+    manager.actor.SetAnimBool("walking", true);
     while(Vector3.Distance(dest, pos) > dist && CanSee(target.body) && !manager.paused){
       if(!target){ yield break; }
       Vector3 move = dest - pos;
@@ -47,6 +48,7 @@ public class AI{
       if(target){ dest = target.body.transform.position; }
       dest = new Vector3(dest.x, 0f, dest.z);
     }
+    manager.actor.SetAnimBool("walking", false);
     pursuing = false;
     yield break;
   }
@@ -57,6 +59,7 @@ public class AI{
     Vector3 dest = new Vector3(destination.x, 0f, destination.z);
     Vector3 pos = actor.body.transform.position;
     pos = new Vector3(pos.x, 0f, pos.z);
+    manager.actor.SetAnimBool("walking", true);
     while(Vector3.Distance(pos, dest) > 2f && !manager.paused){
       Vector3 move = dest - pos;
       actor.AxisMove(move.x, move.z);
@@ -64,6 +67,7 @@ public class AI{
       pos = actor.body.transform.position;
       pos = new Vector3(pos.x, 0f, pos.z);
     }
+    manager.actor.SetAnimBool("walking", false);
     moving = false;
     yield break;
   }

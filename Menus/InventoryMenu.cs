@@ -18,7 +18,7 @@ public class InventoryMenu : Menu{
       inv = null; 
       arms = null;
     }
-    syMin = -1;
+    syMin = -5;
     sxMax = 3;
     sxMin = -1;
   }
@@ -31,7 +31,7 @@ public class InventoryMenu : Menu{
     string str = "";
     
     // Display Navigation buttons
-    if(Button("Abilities", XOffset() + Width() - iw, Height()/2, iw, ih, 1, 0)){
+    if(Button("Abilities", XOffset() + Width() - iw, Height()/2, iw, ih, 3, 0)){
       manager.Change("ABILITY");
       Sound(0);
     }
@@ -73,29 +73,35 @@ public class InventoryMenu : Menu{
         Equip(inv.Retrieve(i), true);
         Sound(0); 
       }
-      if(Button("OffHand", iw, ih * i, iw/2, ih, i, 1)){ 
+      if(Button("OffHand", iw, ih * i, iw/2, ih, 1, i)){ 
         Equip(inv.Retrieve(i), false);
         Sound(0);
       }
-      if(Button("Drop", iw + iw/2, ih * i, iw/2, ih, i, 2)){ 
+      if(Button("Drop", iw + iw/2, ih * i, iw/2, ih, 2, i)){ 
         actor.DiscardItem(i);
         Sound(0);
       }
     }
     GUI.EndScrollView();
-    
-    if(manager.actor.doll == null){ return; }
-    Data eq = manager.actor.doll.Peek("HEAD");
-    str = "Head : " + (eq != null ? eq.displayName : "" );
-    if(Button(str, XOffset() + 3*iw, 0, iw, ih )){ StoreEquip("HEAD"); }
-    eq = manager.actor.doll.Peek("TORSO");
-    str = "Torso : " + (eq != null ? eq.displayName : "" );
-    if(Button(str, XOffset() + 3*iw, ih, iw, ih )){ StoreEquip("TORSO"); }
-    eq = manager.actor.doll.Peek("LEGS");
-    str = "Torso : " + (eq != null ? eq.displayName : "" );
-    if(Button(str, XOffset() + 3*iw, 2*ih, iw, ih )){ StoreEquip("LEGS"); }
+    RenderEquipment(XOffset() + 3*iw, 0);
   }
   
+  
+  void RenderEquipment(int x, int y){
+    if(manager.actor.doll == null){ return; }
+    int iw = Width()/4;
+    int ih = Height()/20;
+    string str;
+    Data eq = manager.actor.doll.Peek("HEAD");
+    str = "Head : " + (eq != null ? eq.displayName : "" );
+    if(Button(str, x, y, iw, ih )){ StoreEquip("HEAD"); }
+    eq = manager.actor.doll.Peek("TORSO");
+    str = "Torso : " + (eq != null ? eq.displayName : "" );
+    if(Button(str, x, y + ih, iw, ih )){ StoreEquip("TORSO"); }
+    eq = manager.actor.doll.Peek("LEGS");
+    str = "Legs : " + (eq != null ? eq.displayName : "" );
+    if(Button(str, x, y + 2*ih, iw, ih )){ StoreEquip("LEGS"); }
+  }
 
   void StoreEquip(string slot){
     Data dat = manager.actor.doll.Retrieve(slot);
@@ -108,6 +114,10 @@ public class InventoryMenu : Menu{
   
   public override void UpdateFocus(){
     if(inv != null){ syMax = inv.slots-1; }
+    if(sy > 0){
+      if(sx < 0){ sx = 0; }
+      else if(sx > 2){ sx = 2; }
+    }
     SecondaryBounds();
   }
   
@@ -121,6 +131,9 @@ public class InventoryMenu : Menu{
         if(button == A){ manager.Change("QUEST"); }
         break;
       case 0:
+        if(sy == -5){ StoreEquipment("HEAD"); }
+        if(sy == -4){ StoreEquipment("TORSO"); }
+        if(sy == -3){ StoreEquipment("LEGS"); }
         if(sy == -2){ UnEquip(true); }
         else if(sy == -1){ UnEquip(false); }
         else if(sy < inv.slots){
@@ -156,11 +169,20 @@ public class InventoryMenu : Menu{
   /* Return to inventory or drop. */
   public void UnEquip(bool primary){
     Data displaced = arms.Remove(primary);
-    int remainder = inv.Store(displaced);
+    int remainder = inv.Store(new Data(displaced));
     if(remainder > 0){
-      displaced = new Data(displaced);
       displaced.stack = remainder;
       manager.actor.DiscardItem(displaced); 
+    }
+  }
+  
+  public void StoreEquipment(string slot = "NONE"){
+    Data displaced = manager.actor.doll.Retrieve(slot);
+    if(displaced == null){ return; }
+    int remainder = inv.Store(new Data(displaced));
+    if(remainder > 0){
+      displaced.stack = remainder;
+      manager.actor.DiscardItem(displaced);
     }
   }
 }
