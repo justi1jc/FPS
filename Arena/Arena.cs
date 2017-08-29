@@ -92,6 +92,10 @@ public class Arena : MonoBehaviour{
   /* Displays respawn timer and respawns the player at its completion. */
   IEnumerator RespawnPlayer(Actor player){
     if(player.killerId != -1){
+      if(teams && factions[player.killerId] == player.stats.faction){ 
+        scores[player.killerId]--;
+      }
+      else if( teams){ scores[player.killerId]++; }
       scores[player.killerId]++;
     }
     int respawnTimer = 5;
@@ -116,10 +120,21 @@ public class Arena : MonoBehaviour{
       players.Remove(player);
       player.SetMenuOpen(true);
       if(players.Count <= 1){ EndGame(); }
+      else if(!respawns && OneTeamLeft()){ EndGame(); }
     }
     yield return new WaitForSeconds(0f);
   }
-
+  
+  bool OneTeamLeft(){
+    int reds = 0;
+    int blues = 0;
+    foreach(Actor player in players){
+      if(player.stats.faction == StatHandler.Faction("BLUE") && player.Alive()){ blues++; }
+      else if(player.Alive()){ reds++; }
+    }
+    return ((reds == 0) || (blues == 0));
+  }
+  
   /* Populate spawnpoints from child transforms. */
   void PopulateSpawnPoints(){
     spawnPoints = new List<Transform>();
@@ -181,6 +196,10 @@ public class Arena : MonoBehaviour{
           actor.stats.faction = factions[id];
           string shirt = (factions[id] == 1) ? "RED" : "BLUE";
           LootTable.Kit(shirt, ref actor);
+        }
+        else{
+          LootTable.Kit("PANTS", ref actor);
+          actor.stats.faction = 1;
         }
       }
     }

@@ -105,6 +105,7 @@ public class LootTable{
         dat.floats[3] = 1f; // a
         
         actor.Equip(new Data(dat));
+        Kit("PANTS", ref actor);
         break;
       case "BLUE":
         dat = GetItem("Equipment/Shirt");
@@ -115,6 +116,11 @@ public class LootTable{
         dat.floats[2] = 1f; // b
         dat.floats[3] = 1f; // a
         
+        actor.Equip(new Data(dat));
+        Kit("PANTS", ref actor);
+        break;
+      case "PANTS":
+        dat = GetItem("Equipment/Pants");
         actor.Equip(new Data(dat));
         break;
       default:
