@@ -32,14 +32,17 @@ public class HostileAI : AI{
   void SelectTarget(){
     Actor a = manager.sighted[0];
     float leastDistance = Vector3.Distance(manager.sighted[0].transform.position, actor.transform.position);
+    bool isEnemy;
     for(int i = 1; i < manager.sighted.Count; i++){
       float dist = Vector3.Distance(manager.sighted[i].transform.position, actor.transform.position);
-      if(dist < leastDistance && manager.sighted[i].Alive()){
+      isEnemy = actor.stats.Enemy(manager.sighted[i]);
+      if(dist < leastDistance && manager.sighted[i].Alive() && isEnemy){
         leastDistance = dist;
         a = manager.sighted[i];
       }
     }
-    manager.target = a.Alive() ? a.gameObject : null;
+    isEnemy = actor.stats.Enemy(a);
+    manager.target = (a.Alive() && isEnemy)? a.gameObject : null;
   }
   
   /* Returns true if this ranged weapon has ammo in it, or in the actor's

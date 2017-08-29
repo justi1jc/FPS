@@ -98,7 +98,6 @@ public class PaperDoll{
       Material[] materials = renderer.materials;
       materials[index+1] = material;
       renderer.materials = materials;
-      MonoBehaviour.print(material + " set to " + material.color);
     }
     else{ MonoBehaviour.print(dat.prefabName + " lacks a material."); }
     return null;

@@ -217,6 +217,14 @@ public class StatHandler{
     }
   }
   
+  /* Returns true if the selected actor is an enemy of this one. */
+  public bool Enemy(Actor a){
+    if(faction == 0){ return false; }
+    if(faction == 1){ return true; }
+    if( faction == a.stats.faction){ return false; }
+    return true;
+  }
+  
   /* Returns the id representation of a faction. */
   public static int Faction(string factionName){
     switch(factionName.ToUpper()){
