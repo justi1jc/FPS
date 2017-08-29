@@ -38,8 +38,7 @@ public class AI{
     if(target){ dest = target.body.transform.position; }
     dest = new Vector3(dest.x, 0f, dest.z);
     manager.actor.SetAnimBool("walking", true);
-    while(Vector3.Distance(dest, pos) > dist && CanSee(target.body) && !manager.paused){
-      if(!target){ yield break; }
+    while(target != null && Vector3.Distance(dest, pos) > dist && CanSee(target.body) && !manager.paused){
       Vector3 move = dest - pos;
       actor.AxisMove(move.x, move.z);
       yield return new WaitForSeconds(0.01f);
@@ -121,6 +120,10 @@ public class AI{
       float y = desiredEulers.y - actualEulers.y;
       if(Mathf.Abs(x) > 180){ x *= -1f; }
       if(Mathf.Abs(y) > 180){ y *= -1f; }
+      if(x < 0 && actor.headRoty < -59f ||
+         x > 0 && actor.headRoty > 59f){
+         //x = 0f;
+      }
       actor.Turn(new Vector3(x, y, 0f).normalized);
       yield return new WaitForSeconds(turnSpeed);
       if(!target){ yield break; }

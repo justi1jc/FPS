@@ -18,13 +18,18 @@ public class MeleeCombatAI : AI {
   public override IEnumerator Begin(){
     yield return new WaitForSeconds(0f);
     if(manager.target != null){ combatant = manager.target.GetComponent<Actor>(); }
-    if(combatant != null){
+    if(combatant != null && combatant.Alive()){
       actor.StartCoroutine(Follow());
       actor.StartCoroutine(Attack());
       actor.StartCoroutine(Train());
     }
     while(combatant != null && combatant.Alive()){ yield return new WaitForSeconds(1f); }
     follow = attack = trained = false;
+    actor.StopCoroutine("Pursue");
+    actor.StopCoroutine("AimAt");
+    actor.StopCoroutine("MoveTo");
+    manager.target = null;
+    manager.actor.SetAnimBool("walking", false);
     if(actor.defaultAI != ""){ manager.Change(actor.defaultAI); }
     else{ manager.Change("IDLE"); }
   }

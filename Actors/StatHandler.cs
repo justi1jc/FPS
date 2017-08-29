@@ -56,6 +56,7 @@ public class StatHandler{
   
   public StatHandler(Actor actor){
     this.actor = actor;
+    dead = false;
     abilities = new List<int>();
     intelligence = charisma = endurance = perception = agility = willpower = strength = 1;
     ranged = melee = unarmed = magic = stealth = skillPoints = xp = 0;

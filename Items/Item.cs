@@ -89,7 +89,7 @@ public class Item : MonoBehaviour{
   /* Play a sound, if possible. */
   public void Sound(int i){
     if(i < 0 || sounds == null || i >= sounds.Length || sounds[i] == null){ 
-      MonoBehaviour.print("Invalid sound:" + i); 
+      //MonoBehaviour.print("Invalid sound:" + i); 
       return; 
     }
     float vol = PlayerPrefs.HasKey("masterVolume") ? PlayerPrefs.GetFloat("masterVolume") : 1f; 
