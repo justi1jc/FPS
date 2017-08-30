@@ -26,7 +26,7 @@ public class MainMenu : Menu{
       manager.Change("ARENALOBBY");
       Sound(0);
     }
-    
+    /*
     switch(subMenu){
       case 0:
         str = "New Game";
@@ -48,6 +48,7 @@ public class MainMenu : Menu{
       manager.Change("LOAD");
       Sound(0);
     }
+    */
     
     str = "Quit";
     if(Button(str, x, 3*ih, 4*iw, ih, 0, 3 )){ 

@@ -84,7 +84,7 @@ public class Session : MonoBehaviour {
   
   /* Updates cameras and associates player with appropriate HoloDeck. */
   public void RegisterPlayer(Actor actor, int player, Camera cam){
-    print("Player " + player + " registered");
+    //print("Player " + player + " registered");
     if(player == 1){ cam1 = cam; }
     else if(player == 2){ cam2 = cam; }
     UpdateCameras();
@@ -205,7 +205,7 @@ public class Session : MonoBehaviour {
   /* Sets up each player's Menu */
   void UpdateCameras(){
     bool split = playerCount == 2;
-    print("PlayerCount:" + playerCount);
+    //print("PlayerCount:" + playerCount);
     if(split){
       if(cam1 != null){ cam1.rect = new Rect(0f, 0f, 0.5f, 1f); }
       if(cam2 != null){ cam2.rect = new Rect(0.5f, 0, 0.5f, 1f); }

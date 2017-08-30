@@ -18,33 +18,6 @@ public class HostileAI : AI{
     Equip();
   }
   
-  
-  /* Locates a new enemy. */
-  IEnumerator FindEnemy(){
-    while(manager.target == null){
-      manager.sighted = ScanForActors();
-      if(manager.sighted.Count > 0){ SelectTarget(); }
-      yield return new WaitForSeconds(1f);
-    }
-    yield return new WaitForSeconds(0);
-  }
-  
-  void SelectTarget(){
-    Actor a = manager.sighted[0];
-    float leastDistance = Vector3.Distance(manager.sighted[0].transform.position, actor.transform.position);
-    bool isEnemy;
-    for(int i = 1; i < manager.sighted.Count; i++){
-      float dist = Vector3.Distance(manager.sighted[i].transform.position, actor.transform.position);
-      isEnemy = actor.stats.Enemy(manager.sighted[i]);
-      if(dist < leastDistance && manager.sighted[i].Alive() && isEnemy){
-        leastDistance = dist;
-        a = manager.sighted[i];
-      }
-    }
-    isEnemy = actor.stats.Enemy(a);
-    manager.target = (a.Alive() && isEnemy)? a.gameObject : null;
-  }
-  
   /* Returns true if this ranged weapon has ammo in it, or in the actor's
      inventory. */
   public bool HasAmmo(Ranged r){

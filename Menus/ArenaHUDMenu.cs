@@ -19,7 +19,14 @@ public class ArenaHUDMenu : Menu{
     else{ RenderEndGame(); }
   }
   
-  public override void RenderCursor(){}
+  public override void RenderCursor(){
+    if(subMenu == 0){ return; }
+    int x = (int)UnityEngine.Input.mousePosition.x;
+    int y = Screen.height - (int)UnityEngine.Input.mousePosition.y;
+    int s = 25;  // Size of cursor
+    int h = s/2; // Half-size
+    Box("X", x-h, y-h, s, s);
+  }
   
   public void RenderHUD(){
     int ih = Height()/10;

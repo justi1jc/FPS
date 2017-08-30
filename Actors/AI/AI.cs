@@ -28,6 +28,17 @@ public class AI{
   
   public virtual void ReceiveDamage(int damage, Actor damager){}
   
+    /* Locates a new enemy. */
+  public IEnumerator FindEnemy(){
+    while(manager.target == null){
+      manager.sighted = ScanForActors();
+      if(manager.sighted.Count > 0){ SelectTarget(); }
+      yield return new WaitForSeconds(1f);
+    }
+    yield return new WaitForSeconds(0);
+  }
+  
+  
   /* Move directly at target. */
   public IEnumerator Pursue(Actor target, float dist = 3f){
     if(!target){ yield break; }
@@ -101,6 +112,22 @@ public class AI{
       }
     }
     return ret;
+  }
+  
+  public void SelectTarget(){
+    Actor a = manager.sighted[0];
+    float leastDistance = Vector3.Distance(manager.sighted[0].transform.position, actor.transform.position);
+    bool isEnemy;
+    for(int i = 1; i < manager.sighted.Count; i++){
+      float dist = Vector3.Distance(manager.sighted[i].transform.position, actor.transform.position);
+      isEnemy = actor.stats.Enemy(manager.sighted[i]);
+      if(dist < leastDistance && manager.sighted[i].Alive() && isEnemy){
+        leastDistance = dist;
+        a = manager.sighted[i];
+      }
+    }
+    isEnemy = actor.stats.Enemy(a);
+    manager.target = (a.Alive() && isEnemy)? a.gameObject : null;
   }
   
   

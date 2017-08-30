@@ -51,6 +51,9 @@ public class AIManager{
       case "RANGEDCOMBAT":
         ai = (AI)new RangedCombatAI(actor, this);
         break;
+      case "ROAMING":
+        ai = (AI)new RoamingAI(actor, this);
+        break;
     }
   }
 }
