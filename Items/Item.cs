@@ -124,6 +124,8 @@ public class Item : MonoBehaviour{
     return dat;
   }
   
+  public virtual void ReceiveDamage(int damage, GameObject weapon){}
+  
   /* Loads the base variables from a Data */
   public void LoadBaseData(Data dat){
     transform.position = new Vector3(dat.x, dat.y, dat.z);

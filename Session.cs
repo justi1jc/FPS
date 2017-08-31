@@ -72,6 +72,7 @@ public class Session : MonoBehaviour {
   HoloCell menuCell;
   Camera sesCam;
   public MenuManager sesMenu;
+  JukeBox jukeBox;
   
   void Awake(){
     DontDestroyOnLoad(gameObject);
@@ -79,6 +80,7 @@ public class Session : MonoBehaviour {
     else{ Session.session = this; }
     decks = new List<HoloDeck>();
     quests = new List<Quest>();
+    jukeBox = new JukeBox(this, gameObject);
     CreateMenu();
   }
   
@@ -239,6 +241,7 @@ public class Session : MonoBehaviour {
     string MENU_BUILDING = "House";
     string MENU_INTERIOR = "Entrance";
     mainMenu = true;
+    jukeBox.Play("Menu");
     GameObject go = new GameObject();
     go.transform.position = transform.position + new Vector3(10f, 50f, 0f);
     go.transform.LookAt(transform);
@@ -270,6 +273,7 @@ public class Session : MonoBehaviour {
   
   /* Destroys Camera and Menu attached to gameObject */
   public void DestroyMenu(){
+    jukeBox.Stop();
     Camera cam = sesCam;
     sesCam = null;
     Destroy(cam.gameObject);
