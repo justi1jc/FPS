@@ -71,6 +71,12 @@ public class Menu{
     GUI.Box(new Rect(posx, posy, scalex, scaley), text);
   }
   
+  /* Overloaded convenience method to render box with specified color. */
+  public void Box(string text, int posx, int posy, int scalex, int scaley, Color color){
+    GUI.color = color;
+    GUI.Box(new Rect(posx, posy, scalex, scaley), text);
+  }
+  
   /* Convenience method to render button and return if it's been clicked. */
   public bool Button(
     string text,
