@@ -30,17 +30,21 @@ public class JukeBox{
     playList = "Ambient";
     this.parent = parent;
     this.gameObject = gameObject;
-    audioSource = gameObject.AddComponent<AudioSource>();
   }
   
   public void Play(string playList = "Ambient"){
     playList = playList;
+    if(audioSource == null){
+      audioSource = gameObject.AddComponent<AudioSource>();
+    }
     parent.StopCoroutine("PlayFolder");
     parent.StartCoroutine(PlayFolder());
+    MonoBehaviour.print("Playing");
   }
   
   public void Stop(){
     parent.StopCoroutine("PlayFolder");
+    GameObject.Destroy(audioSource);
   }
   
   IEnumerator PlayFolder(){
@@ -65,7 +69,7 @@ public class JukeBox{
         audioSource.volume = PlayerPrefs.GetFloat("masterVolume");
       }
       audioSource.Play();
-      while(audioSource.isPlaying){
+      while(audioSource != null && audioSource.isPlaying){
         yield return new WaitForSeconds(1f);
       }
       yield return new WaitForSeconds(1f);

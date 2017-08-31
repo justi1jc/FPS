@@ -117,6 +117,7 @@ public class ArenaLobbyMenu : Menu{
   
   /* Set arena options to session and begin arena mode */
   public void StartArena(){
+    Session.session.DestroyMenu();
     Data dat = new Data();
     dat.ints.Add(duration);
     dat.ints.Add(bots);
