@@ -43,7 +43,6 @@ public class ArenaHUDMenu : Menu{
       SceneManager.LoadScene("Arena_Empty");
     }
     if(Button("Main Menu", 0, Height()-ih, iw, 2*ih)){ 
-      Session.session.sesMenu.Change("MAIN");
       SceneManager.LoadScene("Main");
     }
     for(int i = 0; i < manager.arena.scores.Count; i++){

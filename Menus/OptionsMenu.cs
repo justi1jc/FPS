@@ -72,7 +72,8 @@ public class OptionsMenu : Menu{
     
     str = "Main Menu";
     if(Button(str, x, ih, 2*iw, ih, 0, 1)){
-      Session.session.sesMenu.Change("MAIN");
+      //Session.session.CreateMenu();
+      //Session.session.sesMenu.Change("MAIN");
       SceneManager.LoadScene("Main");
     }
     
