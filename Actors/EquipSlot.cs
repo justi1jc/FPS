@@ -293,8 +293,7 @@ public class EquipSlot{
   public void Use(int use){
     Melee melee = null;
     if(use == 2){
-      if(handItem != null){ handItem.Use(2); }
-      if(offHandItem != null){ offHandItem.Use(2); }
+      if(offHandItem != null && handItem == null){ offHandItem.Use(2); }
     }
     
     if(offHandItem != null && (!offHandItem.oneHanded || handItem == null && handAbility < 1)){

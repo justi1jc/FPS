@@ -149,11 +149,16 @@ public class Ranged : Weapon{
     holder = null;
   }
   
-  /* Reloading process. */
+  /* Reloading process. Note: A bool is used by the animation state machine due
+    to the buggy behaviour of triggers applying to multiple layers. */
   public IEnumerator Reload(){
+    ready = false;
     Sound(1);
+    if(holder != null){ holder.SetAnimBool("reload", true); }
     yield return new WaitForSeconds(reloadDelay);
+    if(holder != null){ holder.SetAnimBool("reload", false); }
     LoadAmmo();
+    ready = true;
   }
 
   /* Adds ammo to weapon externally */
