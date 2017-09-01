@@ -64,13 +64,14 @@ public class AI{
   }
   
   /* Moves in straight line to a destination. */
-  public IEnumerator MoveTo(Vector3 destination){
+  public IEnumerator MoveTo(Vector3 destination, float dist = 3f){
     moving = true;
     Vector3 dest = new Vector3(destination.x, 0f, destination.z);
     Vector3 pos = actor.body.transform.position;
     pos = new Vector3(pos.x, 0f, pos.z);
     manager.actor.SetAnimBool("walking", true);
-    while(Vector3.Distance(pos, dest) > 2f && !manager.paused){
+    while(Vector3.Distance(pos, dest) > dist && !manager.paused){
+      
       Vector3 move = dest - pos;
       actor.AxisMove(move.x, move.z);
       yield return new WaitForSeconds(0.01f);

@@ -53,9 +53,12 @@ public class MainMenu : Menu{
     string str;
     string attr = " Kevin MacLeod (incompetech.com)\n";
     attr += "Licensed under Creative Commons: By Attribution 3.0 License\n";
-    attr += "http://creativecommons.org/licenses/by/3.0/\n";
+    attr += "http://creativecommons.org/licenses/by/3.0/\n\n\n";
     
-    str = "Programming, textures, modeling, animation: Blukat Studios\n\n\n\n\n"; 
+    
+    str = "Programming: James Justice\n";
+    str += "Textures: James Justice and Jessica Smith\n";
+    str += "Models and animations: James Justice\n\n";
     str += "Music:\n\n";
     str += "\"Burnt Spirit\"" + attr;
     str += "\"Crossing the Chasm\"" + attr; 

@@ -12,21 +12,19 @@ using System.Collections.Generic;
 public class RoamingAI : AI{
   bool wandering = true;
   public RoamingAI(Actor actor, AIManager manager) : base(actor, manager){
-    actor.StartCoroutine(Begin());
-    
   }
   
   public override IEnumerator Begin(){
     actor.StartCoroutine(Wander());
     yield return actor.StartCoroutine(FindEnemy());
-    
+    actor.StopAllCoroutines();
+    manager.Change("HOSTILE");
     yield break;
   }
   
   public IEnumerator Wander(){
     while(wandering){
       Vector3 dest = FindDest();
-      MonoBehaviour.print("Moving to " + dest);
       yield return actor.StartCoroutine(MoveTo(dest));
     }
     yield return new WaitForSeconds(0f);
