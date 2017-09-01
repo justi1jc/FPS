@@ -127,7 +127,6 @@ public class ArenaLobbyMenu : Menu{
     dat.bools.Add(p1red);
     dat.bools.Add(p2red);
     Session.session.arenaData = dat;
-    
     manager.Change("NONE");
     Sound(0);
     SceneManager.LoadScene(map);

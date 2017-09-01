@@ -152,7 +152,8 @@ public class Arena : MonoBehaviour{
     for(int i = 0; i < bots; i++){ 
       if(teams){
         int faction = (i<(bots/2)) ? 1 : 2;
-        factions.Add(faction);
+        //factions.Add(faction);
+        factions.Add(1);
       }
       SpawnPlayer("Enemy", i);
       scores.Add(0);

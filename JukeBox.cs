@@ -18,30 +18,36 @@ public class JukeBox{
   List<AudioClip> combat;
   List<AudioClip> menu;
   MonoBehaviour parent;
-  GameObject gameObject;
+  public GameObject gameObject;
   AudioSource audioSource;
   
   public string playList;
   
-  public JukeBox(MonoBehaviour parent, GameObject gameObject){
+  public JukeBox(MonoBehaviour parent){
     playList = "Ambient";
     this.parent = parent;
-    this.gameObject = gameObject;
+    this.gameObject = new GameObject();
   }
   
   public void Play(string playList = "Ambient"){
     playList = playList;
+    if(gameObject == null){
+      gameObject = new GameObject();
+    }
     if(audioSource == null){
       audioSource = gameObject.AddComponent<AudioSource>();
     }
+    MonoBehaviour.print(audioSource);
     parent.StopCoroutine("PlayFolder");
     parent.StartCoroutine(PlayFolder());
-    MonoBehaviour.print("Playing");
   }
   
   public void Stop(){
-    parent.StopCoroutine("PlayFolder");
-    GameObject.Destroy(audioSource);
+    parent.StopAllCoroutines();
+    if(audioSource != null){
+      audioSource.Pause();
+      GameObject.Destroy(gameObject);
+    }
   }
   
   IEnumerator PlayFolder(){
@@ -63,7 +69,6 @@ public class JukeBox{
     while(audioSource != null && songs.Count > 0){
       int song = UnityEngine.Random.Range(0, songs.Count);
       audioSource.clip = songs[song];
-      MonoBehaviour.print("Playing " + songs[song]);
       audioSource.volume = 1f;
       if(PlayerPrefs.HasKey("masterVolume")){
         audioSource.volume = PlayerPrefs.GetFloat("masterVolume");

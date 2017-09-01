@@ -72,7 +72,7 @@ public class Session : MonoBehaviour {
   HoloCell menuCell;
   Camera sesCam;
   public MenuManager sesMenu;
-  JukeBox jukeBox;
+  public JukeBox jukeBox;
   
   void Awake(){
     DontDestroyOnLoad(gameObject);
@@ -80,7 +80,7 @@ public class Session : MonoBehaviour {
     else{ Session.session = this; }
     decks = new List<HoloDeck>();
     quests = new List<Quest>();
-    jukeBox = new JukeBox(this, gameObject);
+    if(jukeBox == null){ jukeBox = new JukeBox(this); }
     CreateMenu();
   }
   
@@ -241,13 +241,13 @@ public class Session : MonoBehaviour {
     string MENU_BUILDING = "House";
     string MENU_INTERIOR = "Entrance";
     mainMenu = true;
-    jukeBox.Play("Menu");
     GameObject go = new GameObject();
     go.transform.position = transform.position + new Vector3(10f, 50f, 0f);
     go.transform.LookAt(transform);
     sesCam = go.AddComponent(typeof(Camera)) as Camera;
     sesMenu = go.AddComponent(typeof(MenuManager)) as MenuManager;
     sesMenu.Change("MAIN");
+    jukeBox.Play("Menu");
     menuCell = new HoloCell(transform.position);
     map = Cartographer.GetMaster();
     Cell c = GetMasterInterior(MENU_BUILDING, MENU_INTERIOR);
@@ -273,13 +273,15 @@ public class Session : MonoBehaviour {
   
   /* Destroys Camera and Menu attached to gameObject */
   public void DestroyMenu(){
-    jukeBox.Stop();
+    if(jukeBox != null){ jukeBox.Stop(); }
     Camera cam = sesCam;
     sesCam = null;
-    Destroy(cam.gameObject);
+    if(cam != null){ Destroy(cam.gameObject); }
     mainMenu = false;
-    menuCell.Clear();
-    menuCell = null;
+    if(menuCell != null){
+      menuCell.Clear();
+      menuCell = null;
+    }
   }
   
   /* Clears all HoloDecks and then removes them. */
