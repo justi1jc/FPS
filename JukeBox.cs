@@ -24,9 +24,6 @@ public class JukeBox{
   public string playList;
   
   public JukeBox(MonoBehaviour parent, GameObject gameObject){
-    ambient = GetSongs("Ambient");
-    combat = GetSongs("Combat");
-    menu = GetSongs("Menu");
     playList = "Ambient";
     this.parent = parent;
     this.gameObject = gameObject;
@@ -51,12 +48,15 @@ public class JukeBox{
     List<AudioClip> songs = new List<AudioClip>();
     switch(playList){
       case "Ambient":
-          songs = ambient;
+        if(ambient == null){ ambient = GetSongs("Ambient"); }
+        songs = ambient;
         break;
       case "Combat":
+        if(combat == null){ combat = GetSongs("Combat"); }
         songs = combat;
         break;
       case "Menu":
+        if(menu == null){ menu = GetSongs("Menu"); }
         songs = menu;
         break;
     }
@@ -83,6 +83,7 @@ public class JukeBox{
     
     List<AudioClip> clips = new List<AudioClip>();
     string path = Application.dataPath + "/Resources/Music/" + folder;
+    if(!Directory.Exists(path)){ MonoBehaviour.print(path + " Doesn't exist"); return clips; }
     DirectoryInfo dir = new DirectoryInfo(path);
     FileInfo[] info = dir.GetFiles("*.*");
     foreach(FileInfo f in info){
