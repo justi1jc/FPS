@@ -4,6 +4,8 @@
         An actor script controls a character's stats,
         model, input/AI, inventory, and speech.
 
+      Note: Player's root collider(The one ignored by bodyparts) should be on layer 9.
+
         GameObject structure:
       Body| // Parent to others. Rigidbody, collider, Actor
           |
@@ -67,6 +69,8 @@ public class Actor : MonoBehaviour{
   public float headRotx = 0f;
   public float headRoty= 0f;
   float bodyRoty = 0f;
+  public bool aiming = false;
+  bool doneAiming = true;
 
   //Movement
   public bool ragdoll = false;
@@ -94,6 +98,7 @@ public class Actor : MonoBehaviour{
   
   // Equipped items and abilities.
   public EquipSlot arms;
+  public PaperDoll doll;
   public bool armsReady = true;
   public HotBar hotbar;
   
@@ -111,6 +116,7 @@ public class Actor : MonoBehaviour{
     body = gameObject;
     inventory = new Inventory();
     arms = new EquipSlot(hand, offHand, this);
+    doll = new PaperDoll(this);
     arms.actor = this;
     hotbar = new HotBar(this);
     stats = new StatHandler(this);
@@ -127,10 +133,9 @@ public class Actor : MonoBehaviour{
     Collider[] colliders = GetComponentsInChildren<Collider>();
     Collider col = GetComponent<Collider>();
     foreach(Collider c in colliders){
-      if(c != col){ 
+      if(c != col){
         Physics.IgnoreCollision(c, col); 
-        c.isTrigger = false;
-        if(c.gameObject == hand || c.gameObject == offHand){ c.isTrigger = true; }
+        c.isTrigger = true;
       }
     }
     init = true;
@@ -139,8 +144,7 @@ public class Actor : MonoBehaviour{
   /* Cycle loop. Runs once per frame. */
   void Update(){
     UpdateReach();
-    UpdateFall();
-    
+    UpdateFall(); 
   }
   
   /* Listens for faling. */
@@ -156,10 +160,7 @@ public class Actor : MonoBehaviour{
       Vector3 rot = new Vector3(headRotx, headRoty, offset);
       spine.transform.rotation = Quaternion.Euler(rot);
     }
-    if(arms != null){ 
-      if(armsReady){ arms.Update(); }
-      armsReady = !armsReady;
-    }
+    if(arms != null){ arms.Update(); }
   }
   
   /* Notifies menu, if it exists. */
@@ -177,6 +178,31 @@ public class Actor : MonoBehaviour{
   public bool GetAnimBool(string boolean){
     if(!anim){ return false; }
     return anim.GetBool(boolean);
+  }
+  
+  
+  /* Toggles between 60 and 30 field of view. */
+  public void ToggleAim(){
+    aiming = !aiming;
+    if(cam != null && doneAiming){
+      StartCoroutine(SetAim());
+    }
+  }
+  
+  /* Transitions between 60 and 30 field of view for camera */
+  public IEnumerator SetAim(){
+    doneAiming = false;
+    int fov = aiming ? 30 : 60;
+    while(cam.fieldOfView != fov){
+      fov = aiming ? 30 : 60;
+      if(cam.fieldOfView > fov){ cam.fieldOfView--; }
+      else if(cam.fieldOfView < fov){ cam.fieldOfView++; }
+      if(cam.fieldOfView > fov){ cam.fieldOfView--; }
+      else if(cam.fieldOfView < fov){ cam.fieldOfView++; }
+      yield return new WaitForSeconds(1f/120f);
+    }
+    doneAiming = true;
+    yield return new WaitForSeconds(0f);
   }
   
   /* Sets the specified trigger if the animator exists. */
@@ -257,7 +283,6 @@ public class Actor : MonoBehaviour{
     if(playerNumber == 1){
       if(!val){ Cursor.lockState = CursorLockMode.Locked; }
       else{ Cursor.lockState = CursorLockMode.None; }
-      Cursor.visible = !val;
     }
   }
   
@@ -304,6 +329,8 @@ public class Actor : MonoBehaviour{
   
   /* Handle keyboard input when not paused. */
   void KeyboardActorInput(){
+    if(Input.GetKeyDown(KeyCode.Escape)){ menu.Press(Menu.START); }
+    if(stats.dead){ return; }
     //Basic movement
     bool shift = Input.GetKey(KeyCode.LeftShift);
     bool walk = false;
@@ -340,10 +367,6 @@ public class Actor : MonoBehaviour{
     Turn(new Vector3(rotx, roty, 0f));
     
     //Special use keys
-    if(Input.GetKeyDown(KeyCode.Escape)){ 
-      menu.Change("OPTIONS");
-      SetMenuOpen(true); 
-    }
     if(Input.GetKeyDown(KeyCode.R)){ Use(2); }
     if(Input.GetKeyDown(KeyCode.Q)){ Drop(); }
     if(Input.GetKeyDown(KeyCode.E)){ Interact(-2); }
@@ -390,6 +413,8 @@ public class Actor : MonoBehaviour{
   
   /* Handles controller input when not paused. */
   void ControllerActorInput(){
+    if(Input.GetKeyDown(Session.START) && menu){ menu.Press(Menu.START); }
+    if(stats.dead){ return; }
     //Get axis input
     float xl = Input.GetAxis(Session.XL);
     float yl = Input.GetAxis(Session.YL);
@@ -410,10 +435,6 @@ public class Actor : MonoBehaviour{
     Turn(new Vector3(yr, xr, 0f));
     
     //Buttons
-    if(Input.GetKeyDown(Session.START) && menu){ 
-      menu.Change("OPTIONS"); 
-      SetMenuOpen(true);
-    }
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(Session.B)){ Use(7); }
     if(Input.GetKeyDown(Session.X)){ Interact(); }
@@ -422,12 +443,35 @@ public class Actor : MonoBehaviour{
       menu.Change("INVENTORY");
       SetMenuOpen(true); 
     }
-    if(rt > 0 && !rt_down){ Use(0); rt_down = true;}    // Use right
-    else if(rt > 0){ Use(3); }                          // Hold right
-    if(rt == 0 && rt_down){ rt_down = false; Use(5); }  // Release right
-    if(lt > 0 && !lt_down){ Use(1); lt_down = true;}    // Use left
-    else if(lt > 0){ Use(4); }                          // Hold left
-    if(lt == 0 && lt_down){ lt_down = false; Use(6); }  // Release left
+    bool single = arms.Single(); 
+    if(rt > 0 && !rt_down){ // Use Right
+      if(single){ Use(1); print("Use 1"); }
+      else{ Use(0); print("Use 0"); } 
+      rt_down = true;
+    }
+    else if(rt > 0){ // Hold Right
+      if(single){ Use(4); }
+      else{ Use(3); } 
+    }
+    if(rt == 0 && rt_down){ // Release Right
+      rt_down = false; 
+      if(single){ Use(6); }
+      else{ Use(5); } 
+    }
+    if(lt > 0 && !lt_down){ // Use Left
+      if(arms.Single()){ Use(0); }
+      else{ Use(1); } 
+      lt_down = true;
+    }    // Use left
+    else if(lt > 0){ // Hold left 
+      if(single){ Use(3); }
+      else{ Use(4); }
+    }
+    if(lt == 0 && lt_down){ // Release left 
+      lt_down = false; 
+      if(single){ Use(5); }
+      else{ Use(6); } 
+    }  
     
     if(Input.GetKeyDown(Session.LSC)){ ToggleCrouch(); }
     if(Input.GetKeyDown(Session.RB)){ Drop(); }
@@ -691,6 +735,7 @@ public class Actor : MonoBehaviour{
   
   /* Applies damage from attack. Ignores active weapon. */
   public void ReceiveDamage(int damage, GameObject weapon){
+    if(stats.dead){ return; }
     if(weapon == null || GetRoot(weapon.transform) == transform){ return; }
     if(stats.health < 1 || (weapon == arms.handItem && damage > 0)){ return; }
     stats.DrainCondition("HEALTH", damage);
@@ -715,7 +760,7 @@ public class Actor : MonoBehaviour{
   /* Enter dead state, warding experience to the killder. */
   public void Die(GameObject weapon){
     stats.dead = true;
-    StopAllCoroutines();
+    //StopAllCoroutines();
     Ragdoll(true);
     arms.Drop();
     arms.Drop();
@@ -774,20 +819,17 @@ public class Actor : MonoBehaviour{
   /* Drops an item from actor's arms.. */
   public void Drop(bool primary = true){ arms.Drop(); }
   
-  public void Equip(Data dat, bool primary){
+  public void Equip(Data dat, bool primary = true){
     if(dat == null){ return; }
-    arms.Equip(dat, primary);
-    int arm = primary ? -2 : -1;
-    hotbar.Update(-3, arm, dat);
-  }
-  
-  /* Selects an item in inventory to equip. */
-  public void Equip(int itemIndex, bool primary){
-    if(itemIndex < 0 || itemIndex >= inventory.slots){ return; }
-    Data dat = inventory.Retrieve(itemIndex);
-    if(dat == null){ return; }
-    hotbar.Update(itemIndex, -4);
-    List<Data> displaced = arms.Equip(dat, primary);
+    List<Data> displaced = new List<Data>();
+    if(dat.itemType == Item.EQUIPMENT){
+      displaced.Add(doll.Equip(dat));
+    }
+    else{
+      int arm = primary ? -2 : -1;
+      hotbar.Update(-3, arm, dat); 
+      displaced.AddRange(arms.Equip(dat, primary));
+    }
     for(int i = 0; i < displaced.Count; i++){
       if(displaced[i] != null){
         displaced[i].stack = inventory.Store(new Data(displaced[i]));
@@ -796,6 +838,15 @@ public class Actor : MonoBehaviour{
         }
       }
     }
+  }
+  
+  /* Selects an item in inventory to equip. */
+  public void Equip(int itemIndex, bool primary){
+    if(itemIndex < 0 || itemIndex >= inventory.slots){ return; }
+    Data dat = inventory.Retrieve(itemIndex);
+    if(dat == null){ return; }
+    hotbar.Update(itemIndex, -3);
+    Equip(dat, primary);
   }
   
   /* Removes number of available ammo, up to max, and returns that number*/
@@ -929,6 +980,7 @@ public class Actor : MonoBehaviour{
     dat.ints.Add(id);
     arms.Save();
     dat.equipSlot = arms;
+    dat.doll = doll;
     dat.inventoryRecord = inventory.GetData();
     dat.lastPos = lastPos;
     dat.strings.Add(speechTreeFile);
@@ -946,6 +998,7 @@ public class Actor : MonoBehaviour{
     bodyRoty = dat.yr;
     int i = 0;
     arms = dat.equipSlot;
+    doll = dat.doll;
     arms.Load(this, hand, offHand);
     inventory.LoadData(dat.inventoryRecord);
     id = dat.ints[i]; i++;

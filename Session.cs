@@ -72,6 +72,7 @@ public class Session : MonoBehaviour {
   HoloCell menuCell;
   Camera sesCam;
   public MenuManager sesMenu;
+  public JukeBox jukeBox;
   
   void Awake(){
     DontDestroyOnLoad(gameObject);
@@ -79,12 +80,13 @@ public class Session : MonoBehaviour {
     else{ Session.session = this; }
     decks = new List<HoloDeck>();
     quests = new List<Quest>();
+    if(jukeBox == null){ jukeBox = new JukeBox(this); }
     CreateMenu();
   }
   
   /* Updates cameras and associates player with appropriate HoloDeck. */
   public void RegisterPlayer(Actor actor, int player, Camera cam){
-    print("Player " + player + " registered");
+    //print("Player " + player + " registered");
     if(player == 1){ cam1 = cam; }
     else if(player == 2){ cam2 = cam; }
     UpdateCameras();
@@ -205,7 +207,7 @@ public class Session : MonoBehaviour {
   /* Sets up each player's Menu */
   void UpdateCameras(){
     bool split = playerCount == 2;
-    print("PlayerCount:" + playerCount);
+    //print("PlayerCount:" + playerCount);
     if(split){
       if(cam1 != null){ cam1.rect = new Rect(0f, 0f, 0.5f, 1f); }
       if(cam2 != null){ cam2.rect = new Rect(0.5f, 0, 0.5f, 1f); }
@@ -235,6 +237,7 @@ public class Session : MonoBehaviour {
      Warning: Is hardcoded with project-specific variables.
   */
   public void CreateMenu(){
+    Cursor.visible = false;
     string MENU_BUILDING = "House";
     string MENU_INTERIOR = "Entrance";
     mainMenu = true;
@@ -244,6 +247,7 @@ public class Session : MonoBehaviour {
     sesCam = go.AddComponent(typeof(Camera)) as Camera;
     sesMenu = go.AddComponent(typeof(MenuManager)) as MenuManager;
     sesMenu.Change("MAIN");
+    jukeBox.Play("Menu");
     menuCell = new HoloCell(transform.position);
     map = Cartographer.GetMaster();
     Cell c = GetMasterInterior(MENU_BUILDING, MENU_INTERIOR);
@@ -269,12 +273,15 @@ public class Session : MonoBehaviour {
   
   /* Destroys Camera and Menu attached to gameObject */
   public void DestroyMenu(){
+    if(jukeBox != null){ jukeBox.Stop(); }
     Camera cam = sesCam;
     sesCam = null;
-    Destroy(cam.gameObject);
+    if(cam != null){ Destroy(cam.gameObject); }
     mainMenu = false;
-    menuCell.Clear();
-    menuCell = null;
+    if(menuCell != null){
+      menuCell.Clear();
+      menuCell = null;
+    }
   }
   
   /* Clears all HoloDecks and then removes them. */

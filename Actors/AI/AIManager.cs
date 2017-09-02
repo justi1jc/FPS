@@ -12,6 +12,7 @@ using System.Collections.Generic;
 [System.Serializable]
 public class AIManager{
   public bool paused = false;
+  public string currentBehaviour;
   public AI ai;
   public Actor actor;
   [System.NonSerialized]public GameObject target;
@@ -33,6 +34,7 @@ public class AIManager{
   
   /* Swaps the active ai script */
   public void Change(string behaviour){
+    currentBehaviour = behaviour;
     switch(behaviour.ToUpper()){
       case "PASSIVE": // Inert AI
         ai = new AI(actor, this);
@@ -48,6 +50,9 @@ public class AIManager{
         break;
       case "RANGEDCOMBAT":
         ai = (AI)new RangedCombatAI(actor, this);
+        break;
+      case "ROAMING":
+        ai = (AI)new RoamingAI(actor, this);
         break;
     }
   }

@@ -28,6 +28,17 @@ public class AI{
   
   public virtual void ReceiveDamage(int damage, Actor damager){}
   
+    /* Locates a new enemy. */
+  public IEnumerator FindEnemy(){
+    while(manager.target == null){
+      manager.sighted = ScanForActors();
+      if(manager.sighted.Count > 0){ SelectTarget(); }
+      yield return new WaitForSeconds(1f);
+    }
+    yield return new WaitForSeconds(0);
+  }
+  
+  
   /* Move directly at target. */
   public IEnumerator Pursue(Actor target, float dist = 3f){
     if(!target){ yield break; }
@@ -36,9 +47,9 @@ public class AI{
     pos = new Vector3(pos.x, 0f, pos.z);
     Vector3 dest = new Vector3();
     if(target){ dest = target.body.transform.position; }
-    dest = new Vector3(dest.x, 0f, dest.z); 
-    while(Vector3.Distance(dest, pos) > dist && CanSee(target.body) && !manager.paused){
-      if(!target){ yield break; }
+    dest = new Vector3(dest.x, 0f, dest.z);
+    manager.actor.SetAnimBool("walking", true);
+    while(target != null && Vector3.Distance(dest, pos) > dist && CanSee(target.body) && !manager.paused){
       Vector3 move = dest - pos;
       actor.AxisMove(move.x, move.z);
       yield return new WaitForSeconds(0.01f);
@@ -47,23 +58,27 @@ public class AI{
       if(target){ dest = target.body.transform.position; }
       dest = new Vector3(dest.x, 0f, dest.z);
     }
+    manager.actor.SetAnimBool("walking", false);
     pursuing = false;
     yield break;
   }
   
   /* Moves in straight line to a destination. */
-  public IEnumerator MoveTo(Vector3 destination){
+  public IEnumerator MoveTo(Vector3 destination, float dist = 3f){
     moving = true;
     Vector3 dest = new Vector3(destination.x, 0f, destination.z);
     Vector3 pos = actor.body.transform.position;
     pos = new Vector3(pos.x, 0f, pos.z);
-    while(Vector3.Distance(pos, dest) > 2f && !manager.paused){
+    manager.actor.SetAnimBool("walking", true);
+    while(Vector3.Distance(pos, dest) > dist && !manager.paused){
+      
       Vector3 move = dest - pos;
       actor.AxisMove(move.x, move.z);
       yield return new WaitForSeconds(0.01f);
       pos = actor.body.transform.position;
       pos = new Vector3(pos.x, 0f, pos.z);
     }
+    manager.actor.SetAnimBool("walking", false);
     moving = false;
     yield break;
   }
@@ -76,7 +91,7 @@ public class AI{
     Vector3 direction = actor.body.transform.forward;
     Quaternion orientation = actor.body.transform.rotation;
     float distance = 0.1f;
-    int layerMask = ~(1 << 8);
+    int layerMask = LayerMask.GetMask("Person");
     RaycastHit[] found = Physics.BoxCastAll(
       center,
       halfExtents,
@@ -89,18 +104,31 @@ public class AI{
     for(int i = 0; i < found.Length; i++){
       Actor a = found[i].collider.gameObject.GetComponent<Actor>();
       if(a && a != actor && ret.IndexOf(a) == -1){
-        int dist = (int)Vector3.Distance(
-          actor.body.transform.position,
-          a.body.transform.position
-        );
-        if(a.head && CanSee(actor.body)){
+        if(a){
           bool check = a.stats != null 
             && !a.stats.StatCheck("STEALTH", actor.stats.perception);
           if(check){ ret.Add(a); }
+          else{ MonoBehaviour.print("Check failed"); }
         }
       }
     }
     return ret;
+  }
+  
+  public void SelectTarget(){
+    Actor a = manager.sighted[0];
+    float leastDistance = Vector3.Distance(manager.sighted[0].transform.position, actor.transform.position);
+    bool isEnemy;
+    for(int i = 1; i < manager.sighted.Count; i++){
+      float dist = Vector3.Distance(manager.sighted[i].transform.position, actor.transform.position);
+      isEnemy = actor.stats.Enemy(manager.sighted[i]);
+      if(dist < leastDistance && manager.sighted[i].Alive() && isEnemy){
+        leastDistance = dist;
+        a = manager.sighted[i];
+      }
+    }
+    isEnemy = actor.stats.Enemy(a);
+    manager.target = (a.Alive() && isEnemy)? a.gameObject : null;
   }
   
   
@@ -120,6 +148,10 @@ public class AI{
       float y = desiredEulers.y - actualEulers.y;
       if(Mathf.Abs(x) > 180){ x *= -1f; }
       if(Mathf.Abs(y) > 180){ y *= -1f; }
+      if(x < 0 && actor.headRoty < -59f ||
+         x > 0 && actor.headRoty > 59f){
+         //x = 0f;
+      }
       actor.Turn(new Vector3(x, y, 0f).normalized);
       yield return new WaitForSeconds(turnSpeed);
       if(!target){ yield break; }
@@ -151,7 +183,7 @@ public class AI{
       Vector3 direction = target.transform.position - actor.head.transform.position;
       RaycastHit hit;
       float maxDistance = sightDistance;
-      int layerMask = ~(1 << 8);
+      int layerMask = LayerMask.GetMask("Person");
       if(Physics.Raycast(
           origin,
           direction,
@@ -165,6 +197,7 @@ public class AI{
     }
     return false;
   }
+  
   
   
 }

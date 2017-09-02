@@ -19,6 +19,8 @@ public class HUDMenu : Menu{
     else{ RenderDead(); }
   }
   
+  public override void RenderCursor(){}
+  
   void RenderAlive(){
     Actor actor = manager.actor;
     if(actor == null || actor.stats == null){ return; }
@@ -70,6 +72,12 @@ public class HUDMenu : Menu{
   
   public override void UpdateFocus(){}
   
-  public override void Input(int button){}
+  public override void Input(int button){
+    if(button == START){ 
+      manager.Change("OPTIONS");
+      if(manager.actor != null){ manager.actor.SetMenuOpen(true); }
+    }
+  
+  }
   
 }

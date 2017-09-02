@@ -18,19 +18,6 @@ public class HostileAI : AI{
     Equip();
   }
   
-  
-  /* Locates a new enemy. */
-  IEnumerator FindEnemy(){
-    while(manager.target == null){
-      manager.sighted = ScanForActors();
-      if(manager.sighted.Count > 0){ 
-        manager.target = manager.sighted[0].gameObject;
-      }
-      yield return new WaitForSeconds(0.1f);
-    }
-    yield return new WaitForSeconds(0);
-  }
-  
   /* Returns true if this ranged weapon has ammo in it, or in the actor's
      inventory. */
   public bool HasAmmo(Ranged r){

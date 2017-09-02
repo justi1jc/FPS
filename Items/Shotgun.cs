@@ -1,3 +1,10 @@
+/*
+    Shotguns fire a multitude of projectiles that spread.
+    sounds[0] = firing sound
+    sounds[1] = reloading sound
+    sounds[2] = dry fire
+*/
+
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,6 +28,7 @@ public class Shotgun : Ranged{
   /* Adds ammo to weapon individually. */
   public override void LoadAmmo(){
     if(holder == null){ return; }
+    if(ammo >= maxAmmo){ return; }
     int available = holder.RequestAmmo(ammunition, 1);
     if(available > 0){ ammo = ammo + available; return; }
   }
