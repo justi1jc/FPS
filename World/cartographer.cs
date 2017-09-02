@@ -18,11 +18,14 @@ public class Cartographer{
   
   /* Uses the CellSaver to return acess of map from master file. */
   public static MapRecord GetMaster(){
+    /*
     GameObject go = new GameObject();
     CellSaver cs = go.AddComponent<CellSaver>();
     cs.LoadMaster();
     MapRecord ret = cs.map;
     GameObject.Destroy(go);
+    */
+    MapRecord ret = null;
     return ret;
   }
   
@@ -41,7 +44,7 @@ public class Cartographer{
     FillInExteriors();
     MapRecord ret = new MapRecord();
     ret.exteriors = exteriors;
-    ret.interiors = interiors;
+    //ret.interiors = interiors;
     return ret;
   }
   

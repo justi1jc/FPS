@@ -9,8 +9,9 @@ using System.Collections.Generic;
 
 public class DoorRecord{
   public int x, y; // Position relative to center door of a building.
-  public int building; // Position of destination building.
-  public string room; // Name of destination room within buildign.
+  public int building; // Id of destination building.
+  public string destName; // Name of destination exterior/building.
+  public string room; // Name of destination room within building.
   
   public bool exterior; // True if this door is in a cell, false if in a building.
   public bool exteriorFacing; // True if this door leads to the overworld 
@@ -23,6 +24,7 @@ public class DoorRecord{
     x = wd.x;
     y = wd.y;
     building = wd.building;
+    destName = wd.destName;
     room = wd.room;
     
     exterior = wd.exterior;
@@ -37,6 +39,7 @@ public class DoorRecord{
     x = dr.x;
     y = dr.y;
     building = dr.building;
+    destName = dr.destName;
     room = dr.room;
     
     exterior = dr.exterior;

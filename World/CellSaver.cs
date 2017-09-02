@@ -27,26 +27,24 @@ using UnityEngine.SceneManagement;
 
 
 public class CellSaver : MonoBehaviour {
-  public int x, y; /// Coords for this cell.
-  public string displayName;   // This should be unique between cells in a building.
-  public const string masterFile = "world";    // File containing all the map's cell data.     
+  
+  /* Cell Data to be set in editor */
+  public int x, y; /// Coords for exteriors.
+  public string name; // Unique within building or overworld  
   public GameObject  max, min; // Corners of the area that will be saved.
-  public bool interior;
-  public bool fileAccess = false; // True during file io
+  public bool interior; // True if this is a room
+  public string building;    // The name of the building this interior resides within
+  public GameObject[] doors; // For setting warp doors initially in editor.
+  
+  /* Saver settings. */
   public bool saverMode = false;  // Will instantly save the current cell if true.
   public bool cascade = false; // Will continue to save other scenes in build settings.
-  // Interior
-  public string building;    // The name of the building this interior resides within.
-  public Data[] doorData;    // warp doors for interiors
-  public GameObject[] doors; // For setting warp doors initially in editor.
-  public bool[] edges;       // True if a door exists for this direction.
+  
+  public const string masterFile = "world";    // File containing all the map's cell data.
+  bool fileAccess = false; // True during file io
   public MapRecord map;      // Contents of master map file.
   public Cell packedCell;    // The cell's data to populate or save with.
-  public string exteriorName; // Name of connected exterior.
   
-  // Exterior
-  public bool unique;   // True if only one instance of this exterior should exist.
-  public bool entrance; // True if this exterior has a door in it.
   
   public void Start(){
     if(saverMode){
@@ -55,41 +53,45 @@ public class CellSaver : MonoBehaviour {
       UpdateMaster();
       SaveMaster();
       if(cascade){ LoadNextScene(); }
+      else{ print(map.ToString()); }
     }
-    PathFinder pf = new PathFinder((MonoBehaviour)this, max.transform.position, min.transform.position);
   }
   
   
   /* Assigns the data of contents between min and max to packedCell. */
   public void PackCell(){
-    MonoBehaviour.print("method stub");
-    /*
+    
     Cell c = new Cell();
     List<GameObject> found = GetContents();
     if(interior){ c.building = building; }
-    c.interior = interior;
     c.items = GetItems(found);
-    c.displayName = displayName;
     c.npcs = GetNpcs(found);
+    c.doors = GetDoors();
+    c.name = name;
     Vector3 he = (max.transform.position - min.transform.position) / 2;
     c.heX = he.x;
     c.heY = he.y;
     c.heZ = he.z;
     c.x = x;
     c.y = y;
-    c.exteriorName = exteriorName;
-    c.entrance = entrance;
     packedCell = c;
-    */
+  }
+  
+  /* Returns DoorRecords from doors. */
+  public List<DoorRecord> GetDoors(){
+    List<DoorRecord> ret = new List<DoorRecord>();
+    foreach(GameObject door in doors){
+      WarpDoor wd = door.GetComponent<WarpDoor>();
+      if(wd != null){ ret.Add(wd.GetRecord()); }
+    }
+    return ret;
   }
   
   /* Instantiates all gameObjects from current data. */
   public void UnpackCell(){
-    MonoBehaviour.print("method stub");
-    /*
     if(packedCell == null){ print("No data present."); return; }
     if(interior){
-      displayName = packedCell.displayName;
+      name = packedCell.name;
       building = packedCell.building;
     }
     List<Data> items = packedCell.items;
@@ -100,7 +102,7 @@ public class CellSaver : MonoBehaviour {
     for(int i = 0; i < npcs.Count; i++){
       CreateNPC(npcs[i]);
     }
-    */
+    
   }
   
   /* Converts an absolute position into relative one. */
@@ -143,7 +145,7 @@ public class CellSaver : MonoBehaviour {
     Vector3 direction = transform.forward;
     Quaternion orientation = transform.rotation;
     float distance = 1f;
-    int layerMask = ~(1 << 8);
+    int layerMask = -1;
     RaycastHit[] found = Physics.BoxCastAll(
       center,
       halfExtents,
@@ -219,45 +221,37 @@ public class CellSaver : MonoBehaviour {
   
   /* Caller ensures the map is not null. */
   public void UpdateMasterInterior(){
-    /*
-    int found = -1;
-    for(int i = 0; i < map.buildings.Count; i++){
-      if(map.buildings[i][0].building == building){ found = i; break;}
+    Building bld = null;
+    foreach(Building b in map.buildings){
+      if(b.name == building){
+        bld = b;
+        break;
+      }
     }
-    if(found < 0){
-      Cell[] cells = new Cell[1];
-      cells[0] = packedCell;
-      map.buildings.Add(cells);
+    
+    if(bld == null){
       print("New building added");
+      bld = new Building();
+      bld.name = building;
+      bld.doors = new List<DoorRecord>(packedCell.doors);
+      bld.rooms = new List<Cell>();
+      bld.rooms.Add(packedCell);
+      map.buildings.Add(bld);
+      return;
     }
-    else{
-      int foundCell = -1;
-      for(int i = 0; i < map.buildings[found].Length; i++){
-        if(map.buildings[found][i].displayName == packedCell.displayName){
-          foundCell = i;
-        }
-      }
-      if(foundCell != -1){
-        map.buildings[found][foundCell] = packedCell;
-        print("Updated existing cell.");
-      }
-      else{
-        List<Cell> cells = new List<Cell>(map.buildings[found]);
-        cells.Add(packedCell);
-        map.buildings[found] = cells.ToArray();
-        print("Added new cell.");
-      }
-    }
-    */
+    
+    print("Added room to existing building.");
+    
+    bld.doors.AddRange( new List<DoorRecord>(packedCell.doors));
+    bld.rooms.Add(packedCell);
   }
   
   /* Caller ensures the map is not null. */
   public void UpdateMasterExterior(){
-    /*
     print("Saving exterior to master...");
     int found = -1;
     for(int i = 0; i < map.exteriors.Count; i++){
-      if(map.exteriors[i].displayName == displayName){ found = i; break;}
+      if(map.exteriors[i].name == name){ found = i; break;}
     }
     if(found < 0){
       map.exteriors.Add(packedCell);
@@ -267,7 +261,6 @@ public class CellSaver : MonoBehaviour {
       map.exteriors[found] = packedCell;
       print("Updated existing interior.");
     }
-    */
   }
   
   /* Saves map to master map file. */
@@ -283,6 +276,16 @@ public class CellSaver : MonoBehaviour {
       fileAccess = false;
       print("Master saved to " + path);
     }
+  }
+  
+  /* Returns the master file. */
+  public static MapRecord GetMaster(){
+    GameObject go = new GameObject();
+    CellSaver cs = go.AddComponent<CellSaver>();
+    cs.LoadMaster();
+    MapRecord ret = cs.map;
+    GameObject.Destroy(go);
+    return ret;
   }
   
   /* Loads the master map file into map or creates new one. */
@@ -301,29 +304,8 @@ public class CellSaver : MonoBehaviour {
       file.Close();
       fileAccess = false;
       print("Loaded from " + path);
+      print(map.ToString());
     }
-  }
-  
-  /* unpacks a particular interior from master */
-  public void UnpackMasterInterior(string buildingName, string cellName){
-    MonoBehaviour.print("method stub");
-    /*
-    if(map == null){ print("Master not loaded"); }
-    int found = -1;
-    for(int i = 0; i < map.buildings.Count; i++){
-      if(buildingName == map.buildings[i][0].displayName){ found = i; break; }
-    }
-    if(found < 0){ print("Building not found."); return; }
-    Cell interior = null;
-    for(int i = 0; i < map.buildings[found].Length; i++){
-      Cell candidate = map.buildings[found][i];
-      if(candidate.displayName == cellName){ interior = candidate; }
-    }
-    if(interior == null){ print("Cell " + cellName + " not found."); return; }
-    packedCell = interior;
-    UnpackCell();
-    print(buildingName + " " + cellName + " unpacked.");
-    */
   }
   
   /* Loads the next scene in the build order, if possible. */

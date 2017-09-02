@@ -14,9 +14,9 @@ using System.Collections.Generic;
 
 [System.Serializable]
 public class PaperDoll{
-  public SkinnedMeshRenderer renderer = null;
-  public Mesh mesh = null;
-  public Actor actor = null;
+  [System.NonSerialized]public SkinnedMeshRenderer renderer = null;
+  [System.NonSerialized]public Mesh mesh = null;
+  [System.NonSerialized]public Actor actor = null;
   
   Data[] layers;
 

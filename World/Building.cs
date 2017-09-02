@@ -48,4 +48,12 @@ public class Building{
     }
     return ret;
   }
+  
+  public string ToString(){
+    string str = "";
+    str += name;
+    str += "(" + x + "," + y + ")";
+    str += rooms.Count + " rooms";
+    return str;
+  }
 }

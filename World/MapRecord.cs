@@ -8,13 +8,19 @@ using System.Collections.Generic;
 [System.Serializable]
 public class MapRecord{
   
-  public List<Cell[]> buildings; // The array of cells comprising each type of building.
+  public List<Building> buildings; // All possible buildings.
   public List<Cell> exteriors; // All possible exteriors.
-  public List<Cell> interiors; // All interiors
   
   public MapRecord(){
-    buildings = new List<Cell[]>();
+    buildings = new List<Building>();
     exteriors = new List<Cell>();
-    interiors = new List<Cell>();
+  }
+  
+  public string ToString(){
+    string str = "Buildings:";
+    foreach(Building b in buildings){ str += b.ToString(); }
+    str += "Exteriors:";
+    foreach(Cell e in exteriors){ str += e.ToString(); }
+    return str;
   }
 }
