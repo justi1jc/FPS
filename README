@@ -30,12 +30,17 @@ Current version: 0.5.4
 
 Goals remaining for World Update
 
-Reworking the mapping between interior and exterior cells to allow for duplicates.
-Integration of seamless Terrain usage.
-Night/Day cycle for exteriors cells
-Yearly calendar
+  Reworking the mapping between interior and exterior cells to allow for duplicates.
+-Create building class
+-Create and store cartographer for map expansion or building placement/removal.
+-Add Id to doors, exteriors, buildings
+-Add relative coordinates to doors in buildings along with local id.
+-Cellsaver should add interior cells to their appropriate buildings, taking
+inventory of doors in the process
+  Integration of seamless Terrain usage.
+  Night/Day cycle for exteriors cells
 
-
+  Yearly calendar
 Roman Calendar
 (mensis) Lunarius 29
 (mensis) Februarius 28
