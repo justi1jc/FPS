@@ -56,6 +56,8 @@ public class HoloCell{
   }
   
   public void CreateItem(Data dat){
+    MonoBehaviour.print("method stub");
+    /*
     if(dat == null){ return; }
     Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
     sPos += position;
@@ -81,6 +83,7 @@ public class HoloCell{
       }
     }
     go.transform.position = sPos;
+    */
   }
   
   /* Creates a new player from prefab and places them at spawnpoint. */

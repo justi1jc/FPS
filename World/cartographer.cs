@@ -16,12 +16,6 @@ public class Cartographer{
   System.Random rand;
   int n, m; // Size of map.
   
-  /* Convenience method. */
-  public static MapRecord Generate(MapRecord map, int _n, int _m){
-    Cartographer c = new Cartographer(map, _n, _m);
-    return c.GenerateMap();
-  }
-  
   /* Uses the CellSaver to return acess of map from master file. */
   public static MapRecord GetMaster(){
     GameObject go = new GameObject();
@@ -54,7 +48,8 @@ public class Cartographer{
   /* Places a building at most one time in the world,
      given the index of the building in the master file. */
   public void PlaceBuilding(int b){
-    
+    MonoBehaviour.print("method stub");
+    /*
     List<int[]> footprint = GetFootprint(b);
     List<int[]> candidates = GetPlacementCandidates(footprint);
     int choice = rand.Next(0, candidates.Count);
@@ -70,11 +65,14 @@ public class Cartographer{
         exteriors.Add(e);
       }
     }
+    */
   }
   
   /* Returns a list of coordinates covered by a building. */
   public List<int[]> GetFootprint(int b){
     List<int[]> ret =  new List<int[]>();
+    MonoBehaviour.print("method stub");
+    /*
     for(int i = 0; i < master.buildings[b].Length; i++){
       int[] coord = new int[2];
       coord[0] = master.buildings[b][i].x;
@@ -82,6 +80,7 @@ public class Cartographer{
       bool blank = master.buildings[b][i].exteriorName == "";
       if(!ret.Contains(coord) && !blank){ ret.Add(coord); }
     }
+    */
     return ret;
   }
   
@@ -134,9 +133,12 @@ public class Cartographer{
   /* Returns a list of exteriors that are not entrances. */
   public List<Cell> GetNonEntrances(){
     List<Cell> ret = new List<Cell>();
+    MonoBehaviour.print("method stub");
+    /*
     for(int i = 0; i < master.exteriors.Count; i++){
       if(!master.exteriors[i].entrance){ ret.Add(master.exteriors[i]); }
     }
+    */
     return ret;
   }
   
@@ -160,12 +162,15 @@ public class Cartographer{
   
   /* Returns an exterior from the Master based on name */
   public Cell GetMasterExterior(string name){
+    MonoBehaviour.print("method stub");
+    /*
     if(name == ""){ return null; }
     for(int i = 0; i < master.exteriors.Count; i++){
       if(master.exteriors[i].displayName == name){
         return master.exteriors[i];
       }
     }
+    */
     return null;
   }
 }

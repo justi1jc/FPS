@@ -71,6 +71,8 @@ public class HoloDeck : MonoBehaviour{
   
   /* Loads a given interior cell. */
   public void LoadInterior(Cell c, int door, bool saveFirst){
+    MonoBehaviour.print("method stub");
+    /*
     SavePlayers();
     if(saveFirst && interior){ SaveInterior(); }
     else if(saveFirst){ SaveExterior(); }
@@ -80,12 +82,16 @@ public class HoloDeck : MonoBehaviour{
     focalCell.LoadData(c, door);
     LoadPlayers();
     interior = true;
+    */
   }
   
   /* Updates interior in Session's data with current content. */
   public void SaveInterior(){
+    MonoBehaviour.print("method stub");
+    /*
     Cell c = focalCell.GetData();
     Session.session.SetInterior(c.building, c.displayName, c.x, c.y, c);
+    */
   }
   
   /* Recenters the HoloDeck on specified exterior and loads relevant cells.

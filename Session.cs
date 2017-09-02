@@ -1,6 +1,7 @@
 /*
 *
-*   A singleton whose purpose is to manage the session's data.
+*   A singleton whose purpose is to manage the session's data and 
+*   route calls to their appropriate destination..
 *   
 *
 *
@@ -106,6 +107,8 @@ public class Session : MonoBehaviour {
      Warning: This is hardcoded in a project-specific fashion.
   */
   public void CreateGame(string sesName){
+    print("method stub");
+    /*
     sessionName = sesName;
     gameMode = 0;
     currentID = 0;
@@ -121,19 +124,90 @@ public class Session : MonoBehaviour {
     DestroyLoadingScreen();
     StartCoroutine(QuestRoutine());
     CreateStartingQuests();
-    
+    */
+  }
+  
+  /* Overwrite specific file with current session's game data. */
+  public void SaveGame(string fileName){
+    print("method stub");
+    /*
+    if(fileAccess){ return; }
+    fileAccess = true;
+    BinaryFormatter bf = new BinaryFormatter();
+    string path = Application.persistentDataPath + "/" + fileName + ".save"; 
+    using(FileStream file = File.Create(path)){
+      GameRecord record = GetData();
+      bf.Serialize(file, record);
+      file.Close();
+    }
+    fileAccess = false;
+    */
+  }
+  
+  /* Load contents from a specific file. */
+  public void LoadGame(string fileName){
+    print("method stub");
+    /*
+    if(mainMenu){ DestroyMenu(); print("Destroy Main Menu"); }
+    GameRecord record = LoadFile(fileName);
+    if(record == null){ print("Null game record"); return; }
+    LoadData(record);
+    if(playerData.Count == 0){ print("There are no players."); return; }
+    HoloDeck hd = CreateDeck();
+    Data player = playerData[0];
+    Cell c = player.lastPos;
+    if(c.interior){
+      print("Loading interior");
+      hd.LoadInterior(c.building, c.displayName, -1, c.x, c.y, false);
+    }
+    else{
+      print("Loading exterior");
+      hd.LoadExterior(-1, c.x, c.y, false);
+    }
+    hd.AddPlayer(player, false);
+    playerData.Remove(player);
+    StopAllCoroutines();
+    StartCoroutine(QuestRoutine());
+    */
+  }
+  
+  /*
+     Loads a particular room using specified HoloDeck.
+  */
+  public void LoadRoom(
+    int building,
+    string room,
+    int door,
+    int deck = 0,
+    bool saveFirst = true
+  ){
+    print("method stub");
+    //decks[deck].LoadInterior(building, cellName, door, x, y, saveFirst);
+  }
+  
+  /* Loads a section of the overworld using specified HoloDeck. */
+  public void LoadOverworld(
+    int x, int y,
+    int door = -1,
+    int deck = 0,
+    bool saveFirst = true
+  ){
+    print("method stub");
+    //decks[deck].LoadExterior(door, x, y, saveFirst);
   }
   
   /* Initializes Starting quests for a new Game.
      NOTE: This is as hard-coded as Quest.Factory()
   */
   void CreateStartingQuests(){
+    print("method stub");
     //quests.Add(Quest.Factory("kill the enemies!"));
   }
   
   /* Initializes a specified quest. */
   public void StartQuest(int quest){
-    quests.Add(Quest.Factory(quest));
+    print("method stub");
+    //quests.Add(Quest.Factory(quest));
   }
   
   /* Gives xp to all players. */
@@ -158,6 +232,8 @@ public class Session : MonoBehaviour {
      WARNING: This is hardcoded and must be updated to match the master file.
   */
   public Cell GetStartingCell(){
+    print("method stub");
+    /*
     string INIT_BUILDING = "House";
     string INIT_ROOM = "Entrance";
     for(int i = 0; i < map.interiors.Count; i++){
@@ -167,32 +243,8 @@ public class Session : MonoBehaviour {
         return map.interiors[i];
       }
     }
+    */
     return null;
-  }
-  
-  /*
-    Loads a particular interior into a specified deck. If init is false, 
-    the player will be placed at the specified door.
-  */
-  public void LoadInterior(
-    string building, 
-    string cellName, 
-    int x, int y,
-    int deck = 0, 
-    int door = -1,
-    bool saveFirst = true
-  ){
-    decks[deck].LoadInterior(building, cellName, door, x, y, saveFirst);
-  }
-  
-  /* Packs the current cell and loads an exterior. */
-  public void LoadExterior(
-    int x, int y,
-    int deck = 0,
-    int door = -1,
-    bool saveFirst = true
-  ){
-    decks[deck].LoadExterior(door, x, y, saveFirst);
   }
   
   
@@ -242,21 +294,23 @@ public class Session : MonoBehaviour {
     string MENU_INTERIOR = "Entrance";
     mainMenu = true;
     GameObject go = new GameObject();
-    go.transform.position = transform.position + new Vector3(10f, 50f, 0f);
-    go.transform.LookAt(transform);
     sesCam = go.AddComponent(typeof(Camera)) as Camera;
     sesMenu = go.AddComponent(typeof(MenuManager)) as MenuManager;
     sesMenu.Change("MAIN");
     jukeBox.Play("Menu");
+    /*
     menuCell = new HoloCell(transform.position);
     map = Cartographer.GetMaster();
     Cell c = GetMasterInterior(MENU_BUILDING, MENU_INTERIOR);
     if(c == null){ print("Couldn't find menu cell"); return; }
     menuCell.LoadData(c);
+    */
   }
   
   /* Grabs specified interior from loaded master file's buildings list. */
   public Cell GetMasterInterior(string building, string name){
+    print("method stub");
+    /*
     for(int i = 0; i < map.buildings.Count; i++){
       //print("Building:" + map.buildings[i][0].building);
       if(map.buildings[i][0].building == building){
@@ -268,6 +322,7 @@ public class Session : MonoBehaviour {
         }
       }
     }
+    */
     return null;
   }
   
@@ -315,44 +370,6 @@ public class Session : MonoBehaviour {
     List<Data> ret = new List<Data>();
     for(int i = 0; i < decks.Count; i++){ ret.AddRange(decks[i].GetPlayers()); }
     return ret;
-  }
-  
-  /* Overwrite specific file with current session's game data. */
-  public void SaveGame(string fileName){
-    if(fileAccess){ return; }
-    fileAccess = true;
-    BinaryFormatter bf = new BinaryFormatter();
-    string path = Application.persistentDataPath + "/" + fileName + ".save"; 
-    using(FileStream file = File.Create(path)){
-      GameRecord record = GetData();
-      bf.Serialize(file, record);
-      file.Close();
-    }
-    fileAccess = false;
-  }
-  
-  /* Load contents from a specific file. */
-  public void LoadGame(string fileName){
-    if(mainMenu){ DestroyMenu(); print("Destroy Main Menu"); }
-    GameRecord record = LoadFile(fileName);
-    if(record == null){ print("Null game record"); return; }
-    LoadData(record);
-    if(playerData.Count == 0){ print("There are no players."); return; }
-    HoloDeck hd = CreateDeck();
-    Data player = playerData[0];
-    Cell c = player.lastPos;
-    if(c.interior){
-      print("Loading interior");
-      hd.LoadInterior(c.building, c.displayName, -1, c.x, c.y, false);
-    }
-    else{
-      print("Loading exterior");
-      hd.LoadExterior(-1, c.x, c.y, false);
-    }
-    hd.AddPlayer(player, false);
-    playerData.Remove(player);
-    StopAllCoroutines();
-    StartCoroutine(QuestRoutine());
   }
   
   /* Returns a GameRecord containing this Session's data. */
@@ -435,6 +452,8 @@ public class Session : MonoBehaviour {
      instances of a building presents itself.
   */
   public Cell GetInterior(string building, string name, int x, int y){
+    print("method stub");
+    /*
     for(int i = 0; i < map.interiors.Count; i++){
       bool bmatch = building == map.interiors[i].building;
       bool nmatch = name == map.interiors[i].displayName;
@@ -442,11 +461,14 @@ public class Session : MonoBehaviour {
       bool ymatch = true; //y == map.interiors[i].y;
       if(bmatch && nmatch && xmatch && ymatch){ return map.interiors[i]; }
     }
+    */
     return null;
   }
   
   /* Updates a specified interior. */
   public void SetInterior(string building, string name, int x, int y, Cell c){
+    print("method stub");
+    /*
     for(int i = 0; i < map.interiors.Count; i++){
       bool bmatch = building == map.interiors[i].building;
       bool nmatch = name == map.interiors[i].displayName;
@@ -457,6 +479,7 @@ public class Session : MonoBehaviour {
         return; 
       }
     }
+    */
   }
   
   /* Returns a specififed exterior or null. 

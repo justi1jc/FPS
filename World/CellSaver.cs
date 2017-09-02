@@ -62,6 +62,8 @@ public class CellSaver : MonoBehaviour {
   
   /* Assigns the data of contents between min and max to packedCell. */
   public void PackCell(){
+    MonoBehaviour.print("method stub");
+    /*
     Cell c = new Cell();
     List<GameObject> found = GetContents();
     if(interior){ c.building = building; }
@@ -78,10 +80,13 @@ public class CellSaver : MonoBehaviour {
     c.exteriorName = exteriorName;
     c.entrance = entrance;
     packedCell = c;
+    */
   }
   
   /* Instantiates all gameObjects from current data. */
   public void UnpackCell(){
+    MonoBehaviour.print("method stub");
+    /*
     if(packedCell == null){ print("No data present."); return; }
     if(interior){
       displayName = packedCell.displayName;
@@ -95,6 +100,7 @@ public class CellSaver : MonoBehaviour {
     for(int i = 0; i < npcs.Count; i++){
       CreateNPC(npcs[i]);
     }
+    */
   }
   
   /* Converts an absolute position into relative one. */
@@ -213,6 +219,7 @@ public class CellSaver : MonoBehaviour {
   
   /* Caller ensures the map is not null. */
   public void UpdateMasterInterior(){
+    /*
     int found = -1;
     for(int i = 0; i < map.buildings.Count; i++){
       if(map.buildings[i][0].building == building){ found = i; break;}
@@ -241,10 +248,12 @@ public class CellSaver : MonoBehaviour {
         print("Added new cell.");
       }
     }
+    */
   }
   
   /* Caller ensures the map is not null. */
   public void UpdateMasterExterior(){
+    /*
     print("Saving exterior to master...");
     int found = -1;
     for(int i = 0; i < map.exteriors.Count; i++){
@@ -258,6 +267,7 @@ public class CellSaver : MonoBehaviour {
       map.exteriors[found] = packedCell;
       print("Updated existing interior.");
     }
+    */
   }
   
   /* Saves map to master map file. */
@@ -296,6 +306,8 @@ public class CellSaver : MonoBehaviour {
   
   /* unpacks a particular interior from master */
   public void UnpackMasterInterior(string buildingName, string cellName){
+    MonoBehaviour.print("method stub");
+    /*
     if(map == null){ print("Master not loaded"); }
     int found = -1;
     for(int i = 0; i < map.buildings.Count; i++){
@@ -311,6 +323,7 @@ public class CellSaver : MonoBehaviour {
     packedCell = interior;
     UnpackCell();
     print(buildingName + " " + cellName + " unpacked.");
+    */
   }
   
   /* Loads the next scene in the build order, if possible. */
