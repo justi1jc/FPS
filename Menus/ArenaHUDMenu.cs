@@ -19,6 +19,15 @@ public class ArenaHUDMenu : Menu{
     else{ RenderEndGame(); }
   }
   
+  public override void RenderCursor(){
+    if(subMenu == 0){ return; }
+    int x = (int)UnityEngine.Input.mousePosition.x;
+    int y = Screen.height - (int)UnityEngine.Input.mousePosition.y;
+    int s = 25;  // Size of cursor
+    int h = s/2; // Half-size
+    Box("X", x-h, y-h, s, s);
+  }
+  
   public void RenderHUD(){
     int ih = Height()/10;
     int iw = Width()/5;
@@ -34,7 +43,6 @@ public class ArenaHUDMenu : Menu{
       SceneManager.LoadScene("Arena_Empty");
     }
     if(Button("Main Menu", 0, Height()-ih, iw, 2*ih)){ 
-      Session.session.sesMenu.Change("MAIN");
       SceneManager.LoadScene("Main");
     }
     for(int i = 0; i < manager.arena.scores.Count; i++){

@@ -9,7 +9,7 @@ ____________  _____  ______
 ********************************************************************************
 
 This is boiler-plate code for an open-world first-person shooter game.
-These scripts work with Unity3D editor 5.6.1f3. Ubuntu link below.
+These scripts work with Unity3D editor 5.6.3xf1. Ubuntu link below.
 https://forum.unity3d.com/threads/unity-on-linux-release-notes-and-known-issues.350256/
 
 Vision: Provide first-person shooter roleplaying gameplay similar to the recent
@@ -27,3 +27,8 @@ Tentative roadmap:
 0.7.X- RPG Features update
 
 Current version: 0.5.3
+
+Goals remaining for Arena Update
+
+- Update AI for roaming and faction identification.
+- Add in reload animations for existing weapons.

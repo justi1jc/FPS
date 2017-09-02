@@ -3,6 +3,7 @@
     sounds[0] = firing sound
     sounds[1] = reloading sound
     sounds[2] = dry fire
+    sounds[3] = melee sound.
 */
 
 ﻿using UnityEngine;
@@ -20,9 +21,9 @@ public class Ranged : Weapon{
   public string ammunition;
   public bool fullAuto = false;
   public bool hitScan = false; // True if this weapon doesn't use a projectile.
-  public bool aiming = false;
   Transform muzzlePoint; // Source of projectile
   public float recoil; // Muzzle climb of the weapon when fired.
+  public bool meleeActive = false;
   
   public void Start(){
     InitMuzzlePoint();
@@ -44,6 +45,9 @@ public class Ranged : Weapon{
     else if(action == 1){ ToggleAim(); }
     else if(action == 2 && ammo < maxAmmo){
       if(ready){ StartCoroutine(Reload()); }
+    }
+    else if(action == 5 && ready){
+      StartCoroutine(Melee());
     }
   }
   
@@ -150,13 +154,67 @@ public class Ranged : Weapon{
     holder = null;
   }
   
-  /* Reloading process. */
+  /* Reloading process. Note: A bool is used by the animation state machine due
+    to the buggy behaviour of triggers applying to multiple layers. */
   public IEnumerator Reload(){
+    ready = false;
     Sound(1);
+    if(holder != null){ holder.SetAnimBool("reload", true); }
     yield return new WaitForSeconds(reloadDelay);
+    if(holder != null){ holder.SetAnimBool("reload", false); }
     LoadAmmo();
+    ready = true;
   }
-
+  
+  public IEnumerator Melee(){
+    ready = false;
+    if(holder != null){ holder.SetAnimBool("rangedMelee", true); }
+    yield return new WaitForSeconds(0.5f);
+    meleeActive = true;
+    yield return new WaitForSeconds(0.5f);
+    meleeActive = false;
+    if(holder != null){ holder.SetAnimBool("rangedMelee", false); }
+    ready = true;
+  }
+  
+  void OnTriggerEnter(Collider col){ Strike(col); }
+  void OnTriggerStay(Collider col){ Strike(col); }
+  
+  /* Exert force and damage onto target. Damage and knockback are hardcoded. */
+  void Strike(Collider col){
+    if(col.gameObject == null){ MonoBehaviour.print("Gameobject missing"); return; }
+    if(meleeActive){
+      float knockBack = 100f;
+      int dmg = 35;
+      if(holder != null){
+        if(holder.GetRoot(col.gameObject.transform) == holder.transform.transform){
+          return;
+        }
+      }
+      HitBox hb = col.gameObject.GetComponent<HitBox>();
+      if(hb){
+        StartCoroutine(CoolDown(cooldown));
+        hb.ReceiveDamage(dmg, gameObject);
+        meleeActive = false;
+        if(hb.body != null){
+          Rigidbody hbrb = hb.body.gameObject.GetComponent<Rigidbody>();
+          Vector3 forward = transform.position - hb.body.transform.position;
+          forward = new Vector3(forward.x, 0f, forward.y);
+          if(hbrb){ hbrb.AddForce(forward * knockBack); }
+        }
+      }
+      Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
+      if(rb){ 
+        rb.AddForce(transform.forward * knockBack); 
+        Sound(3);
+      }
+      Item item = col.gameObject.GetComponent<Item>();
+      if(item != null && item.holder!= null && !item.ability){
+        item.holder.arms.Drop(item);
+      }
+    }
+  }
+  
   /* Adds ammo to weapon externally */
   public virtual void LoadAmmo(){
     if(holder == null){ return; }
@@ -166,11 +224,7 @@ public class Ranged : Weapon{
 
   /* Aims weapon or returns it to the hip.*/
   public void ToggleAim(){
-   	aiming = !aiming;
-   	if(holder != null && holder.cam != null){
-   	  if(aiming){ holder.cam.fieldOfView = 30;}
-   	  else{ holder.cam.fieldOfView = 60; }
-   	}
+    holder.ToggleAim();
   }
 
   public override Data GetData(){

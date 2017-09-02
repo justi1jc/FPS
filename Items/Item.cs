@@ -25,6 +25,7 @@ public class Item : MonoBehaviour{
   public const int MELEE = 7;
   public const int RANGED = 8;
   public const int PROJECTILE = 9;
+  public const int EQUIPMENT = 10;
   
   // Base variables
   public string prefabName;
@@ -88,7 +89,7 @@ public class Item : MonoBehaviour{
   /* Play a sound, if possible. */
   public void Sound(int i){
     if(i < 0 || sounds == null || i >= sounds.Length || sounds[i] == null){ 
-      MonoBehaviour.print("Invalid sound:" + i); 
+      //MonoBehaviour.print("Invalid sound:" + i); 
       return; 
     }
     float vol = PlayerPrefs.HasKey("masterVolume") ? PlayerPrefs.GetFloat("masterVolume") : 1f; 
@@ -122,6 +123,8 @@ public class Item : MonoBehaviour{
     dat.itemType = Item.ITEM;
     return dat;
   }
+  
+  public virtual void ReceiveDamage(int damage, GameObject weapon){}
   
   /* Loads the base variables from a Data */
   public void LoadBaseData(Data dat){

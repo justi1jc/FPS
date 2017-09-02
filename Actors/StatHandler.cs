@@ -16,6 +16,7 @@ public class StatHandler{
   public int health, healthMax;
   public int stamina, staminaMax;
   public int mana, manaMax;
+  public int slots;
   
   // ICEPAWS attributes, max value is 10
   public int intelligence, intelligenceMod;
@@ -55,6 +56,7 @@ public class StatHandler{
   
   public StatHandler(Actor actor){
     this.actor = actor;
+    dead = false;
     abilities = new List<int>();
     intelligence = charisma = endurance = perception = agility = willpower = strength = 1;
     ranged = melee = unarmed = magic = stealth = skillPoints = xp = 0;
@@ -149,6 +151,32 @@ public class StatHandler{
     return false;
   }
   
+  /* Returns a stat without modifiers, or -1*/
+  public int BaseStat(string stat){
+    switch(stat){
+      case "INTELLIGENCE": return intelligence; break;
+      case "CHARISMA": return charisma; break;
+      case "Endurance": return endurance; break;
+      case "PERCEPTION": return perception; break;
+      case "AGILITY": return agility; break;
+      case "WILLPOWER": return willpower; break;
+      case "STRENGTH": return strength; break;
+      case "RANGED": return ranged; break;
+      case "MELEE": return melee; break;
+      case "UNARMED": return unarmed; break;
+      case "MAGIC": return magic; break;
+      case "STEALTH": return stealth; break;
+      case "SLOTS": return slots; break;
+    }
+    return -1;
+  }
+  
+  public int Modifier(string stat){
+    int mod = 0;
+    if(actor.doll != null){ mod += actor.doll.Modifier(stat); }
+    return mod;
+  }
+  
   /* Applies XP and levels up if possible. */
   public void AwardXP(int amount){
     xp += amount;
@@ -189,5 +217,31 @@ public class StatHandler{
     }
   }
   
+  /* Returns true if the selected actor is an enemy of this one. */
+  public bool Enemy(Actor a){
+    if(faction == 0){ return false; }
+    if(faction == 1){ return true; }
+    if( faction == a.stats.faction){ return false; }
+    return true;
+  }
   
+  /* Returns the id representation of a faction. */
+  public static int Faction(string factionName){
+    switch(factionName.ToUpper()){
+      case "NONE": return 0; break;
+      case "RED": return 1; break;
+      case "BLUE": return 1; break;
+    }
+    return -1;
+  }
+  
+  /* Returns the name of a given faction ID */
+  public static string Faction(int factionID){
+    switch(factionID){
+      case 0: return "None"; break;
+      case 1: return "Red"; break;
+      case 2: return "Blue"; break;
+    }
+    return "Invalid ID";
+  }
 }

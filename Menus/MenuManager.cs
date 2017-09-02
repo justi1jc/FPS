@@ -34,9 +34,11 @@ public class MenuManager: MonoBehaviour{
     sounds = new AudioClip[1];
     sounds[0] = (AudioClip)Resources.Load("Sounds/SFX/menubing1") as AudioClip;
   }
+  
   /* Called once per frame. */
   void OnGUI(){
     if(active != null){
+      active.RenderCursor();
       active.RenderNotifications();
       active.Render();
     }

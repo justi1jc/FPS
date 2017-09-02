@@ -20,6 +20,7 @@ public class EquipSlot{
   Data offHandData = null;
   public int handAbility = -1;
   public int offHandAbility = -1;
+  int updateDelay = 0;
 
   public EquipSlot(GameObject hand = null, GameObject offHand = null, Actor actor = null){
     this.hand = hand;
@@ -64,6 +65,10 @@ public class EquipSlot{
       item.Drop();
       if(handItem == item){ handItem = null; }
       else if(offHandItem == item){ offHandItem = null; }
+      if(offHandItem != null || offHandAbility > 0){ 
+        actor.SetAnimBool("twoHanded", true);
+      }
+      else{ actor.SetAnimBool("twoHanded", false); }
       return;
     }
     if(handItem != null){
@@ -126,15 +131,19 @@ public class EquipSlot{
   
   /* Called from late update */
   public void Update(){
-    bool lr = handItem != null && handItem is Ranged; 
-    bool rr = offHandItem != null && offHandItem is Ranged;
-    if(lr || rr){
-      Vector3 point = TrackPoint();
-      if(lr){ Track(handItem.gameObject, point); }
-      if(rr){ Track(offHandItem.gameObject, point); }
+    updateDelay++;
+    if(updateDelay > 2){
+      updateDelay = 0;
+      bool lr = handItem != null && handItem is Ranged; 
+      bool rr = offHandItem != null && offHandItem is Ranged;
+      if(lr || rr){
+        Vector3 point = TrackPoint();
+        if(lr){ Track(handItem.gameObject, point); }
+        if(rr){ Track(offHandItem.gameObject, point); }
+      }
     }
   }
-
+  
   /* Get offset for trackpoint. */
   public Vector3 TrackPointOffset(){
     float offset = actor.stats.AccuracyOffset();
@@ -147,11 +156,6 @@ public class EquipSlot{
   /* Returns the current point ranged weapons should aim at. */
   public Vector3 TrackPoint(){
     Vector3 offset = new Vector3();
-    if(actor != null){
-      if(!actor.stats.StatCheck("PERCEPTION") && !actor.stats.StatCheck("RANGED")){
-        offset = TrackPointOffset();
-      }
-    }
     
     GameObject vision = actor.cam != null ? actor.cam.gameObject : actor.head;
     Vector3 pos = vision.transform.position;
@@ -180,7 +184,15 @@ public class EquipSlot{
     Transform t = weapon.transform;
     t.rotation = Quaternion.LookRotation(trackPoint - t.position);
   }
-
+  
+  /* Returns true if both hands are used on single item. */
+  public bool Single(){
+    bool l = handItem != null;
+    bool r = offHandItem != null;
+    bool ret = l != r;
+    return ret;
+  }
+  
   /* Equips an item to the desired slot, returning any items displaced. */
   public List<Data> Equip(Data dat, bool primary = true){
     if(actor != null){
@@ -281,8 +293,7 @@ public class EquipSlot{
   public void Use(int use){
     Melee melee = null;
     if(use == 2){
-      if(handItem != null){ handItem.Use(2); }
-      if(offHandItem != null){ offHandItem.Use(2); }
+      if(offHandItem != null && handItem == null){ offHandItem.Use(2); }
     }
     
     if(offHandItem != null && (!offHandItem.oneHanded || handItem == null && handAbility < 1)){

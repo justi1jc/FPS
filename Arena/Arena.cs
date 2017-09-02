@@ -10,6 +10,7 @@ using UnityEngine.SceneManagement;
 
 public class Arena : MonoBehaviour{
   public List<int> scores;
+  public List<int> factions; 
   public List<string> names;
   public List<Transform> spawnPoints; //Stores direction and position to spawn players in.
   public List<Actor> players;
@@ -17,6 +18,8 @@ public class Arena : MonoBehaviour{
   int bots;// Number of bots in arena.
   int startingTime; // Total round duration.
   bool respawns; // True if players respawn.
+  bool teams; // True if teams are enabled.
+  bool p1red, p2red; // True if respective player is on red team.
   string kit; // Default kit for players.
   MenuManager menu;
 
@@ -34,7 +37,11 @@ public class Arena : MonoBehaviour{
     bots = dat != null ? dat.ints[1] : 0;
     if(dat != null){
       respawns = dat.bools[0];
+      teams = dat.bools[1];
+      p1red = dat.bools[2];
+      p2red = dat.bools[3];
       kit = dat.strings[0];
+      
     }
     PopulateSpawnPoints();
     InitPlayers();
@@ -85,12 +92,17 @@ public class Arena : MonoBehaviour{
   /* Displays respawn timer and respawns the player at its completion. */
   IEnumerator RespawnPlayer(Actor player){
     if(player.killerId != -1){
+      if(teams && factions[player.killerId] == player.stats.faction){ 
+        scores[player.killerId]--;
+      }
+      else if( teams){ scores[player.killerId]++; }
       scores[player.killerId]++;
     }
     int respawnTimer = 5;
     HUDMenu playerHUD = null;
     if(player.playerNumber > 0 && player.playerNumber < 5){
       MenuManager playerMenu = player.menu;
+      playerMenu.Change("HUD");
       if(playerMenu){ playerHUD = (HUDMenu)playerMenu.active; }
     }
     if(respawns){
@@ -108,10 +120,21 @@ public class Arena : MonoBehaviour{
       players.Remove(player);
       player.SetMenuOpen(true);
       if(players.Count <= 1){ EndGame(); }
+      else if(!respawns && OneTeamLeft()){ EndGame(); }
     }
     yield return new WaitForSeconds(0f);
   }
-
+  
+  bool OneTeamLeft(){
+    int reds = 0;
+    int blues = 0;
+    foreach(Actor player in players){
+      if(player.stats.faction == StatHandler.Faction("BLUE") && player.Alive()){ blues++; }
+      else if(player.Alive()){ reds++; }
+    }
+    return ((reds == 0) || (blues == 0));
+  }
+  
   /* Populate spawnpoints from child transforms. */
   void PopulateSpawnPoints(){
     spawnPoints = new List<Transform>();
@@ -124,17 +147,26 @@ public class Arena : MonoBehaviour{
   void InitPlayers(){
     scores = new List<int>();
     names = new List<string>();
+    factions = new List<int>();
     players = new List<Actor>();
     for(int i = 0; i < bots; i++){ 
+      if(teams){
+        int faction = (i<(bots/2)) ? 1 : 2;
+        //factions.Add(faction);
+        factions.Add(1);
+      }
       SpawnPlayer("Enemy", i);
       scores.Add(0);
       names.Add("Bot " + (i+1));
     }
+    if(teams){ factions.Add(p1red ? 1 : 2); }
     SpawnPlayer("player1", bots);
     scores.Add(0);
     names.Add("Player1");
     
+    
     if(Session.session.playerCount > 1){ 
+      if(teams){ factions.Add(p2red ? 1 : 2); }
       SpawnPlayer("player2", bots + 1);
       scores.Add(0);
       names.Add("Player2");
@@ -159,7 +191,18 @@ public class Arena : MonoBehaviour{
     if(actor != null){
       players.Add(actor);
       if(kit != ""){ LootTable.Kit(kit, ref actor); }
-      if(id != -1){ actor.id = id; }
+      if(id != -1){
+        actor.id = id;
+        if(teams){
+          actor.stats.faction = factions[id];
+          string shirt = (factions[id] == 1) ? "RED" : "BLUE";
+          LootTable.Kit(shirt, ref actor);
+        }
+        else{
+          LootTable.Kit("PANTS", ref actor);
+          actor.stats.faction = 1;
+        }
+      }
     }
   }
 

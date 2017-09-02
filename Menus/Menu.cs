@@ -19,6 +19,7 @@ public class Menu{
   public const int Y     = 7;
   public const int RT    = 8;
   public const int LT    = 9;
+  public const int START = 10;
   
   public MenuManager manager;
   public List<string> notifications = new List<string>(); // Notifications that must be displayed.
@@ -67,6 +68,12 @@ public class Menu{
   /* Convenience method to render box. */
   public void Box(string text, int posx, int posy, int scalex, int scaley){
     GUI.color = Color.green;
+    GUI.Box(new Rect(posx, posy, scalex, scaley), text);
+  }
+  
+  /* Overloaded convenience method to render box with specified color. */
+  public void Box(string text, int posx, int posy, int scalex, int scaley, Color color){
+    GUI.color = color;
     GUI.Box(new Rect(posx, posy, scalex, scaley), text);
   }
   
@@ -145,7 +152,15 @@ public class Menu{
         UpdateFocus();
         break;
     }
-    if(button <= LT && button >= A){ Input(button); }
+    if(button <= START && button >= A){ Input(button); }
+  }
+  
+  public virtual void RenderCursor(){
+    int x = (int)UnityEngine.Input.mousePosition.x;
+    int y = Screen.height - (int)UnityEngine.Input.mousePosition.y;
+    int s = 25;  // Size of cursor
+    int h = s/2; // Half-size
+    Box("X", x-h, y-h, s, s);
   }
   
   /* Plays sound through manager. */

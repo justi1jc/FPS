@@ -17,45 +17,68 @@ public class MainMenu : Menu{
   }
 
   public override void Render(){
+    switch(subMenu){
+      case 0: RenderMain(); break;
+      case 1: RenderCredits(); break;
+    }
+  }
+  
+  public void RenderMain(){
     int iw = Width()/6;
-    int ih = Height()/4;
+    int ih = Height()/8;
     int x = XOffset() + iw;
     string str;
     
-    if(Button("Arena", x, 0, 4*iw, ih)){
+    if(Button("Arena", x, 0, iw, ih)){
       manager.Change("ARENALOBBY");
       Sound(0);
     }
     
-    switch(subMenu){
-      case 0:
-        str = "New Game";
-        if(Button(str, x, ih, 4*iw, ih, 0, 1 )){ 
-          //subMenu = 1;
-          Sound(0);
-        }
-        break;
-      case 1:
-        sesName = TextField(sesName, x, ih, 3*iw, ih);
-        if(Button("Start", x + 3*iw, ih, iw, ih)){
-          Session.session.CreateGame(sesName);
-          Sound(0);
-        }
-        break;
-    }
-    str = "Load Game";
-    if(Button(str, x, 2*ih, 4*iw, ih, 0, 2 )){ 
-      manager.Change("LOAD");
+    str = "Credits";
+    if(Button(str, x, 6*ih, iw, ih)){
+      subMenu = 1;
       Sound(0);
     }
     
     str = "Quit";
-    if(Button(str, x, 3*ih, 4*iw, ih, 0, 3 )){ 
+    if(Button(str, x, 7*ih, iw, ih)){ 
       Application.Quit();
       Sound(0);
     }
   }
-
+  
+  public void RenderCredits(){
+    int iw = Width();
+    int ih = Height()/10;
+    string str;
+    string attr = " Kevin MacLeod (incompetech.com)\n";
+    attr += "Licensed under Creative Commons: By Attribution 3.0 License\n";
+    attr += "http://creativecommons.org/licenses/by/3.0/\n\n\n";
+    
+    
+    str = "Programming: James Justice\n";
+    str += "Textures: James Justice and Jessica Smith\n";
+    str += "Models and animations: James Justice\n\n";
+    str += "Music:\n\n";
+    str += "\"Burnt Spirit\"" + attr;
+    str += "\"Crossing the Chasm\"" + attr; 
+    str += "\"Curse of the Scarab\"" + attr;
+    str += "\"Five Armies\"" + attr;
+    str += "\"Heroic Age\"" + attr;
+    str += "\"Power Respored\"" + attr;
+    str += "\"Prelude and Action\"" + attr;
+    str += "\"Unholy Knight\"" + attr;
+    
+    Box(str, 0, 0, iw, 9*ih, Color.black);
+    
+    str = "Back";
+    if(Button(str, 0, 9*ih, iw, ih)){
+      subMenu = 0;
+      Sound(0);
+    }
+  }
+  
+  
   public override void UpdateFocus(){
     sx = 0;
     SecondaryBounds();

@@ -21,7 +21,7 @@ public class RangedCombatAI : AI{
     weapon = (Ranged)actor.arms.handItem;
     if(weapon == null){ weapon = (Ranged)actor.arms.offHandItem; }
     if(manager.target != null){ combatant = manager.target.GetComponent<Actor>(); }
-    if(combatant != null){
+    if(combatant != null && combatant.Alive()){
       actor.StartCoroutine(FireAt());
       actor.StartCoroutine(Positioning());
     }
@@ -29,6 +29,9 @@ public class RangedCombatAI : AI{
       yield return new WaitForSeconds(1f);
     }
     firing = positioning = false;
+    actor.StopCoroutine("Pursue");
+    actor.StopCoroutine("AimAt");
+    actor.StopCoroutine("MoveTo");
     if(actor.defaultAI != ""){ manager.Change(actor.defaultAI); }
     else{ manager.Change("IDLE"); }
   }
