@@ -18,17 +18,35 @@ of couch-multiplayer coop.
 
 Strategy:
 Basic gameplay mechanics will be solidified in the tech demo phase. Once
-the tech demo is finished, content will be developed in order to experience
-the 
+the tech demo is finished, content will be developed in order to create a simple
+game with between 2 to 10 hours of gameplay for sale as a product.
+
 
 Tentative roadmap:
-0.5.X- FPS Features Update
 0.6.X- World features Update
 0.7.X- RPG Features update
 
-Current version: 0.5.3
+Current version: 0.5.4
 
-Goals remaining for Arena Update
+Goals remaining for World Update
 
-- Update AI for roaming and faction identification.
-- Add in reload animations for existing weapons.
+Reworking the mapping between interior and exterior cells to allow for duplicates.
+Integration of seamless Terrain usage.
+Night/Day cycle for exteriors cells
+Yearly calendar
+
+
+Roman Calendar
+(mensis) Lunarius 29
+(mensis) Februarius 28
+(mensis) Intercalaris 23
+(mensis) Martius 31
+(mensis) Aprilis 29
+(mensis) Maius 31
+(mensis) Lunius 29
+(mensis) Quintillis 31
+(mensis) Sextilis 29
+(mensis) September 29
+(mensis) October 31
+(mensis) November 29
+(mensis) December 29
