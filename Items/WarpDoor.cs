@@ -10,7 +10,8 @@ public class WarpDoor : Decor{
   // DoorRecord data
   public int x, y;
   public int building;
-  public string room, destName;
+  public string room;
+  public string destName;
   public bool exterior, exteriorFacing;
   public int destId;
   public int id;

@@ -10,10 +10,24 @@ public class MapRecord{
   
   public List<Building> buildings; // All possible buildings.
   public List<Cell> exteriors; // All possible exteriors.
-  
+  public int width, height; // Size of overworld in cells.
+  public int bldgId, extId;
   public MapRecord(){
+    bldgId = extId = 0;
     buildings = new List<Building>();
     exteriors = new List<Cell>();
+  }
+  
+  public int NextBuildingId(){
+    int ret = bldgId;
+    bldgId++;
+    return ret;
+  }
+  
+  public int NextExteriorId(){
+    int ret = extId;
+    extId++;
+    return ret;
   }
   
   public string ToString(){
