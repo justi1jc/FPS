@@ -24,7 +24,6 @@ public class Session : MonoBehaviour {
   public static bool fileAccess = false; //True if files are currently accessed
   private readonly object syncLock = new object(); // Mutex lock
   public string sessionName; //Name Used in save file.
-  public List<Quest> quests;
   public Data arenaData = null;
   
   
@@ -56,6 +55,7 @@ public class Session : MonoBehaviour {
   // Arena
   public int playerCount = 1;
   public int gameMode = -1;
+  public World world;
   
   // players
   List<Data> playerData;
@@ -80,14 +80,12 @@ public class Session : MonoBehaviour {
     if(Session.session != null){ Destroy(this); }
     else{ Session.session = this; }
     decks = new List<HoloDeck>();
-    quests = new List<Quest>();
     if(jukeBox == null){ jukeBox = new JukeBox(this); }
     CreateMenu();
   }
   
   /* Updates cameras and associates player with appropriate HoloDeck. */
   public void RegisterPlayer(Actor actor, int player, Camera cam){
-    //print("Player " + player + " registered");
     if(player == 1){ cam1 = cam; }
     else if(player == 2){ cam2 = cam; }
     UpdateCameras();
@@ -171,6 +169,10 @@ public class Session : MonoBehaviour {
     */
   }
   
+  public void StartQuest(int quest){
+    if(world != null){ world.StartQuest(quest); }
+  }
+  
   /*
      Loads a particular room using specified HoloDeck.
   */
@@ -196,34 +198,10 @@ public class Session : MonoBehaviour {
     //decks[deck].LoadExterior(door, x, y, saveFirst);
   }
   
-  /* Initializes Starting quests for a new Game.
-     NOTE: This is as hard-coded as Quest.Factory()
-  */
-  void CreateStartingQuests(){
-    print("method stub");
-    //quests.Add(Quest.Factory("kill the enemies!"));
-  }
-  
-  /* Initializes a specified quest. */
-  public void StartQuest(int quest){
-    print("method stub");
-    //quests.Add(Quest.Factory(quest));
-  }
-  
   /* Gives xp to all players. */
   public void AwardXP(int amount){
     string str = amount + " xp awarded!";
     Notify(str);
-  }
-  
-  /* Routine that checks all the quests. */
-  IEnumerator QuestRoutine(){
-    while(runQuests){
-      for(int i = 0; i < quests.Count; i++){
-        quests[i].Update();
-      }
-      yield return new WaitForSeconds(3f);
-    }
   }
   
   
@@ -374,30 +352,13 @@ public class Session : MonoBehaviour {
   
   /* Returns a GameRecord containing this Session's data. */
   GameRecord GetData(){
-    GameRecord record = new GameRecord();
-    record.sessionName = sessionName;
-    for(int i = 0; i < decks.Count; i++){
-      if(decks[i].interior){ decks[i].SaveInterior(); }
-      else{ decks[i].SaveExterior(); }
-    }
-    record.map = map;
-    record.players = GetPlayerData();
-    record.currentID = currentID;
-    for(int i = 0; i < quests.Count; i++){
-      record.quests.Add(quests[i].GetData());
-    }
-    return record;
+    if(world != null){ return world.GetData(); }
+    return null;
   }
   
   /* Loads the contents of a GameRecord */
   public void LoadData(GameRecord dat){
     sessionName = dat.sessionName;
-    map = dat.map;
-    playerData = dat.players;
-    currentID = dat.currentID;
-    for(int i = 0; i < dat.quests.Count; i++){
-      quests.Add(Quest.Factory(dat.quests[i]));
-    }
   }
   
   
@@ -443,81 +404,6 @@ public class Session : MonoBehaviour {
     }
     fileAccess = false;
     return records;
-  }
-  
-  /* Returns a requested interior or null.
-     TODO: Cache map to reduce overhead.
-     TODO: Make sure requested cell is not already active.
-     NOTE: Ignoring coordinate matching until the need for multiple
-     instances of a building presents itself.
-  */
-  public Cell GetInterior(string building, string name, int x, int y){
-    print("method stub");
-    /*
-    for(int i = 0; i < map.interiors.Count; i++){
-      bool bmatch = building == map.interiors[i].building;
-      bool nmatch = name == map.interiors[i].displayName;
-      bool xmatch = true; //x == map.interiors[i].x;
-      bool ymatch = true; //y == map.interiors[i].y;
-      if(bmatch && nmatch && xmatch && ymatch){ return map.interiors[i]; }
-    }
-    */
-    return null;
-  }
-  
-  /* Updates a specified interior. */
-  public void SetInterior(string building, string name, int x, int y, Cell c){
-    print("method stub");
-    /*
-    for(int i = 0; i < map.interiors.Count; i++){
-      bool bmatch = building == map.interiors[i].building;
-      bool nmatch = name == map.interiors[i].displayName;
-      bool xmatch = x == map.interiors[i].x;
-      bool ymatch = y == map.interiors[i].y;
-      if(bmatch && nmatch && xmatch && ymatch){
-        map.interiors[i] = c;
-        return; 
-      }
-    }
-    */
-  }
-  
-  /* Returns a specififed exterior or null. 
-     TODO: Cache map to reduce overhead.
-     TODO: Make sure requested cell is not already active.
-  */
-  public Cell GetExterior(int x, int y){
-    for(int i = 0; i < map.exteriors.Count; i++){
-      bool xmatch = map.exteriors[i].x == x;
-      bool ymatch = map.exteriors[i].y == y;
-      if(xmatch && ymatch){ return map.exteriors[i]; }
-    }
-    return null;
-  }
-  
-  /* Updates a specified exterior. */
-  public void SetExterior(int x, int y, Cell c){
-    for(int i = 0; i < map.exteriors.Count; i++){
-      bool xmatch = map.exteriors[i].x == x;
-      bool ymatch = map.exteriors[i].y == y;
-      if(xmatch && ymatch){
-        map.exteriors[i] = c;
-        return; 
-      }
-    }
-  }
-  
-  /* Convenience method */
-  public void SetExterior(Cell c){
-    if(c != null){ SetExterior(c.x, c.y, c); }
-  }
-  
-  
-  /* Returns an auto-incremented id number for all NPCs.
-     NOTE: May want to either use a long or make another ID for items.
-  */
-  public int NextId(){
-    lock(syncLock){ return currentID++; }
   }
   
   /* Returns all active actors in this session. */

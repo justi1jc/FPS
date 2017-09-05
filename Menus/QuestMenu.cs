@@ -30,7 +30,7 @@ public class QuestMenu : Menu{
       new Rect(0, 0, iw, 200)
     );
     
-    List<Quest> quests = Session.session.quests;
+    List<Quest> quests = new List<Quest>();
     for(int i = 0; i < quests.Count; i++){ 
       y = ih * i;
       if(Button(quests[i].Name(), 0, y, iw, ih, 0, i)){
@@ -50,7 +50,7 @@ public class QuestMenu : Menu{
   
   public override void UpdateFocus(){
     if(sx == 0){
-      syMax = Session.session.quests.Count -1;
+      //syMax = Session.session.quests.Count -1;
     }
     else{ sy = 0;}
     SecondaryBounds();
@@ -61,8 +61,8 @@ public class QuestMenu : Menu{
     if(button == A){ Sound(0); }
     switch(sx){
       case 0:
-        if(sy < 0 || sy > Session.session.quests.Count -1){ return; }
-        MonoBehaviour.print(Session.session.quests[sy].Name());
+        //if(sy < 0 || sy > Session.session.quests.Count -1){ return; }
+        //MonoBehaviour.print(Session.session.quests[sy].Name());
         break;
       case 1:
         manager.Change("INVENTORY");

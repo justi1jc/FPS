@@ -2,6 +2,7 @@
         The cartographer is responsible for accessing the master map as well as
         for generating new maps.
 */
+
 using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -53,18 +54,29 @@ public class Cartographer{
   */
   public void PlaceBuildings(){
     List<Cell> exteriors = GetUnlinked(false);
+    MonoBehaviour.print("Placing " + exteriors.Count + " linked exteriors.");
     while(exteriors.Count > 0){
+      exteriors = new List<Cell>();
       List<Cell> placed = PlaceLinked(exteriors[0]);
       exteriors = RemoveRange(exteriors, placed);
     }
   }
   
   
-  /* Places a grouping of exteriors connected to this one.
+  /* Places a grouping of exteriors connected to this one, returning all
+     connected exteriors.
   */
   public List<Cell> PlaceLinked(Cell c){
-    MonoBehaviour.print("Placing linked" + c.name);
     return new List<Cell>();
+    
+  }
+  
+  
+  /* Returns (through out variables) the buildings and exteriors connected to
+     this one. */
+  public void LinkedExteriors(out List<Cell> exteriors, out List<Building> buildings){
+    exteriors = null;
+    buildings = null;
   }
   
   /* Places an unlinked exterior with its building, */
@@ -75,6 +87,7 @@ public class Cartographer{
   /* Places non-entrance exteriors randomly, filling in the map's grid.*/
   public void FillInOverworld(){
     List<Cell> nd = GetUnlinked();
+    MonoBehaviour.print("Placing " + nd.Count + " unlinked exteriors.");
     for(int i = 0; i < n; i++){
       for(int j = 0; j < m; j++){
         if(GetExterior(i, j) == null){

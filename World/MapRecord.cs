@@ -11,22 +11,32 @@ public class MapRecord{
   public List<Building> buildings; // All possible buildings.
   public List<Cell> exteriors; // All possible exteriors.
   public int width, height; // Size of overworld in cells.
-  public int bldgId, extId;
+  public int bldgId, extId, npcId;
+  private readonly object syncLock = new object(); // Mutex lock
+  public World world;
+  
   public MapRecord(){
-    bldgId = extId = 0;
+    world = new World();
+    bldgId = extId = npcId = 0;
     buildings = new List<Building>();
     exteriors = new List<Cell>();
   }
   
   public int NextBuildingId(){
     int ret = bldgId;
-    bldgId++;
+    lock(syncLock){ bldgId++; }
     return ret;
   }
   
   public int NextExteriorId(){
     int ret = extId;
-    extId++;
+    lock(syncLock){ extId++; }
+    return ret;
+  }
+  
+  public int NextNPCID(){
+    int ret = npcId;
+    lock(syncLock){ npcId++; }
     return ret;
   }
   

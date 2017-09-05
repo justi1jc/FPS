@@ -34,6 +34,11 @@ public class MainMenu : Menu{
       Sound(0);
     }
     
+    if(Button("Adventure", x, ih, iw, ih)){
+      MonoBehaviour.print("Clicked");
+      Sound(0);
+    }
+    
     str = "Credits";
     if(Button(str, x, 6*ih, iw, ih)){
       subMenu = 1;

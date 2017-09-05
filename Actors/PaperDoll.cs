@@ -1,10 +1,10 @@
 /*
-*     Author: James Justice
-*       
-*     The PaperDoll manages the application of clothing and
-*     Armor to the provided Humanoid model.
-*     
-*     Note: The PaperDoll assumes provided data is Equipment.
+     Author: James Justice
+       
+     The PaperDoll manages the application of clothing and
+     Armor to the provided Humanoid model.
+     
+     Note: The PaperDoll assumes provided data is Equipment.
 */
 
 using UnityEngine;

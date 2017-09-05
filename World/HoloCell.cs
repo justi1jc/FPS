@@ -103,7 +103,7 @@ public class HoloCell{
     dat.yr = spawnRot.y;
     dat.zr = spawnRot.z;
     a.LoadData(dat);
-    if(a.id == -1){ a.id = Session.session.NextId(); }
+    if(a.id == -1){ a.id = NextId(); }
   }
   
   /* Creates an NPC with the given data. 
@@ -132,9 +132,15 @@ public class HoloCell{
     Actor actor = go.GetComponent<Actor>();
     if(actor){ 
       actor.LoadData(dat);
-      if(actor.id == -1){ actor.id = Session.session.NextId(); } 
+      if(actor.id == -1){ actor.id = NextId(); } 
     }
     go.transform.position = sPos;
+  }
+  
+  /* Returns the next NPC id from Session's active world*/
+  private int NextId(){
+    MonoBehaviour.print("Method stub");
+    return 0;
   }
   
   /* Returns the gameObjects caught by boxcasting with min and max.*/
