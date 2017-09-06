@@ -15,10 +15,11 @@ public class Cartographer{
   MapRecord derived; // The map derived from the master file.
   System.Random rand;
   int n, m; // Size of map.
+  public static bool fileAccess = false;
   
   /* Constructor for map generation. */
-  public Cartographer(MapRecord master, int n, int m){
-    this.master = master;
+  public Cartographer(int n, int m){
+    this.master = Cartographer.GetMaster();
     this.n = n;
     this.m = m;
     rand = new System.Random();
@@ -29,14 +30,43 @@ public class Cartographer{
     this.derived = derived;
   }
   
+  
+  /* Convenience method for retrieving master file. */
+  public static MapRecord GetMaster(){
+    string path = Application.dataPath + "/Resources/world.master";
+    MapRecord ret = null;
+    if(!File.Exists(path)){
+      MonoBehaviour.print("File did not exist.");
+      return new MapRecord();
+    }
+    if(fileAccess){ 
+      MonoBehaviour.print("File access already in progress."); 
+      return ret; 
+    }
+    fileAccess = true;
+    using(FileStream file = File.Open(path, FileMode.Open)){
+      BinaryFormatter bf = new BinaryFormatter();
+      ret = (MapRecord)bf.Deserialize(file);
+      file.Close();
+      fileAccess = false;
+      MonoBehaviour.print("Loaded from " + path);
+    }
+    return ret;
+  }
+  
+  public static MapRecord GetMap(int n, int m){
+    Cartographer cart = new Cartographer(n, m);
+    cart.GenerateMap();
+    return cart.derived;
+  }
+  
   /* Produces a randomly-generated map */
-  public MapRecord GenerateMap(){
+  public void GenerateMap(){
     derived = new MapRecord();
-    PlaceBuildings();
-    FillInOverworld();
+    //PlaceBuildings();
+    //FillInOverworld();
     derived.width = n;
     derived.height = m;
-    return derived;
   }
   
   /* Removes the cells from this list. */

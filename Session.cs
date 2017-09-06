@@ -55,6 +55,8 @@ public class Session : MonoBehaviour {
   // Arena
   public int playerCount = 1;
   public int gameMode = -1;
+  
+  // Adventure
   public World world;
   
   // players
@@ -64,13 +66,10 @@ public class Session : MonoBehaviour {
   
   // World.
   public List<HoloDeck> decks; // active HoloDecks
-  public MapRecord map; // World map.
   int currentID = 0;
   bool runQuests = true;
   
   // Main menu UI
-  bool mainMenu; // True when main menu is active.
-  HoloCell menuCell;
   Camera sesCam;
   public MenuManager sesMenu;
   public JukeBox jukeBox;
@@ -104,8 +103,10 @@ public class Session : MonoBehaviour {
   /* Create a new game.
      Warning: This is hardcoded in a project-specific fashion.
   */
-  public void CreateGame(string sesName){
-    print("method stub");
+  public void CreateAdventure(){
+    if(sesMenu != null){ DestroyMenu(); }
+    world = new World();
+    world.GenerateMap();
     /*
     sessionName = sesName;
     gameMode = 0;
@@ -270,19 +271,11 @@ public class Session : MonoBehaviour {
     Cursor.visible = false;
     string MENU_BUILDING = "House";
     string MENU_INTERIOR = "Entrance";
-    mainMenu = true;
     GameObject go = new GameObject();
     sesCam = go.AddComponent(typeof(Camera)) as Camera;
     sesMenu = go.AddComponent(typeof(MenuManager)) as MenuManager;
     sesMenu.Change("MAIN");
     jukeBox.Play("Menu");
-    /*
-    menuCell = new HoloCell(transform.position);
-    map = Cartographer.GetMaster();
-    Cell c = GetMasterInterior(MENU_BUILDING, MENU_INTERIOR);
-    if(c == null){ print("Couldn't find menu cell"); return; }
-    menuCell.LoadData(c);
-    */
   }
   
   /* Grabs specified interior from loaded master file's buildings list. */
@@ -310,11 +303,6 @@ public class Session : MonoBehaviour {
     Camera cam = sesCam;
     sesCam = null;
     if(cam != null){ Destroy(cam.gameObject); }
-    mainMenu = false;
-    if(menuCell != null){
-      menuCell.Clear();
-      menuCell = null;
-    }
   }
   
   /* Clears all HoloDecks and then removes them. */

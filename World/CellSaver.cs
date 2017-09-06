@@ -278,34 +278,9 @@ public class CellSaver : MonoBehaviour {
     }
   }
   
-  /* Returns the master file. */
-  public static MapRecord GetMaster(){
-    GameObject go = new GameObject();
-    CellSaver cs = go.AddComponent<CellSaver>();
-    cs.LoadMaster();
-    MapRecord ret = cs.map;
-    GameObject.Destroy(go);
-    return ret;
-  }
-  
   /* Loads the master map file into map or creates new one. */
   public void LoadMaster(){
-    string path = Application.dataPath + "/Resources/" + masterFile + ".master";
-    if(!File.Exists(path)){
-      map = new MapRecord();
-      print("File did not exist.");
-      return;
-    }
-    if(fileAccess){ print("File access already in progress."); return; }
-    fileAccess = true;
-    using(FileStream file = File.Open(path, FileMode.Open)){
-      BinaryFormatter bf = new BinaryFormatter();
-      map = (MapRecord)bf.Deserialize(file);
-      file.Close();
-      fileAccess = false;
-      print("Loaded from " + path);
-      print(map.ToString());
-    }
+    map = Cartographer.GetMaster();
   }
   
   /* Loads the next scene in the build order, if possible. */

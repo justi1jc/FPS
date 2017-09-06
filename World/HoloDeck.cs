@@ -313,7 +313,7 @@ public class HoloDeck : MonoBehaviour{
   
   /* Returns a list of any exteriors within or adjacent to given coordinates. */
   public List<Cell> FindExteriors(int x, int y){
-    MapRecord map = Session.session.map;
+    MapRecord map = null; //Session.session.map;
     List<Cell> cells = new List<Cell>();
     for(int i = 0; i < map.exteriors.Count; i++){
       Cell c = map.exteriors[i];

@@ -10,7 +10,16 @@ using System.Collections.Generic;
 [System.Serializable]
 public class World{
   public List<Quest> quests;
-  public World(){}
+  public MapRecord map;
+  
+  public World(){
+  }
+  
+  /* Creates the map for this adventure. */
+  public void GenerateMap(){
+    map = Cartographer.GetMap(10, 10);
+    MonoBehaviour.print(map.ToString());
+  }
   
   /*
     Initializes Starting quests for a new .
