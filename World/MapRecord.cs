@@ -13,30 +13,37 @@ public class MapRecord{
   public int width, height; // Size of overworld in cells.
   public int bldgId, extId, npcId;
   private readonly object syncLock = new object(); // Mutex lock
-  public World world;
   
   public MapRecord(){
-    world = new World();
     bldgId = extId = npcId = 0;
     buildings = new List<Building>();
     exteriors = new List<Cell>();
   }
   
   public int NextBuildingId(){
-    int ret = bldgId;
-    lock(syncLock){ bldgId++; }
+    int ret;
+    lock(syncLock){
+      ret = bldgId;
+      bldgId++; 
+    }
     return ret;
   }
   
   public int NextExteriorId(){
-    int ret = extId;
-    lock(syncLock){ extId++; }
+    int ret;
+    lock(syncLock){ 
+      ret = extId;
+      extId++; 
+    }
     return ret;
   }
   
   public int NextNPCId(){
-    int ret = npcId;
-    lock(syncLock){ npcId++; }
+    int ret;
+    lock(syncLock){ 
+      ret = npcId;
+      npcId++; 
+    }
     return ret;
   }
   

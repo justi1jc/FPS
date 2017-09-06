@@ -40,6 +40,7 @@ public class HoloCell{
   /* Places the contents of a cell into the scene. */
   public void LoadData(Cell c, int doorId = -1){
     spawnDoor = doorId;
+    
     cell = c;
     if(c == null){ return; }
     for(int i = 0; i < cell.items.Count; i++){ CreateItem(cell.items[i]); }
@@ -56,8 +57,7 @@ public class HoloCell{
   }
   
   public void CreateItem(Data dat){
-    MonoBehaviour.print("method stub");
-    /*
+    
     if(dat == null){ return; }
     Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
     sPos += position;
@@ -75,15 +75,16 @@ public class HoloCell{
       item.LoadData(dat);
       if(item is WarpDoor){
         WarpDoor w = item as WarpDoor;
-        w.deck = deck;
-        if(spawnDoor == -1 || w.doorId == spawnDoor){
-          spawnPos = w.destPos;
-          spawnRot = w.destRot;
+        w.deck = deck.id;
+        w.LoadRecord(deck.GetDoor(cell, w.id));
+        if(spawnDoor == -1 || w.id == spawnDoor){
+          spawnPos = w.DestPos();
+          spawnRot = w.DestRot();
+          MonoBehaviour.print("Spawn set to" + spawnPos);
         }
       }
     }
     go.transform.position = sPos;
-    */
   }
   
   /* Creates a new player from prefab and places them at spawnpoint. */
@@ -114,7 +115,6 @@ public class HoloCell{
     if(dat == null){ return; }
     if(!ignoreDoor && player){
       dat.x = spawnPos.x;
-      dat.y = spawnPos.y;
       dat.z = spawnPos.z;
       dat.xr = spawnRot.x;
       dat.yr = spawnRot.y;
@@ -139,8 +139,7 @@ public class HoloCell{
   
   /* Returns the next NPC id from Session's active world*/
   private int NextId(){
-    MonoBehaviour.print("Method stub");
-    return 0;
+    return Session.session.world.map.NextNPCId();
   }
   
   /* Returns the gameObjects caught by boxcasting with min and max.*/

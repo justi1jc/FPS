@@ -83,7 +83,6 @@ public class Cartographer{
   */
   public void PlaceBuildings(){
     List<Cell> exteriors = GetUnlinked(false);
-    MonoBehaviour.print("Placing " + exteriors.Count + " linked exteriors.");
     while(exteriors.Count > 0){
       exteriors = new List<Cell>();
       List<Cell> placed = PlaceLinked(exteriors[0]);
@@ -110,7 +109,6 @@ public class Cartographer{
   
   /* Places an unlinked exterior with its building, */
   public void PlaceUnlinked(Cell c){
-    MonoBehaviour.print("Placing unlinked " + c.name);
     List<Building> buildings = GetLinkedBuildings(c);
     foreach(Building b in buildings){ 
       Link(b, c); 
@@ -121,7 +119,10 @@ public class Cartographer{
   
   /* Ensures all doors are supplied with correct ids. */
   public void Link(Building b, Cell c){
-    if(b.id == -1){ b.id = derived.NextBuildingId(); }
+    if(b.id == -1){ 
+      b.id = derived.NextBuildingId();
+      foreach(Cell room in b.rooms){ room.id = b.id; } 
+    }
     if(c.id == -1){ c.id = derived.NextExteriorId(); }
     foreach(DoorRecord dr in b.doors){
       if(dr.exteriorFacing && dr.destName == c.name){
@@ -194,7 +195,6 @@ public class Cartographer{
   
   /* Returns all cells whose unlinked status matches the argument. */
   public List<Cell> GetUnlinked(bool val = true){
-    MonoBehaviour.print(master.ToString());
     List<Cell> ret = new List<Cell>();
     foreach(Cell c in master.exteriors){
       if(Unlinked(c) == val){ ret.Add(c); }
@@ -204,10 +204,11 @@ public class Cartographer{
   
   /* Returns true if cell's buldings are contained within that cell. */
   public bool Unlinked(Cell c){
+    if(c == null){ MonoBehaviour.print("Cell null"); return true; }
     foreach(DoorRecord ed in c.doors){
       Building b = GetMasterBuilding(ed.destName);
+      if(b == null){ MonoBehaviour.print(ed.destName + " is null"); return true; }
       foreach(DoorRecord bd in b.doors){
-        MonoBehaviour.print(c.name + ":" + b.name  + ":" + bd.destName );
         if(bd.exteriorFacing && bd.destName != c.name){
           return false; 
         }
@@ -221,7 +222,7 @@ public class Cartographer{
     if(name == ""){ return null; }
     for(int i = 0; i < master.exteriors.Count; i++){
       if(master.exteriors[i].name == name){
-        return master.exteriors[i];
+        return new Cell(master.exteriors[i]);
       }
     }
     return null;
@@ -232,7 +233,7 @@ public class Cartographer{
     if(building == ""){ return null; }
     for(int i = 0; i < master.buildings.Count; i++){
       if(master.buildings[i].name == building){
-        return master.buildings[i];
+        return new Building(master.buildings[i]);
       }
     }
     return null;
@@ -244,7 +245,7 @@ public class Cartographer{
     if(bldg == null || room == ""){ return null; }
     for(int i = 0; i < bldg.rooms.Count; i++){
       if(bldg.rooms[i].name == room){
-        return bldg.rooms[i];
+        return new Cell(bldg.rooms[i]);
       }
     }
     return null;

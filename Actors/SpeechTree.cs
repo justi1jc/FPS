@@ -69,7 +69,7 @@ public class SpeechTree{
         break;
       case "START_QUEST":
         if(args.Length < 1){ return; }
-        Session.session.StartQuest(args[0]);
+        //Session.session.StartQuest(args[0]);
         break;
       case "AWARD_XP":      
         if(args.Length < 1){ return; }

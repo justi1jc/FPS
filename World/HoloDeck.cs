@@ -22,7 +22,6 @@ public class HoloDeck : MonoBehaviour{
   
   /* Initialize */
   public void Awake(){
-    id = Session.session.decks.IndexOf(this);
     players = new List<Actor>();
     playerData = new List<Data>();
     cells = new List<HoloCell>();
@@ -31,10 +30,6 @@ public class HoloDeck : MonoBehaviour{
   
   public void Update(){
     if(!interior){ ManageShifting(); }
-    if(Input.GetKeyDown(KeyCode.P)){
-      Vector3 dir = new Vector3(0,0,-100);
-      //PositionShift(dir);
-    }
   }
   
   /* Shifts the position of cells such that the cells closest to the destination
@@ -56,23 +51,22 @@ public class HoloDeck : MonoBehaviour{
     for(int i = 0; i < sorted.Count; i++){ sorted[i].Move(dir); }
   }
   
-  /* Requests an interior cell from the Session and loads it. */
-  public void LoadInterior(
-    string building, 
-    string cellName,
+  /* Loads a room in a building, if it exists. */
+  public void LoadRoom(
+    int building, 
+    string room,
     int door,
-    int x, int y,
     bool saveFirst
   ){
-    Cell c = null; // Session.session.GetInterior(building, cellName, x, y);
+    Cell c = Session.session.world.GetRoom(building, room);
     if(c != null){ LoadInterior(c, door, saveFirst); }
-    else{ print("Could not find " + building + ":" +  name + " at " + x + "," + y); }
+    else{ print("Could not find " + building + ":" +  room); }
   }
+  
+  
   
   /* Loads a given interior cell. */
   public void LoadInterior(Cell c, int door, bool saveFirst){
-    MonoBehaviour.print("method stub");
-    /*
     SavePlayers();
     if(saveFirst && interior){ SaveInterior(); }
     else if(saveFirst){ SaveExterior(); }
@@ -82,7 +76,24 @@ public class HoloDeck : MonoBehaviour{
     focalCell.LoadData(c, door);
     LoadPlayers();
     interior = true;
-    */
+  }
+  
+  /* Returns the requested door from the map, or null.  */
+  public DoorRecord GetDoor(Cell c, int doorId){
+    DoorRecord ret = null;
+    if(interior){
+      ret = Session.session.world.GetBuildingDoor(c.id, c.name, doorId);
+      if(ret == null){
+        MonoBehaviour.print("Couldn't find door " + doorId + " in " + c.id);
+      }
+    }
+    else{
+      foreach(DoorRecord dr in c.doors){
+        if(dr.id == doorId){ return dr; }
+      }
+      MonoBehaviour.print("Couldn't find door " + doorId + " in " + c.name);
+    }
+    return ret;
   }
   
   /* Updates interior in Session's data with current content. */

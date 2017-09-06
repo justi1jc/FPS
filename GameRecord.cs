@@ -9,10 +9,8 @@ using System.Collections.Generic;
 public class GameRecord{
   public string sessionName;
   public MapRecord map;
-  public World world;
   public GameRecord(){
     sessionName = "Null";
-    map = new MapRecord();
-    world = new World();
+    map = null;
   }
 } 

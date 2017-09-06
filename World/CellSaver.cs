@@ -68,6 +68,7 @@ public class CellSaver : MonoBehaviour {
     c.npcs = GetNpcs(found);
     c.doors = GetDoors();
     c.name = name;
+    c.building = building;
     Vector3 he = (max.transform.position - min.transform.position) / 2;
     c.heX = he.x;
     c.heY = he.y;

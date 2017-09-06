@@ -106,7 +106,7 @@ public class Session : MonoBehaviour {
   public void CreateAdventure(){
     if(sesMenu != null){ DestroyMenu(); }
     world = new World();
-    world.GenerateMap();
+    world.CreateAdventure();
     /*
     sessionName = sesName;
     gameMode = 0;
@@ -168,10 +168,6 @@ public class Session : MonoBehaviour {
     StopAllCoroutines();
     StartCoroutine(QuestRoutine());
     */
-  }
-  
-  public void StartQuest(int quest){
-    if(world != null){ world.StartQuest(quest); }
   }
   
   /*
@@ -276,25 +272,6 @@ public class Session : MonoBehaviour {
     sesMenu = go.AddComponent(typeof(MenuManager)) as MenuManager;
     sesMenu.Change("MAIN");
     jukeBox.Play("Menu");
-  }
-  
-  /* Grabs specified interior from loaded master file's buildings list. */
-  public Cell GetMasterInterior(string building, string name){
-    print("method stub");
-    /*
-    for(int i = 0; i < map.buildings.Count; i++){
-      //print("Building:" + map.buildings[i][0].building);
-      if(map.buildings[i][0].building == building){
-        for(int j = 0; j < map.buildings[i].Length; j++){
-          //print("CellName:" + map.buildings[i][j].displayName);
-          if(map.buildings[i][j].displayName == name){
-            return map.buildings[i][j];
-          }
-        }
-      }
-    }
-    */
-    return null;
   }
   
   /* Destroys Camera and Menu attached to gameObject */

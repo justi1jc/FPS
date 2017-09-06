@@ -17,17 +17,21 @@ public class WarpDoor : Decor{
   public int id;
   
   public int deck; // Deck this door is loaded in.
-  public Vector3 destPos;
-  public Vector3 destRot;
   bool warped = false;
   
   public void Start(){
-    destPos = transform.position + transform.forward * 2;
-    destRot = transform.rotation.eulerAngles;
   }
   
   public override void Interact(Actor a, int mode = -1, string message = ""){
     Warp();
+  }
+
+  public Vector3 DestPos(){
+    return transform.position + transform.forward * 2;
+  }
+  
+  public Vector3 DestRot(){
+    return transform.rotation.eulerAngles;
   }
   
   /* Warps to destination. */
@@ -42,14 +46,37 @@ public class WarpDoor : Decor{
   
   public override Data GetData(){
     Data dat = GetBaseData();
+    dat.ints.Add(x);
+    dat.ints.Add(y);
+    dat.ints.Add(destId);
+    dat.ints.Add(id);
+    
+    dat.strings.Add(room);
+    dat.strings.Add(destName);
     return dat;
   }
   
   public override void LoadData(Data dat){
     LoadBaseData(dat);
+    int i = 1;
+    x = dat.ints[i]; i++;
+    y = dat.ints[i]; i++;
+    destId = dat.ints[i]; i++;
+    id = dat.ints[i]; i++;
+    
+    int s = 0;
+    room = dat.strings[s]; s++;
+    destName = dat.strings[s]; s++;
   }
   
   public DoorRecord GetRecord(){
     return new DoorRecord(this);
   }
+  
+  public void LoadRecord(DoorRecord dr){
+    building = dr.building;
+    x = dr.x;
+    y = dr.y;
+  }
+  
 }
