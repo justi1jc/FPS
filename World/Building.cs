@@ -10,7 +10,7 @@ using System.Collections.Generic;
 public class Building{
   public int x, y; // Center position on overworld.
   public string name;
-  public int id;
+  public int id = -1;
   public List<DoorRecord> doors;
   public List<Cell> rooms;
   

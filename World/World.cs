@@ -17,7 +17,7 @@ public class World{
   
   /* Creates the map for this adventure. */
   public void GenerateMap(){
-    map = Cartographer.GetMap(10, 10);
+    map = Cartographer.GetMap(5, 5);
     MonoBehaviour.print(map.ToString());
   }
   

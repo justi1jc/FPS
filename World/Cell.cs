@@ -13,7 +13,7 @@ public class Cell{
   public string name;
   public string building; // The parent building of this room cell resides in.
   public int x, y; // Position on the map this exterior cell resides in.
-  public int id;
+  public int id = -1;
   public List<Data> items;
   public List<Data> npcs;
   public List<DoorRecord> doors;
@@ -39,9 +39,16 @@ public class Cell{
     doors = new List<DoorRecord>();
   }
   
-  /* Returns true if this cell has no doors. */
-  public bool Doorless(){
-    return doors.Count == 0;
+  /* Returns the door matching this id, or null. */
+  public DoorRecord GetDoor(int doorID){
+    DoorRecord ret = null;
+    foreach(DoorRecord dr in doors){
+      if(dr.id == doorID){
+        ret = dr;
+        break;
+      }
+    }
+    return ret;
   }
   
   public string ToString(){

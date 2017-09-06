@@ -49,7 +49,6 @@ public class Cartographer{
       ret = (MapRecord)bf.Deserialize(file);
       file.Close();
       fileAccess = false;
-      MonoBehaviour.print("Loaded from " + path);
     }
     return ret;
   }
@@ -64,7 +63,7 @@ public class Cartographer{
   public void GenerateMap(){
     derived = new MapRecord();
     //PlaceBuildings();
-    //FillInOverworld();
+    FillInOverworld();
     derived.width = n;
     derived.height = m;
   }
@@ -112,12 +111,50 @@ public class Cartographer{
   /* Places an unlinked exterior with its building, */
   public void PlaceUnlinked(Cell c){
     MonoBehaviour.print("Placing unlinked " + c.name);
+    List<Building> buildings = GetLinkedBuildings(c);
+    foreach(Building b in buildings){ 
+      Link(b, c); 
+      derived.buildings.Add(b);
+    }
+    derived.exteriors.Add(c);
   }
+  
+  /* Ensures all doors are supplied with correct ids. */
+  public void Link(Building b, Cell c){
+    if(b.id == -1){ b.id = derived.NextBuildingId(); }
+    if(c.id == -1){ c.id = derived.NextExteriorId(); }
+    foreach(DoorRecord dr in b.doors){
+      if(dr.exteriorFacing && dr.destName == c.name){
+        DoorRecord drLink = c.GetDoor(dr.destId);
+        if(drLink != null){
+          dr.x = c.x;
+          dr.y = c.y;
+        }
+        drLink.building = b.id;
+      }
+    }
+  }
+  
+  /* Returns the buildings on the other side of an exterior's doors. */
+  public List<Building> GetLinkedBuildings(Cell c){
+    List<Building> ret = new List<Building>();
+    foreach(DoorRecord dr in c.doors){
+      if(!dr.exteriorFacing){ 
+        ret.Add(GetMasterBuilding(dr.destName)); 
+      }
+    }
+    return ret;
+  }
+  
+  
   
   /* Places non-entrance exteriors randomly, filling in the map's grid.*/
   public void FillInOverworld(){
     List<Cell> nd = GetUnlinked();
-    MonoBehaviour.print("Placing " + nd.Count + " unlinked exteriors.");
+    if(nd.Count == 0){ 
+      MonoBehaviour.print("No unlinked exteriors detected; aborting.");
+      return;
+    }
     for(int i = 0; i < n; i++){
       for(int j = 0; j < m; j++){
         if(GetExterior(i, j) == null){
@@ -157,6 +194,7 @@ public class Cartographer{
   
   /* Returns all cells whose unlinked status matches the argument. */
   public List<Cell> GetUnlinked(bool val = true){
+    MonoBehaviour.print(master.ToString());
     List<Cell> ret = new List<Cell>();
     foreach(Cell c in master.exteriors){
       if(Unlinked(c) == val){ ret.Add(c); }
@@ -169,7 +207,10 @@ public class Cartographer{
     foreach(DoorRecord ed in c.doors){
       Building b = GetMasterBuilding(ed.destName);
       foreach(DoorRecord bd in b.doors){
-        if(bd.exteriorFacing && bd.destName != c.name){ return false; }
+        MonoBehaviour.print(c.name + ":" + b.name  + ":" + bd.destName );
+        if(bd.exteriorFacing && bd.destName != c.name){
+          return false; 
+        }
       }
     }
     return true;

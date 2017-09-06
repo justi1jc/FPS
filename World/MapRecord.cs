@@ -34,17 +34,15 @@ public class MapRecord{
     return ret;
   }
   
-  public int NextNPCID(){
+  public int NextNPCId(){
     int ret = npcId;
     lock(syncLock){ npcId++; }
     return ret;
   }
   
   public string ToString(){
-    string str = "Buildings:";
-    foreach(Building b in buildings){ str += b.ToString(); }
-    str += "Exteriors:";
-    foreach(Cell e in exteriors){ str += e.ToString(); }
+    string str = "Buildings:" + buildings.Count + " ";
+    str += "Exteriors: " + exteriors.Count + " ";
     return str;
   }
 }
