@@ -116,15 +116,22 @@ public class World{
   public GameRecord GetData(){
     GameRecord record = new GameRecord();
     record.sessionName = Session.session.sessionName;
-    /*
+    
     for(int i = 0; i < decks.Count; i++){
       if(decks[i].interior){ decks[i].SaveInterior(); }
       else{ decks[i].SaveExterior(); }
     }
     record.map = map;
-    record.players = GetPlayerData();
-    */
+    record.playerData = GetPlayerData();
     return record;
+  }
+  
+  List<Data> GetPlayerData(){
+    List<Data> ret = new List<Data>();
+    foreach(HoloDeck deck in decks){
+      ret.AddRange(deck.playerData);
+    }
+    return ret;
   }
   
   public void RegisterPlayer(Actor actor){
@@ -142,6 +149,10 @@ public class World{
       else{ MonoBehaviour.print(dr.room + ":"+ room + "," + dr.id + ":" + doorId); }
     }
     return null;
+  }
+  
+  public void SaveGame(){
+    MonoBehaviour.print("Saving game.");
   }
   
   /* Loads the Data from this GameRecord */

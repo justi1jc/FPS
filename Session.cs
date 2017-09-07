@@ -105,6 +105,7 @@ public class Session : MonoBehaviour {
     if(sesMenu != null){ DestroyMenu(); }
     world = new World();
     world.CreateAdventure();
+    gameMode = 0;
     /*
     sessionName = sesName;
     gameMode = 0;

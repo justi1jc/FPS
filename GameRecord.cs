@@ -8,9 +8,11 @@ using System.Collections.Generic;
 [System.Serializable]
 public class GameRecord{
   public string sessionName;
+  public List<Data> playerData;
   public MapRecord map;
   public GameRecord(){
     sessionName = "Null";
     map = null;
+    playerData = new List<Data>();
   }
 } 

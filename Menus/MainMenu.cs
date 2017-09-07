@@ -34,8 +34,13 @@ public class MainMenu : Menu{
       Sound(0);
     }
     
-    if(Button("Adventure", x, ih, iw, ih)){
+    if(Button("New Adventure", x, ih, iw, ih)){
       Session.session.CreateAdventure();
+      Sound(0);
+    }
+    
+    if(Button("Load Adventure", x, 2*ih, iw, ih)){
+      manager.Change("LOAD");
       Sound(0);
     }
     
