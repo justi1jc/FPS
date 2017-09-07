@@ -119,10 +119,10 @@ public class OptionsMenu : Menu{
           MonoBehaviour.print("Settings");
           break;
         case 3:
-          Session.session.SaveGame(Session.session.sessionName);
+          Session.session.world.SaveGame();
           break;
         case 4:
-          Session.session.SaveGame(Session.session.sessionName);
+          Session.session.world.SaveGame();
           Application.Quit();
           break;
         case 5:
@@ -147,10 +147,10 @@ public class OptionsMenu : Menu{
           MonoBehaviour.print("Settings");
           break;
         case 3:
-          Session.session.SaveGame(Session.session.sessionName);
+          Session.session.world.SaveGame();
           break;
         case 4:
-          Session.session.SaveGame(Session.session.sessionName);
+          Session.session.world.SaveGame();
           Application.Quit();
           break;
         case 5:

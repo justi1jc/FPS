@@ -63,8 +63,6 @@ public class HoloDeck : MonoBehaviour{
     else{ print("Could not find " + building + ":" +  room); }
   }
   
-  
-  
   /* Loads a given interior cell. */
   public void LoadInterior(Cell c, int door, bool saveFirst){
     SavePlayers();
@@ -99,10 +97,8 @@ public class HoloDeck : MonoBehaviour{
   /* Updates interior in Session's data with current content. */
   public void SaveInterior(){
     MonoBehaviour.print("method stub");
-    /*
     Cell c = focalCell.GetData();
-    Session.session.SetInterior(c.building, c.displayName, c.x, c.y, c);
-    */
+    Session.session.world.SetRoom(c.id, c.name, c);
   }
   
   /* Recenters the HoloDeck on specified exterior and loads relevant cells.
@@ -181,34 +177,30 @@ public class HoloDeck : MonoBehaviour{
   /* Removes all non-adjacent Cells. */
   void Prune(){
     MonoBehaviour.print("method stub");
-    /*
     List<HoloCell> orphans = new List<HoloCell>();
     for(int i = 0; i < cells.Count; i++){
       HoloCell hc = cells[i];
       if(!CellAdjacency(focalCell, hc)){
-        Session.session.SetExterior(hc.GetData());
+        Session.session.world.SetExterior(hc.GetData());
         hc.Clear();
         orphans.Add(hc);
       }
     }
     for(int i = 0; i < orphans.Count; i++){ cells.Remove(orphans[i]); }
-    */
   }
   
   /* Loads any unloaded adjacent cells. */
   void Expand(){
-    /*
     List<int[]> neighbors = Adjacencies(focalCell.cell.x, focalCell.cell.y);
     for(int i = 0; i < neighbors.Count; i++){
       int[] ne = neighbors[i];
       if(!Loaded(ne[0], ne[1])){
         int[] fr = FocalRelation(ne[0], ne[1]); 
         HoloCell hc = AddExteriorCell(fr[0], fr[1]);
-        Cell c = Session.session.GetExterior(ne[0], ne[1]);
+        Cell c = Session.session.world.GetExterior(ne[0], ne[1]);
         hc.LoadData(c);
       }
     }
-    */
   }
   
   /* Returns true if this cell is already loaded. */
@@ -297,27 +289,23 @@ public class HoloDeck : MonoBehaviour{
   /* Updates all active exterior cells to Session's map. */
   public void SaveExterior(){
     MonoBehaviour.print("method stub");
-    /*
     for(int i = 0; i < cells.Count; i++){
       Cell c = cells[i].GetData();
-      if(c != null){ Session.session.SetExterior(c.x, c.y, c); }
+      if(c != null){ Session.session.world.SetExterior(c); }
     }
-    */
   }
   
   /* Updates specified exterior, if it is active. */
   public void SaveExterior(int x, int y){
     MonoBehaviour.print("method stub");
-    /*
     for(int i = 0; i < cells.Count; i++){
       bool xmatch = x == cells[i].cell.x;
       bool ymatch = y == cells[i].cell.y;
       if(xmatch && ymatch){ 
         Cell c = cells[i].GetData();
-        Session.session.SetExterior(x, y, c);
+        Session.session.world.SetExterior(c);
       }
     }
-    */
   }
   
   /* Returns a list of any exteriors within or adjacent to given coordinates. */
@@ -399,7 +387,7 @@ public class HoloDeck : MonoBehaviour{
   /* Loads players from playerData into the active cell. */
   public void LoadPlayers(){
      for(int i = 0; i < playerData.Count; i++){
-       if(focalCell != null){ focalCell.CreateNPC(playerData[i], false, true); }
+       if(focalCell != null){ focalCell.CreateNPC(playerData[i], true, true); }
      }
      playerData = new List<Data>();
   }

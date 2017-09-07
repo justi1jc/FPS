@@ -132,6 +132,7 @@ public class HoloCell{
       actor.LoadData(dat);
       if(actor.id == -1){ actor.id = NextId(); } 
     }
+    if(player){ MonoBehaviour.print("Placed player at " + sPos + ", ignoreDoor " + ignoreDoor); }
     go.transform.position = sPos;
   }
   

@@ -6,21 +6,28 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 
 public class World{
+  public string name;
   public List<Quest> quests;
   public MapRecord map;
   public List<HoloDeck> decks;
   public GameObject gameObject;
+  public List<Data> playerData;
+  private readonly object syncLock = new object(); // Mutex lock
   
   public World(){
     decks = null;
+    playerData = null;
     this.gameObject = new GameObject();
   }
   
   /* Creates a new adventure. */
   public void CreateAdventure(){
+    name = "game";
     map = Cartographer.GetMap(5, 5);
     DeployHoloDeck();
     Building b = map.buildings[0];
@@ -64,6 +71,7 @@ public class World{
   
   public HoloDeck CreateDeck(int id){
     HoloDeck hd = gameObject.AddComponent<HoloDeck>();
+    if(decks == null){ decks = new List<HoloDeck>(); }
     decks.Add(hd);
     hd.id = id;
     return hd;
@@ -96,12 +104,35 @@ public class World{
     return null;
   }
   
+  public void SetRoom(int building, string room, Cell c){
+    foreach(Building b in map.buildings){
+      if(b.id == building){
+        for(int i = 0; i < b.rooms.Count; i++){
+          if(b.rooms[i].name == room){
+            b.rooms[i] = new Cell(c);
+            return;
+          }
+        }
+      }
+    }
+  }
+  
   /* Return specific exterior from map, or null */
   public Cell GetExterior(int x, int y){
     foreach(Cell c in map.exteriors){
       if(c.x == x && c.y == y){ return new Cell(c); }
     }
     return null;
+  }
+  
+  public void SetExterior(Cell c){
+    for(int i = 0; i < map.exteriors.Count; i++){
+      Cell otherC = map.exteriors[i];
+      if(otherC.x == c.x && otherC.y == c.y){
+        map.exteriors[i] = c;
+        return;
+      }
+    }
   }
   
   /* Returns bulding of specified id, or null. */
@@ -112,32 +143,19 @@ public class World{
     return null;
   }
   
-  /* Returns this Adventure's save. */
-  public GameRecord GetData(){
-    GameRecord record = new GameRecord();
-    record.sessionName = Session.session.sessionName;
-    
-    for(int i = 0; i < decks.Count; i++){
-      if(decks[i].interior){ decks[i].SaveInterior(); }
-      else{ decks[i].SaveExterior(); }
-    }
-    record.map = map;
-    record.playerData = GetPlayerData();
-    return record;
-  }
-  
-  List<Data> GetPlayerData(){
-    List<Data> ret = new List<Data>();
-    foreach(HoloDeck deck in decks){
-      ret.AddRange(deck.playerData);
-    }
-    return ret;
-  }
-  
   public void RegisterPlayer(Actor actor){
     foreach(HoloDeck deck in decks){
       if(deck.RegisterPlayer(actor)){ return; }
     }
+  }
+  
+  public List<Data> GetPlayerData(){
+    List<Data> ret = new List<Data>();
+    foreach(HoloDeck deck in decks){
+      ret.AddRange(deck.GetPlayers());
+    }
+    MonoBehaviour.print("Saved" + ret.Count + " players.");
+    return ret;
   }
   
   /* Returns a door from building */
@@ -153,11 +171,73 @@ public class World{
   
   public void SaveGame(){
     MonoBehaviour.print("Saving game.");
+    lock(syncLock){
+      BinaryFormatter bf = new BinaryFormatter();
+      string path = Application.persistentDataPath + "/" + name + ".save"; 
+      using(FileStream file = File.Create(path)){
+        GameRecord record = GetData();
+        bf.Serialize(file, record);
+        file.Close();
+      }
+    }
+  }
+  
+  public void Clear(){
+    foreach(HoloDeck deck in decks){ deck.ClearContents(); }
+    GameObject.Destroy(gameObject);
+  }
+  
+  public void LoadGame(string fileName){
+    GameRecord record = LoadFile(fileName);
+    if(record == null){ MonoBehaviour.print("Null game record"); return; }
+    LoadData(record);
+    if(playerData.Count == 0){ MonoBehaviour.print("There are no players."); return; }
+    HoloDeck hd = CreateDeck(0);
+    Data player = playerData[0];
+    Cell c = player.lastPos;
+    if(c.interior){
+      hd.LoadRoom(c.id, c.name, -1, false);
+    }
+    else{
+      hd.LoadExterior(c.x, c.y, -1, false);
+    }
+    hd.AddPlayer(player, true);
+    playerData.Remove(player);
+  }
+  
+  /* Returns a GameRecord containing data from a specified file, or null.*/
+  GameRecord LoadFile(string fileName){
+    lock(syncLock){
+      BinaryFormatter bf = new BinaryFormatter();
+      string path = Application.persistentDataPath + "/" + fileName + ".save";
+      if(!File.Exists(path)){ return null; }
+      using(FileStream file = File.Open(path, FileMode.Open)){
+        GameRecord record = (GameRecord)bf.Deserialize(file);
+        file.Close();
+        return record;
+      }
+    }
+  }
+  
+  /* Returns this Adventure's save. */
+  public GameRecord GetData(){
+    GameRecord record = new GameRecord();
+    record.sessionName = Session.session.sessionName;
+    for(int i = 0; i < decks.Count; i++){
+      if(decks[i].interior){ decks[i].SaveInterior(); }
+      else{ decks[i].SaveExterior(); }
+    }
+    record.sessionName = name;
+    record.map = map;
+    record.playerData = GetPlayerData();
+    return record;
   }
   
   /* Loads the Data from this GameRecord */
   public void LoadData(GameRecord gr){
-    MonoBehaviour.print("method stub");
+    map = gr.map;
+    name = gr.sessionName;
+    playerData = gr.playerData;
   }
   
   

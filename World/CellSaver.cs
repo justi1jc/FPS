@@ -63,6 +63,7 @@ public class CellSaver : MonoBehaviour {
     
     Cell c = new Cell();
     List<GameObject> found = GetContents();
+    c.interior = interior;
     if(interior){ c.building = building; }
     c.items = GetItems(found);
     c.npcs = GetNpcs(found);

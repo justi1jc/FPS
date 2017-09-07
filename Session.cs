@@ -106,45 +106,17 @@ public class Session : MonoBehaviour {
     world = new World();
     world.CreateAdventure();
     gameMode = 0;
-    /*
-    sessionName = sesName;
-    gameMode = 0;
-    currentID = 0;
-    if(mainMenu){ DestroyMenu();}
-    CreateLoadingScreen();
-    map = Cartographer.GetMaster();
-    map = Cartographer.Generate(map, 16, 16);
-    HoloDeck deck = CreateDeck();
-    Cell initCell = GetStartingCell();
-    if(initCell == null){ print("Init cell null"); return; }
-    deck.LoadInterior(initCell, 0, false);
-    deck.AddPlayer("player1");
-    DestroyLoadingScreen();
-    StartCoroutine(QuestRoutine());
-    CreateStartingQuests();
-    */
   }
-  
-  /* Overwrite specific file with current session's game data. */
-  public void SaveGame(string fileName){
-    print("method stub");
-    /*
-    if(fileAccess){ return; }
-    fileAccess = true;
-    BinaryFormatter bf = new BinaryFormatter();
-    string path = Application.persistentDataPath + "/" + fileName + ".save"; 
-    using(FileStream file = File.Create(path)){
-      GameRecord record = GetData();
-      bf.Serialize(file, record);
-      file.Close();
-    }
-    fileAccess = false;
-    */
-  }
+
   
   /* Load contents from a specific file. */
   public void LoadGame(string fileName){
     print("method stub");
+    gameMode = 0;
+    if(sesMenu != null){ DestroyMenu();}
+    if(world != null){ world.Clear(); }
+    world = new World();
+    world.LoadGame(fileName);
     /*
     if(mainMenu){ DestroyMenu(); print("Destroy Main Menu"); }
     GameRecord record = LoadFile(fileName);
@@ -209,6 +181,7 @@ public class Session : MonoBehaviour {
     GameObject go = new GameObject();
     sesCam = go.AddComponent(typeof(Camera)) as Camera;
     sesMenu = go.AddComponent(typeof(MenuManager)) as MenuManager;
+    go.AddComponent<AudioListener>();
     sesMenu.Change("MAIN");
     jukeBox.Play("Menu");
   }

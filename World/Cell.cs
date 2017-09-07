@@ -11,9 +11,10 @@ using System.Collections.Generic;
 public class Cell{
   
   public string name;
+  public bool interior;
   public string building; // The parent building of this room cell resides in.
   public int x, y; // Position on the map this exterior cell resides in.
-  public int id = -1;
+  public int id = -1; // Id of this cell, or its building.
   public List<Data> items;
   public List<Data> npcs;
   public List<DoorRecord> doors;
@@ -31,6 +32,7 @@ public class Cell{
     heY = c.heY;
     heZ = c.heZ;
     name = c.name;
+    interior = c.interior;
   }
   
   public Cell(){
