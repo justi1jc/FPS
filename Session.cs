@@ -88,9 +88,7 @@ public class Session : MonoBehaviour {
     if(player == 1){ cam1 = cam; }
     else if(player == 2){ cam2 = cam; }
     UpdateCameras();
-    for(int i = 0; i < decks.Count; i++){
-      if(decks[i].RegisterPlayer(actor)){ break; }
-    }
+    world.RegisterPlayer(actor);
   }
   
   /* Updates the cameras according to remaining players. */
@@ -170,66 +168,6 @@ public class Session : MonoBehaviour {
     */
   }
   
-  /*
-     Loads a particular room using specified HoloDeck.
-  */
-  public void LoadRoom(
-    int building,
-    string room,
-    int door,
-    int deck = 0,
-    bool saveFirst = true
-  ){
-    print("method stub");
-    //decks[deck].LoadInterior(building, cellName, door, x, y, saveFirst);
-  }
-  
-  /* Loads a section of the overworld using specified HoloDeck. */
-  public void LoadOverworld(
-    int x, int y,
-    int door = -1,
-    int deck = 0,
-    bool saveFirst = true
-  ){
-    print("method stub");
-    //decks[deck].LoadExterior(door, x, y, saveFirst);
-  }
-  
-  /* Gives xp to all players. */
-  public void AwardXP(int amount){
-    string str = amount + " xp awarded!";
-    Notify(str);
-  }
-  
-  
-  /* Returns the interior cell the player aught to start in at the beginning of
-     the game.
-     WARNING: This is hardcoded and must be updated to match the master file.
-  */
-  public Cell GetStartingCell(){
-    print("method stub");
-    /*
-    string INIT_BUILDING = "House";
-    string INIT_ROOM = "Entrance";
-    for(int i = 0; i < map.interiors.Count; i++){
-      bool bmatch = map.interiors[i].building == INIT_BUILDING;
-      bool rmatch = map.interiors[i].displayName == INIT_ROOM;
-      if(bmatch && rmatch){
-        return map.interiors[i];
-      }
-    }
-    */
-    return null;
-  }
-  
-  
-  /* Create camera and menu to display loading screen. */
-  public void CreateLoadingScreen(){
-  }
-  
-  /* Remove camera and menu. */
-  public void DestroyLoadingScreen(){
-  }
   
   /* Sets up each player's Menu */
   void UpdateCameras(){

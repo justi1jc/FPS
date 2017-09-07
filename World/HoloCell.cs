@@ -51,7 +51,7 @@ public class HoloCell{
   public void Clear(){
     List<GameObject> obs = GetContents();
     for(int i = 0; i < obs.Count; i++){
-      Object.Destroy(obs[i]);
+      GameObject.Destroy(obs[i]);
     }
     ClearWalls();
   }
@@ -80,7 +80,6 @@ public class HoloCell{
         if(spawnDoor == -1 || w.id == spawnDoor){
           spawnPos = w.DestPos();
           spawnRot = w.DestRot();
-          MonoBehaviour.print("Spawn set to" + spawnPos);
         }
       }
     }
@@ -112,16 +111,15 @@ public class HoloCell{
     their last known position. Otherwise it is assumed players are entering the 
     cell via a spawnpoint.  */
   public void CreateNPC(Data dat, bool ignoreDoor = false, bool player = false){
-    if(dat == null){ return; }
+    if(dat == null){ MonoBehaviour.print("Data null"); return; }
+    Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
+    sPos += position;
     if(!ignoreDoor && player){
-      dat.x = spawnPos.x;
-      dat.z = spawnPos.z;
+      sPos = spawnPos;
       dat.xr = spawnRot.x;
       dat.yr = spawnRot.y;
       dat.zr = spawnRot.z;
     }
-    Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
-    sPos += position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
     GameObject pref = (GameObject)Resources.Load("Prefabs/" + dat.prefabName, typeof(GameObject));
     if(!pref){
@@ -150,7 +148,7 @@ public class HoloCell{
     Vector3 direction = new Vector3(0f,0.001f,0f);
     Quaternion orientation = Quaternion.identity;
     float distance = 1f;
-    int layerMask = ~(1 << 8);
+    int layerMask = -1;
     RaycastHit[] found = Physics.BoxCastAll(
       center,
       halfExtents,

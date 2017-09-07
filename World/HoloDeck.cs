@@ -84,14 +84,14 @@ public class HoloDeck : MonoBehaviour{
     if(interior){
       ret = Session.session.world.GetBuildingDoor(c.id, c.name, doorId);
       if(ret == null){
-        MonoBehaviour.print("Couldn't find door " + doorId + " in " + c.id);
+        MonoBehaviour.print("Couldn't find interior door " + doorId + " in " + c.id);
       }
     }
     else{
       foreach(DoorRecord dr in c.doors){
         if(dr.id == doorId){ return dr; }
       }
-      MonoBehaviour.print("Couldn't find door " + doorId + " in " + c.name);
+      MonoBehaviour.print("Couldn't ext find door " + doorId + " in " + c.name);
     }
     return ret;
   }
@@ -109,21 +109,20 @@ public class HoloDeck : MonoBehaviour{
      This is called as the result of a warp door being used.
   */
   public void LoadExterior(
-    int door, // If -1, ignores doors.
     int x, int y,
+    int door, 
     bool saveFirst
   ){
-    MonoBehaviour.print("method stub");
-    /*
     SavePlayers();
     if(saveFirst && interior){ SaveInterior(); }
     else if(saveFirst){ SaveExterior(); }
     ClearContents();
+    interior = false;
     for(int i = 0; i < 3; i++){
       for(int j = 0; j < 3; j++){
         int cx = x - 1 + i;
         int cy = y - 1 + j; 
-        Cell c = Session.session.GetExterior(cx, cy);
+        Cell c = Session.session.world.GetExterior(cx, cy);
         HoloCell hc = AddExteriorCell(i,j);
         if(i == 1 && j == 1){
           hc.LoadData(c, door);
@@ -135,13 +134,12 @@ public class HoloDeck : MonoBehaviour{
     LoadPlayers();
     interior = false;
     BuildWalls();
-    */
   }
   
   /* Listens for the player leaving the active cell. In the event that this
      happens, the holodeck shifts its focus to the player's current position. */
   public void ManageShifting(){
-    if(players == null){ return; }
+    if(players == null || players.Count == 0){ return; }
     if(players[0] != null && !focalCell.Contains(players[0].transform.position)){
       ShiftExterior();
     }

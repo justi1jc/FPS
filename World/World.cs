@@ -28,10 +28,38 @@ public class World{
     decks[0].AddPlayer("player1");
   }
   
+  
   /* Sets up HoloDecks for adventure. */
   public void DeployHoloDeck(){
     decks = new List<HoloDeck>();
     HoloDeck hd = CreateDeck(0);
+  }
+  
+  public void LoadOverworld(
+    int x,
+    int y, 
+    int door,
+    int deck,
+    bool saveFirst
+  ){
+    //MonoBehaviour.print(x + "," + y + "," + door + "," + deck + "," + saveFirst);
+    HoloDeck hd = GetDeck(deck);
+    if(hd == null){ MonoBehaviour.print("Deck " + deck + " is null"); return; }
+    hd.LoadExterior(x, y, door, saveFirst);
+    
+  }
+  
+  public void LoadRoom(
+    int building, 
+    string room, 
+    int door, 
+    int deck, 
+    bool saveFirst
+  ){
+    HoloDeck hd = GetDeck(deck);
+    if(hd == null){ MonoBehaviour.print("Deck " + deck + " is null"); return; }
+    hd.LoadRoom(building, room, door, saveFirst);
+  
   }
   
   public HoloDeck CreateDeck(int id){
@@ -97,6 +125,12 @@ public class World{
     record.players = GetPlayerData();
     */
     return record;
+  }
+  
+  public void RegisterPlayer(Actor actor){
+    foreach(HoloDeck deck in decks){
+      if(deck.RegisterPlayer(actor)){ return; }
+    }
   }
   
   /* Returns a door from building */

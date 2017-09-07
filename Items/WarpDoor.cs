@@ -37,10 +37,10 @@ public class WarpDoor : Decor{
   /* Warps to destination. */
   public void Warp(){
     if(exteriorFacing){
-      Session.session.LoadOverworld(x, y, destId, deck, true);
+      Session.session.world.LoadOverworld(x, y, destId, deck, true);
     }
     else{
-      Session.session.LoadRoom(building, room, destId, deck, true);
+      Session.session.world.LoadRoom(building, room, destId, deck, true);
     }
   }
   
@@ -77,6 +77,8 @@ public class WarpDoor : Decor{
     building = dr.building;
     x = dr.x;
     y = dr.y;
+    exterior = dr.exterior;
+    exteriorFacing = dr.exteriorFacing;
   }
   
 }

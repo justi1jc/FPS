@@ -73,7 +73,7 @@ public class SpeechTree{
         break;
       case "AWARD_XP":      
         if(args.Length < 1){ return; }
-        Session.session.AwardXP(args[0]);
+        //Session.session.AwardXP(args[0]);
         break;
     }
   }
