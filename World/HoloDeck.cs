@@ -176,7 +176,6 @@ public class HoloDeck : MonoBehaviour{
   
   /* Removes all non-adjacent Cells. */
   void Prune(){
-    MonoBehaviour.print("method stub");
     List<HoloCell> orphans = new List<HoloCell>();
     for(int i = 0; i < cells.Count; i++){
       HoloCell hc = cells[i];

@@ -105,6 +105,7 @@ public class World{
   }
   
   public void SetRoom(int building, string room, Cell c){
+    if(c == null){ MonoBehaviour.print("Cell null"); return; }
     foreach(Building b in map.buildings){
       if(b.id == building){
         for(int i = 0; i < b.rooms.Count; i++){
@@ -126,6 +127,7 @@ public class World{
   }
   
   public void SetExterior(Cell c){
+    if(c == null){ return; }
     for(int i = 0; i < map.exteriors.Count; i++){
       Cell otherC = map.exteriors[i];
       if(otherC.x == c.x && otherC.y == c.y){

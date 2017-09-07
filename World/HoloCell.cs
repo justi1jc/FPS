@@ -132,7 +132,6 @@ public class HoloCell{
       actor.LoadData(dat);
       if(actor.id == -1){ actor.id = NextId(); } 
     }
-    if(player){ MonoBehaviour.print("Placed player at " + sPos + ", ignoreDoor " + ignoreDoor); }
     go.transform.position = sPos;
   }
   
@@ -339,18 +338,19 @@ public class HoloCell{
     float x = position.x;
     float y = position.y;
     float z = position.z;
+    float margin = 0f;
     switch(direction){
       case 0:
-        x += (cell.heX + 1);
+        x += (cell.heX + margin);
         break;
       case 1:
-        x -= (cell.heX + 1);
+        x -= (cell.heX + margin);
         break;
       case 2:
-        z += (cell.heZ + 1);
+        z += (cell.heZ + margin);
         break;
       case 3:
-        z -= (cell.heZ + 1);
+        z -= (cell.heZ + margin);
         break;
     }
     return new Vector3(x, y, z);
