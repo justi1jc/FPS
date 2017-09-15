@@ -29,6 +29,7 @@ public class World{
   public void CreateAdventure(){
     name = "game";
     map = Cartographer.GetMap(5, 5);
+    MonoBehaviour.print(map.ToString());
     DeployHoloDeck();
     Building b = map.buildings[0];
     decks[0].LoadRoom(b.id, b.rooms[0].name, 0, false);
@@ -97,7 +98,9 @@ public class World{
     foreach(Building b in map.buildings){
       if(b.id == building){
         foreach(Cell c in b.rooms){
-          if(c.name == room){ return new Cell(c); }
+          if(c.name == room){ 
+            return new Cell(c); 
+          }
         }
       }
     }
@@ -166,7 +169,7 @@ public class World{
     if(b == null){ MonoBehaviour.print("Couldn't find building"); return null; }
     foreach(DoorRecord dr in b.doors){
       if(dr.room == room && dr.id == doorId){ return dr; }
-      else{ MonoBehaviour.print(dr.room + ":"+ room + "," + dr.id + ":" + doorId); }
+      MonoBehaviour.print(dr.room + ":" + room +  "," + dr.id + ":" + doorId + "," + dr.destName);
     }
     return null;
   }
@@ -243,7 +246,14 @@ public class World{
   }
   
   
-  
+  public void DebugPrintout(){
+    foreach(Building b in map.buildings){
+      MonoBehaviour.print(b.ToString());
+    }
+    foreach(Cell c in map.exteriors){
+      MonoBehaviour.print(c.ToString());
+    }
+  }
   
   
 }

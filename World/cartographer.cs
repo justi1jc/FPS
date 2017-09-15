@@ -62,63 +62,154 @@ public class Cartographer{
   /* Produces a randomly-generated map */
   public void GenerateMap(){
     derived = new MapRecord();
-    //PlaceBuildings();
+    PlaceBuildings();
     FillInOverworld();
     derived.width = n;
     derived.height = m;
   }
-  
-  /* Removes the cells from this list. */
-  public List<Cell> RemoveRange(List<Cell> a, List<Cell> b){
-    a = new List<Cell>(a);
-    foreach(Cell c in b){
-      a.Remove(c);
-    }
-    return a;
-  }
-  
   
   /* Randomly places all exteriors with doors, the buildings attached, and the 
     exteriors attached to said buildings, linking them.
   */
   public void PlaceBuildings(){
     List<Cell> exteriors = GetUnlinked(false);
-    while(exteriors.Count > 0){
-      exteriors = new List<Cell>();
-      List<Cell> placed = PlaceLinked(exteriors[0]);
-      exteriors = RemoveRange(exteriors, placed);
+    List<Building> buildings = GetBuildings(exteriors);
+    foreach(Building b in buildings){ PlaceBuilding(b); }
+  }
+  
+  /* Return true if this building will not leave the edge of the map */
+  public bool CanPlaceBuilding(Building b, int x, int y){
+    foreach(DoorRecord dr in b.doors){
+      int dx = dr.x + x;
+      int dy = dr.y + y;
+      if(dx < 0 || dy < 0 || dx >= n || dy >= m){ 
+        return false; 
+      }
+    }
+    return true;
+  }
+  
+  /* Places a building at a particular position.
+     placing any missing exteriors at the same time. */
+  public void PlaceBuilding(Building b){
+    List<Cell> existing = ExistingExteriors(b);
+    int x, y;
+    x = y = 0;
+    if(existing.Count > 0){
+      foreach(Cell c in existing){
+        if(Link(b, c)){
+          x = c.x;
+          y = c.y;
+        }
+      }
+      FillInUnlinked(b, x, y);
+      derived.buildings.Add(b);
+      return;
+    }
+    int[] coords = BuildingCoords(b);
+    if(coords[0] == -1 && coords[1] == -1){
+      MonoBehaviour.print("Couldnt place " + b.name);
+      return;
+    }
+    FillInUnlinked(b, coords[0], coords[1]);
+    derived.buildings.Add(b);
+  }
+  
+  /* Returns random valid coordinates to place a building, or [-1,-1] */
+  public int[] BuildingCoords(Building b){
+    List<int[]> valid = new List<int[]>();
+    for(int x = 0; x < n; x++){
+      for(int y = 0; y < m; y++){
+        if(CanPlaceBuilding(b, x, y)){
+          int[] coords = new int[2];
+          coords[0] = x;
+          coords[1] = y;
+          valid.Add(coords);
+        }
+      }
+    }
+    if(valid.Count == 0){
+      int[] ret = {-1,-1};
+      MonoBehaviour.print("Couldn't place" + b.name);
+      return ret;
+    }
+    int choice = rand.Next(0, valid.Count);
+    return valid[choice];
+  }
+  
+  /* Places remaining unlinked exteriors that aren't on the map at provided
+    coords. */
+  public void FillInUnlinked(Building b, int x, int y){
+    foreach(DoorRecord dr in b.doors){
+      if(dr.exteriorFacing && dr.destId == -1){
+        Cell c = GetMasterExterior(dr.destName);
+        c.x = x + dr.x;
+        c.y = y + dr.y;
+        derived.exteriors.Add(c);
+      }
     }
   }
   
-  
-  /* Places a grouping of exteriors connected to this one, returning all
-     connected exteriors.
-  */
-  public List<Cell> PlaceLinked(Cell c){
-    return new List<Cell>();
-    
+  /* Returns all existing exteriors with unlinked doors leading to this
+     building. */
+  public List<Cell> ExistingExteriors(Building b){
+    List<Cell> ret = new List<Cell>();
+    foreach(Cell c in derived.exteriors){
+      if(CanLink(c, b)){
+        ret.Add(c);
+      }
+    }
+    return ret;
   }
   
   
-  /* Returns (through out variables) the buildings and exteriors connected to
-     this one. */
-  public void LinkedExteriors(out List<Cell> exteriors, out List<Building> buildings){
-    exteriors = null;
-    buildings = null;
+  /* Returns true if exterior has an unlinked door leading to this building */
+  public bool CanLink(Cell c, Building b){
+    foreach(DoorRecord dr in c.doors){
+      if(!dr.exteriorFacing && dr.destName == b.name  && dr.building == -1){
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  /* Returns a set of buildings connected to the provided cells. */
+  public List<Building> GetBuildings(List<Cell> cells){
+    List<string> names = new List<string>();
+    foreach(Cell c in cells){
+      foreach(DoorRecord dr in c.doors){
+        if(!dr.exteriorFacing && names.IndexOf(dr.destName) == -1){
+          names.Add(dr.destName);
+        }
+        else if(names.IndexOf(dr.destName) == -1){
+          MonoBehaviour.print(dr.destName + " not added " + dr.exteriorFacing);
+        }
+      }
+    }
+    List<Building> buildings = new List<Building>();
+    foreach(string name in names){
+      Building b = GetMasterBuilding(name);
+      if(b == null){ MonoBehaviour.print(name + " is null."); }
+      else{ buildings.Add(b); }
+    }
+    return buildings;
   }
   
   /* Places an unlinked exterior with its building, */
   public void PlaceUnlinked(Cell c){
     List<Building> buildings = GetLinkedBuildings(c);
     foreach(Building b in buildings){ 
-      Link(b, c); 
+      Link(b, c);
       derived.buildings.Add(b);
     }
     derived.exteriors.Add(c);
   }
   
-  /* Ensures all doors are supplied with correct ids. */
-  public void Link(Building b, Cell c){
+  /* Ensures all doors are supplied with correct ids. 
+     Returns true if this cell is the building's 0,0 coorinate.
+  */
+  public bool Link(Building b, Cell c){
+    bool ret = false;
     if(b.id == -1){ 
       b.id = derived.NextBuildingId();
       foreach(Cell room in b.rooms){ room.id = b.id; } 
@@ -128,12 +219,14 @@ public class Cartographer{
       if(dr.exteriorFacing && dr.destName == c.name){
         DoorRecord drLink = c.GetDoor(dr.destId);
         if(drLink != null){
+          if(dr.x == 0 && dr.y == 0){ ret = true; }
           dr.x = c.x;
           dr.y = c.y;
         }
         drLink.building = b.id;
       }
     }
+    return ret;
   }
   
   /* Returns the buildings on the other side of an exterior's doors. */

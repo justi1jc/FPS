@@ -40,7 +40,8 @@ public class WarpDoor : Decor{
       Session.session.world.LoadOverworld(x, y, destId, deck, true);
     }
     else{
-      Session.session.world.LoadRoom(building, room, destId, deck, true);
+      print("Load room");
+      Session.session.world.LoadRoom(building, destName, destId, deck, true);
     }
   }
   
@@ -53,6 +54,9 @@ public class WarpDoor : Decor{
     
     dat.strings.Add(room);
     dat.strings.Add(destName);
+    
+    dat.bools.Add(exteriorFacing);
+    dat.bools.Add(exterior);
     return dat;
   }
   
@@ -67,6 +71,11 @@ public class WarpDoor : Decor{
     int s = 0;
     room = dat.strings[s]; s++;
     destName = dat.strings[s]; s++;
+    
+    int b = 0;
+    exteriorFacing = dat.bools[b]; b++;
+    exterior = dat.bools[b]; b++;
+    displayName = "Door to " + destName;
   }
   
   public DoorRecord GetRecord(){
@@ -74,6 +83,7 @@ public class WarpDoor : Decor{
   }
   
   public void LoadRecord(DoorRecord dr){
+    if(dr == null){ MonoBehaviour.print("Door Record null"); return; }
     building = dr.building;
     x = dr.x;
     y = dr.y;

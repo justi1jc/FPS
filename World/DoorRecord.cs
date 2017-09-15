@@ -9,14 +9,14 @@ using System.Collections.Generic;
 
 public class DoorRecord{
   public int x, y; // Position relative to center door of a building.
-  public int building; // Id of destination building.
+  public int building = -1; // Id of destination building.
   public string destName; // Name of destination exterior/building.
   public string room; // Name of destination room within building.
   
   public bool exterior; // True if this door is in a cell, false if in a building.
   public bool exteriorFacing; // True if this door leads to the overworld 
   
-  public int destId; // Id of destination door.
+  public int destId = -1; // Id of destination door.
   public int id; // Id of this door within its room. 
   
   /* WarpDoor constructor. */

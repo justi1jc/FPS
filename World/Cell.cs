@@ -54,7 +54,7 @@ public class Cell{
   }
   
   public string ToString(){
-    string ret = "";
+    string ret = "[";
     ret += name;
     ret += "(" + x + "," + y + ")," + id;
     return ret;

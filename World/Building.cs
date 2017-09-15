@@ -50,10 +50,10 @@ public class Building{
   }
   
   public string ToString(){
-    string str = "";
-    str += name;
+    string str = "[";
+    str += name + "(" + id + ")";
     str += "(" + x + "," + y + ")";
-    str += rooms.Count + " rooms";
+    str += rooms.Count + " rooms]";
     return str;
   }
 }

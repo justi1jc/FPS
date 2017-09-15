@@ -82,7 +82,7 @@ public class HoloDeck : MonoBehaviour{
     if(interior){
       ret = Session.session.world.GetBuildingDoor(c.id, c.name, doorId);
       if(ret == null){
-        MonoBehaviour.print("Couldn't find interior door " + doorId + " in " + c.id);
+        MonoBehaviour.print("Couldn't find interior door " + doorId + " in " + c.name);
       }
     }
     else{
@@ -96,7 +96,6 @@ public class HoloDeck : MonoBehaviour{
   
   /* Updates interior in Session's data with current content. */
   public void SaveInterior(){
-    MonoBehaviour.print("method stub");
     Cell c = focalCell.GetData();
     Session.session.world.SetRoom(c.id, c.name, c);
   }

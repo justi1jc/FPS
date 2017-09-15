@@ -117,28 +117,6 @@ public class Session : MonoBehaviour {
     if(world != null){ world.Clear(); }
     world = new World();
     world.LoadGame(fileName);
-    /*
-    if(mainMenu){ DestroyMenu(); print("Destroy Main Menu"); }
-    GameRecord record = LoadFile(fileName);
-    if(record == null){ print("Null game record"); return; }
-    LoadData(record);
-    if(playerData.Count == 0){ print("There are no players."); return; }
-    HoloDeck hd = CreateDeck();
-    Data player = playerData[0];
-    Cell c = player.lastPos;
-    if(c.interior){
-      print("Loading interior");
-      hd.LoadInterior(c.building, c.displayName, -1, c.x, c.y, false);
-    }
-    else{
-      print("Loading exterior");
-      hd.LoadExterior(-1, c.x, c.y, false);
-    }
-    hd.AddPlayer(player, false);
-    playerData.Remove(player);
-    StopAllCoroutines();
-    StartCoroutine(QuestRoutine());
-    */
   }
   
   
