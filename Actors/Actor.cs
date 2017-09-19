@@ -434,6 +434,12 @@ public class Actor : MonoBehaviour{
     StickMove(xl, -yl);
     Turn(new Vector3(yr, xr, 0f));
     
+    // D-PAD
+    float dx = Input.GetAxis(Session.DX);
+    print(dx);
+    if(Input.GetKeyDown(Session.DRB) || dx > 0){  print("Next"); hotbar.NextSlot(); }
+    if(Input.GetKeyDown(Session.DLB) || dx < 0){ print("Prev"); hotbar.PreviousSlot(); }
+    
     //Buttons
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(Session.B)){ Use(7); }
