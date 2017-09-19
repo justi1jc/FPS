@@ -29,6 +29,7 @@ public class Arena : MonoBehaviour{
 
   /* Begin a new round. */
   public void Initialize(){
+    Session.session.world = new World();
     Data dat = Session.session.arenaData;
     menu = gameObject.AddComponent<MenuManager>();
     menu.Change("ARENAHUD");

@@ -149,6 +149,7 @@ public class World{
   }
   
   public void RegisterPlayer(Actor actor){
+    if(decks == null){ return; }
     foreach(HoloDeck deck in decks){
       if(deck.RegisterPlayer(actor)){ return; }
     }
