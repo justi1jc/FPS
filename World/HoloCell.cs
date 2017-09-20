@@ -104,6 +104,7 @@ public class HoloCell{
     dat.zr = spawnRot.z;
     a.LoadData(dat);
     if(a.id == -1){ a.id = NextId(); }
+    MonoBehaviour.print("Adding player to cell" + cell.name);
   }
   
   /* Creates an NPC with the given data. 

@@ -37,10 +37,10 @@ public class WarpDoor : Decor{
   /* Warps to destination. */
   public void Warp(){
     if(exteriorFacing){
+      print("Warping to (" + x + "," + y + ")" + destId + "," + destName);
       Session.session.world.LoadOverworld(x, y, destId, deck, true);
     }
     else{
-      print("Load room");
       Session.session.world.LoadRoom(building, destName, destId, deck, true);
     }
   }
@@ -84,7 +84,9 @@ public class WarpDoor : Decor{
   
   public void LoadRecord(DoorRecord dr){
     if(dr == null){ MonoBehaviour.print("Door Record null"); return; }
+    MonoBehaviour.print("Loaded door data.");
     building = dr.building;
+    destId = dr.destId;
     x = dr.x;
     y = dr.y;
     exterior = dr.exterior;

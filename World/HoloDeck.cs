@@ -385,7 +385,11 @@ public class HoloDeck : MonoBehaviour{
   /* Loads players from playerData into the active cell. */
   public void LoadPlayers(){
      for(int i = 0; i < playerData.Count; i++){
-       if(focalCell != null){ focalCell.CreateNPC(playerData[i], true, true); }
+       if(focalCell != null){
+         focalCell.CreateNPC(playerData[i], false, true);
+         Cell c = focalCell.cell;
+         MonoBehaviour.print( " Spawning at " + c.x + "," + c.y + ", " + c.name);
+       }
      }
      playerData = new List<Data>();
   }

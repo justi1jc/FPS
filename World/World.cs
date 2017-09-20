@@ -170,7 +170,6 @@ public class World{
     if(b == null){ MonoBehaviour.print("Couldn't find building"); return null; }
     foreach(DoorRecord dr in b.doors){
       if(dr.room == room && dr.id == doorId){ return dr; }
-      MonoBehaviour.print(dr.room + ":" + room +  "," + dr.id + ":" + doorId + "," + dr.destName);
     }
     return null;
   }
