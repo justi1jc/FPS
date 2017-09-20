@@ -99,6 +99,7 @@ public class Arena : MonoBehaviour{
       else if( teams){ scores[player.killerId]++; }
       scores[player.killerId]++;
     }
+    player.DiscardAllItems();
     int respawnTimer = 5;
     HUDMenu playerHUD = null;
     if(player.playerNumber > 0 && player.playerNumber < 5){
