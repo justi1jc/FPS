@@ -71,9 +71,9 @@ public class Cartographer{
     exteriors attached to said buildings, linking them.
   */
   public void PlaceBuildings(){
-    List<Cell> exteriors = GetUnlinked(false);
-    List<Building> buildings = GetBuildings(exteriors);
-    foreach(Building b in buildings){ PlaceBuilding(b); }
+    //List<Cell> exteriors = GetUnlinked(false);
+    //List<Building> buildings = GetBuildings(exteriors);
+    //foreach(Building b in buildings){ PlaceBuilding(b); }
   }
   
   /* Places a building at a particular position.
@@ -84,6 +84,7 @@ public class Cartographer{
 
   /* Places non-entrance exteriors randomly, filling in the map's grid.*/
   public void FillInOverworld(){
+    /*
     List<Cell> nd = GetUnlinked();
     if(nd.Count == 0){ 
       MonoBehaviour.print("No unlinked exteriors detected; aborting.");
@@ -100,6 +101,7 @@ public class Cartographer{
         }
       }
     }
+    */
   }
   
   /* Returns a particular from the derived map at a given coordinate. */

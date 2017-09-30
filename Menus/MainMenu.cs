@@ -34,16 +34,6 @@ public class MainMenu : Menu{
       Sound(0);
     }
     
-    if(Button("New Adventure", x, ih, iw, ih)){
-      Session.session.CreateAdventure();
-      Sound(0);
-    }
-    
-    if(Button("Load Adventure", x, 2*ih, iw, ih)){
-      manager.Change("LOAD");
-      Sound(0);
-    }
-    
     str = "Credits";
     if(Button(str, x, 6*ih, iw, ih)){
       subMenu = 1;
