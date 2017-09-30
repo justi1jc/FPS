@@ -15,6 +15,7 @@ public class WarpDoor : Decor{
   public bool exterior, exteriorFacing;
   public int destId;
   public int id;
+  public bool linked = false;
   
   public int deck; // Deck this door is loaded in.
   bool warped = false;
@@ -36,6 +37,7 @@ public class WarpDoor : Decor{
   
   /* Warps to destination. */
   public void Warp(){
+    if(!linked){ print("Door unlinked."); return; }
     if(exteriorFacing){
       print("Warping to (" + x + "," + y + ")" + destId + "," + destName);
       Session.session.world.LoadOverworld(x, y, destId, deck, true);
@@ -91,6 +93,7 @@ public class WarpDoor : Decor{
     y = dr.y;
     exterior = dr.exterior;
     exteriorFacing = dr.exteriorFacing;
+    linked = dr.linked;
   }
   
 }

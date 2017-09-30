@@ -17,9 +17,15 @@ installments of The Elder Scrolls and Fallout series, albeit with the addition
 of couch-multiplayer coop.
 
 Strategy:
-Basic gameplay mechanics will be solidified in the tech demo phase. Once
-the tech demo is finished, content will be developed in order to create a simple
-game with between 2 to 10 hours of gameplay for sale as a product.
+An iterative development cycle will occur at each expansion of this project's
+scope.
+
+1. Tech Demo phase: Base code for new features will be expanded using
+placeholder assets and content.
+2. Product phase: Base code will remain largely unchanged, production turning
+instead toward assets and content.
+3. Product release: A polished product will be sold. Assets and content may or
+may not be re-used on next iteration. 
 
 ********************************************************************************
 ______               _                                  _   
@@ -32,42 +38,10 @@ ______               _                                  _
                             |_|                             
 ********************************************************************************
 
-Tentative roadmap:
-0.6.X- World features Update
-0.7.X- RPG Features update
+Reoadmap:
+0.5.X- Arena gamemode.
 
 Current version: 0.5.4
-
-
-
-Goals remaining for World Update
-
-  Reworking the mapping between interior and exterior cells to allow for duplicates.
--Encapsulate Holodeck and cartographer implementation.
--Create building class
--Create and store cartographer for map expansion or building placement/removal.
--Add Id to doors, exteriors, buildings
--Add relative coordinates to doors in buildings along with local id.
--Cellsaver should add interior cells to their appropriate buildings, taking
-inventory of doors in the process
-  Integration of seamless Terrain usage.
-  Night/Day cycle for exteriors cells
-
-  Yearly calendar
-Roman Calendar
-(mensis) Lunarius 29
-(mensis) Februarius 28
-(mensis) Intercalaris 23
-(mensis) Martius 31
-(mensis) Aprilis 29
-(mensis) Maius 31
-(mensis) Lunius 29
-(mensis) Quintillis 31
-(mensis) Sextilis 29
-(mensis) September 29
-(mensis) October 31
-(mensis) November 29
-(mensis) December 29
 
 ********************************************************************************
   ___           _     _ _            _                  
