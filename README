@@ -43,6 +43,18 @@ Reoadmap:
 
 Current version: 0.5.4
 
+Backlog
+-Rewrite Hotbar
+-Refactor EquipSlot
+-Cone of fire
+-Iron-sights
+-Streamline Arena Lobby
+-Create Kit class that reads from config file.
+
+Current Objective
+-Create class for keyboard/controller input logic.
+
+
 ********************************************************************************
   ___           _     _ _            _                  
  / _ \         | |   (_) |          | |                 
