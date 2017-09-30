@@ -32,7 +32,7 @@ public class Ranged : Weapon{
 
   void InitMuzzlePoint(){
     foreach(Transform t in transform){
-      if(t.gameObject.name == "MountPoint"){ 
+      if(t.gameObject.name == "MuzzlePoint"){ 
         muzzlePoint = t;
         return;
       }

@@ -37,7 +37,6 @@ public class JukeBox{
     if(audioSource == null){
       audioSource = gameObject.AddComponent<AudioSource>();
     }
-    MonoBehaviour.print(audioSource);
     parent.StopCoroutine("PlayFolder");
     parent.StartCoroutine(PlayFolder());
   }

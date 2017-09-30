@@ -2,6 +2,7 @@
         The cartographer is responsible for accessing the master map as well as
         for generating new maps.
 */
+
 using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -11,159 +12,151 @@ using UnityEngine;
 
 public class Cartographer{
   MapRecord master;
-  List<Cell> interiors;
-  List<Cell> exteriors;
+  MapRecord derived; // The map derived from the master file.
   System.Random rand;
   int n, m; // Size of map.
+  public static bool fileAccess = false;
   
-  /* Convenience method. */
-  public static MapRecord Generate(MapRecord map, int _n, int _m){
-    Cartographer c = new Cartographer(map, _n, _m);
-    return c.GenerateMap();
-  }
-  
-  /* Uses the CellSaver to return acess of map from master file. */
-  public static MapRecord GetMaster(){
-    GameObject go = new GameObject();
-    CellSaver cs = go.AddComponent<CellSaver>();
-    cs.LoadMaster();
-    MapRecord ret = cs.map;
-    GameObject.Destroy(go);
-    return ret;
-  }
-  
-  public Cartographer(MapRecord _master, int _n, int _m){
-    master = _master;
-    interiors = new List<Cell>();
-    exteriors = new List<Cell>();
-    n = _n;
-    m = _m;
+  /* Constructor for map generation. */
+  public Cartographer(int n, int m){
+    this.master = Cartographer.GetMaster();
+    this.n = n;
+    this.m = m;
     rand = new System.Random();
   }
   
+  /* Constructor for processing derived map. */
+  public Cartographer(MapRecord derived){
+    this.derived = derived;
+  }
+  
+  
+  /* Convenience method for retrieving master file. */
+  public static MapRecord GetMaster(){
+    string path = Application.dataPath + "/Resources/world.master";
+    MapRecord ret = null;
+    if(!File.Exists(path)){
+      MonoBehaviour.print("File did not exist.");
+      return new MapRecord();
+    }
+    if(fileAccess){ 
+      MonoBehaviour.print("File access already in progress."); 
+      return ret; 
+    }
+    fileAccess = true;
+    using(FileStream file = File.Open(path, FileMode.Open)){
+      BinaryFormatter bf = new BinaryFormatter();
+      ret = (MapRecord)bf.Deserialize(file);
+      file.Close();
+      fileAccess = false;
+    }
+    return ret;
+  }
+  
+  public static MapRecord GetMap(int n, int m){
+    Cartographer cart = new Cartographer(n, m);
+    cart.GenerateMap();
+    return cart.derived;
+  }
+  
   /* Produces a randomly-generated map */
-  public MapRecord GenerateMap(){
-    for(int i = 0; i < master.buildings.Count; i++){ PlaceBuilding(i); }
-    FillInExteriors();
-    MapRecord ret = new MapRecord();
-    ret.exteriors = exteriors;
-    ret.interiors = interiors;
-    return ret;
+  public void GenerateMap(){
+    derived = new MapRecord();
+    PlaceBuildings();
+    FillInOverworld();
+    derived.width = n;
+    derived.height = m;
+  }
+  /* Randomly places all exteriors with doors, the buildings attached, and the 
+    exteriors attached to said buildings, linking them.
+  */
+  public void PlaceBuildings(){
+    //List<Cell> exteriors = GetUnlinked(false);
+    //List<Building> buildings = GetBuildings(exteriors);
+    //foreach(Building b in buildings){ PlaceBuilding(b); }
   }
   
-  /* Places a building at most one time in the world,
-     given the index of the building in the master file. */
-  public void PlaceBuilding(int b){
+  /* Places a building at a particular position.
+     placing any missing exteriors at the same time. */
+  public void PlaceBuilding(Building b){
     
-    List<int[]> footprint = GetFootprint(b);
-    List<int[]> candidates = GetPlacementCandidates(footprint);
-    int choice = rand.Next(0, candidates.Count);
-    for(int i = 0; i < master.buildings[b].Length; i++){
-      Cell c = master.buildings[b][i];
-      c.x += candidates[choice][0];
-      c.y += candidates[choice][1];
-      interiors.Add(c);
-      Cell e = GetMasterExterior(c.exteriorName);
-      if(e != null){
-        e.x = candidates[choice][0];
-        e.y = candidates[choice][1];
-        exteriors.Add(e);
-      }
-    }
-  }
-  
-  /* Returns a list of coordinates covered by a building. */
-  public List<int[]> GetFootprint(int b){
-    List<int[]> ret =  new List<int[]>();
-    for(int i = 0; i < master.buildings[b].Length; i++){
-      int[] coord = new int[2];
-      coord[0] = master.buildings[b][i].x;
-      coord[1] = master.buildings[b][i].y;
-      bool blank = master.buildings[b][i].exteriorName == "";
-      if(!ret.Contains(coord) && !blank){ ret.Add(coord); }
-    }
-    return ret;
-  }
-  
-  /* Returns a list of valid coordinates for placing a building with
-     a particular footprint. */
-  public List<int[]> GetPlacementCandidates(List<int[]> footprint){
-    List<int[]> ret = new List<int[]>();
-    for(int i = 0; i < n; i++){
-      for(int j = 0; j < m; j++){
-        if(ValidPlacement(footprint, i, j)){
-          int[] coord = new int[2];
-          coord[0] = i;
-          coord[1] = j;
-          ret.Add(coord);
-        }
-      }
-    }
-    return ret;
-  }
-  
-  /* Returns true if each coord in the  */
-  public bool ValidPlacement(List<int[]> footprint, int x, int y){
-    for(int i = 0; i < footprint.Count; i++){
-      int xr = x + footprint[i][0];
-      int yr = y + footprint[i][1];
-      if(xr > n || yr > m){ return false; }
-      if(GetExterior(xr, yr) > -1){ return false; }
-    }
-    return true;
-  }
-  
-  /* Places non-entrance exteriors randomly, filling in the map's grid.*/
-  public void FillInExteriors(){
-    List<Cell> ne = GetNonEntrances();
-    for(int i = 0; i < n; i++){
-      for(int j = 0; j < m; j++){
-        int ext = GetExterior(i, j);
-        if(ext == -1){
-          int choice = rand.Next(0, ne.Count);
-          Cell c = new Cell(ne[choice]);
-          c.x = i;
-          c.y = j;
-          exteriors.Add(c);
-        }
-        
-      }
-    }
-  }
-  
-  /* Returns a list of exteriors that are not entrances. */
-  public List<Cell> GetNonEntrances(){
-    List<Cell> ret = new List<Cell>();
-    for(int i = 0; i < master.exteriors.Count; i++){
-      if(!master.exteriors[i].entrance){ ret.Add(master.exteriors[i]); }
-    }
-    return ret;
-  }
-  
-  /* Returns the index of a given interior, or -1. */
-  public int GetInterior(int x, int y){
-    int found = -1;
-    for(int i = 0; i < interiors.Count; i++){
-      if(interiors[i].x == x && interiors[i].y == y){ found = i; break; }
-    }
-    return found;
   }
 
-  /* Returns the index of a given exterior, or -1. */
-  public int GetExterior(int x, int y){
-    int found = -1;
-    for(int i = 0; i < exteriors.Count; i++){
-      if(exteriors[i].x == x && exteriors[i].y == y){ found = i; break; }
+  /* Places non-entrance exteriors randomly, filling in the map's grid.*/
+  public void FillInOverworld(){
+    /*
+    List<Cell> nd = GetUnlinked();
+    if(nd.Count == 0){ 
+      MonoBehaviour.print("No unlinked exteriors detected; aborting.");
+      return;
     }
-    return found;
+    for(int i = 0; i < n; i++){
+      for(int j = 0; j < m; j++){
+        if(GetExterior(i, j) == null){
+          int choice = rand.Next(0, nd.Count);
+          Cell c = new Cell(nd[choice]);
+          c.x = i;
+          c.y = j;
+          PlaceUnlinked(c);
+        }
+      }
+    }
+    */
+  }
+  
+  /* Returns a particular from the derived map at a given coordinate. */
+  public Cell GetExterior(int x, int y){
+    foreach(Cell c in derived.exteriors){
+      if(x == c.x && y == c.y){ return c; }
+    }
+    return null;
+  }
+  
+  /* Returns exterior from derived map based on ID. */
+  public Cell GetExterior(int id){
+    foreach(Cell c in derived.exteriors){
+      if(id == c.id){ return c; }
+    }
+    return null;
+  }
+  
+  /* Returns building from derived map based on ID. */
+  public Building GetBuilding(int id){
+    foreach(Building b in derived.buildings){
+      if(id == b.id){ return b; }
+    }
+    return null;
   }
   
   /* Returns an exterior from the Master based on name */
   public Cell GetMasterExterior(string name){
     if(name == ""){ return null; }
     for(int i = 0; i < master.exteriors.Count; i++){
-      if(master.exteriors[i].displayName == name){
-        return master.exteriors[i];
+      if(master.exteriors[i].name == name){
+        return new Cell(master.exteriors[i]);
+      }
+    }
+    return null;
+  }
+  
+  /* Returns a Building from the Master based on name.*/
+  public Building GetMasterBuilding(string building){
+    if(building == ""){ return null; }
+    for(int i = 0; i < master.buildings.Count; i++){
+      if(master.buildings[i].name == building){
+        return new Building(master.buildings[i]);
+      }
+    }
+    return null;
+  }
+  
+  /* Returns a particular room in a building in the Master file. */
+  public Cell GetMasterRoom(string building, string room){
+    Building bldg = GetMasterBuilding(building);
+    if(bldg == null || room == ""){ return null; }
+    for(int i = 0; i < bldg.rooms.Count; i++){
+      if(bldg.rooms[i].name == room){
+        return new Cell(bldg.rooms[i]);
       }
     }
     return null;

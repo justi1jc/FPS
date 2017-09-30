@@ -22,7 +22,6 @@ public class HoloDeck : MonoBehaviour{
   
   /* Initialize */
   public void Awake(){
-    id = Session.session.decks.IndexOf(this);
     players = new List<Actor>();
     playerData = new List<Data>();
     cells = new List<HoloCell>();
@@ -31,10 +30,6 @@ public class HoloDeck : MonoBehaviour{
   
   public void Update(){
     if(!interior){ ManageShifting(); }
-    if(Input.GetKeyDown(KeyCode.P)){
-      Vector3 dir = new Vector3(0,0,-100);
-      //PositionShift(dir);
-    }
   }
   
   /* Shifts the position of cells such that the cells closest to the destination
@@ -56,17 +51,16 @@ public class HoloDeck : MonoBehaviour{
     for(int i = 0; i < sorted.Count; i++){ sorted[i].Move(dir); }
   }
   
-  /* Requests an interior cell from the Session and loads it. */
-  public void LoadInterior(
-    string building, 
-    string cellName,
+  /* Loads a room in a building, if it exists. */
+  public void LoadRoom(
+    int building, 
+    string room,
     int door,
-    int x, int y,
     bool saveFirst
   ){
-    Cell c = Session.session.GetInterior(building, cellName, x, y);
+    Cell c = Session.session.world.GetRoom(building, room);
     if(c != null){ LoadInterior(c, door, saveFirst); }
-    else{ print("Could not find " + building + ":" +  name + " at " + x + "," + y); }
+    else{ print("Could not find " + building + ":" +  room); }
   }
   
   /* Loads a given interior cell. */
@@ -82,29 +76,48 @@ public class HoloDeck : MonoBehaviour{
     interior = true;
   }
   
+  /* Returns the requested door from the map, or null.  */
+  public DoorRecord GetDoor(Cell c, int doorId){
+    DoorRecord ret = null;
+    if(interior){
+      ret = Session.session.world.GetBuildingDoor(c.id, c.name, doorId);
+      if(ret == null){
+        MonoBehaviour.print("Couldn't find interior door " + doorId + " in " + c.name);
+      }
+    }
+    else{
+      foreach(DoorRecord dr in c.doors){
+        if(dr.id == doorId){ return dr; }
+      }
+      MonoBehaviour.print("Couldn't ext find door " + doorId + " in " + c.name);
+    }
+    return ret;
+  }
+  
   /* Updates interior in Session's data with current content. */
   public void SaveInterior(){
     Cell c = focalCell.GetData();
-    Session.session.SetInterior(c.building, c.displayName, c.x, c.y, c);
+    Session.session.world.SetRoom(c.id, c.name, c);
   }
   
   /* Recenters the HoloDeck on specified exterior and loads relevant cells.
      This is called as the result of a warp door being used.
   */
   public void LoadExterior(
-    int door, // If -1, ignores doors.
     int x, int y,
+    int door, 
     bool saveFirst
   ){
     SavePlayers();
     if(saveFirst && interior){ SaveInterior(); }
     else if(saveFirst){ SaveExterior(); }
     ClearContents();
+    interior = false;
     for(int i = 0; i < 3; i++){
       for(int j = 0; j < 3; j++){
         int cx = x - 1 + i;
         int cy = y - 1 + j; 
-        Cell c = Session.session.GetExterior(cx, cy);
+        Cell c = Session.session.world.GetExterior(cx, cy);
         HoloCell hc = AddExteriorCell(i,j);
         if(i == 1 && j == 1){
           hc.LoadData(c, door);
@@ -121,7 +134,7 @@ public class HoloDeck : MonoBehaviour{
   /* Listens for the player leaving the active cell. In the event that this
      happens, the holodeck shifts its focus to the player's current position. */
   public void ManageShifting(){
-    if(players == null){ return; }
+    if(players == null || players.Count == 0){ return; }
     if(players[0] != null && !focalCell.Contains(players[0].transform.position)){
       ShiftExterior();
     }
@@ -166,7 +179,7 @@ public class HoloDeck : MonoBehaviour{
     for(int i = 0; i < cells.Count; i++){
       HoloCell hc = cells[i];
       if(!CellAdjacency(focalCell, hc)){
-        Session.session.SetExterior(hc.GetData());
+        Session.session.world.SetExterior(hc.GetData());
         hc.Clear();
         orphans.Add(hc);
       }
@@ -182,7 +195,7 @@ public class HoloDeck : MonoBehaviour{
       if(!Loaded(ne[0], ne[1])){
         int[] fr = FocalRelation(ne[0], ne[1]); 
         HoloCell hc = AddExteriorCell(fr[0], fr[1]);
-        Cell c = Session.session.GetExterior(ne[0], ne[1]);
+        Cell c = Session.session.world.GetExterior(ne[0], ne[1]);
         hc.LoadData(c);
       }
     }
@@ -273,27 +286,29 @@ public class HoloDeck : MonoBehaviour{
   
   /* Updates all active exterior cells to Session's map. */
   public void SaveExterior(){
+    MonoBehaviour.print("method stub");
     for(int i = 0; i < cells.Count; i++){
       Cell c = cells[i].GetData();
-      if(c != null){ Session.session.SetExterior(c.x, c.y, c); }
+      if(c != null){ Session.session.world.SetExterior(c); }
     }
   }
   
   /* Updates specified exterior, if it is active. */
   public void SaveExterior(int x, int y){
+    MonoBehaviour.print("method stub");
     for(int i = 0; i < cells.Count; i++){
       bool xmatch = x == cells[i].cell.x;
       bool ymatch = y == cells[i].cell.y;
       if(xmatch && ymatch){ 
         Cell c = cells[i].GetData();
-        Session.session.SetExterior(x, y, c);
+        Session.session.world.SetExterior(c);
       }
     }
   }
   
   /* Returns a list of any exteriors within or adjacent to given coordinates. */
   public List<Cell> FindExteriors(int x, int y){
-    MapRecord map = Session.session.map;
+    MapRecord map = null; //Session.session.map;
     List<Cell> cells = new List<Cell>();
     for(int i = 0; i < map.exteriors.Count; i++){
       Cell c = map.exteriors[i];
@@ -370,7 +385,11 @@ public class HoloDeck : MonoBehaviour{
   /* Loads players from playerData into the active cell. */
   public void LoadPlayers(){
      for(int i = 0; i < playerData.Count; i++){
-       if(focalCell != null){ focalCell.CreateNPC(playerData[i], false, true); }
+       if(focalCell != null){
+         focalCell.CreateNPC(playerData[i], false, true);
+         Cell c = focalCell.cell;
+         MonoBehaviour.print( " Spawning at " + c.x + "," + c.y + ", " + c.name);
+       }
      }
      playerData = new List<Data>();
   }

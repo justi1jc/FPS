@@ -434,6 +434,12 @@ public class Actor : MonoBehaviour{
     StickMove(xl, -yl);
     Turn(new Vector3(yr, xr, 0f));
     
+    // D-PAD
+    float dx = Input.GetAxis(Session.DX);
+    print(dx);
+    if(Input.GetKeyDown(Session.DRB) || dx > 0){  print("Next"); hotbar.NextSlot(); }
+    if(Input.GetKeyDown(Session.DLB) || dx < 0){ print("Prev"); hotbar.PreviousSlot(); }
+    
     //Buttons
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(Session.B)){ Use(7); }
@@ -876,9 +882,17 @@ public class Actor : MonoBehaviour{
     }
   }
   
+  /* Discards all items in inventory. */
+  public void DiscardAllItems(){
+    for(int i = 0; i < inventory.slots; i++){ 
+      DiscardItem(i); 
+    }
+  }  
+  
   /* Drops item onto ground from inventory. */
-  public Item DiscardItem(int slot){
-    Data dat = inventory.Retrieve(slot);
+  public Item DiscardItem(int slot ){
+    if(inventory.Peek(slot) == null){ return null; }
+    Data dat = inventory.Retrieve(slot, inventory.Peek(slot).stack);
     if(dat == null){ return null;  }
     hotbar.Update(slot, -3);   
     GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
@@ -905,7 +919,7 @@ public class Actor : MonoBehaviour{
     );
     Item item = itemGO.GetComponent<Item>();
     item.LoadData(dat);
-    item.stack = 1;
+    item.stack = dat.stack;
     itemGO.transform.position = hand.transform.position;
   }
   
