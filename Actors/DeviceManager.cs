@@ -44,7 +44,7 @@ using System.Collections.Generic;
 public class DeviceManager{
   private string device;
   Dictionary<string, Value> buttons;
-  private float m0, m1, m2;
+  private float[] mouseDownTimes; // Mouse button downtimes
   
   public DeviceManager(string device){
     this.device = device.ToUpper();
@@ -57,7 +57,11 @@ public class DeviceManager{
   /* Populate dictionaries with keyboard keys. */
   private void InitKBM(){
     Dictionary<string, Value> ret = new Dictionary<string, Value>();
-    m0 = m1 = m2 = -1.0f;
+    mouseDownTimes = new float[3];
+    mouseDownTimes[0] = -1.0f;
+    mouseDownTimes[1] = -1.0f;
+    mouseDownTimes[2] = -1.0f;
+    
     ret.Add("W", new Value(KeyCode.W));
     ret.Add("A", new Value(KeyCode.A));
     ret.Add("S", new Value(KeyCode.S));
@@ -145,7 +149,9 @@ public class DeviceManager{
     return null;
   }
   
-  /* Returns inputs from keyboard and mouse. */
+  /* Returns inputs from keyboard and mouse. 
+     Mouse buttons have to be handled specially.
+  */
   private List<string[]> KBMInputs(){
     List<string[]> ret = new List<string[]>();
     ret.AddRange(ButtonActions());
@@ -158,12 +164,15 @@ public class DeviceManager{
     for(int i = 0; i < 3; i++){
       string mkey = "m" + i;
       if(Input.GetMouseButtonUp(i)){
+        ret.Add(Up(mkey, mouseDownTimes[i]));
+        mouseDownTimes[i] = -1.0f;
       }
       else if(Input.GetMouseButtonDown(i)){
-        
+        ret.Add(Down(mkey));
+        mouseDownTimes[i] = UnityEngine.Time.time;
       }
       else if(Input.GetMouseButton(i)){
-      
+        ret.Add(Held(mkey, mouseDownTimes[i]));
       }
     }
     return ret;
