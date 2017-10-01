@@ -30,7 +30,7 @@
       A, B, Y, X
       RB, LB, RT, LT
       START, BACK, XBOX
-      DUP, DDOWN, DLEFT, DRIGHT
+      DUP, DDOWN, DLEFT, DRIGHT (7th and 8th axes on controller.)
     Axes:
       LEFTSTICK
       RIGHTSTICK
@@ -45,7 +45,7 @@ public class DeviceManager{
   private string device;
   Dictionary<string, Value> buttons;
   private float[] mouseDownTimes; // Mouse button downtimes
-  
+  private float[] triggers; // trigger downtimes
   public DeviceManager(string device){
     this.device = device.ToUpper();
     switch( this.device){
@@ -95,6 +95,9 @@ public class DeviceManager{
   private void Init360(){
     Dictionary<string, Value> ret = new Dictionary<string, Value>();
     string jb = "joystick button ";
+    triggers = new float[2];
+    triggers[0] = -1.0f;
+    triggers[1] = -1.0f;
     
     ret.Add("A", new Value(jb + "0"));
     ret.Add("B", new Value(jb + "1"));
@@ -132,19 +135,34 @@ public class DeviceManager{
     return ret;
   }
   
-  /* Returns DOWN, HELD, or UP action from this key, or null */
+  /* Returns DOWN, HELD, or UP action from this button, or null */
   private string[] ButtonAction(string name, Value v){
     float dt = v.downTime;
-    if(Input.GetKeyUp(v.keyCode)){
-      buttons[name].downTime = -1.0f;
-      return Up(name, dt);
+    if(v.keyCode != KeyCode.None){
+      if(Input.GetKeyUp(v.keyCode)){
+        buttons[name].downTime = -1.0f;
+        return Up(name, dt);
+      }
+      else if(Input.GetKeyDown(v.keyCode)){
+        buttons[name].downTime = UnityEngine.Time.time;
+        return Down(name);
+      }
+      else if(Input.GetKey(v.keyCode)){
+        return Held(name, v.downTime);
+      }
     }
-    else if(Input.GetKeyDown(v.keyCode)){
-      buttons[name].downTime = UnityEngine.Time.time;
-      return Down(name);
-    }
-    else if(Input.GetKey(v.keyCode)){
-      return Held(name, v.downTime);
+    else{
+      if(Input.GetKeyUp(v.button)){
+        buttons[name].downTime = -1.0f;
+        return Up(name, dt);
+      }
+      else if(Input.GetKeyDown(v.button)){
+        buttons[name].downTime = UnityEngine.Time.time;
+        return Down(name);
+      }
+      else if(Input.GetKey(v.button)){
+        return Held(name, v.downTime);
+      }
     }
     return null;
   }
@@ -186,14 +204,99 @@ public class DeviceManager{
     
     x = Input.GetAxis("DX");
     if(x > 0){
-      //if(keyboard["DRIGHT"]){}
+      if(buttons["DRIGHT"].downTime < 0){
+        ret.Add(Down("DRIGHT"));
+        buttons["DRIGHT"].downTime = UnityEngine.Time.time;
+      }
+      else{
+        ret.Add(Held("DRIGHT", buttons["DRIGHT"].downTime));
+      }
     }
     else if(x < 0){
-    
+      if(buttons["DLEFT"].downTime < 0){
+        ret.Add(Down("DLEFT"));
+        buttons["DLEFT"].downTime = UnityEngine.Time.time;
+      }
+      else{
+        ret.Add(Held("DLEFT", buttons["DLEFT"].downTime));
+      }
     }
-    else{
-    
+    if(x >= 0 && buttons["DLEFT"].downTime > 0){
+        ret.Add(Up("DLEFT", buttons["DLEFT"].downTime));
+        buttons["DLEFT"].downTime = -1.0f;
     }
+    if(x <= 0 && buttons["DRIGHT"].downTime > 0){
+        ret.Add(Up("DRIGHT", buttons["DRIGHT"].downTime));
+        buttons["DRIGHT"].downTime = -1.0f;
+    }
+    
+    y = Input.GetAxis("DY");
+    if(y < 0){
+      if(buttons["DUP"].downTime < 0){
+        ret.Add(Down("DUP"));
+        buttons["DUP"].downTime = UnityEngine.Time.time;
+      }
+      else{
+        ret.Add(Held("DUP", buttons["DUP"].downTime));
+      }
+    }
+    else if(y > 0){
+      if(buttons["DDOWN"].downTime < 0){
+        ret.Add(Down("DDOWN"));
+        buttons["DDOWN"].downTime = UnityEngine.Time.time;
+      }
+      else{
+        ret.Add(Held("DDOWN", buttons["DDOWN"].downTime));
+      }
+    }
+    if(y <= 0 && buttons["DDOWN"].downTime > 0){
+        ret.Add(Up("DDOWN", buttons["DDOWN"].downTime));
+        buttons["DDOWN"].downTime = -1.0f;
+    }
+    if(y >= 0 && buttons["DUP"].downTime > 0){
+        ret.Add(Up("DUP", buttons["DUP"].downTime));
+        buttons["DUP"].downTime = -1.0f;
+    }
+    
+    x = Input.GetAxis("LT");
+    if(x > 0){
+      if(triggers[0] > 0){
+        ret.Add(Held("LT", triggers[0]));     
+      }
+      else{
+        ret.Add(Down("LT"));
+        triggers[0] = UnityEngine.Time.time;
+      }
+    }
+    else if( triggers[0] > 0){
+      ret.Add(Up("LT", triggers[0]));
+      triggers[0] = -1.0f;
+    }
+    
+    x = Input.GetAxis("RT");
+    if(x > 0){
+      if(triggers[1] > 0){
+        ret.Add(Held("RT", triggers[1]));     
+      }
+      else{
+        ret.Add(Down("RT"));
+        triggers[1] = UnityEngine.Time.time;
+      }
+    }
+    else if( triggers[1] > 0){
+      ret.Add(Up("RT", triggers[1]));
+      triggers[1] = -1.0f;
+    }
+    
+    
+    x = Input.GetAxis("XL");
+    y = Input.GetAxis("YL");
+    if( x != 0 || y != 0){ ret.Add(Axis("LEFTSTICK", x, y)); }
+    
+    x = Input.GetAxis("XR");
+    y = Input.GetAxis("YR");
+    if( x != 0 || y != 0){ ret.Add(Axis("RIGHTSTICK", x, y)); }
+    
     return ret;
   }
   
@@ -233,13 +336,14 @@ public class DeviceManager{
   
   /* Returns an axis input action with an x and y value */
   private string[] Axis(string name, float x, float y){
-    string[] ret = new string[2];
+    string[] ret = new string[3];
     ret[0] = name;
     ret[1] = "" + x;
+    ret[2] = "" + y;
     return ret;
   }
   
-  /* A three-field value to populate dictionaries with. */
+  /* Button info for the buttons dictionary. */
   private class Value{
     public KeyCode keyCode;
     public string button;
@@ -247,12 +351,14 @@ public class DeviceManager{
     
     public Value(string button){
       this.button = button;
-      downTime = -1.0f;  
+      this.keyCode = KeyCode.None;
+      downTime = -1.0f;
     }
     
     public Value(KeyCode keyCode){
       this.keyCode = keyCode;
-      downTime = -1.0f;  
+      this.button = "NONE";
+      downTime = -1.0f;
     }
   }
 }
