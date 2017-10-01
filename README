@@ -9,8 +9,9 @@ ____________  _____  ______
 ********************************************************************************
 
 This is boiler-plate code for an open-world first-person shooter game.
-These scripts work with Unity3D editor 5.6.3xf1. Ubuntu link below.
+These scripts work with Unity3D editor 2017.2.0b11. Ubuntu links below.
 https://forum.unity3d.com/threads/unity-on-linux-release-notes-and-known-issues.350256/
+http://beta.unity3d.com/download/fd37f3680b5f/public_download.html
 
 Vision: Provide first-person shooter roleplaying gameplay similar to the recent
 installments of The Elder Scrolls and Fallout series, albeit with the addition
