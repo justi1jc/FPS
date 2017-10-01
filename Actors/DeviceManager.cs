@@ -1,5 +1,7 @@
 /*
     The DeviceManager is assigned a device from which it gathers input actions.
+    NOTE: All axes MUST be set up with Unity's input manager to match the names
+    given in this file. Buttons will work without any setup.
     
     Input actions are represented as an array of strings, where the first index
     is the action name and the remaining indices are arguments following the
@@ -41,7 +43,8 @@ using System.Collections.Generic;
 
 public class DeviceManager{
   private string device;
-  Dictionary<string, Value> keyboard, buttons;
+  Dictionary<string, Value> buttons;
+  private float m0, m1, m2;
   
   public DeviceManager(string device){
     this.device = device.ToUpper();
@@ -54,6 +57,7 @@ public class DeviceManager{
   /* Populate dictionaries with keyboard keys. */
   private void InitKBM(){
     Dictionary<string, Value> ret = new Dictionary<string, Value>();
+    m0 = m1 = m2 = -1.0f;
     ret.Add("W", new Value(KeyCode.W));
     ret.Add("A", new Value(KeyCode.A));
     ret.Add("S", new Value(KeyCode.S));
@@ -80,8 +84,7 @@ public class DeviceManager{
     ret.Add("7", new Value(KeyCode.Alpha7));
     ret.Add("8", new Value(KeyCode.Alpha8));
     ret.Add("9", new Value(KeyCode.Alpha9));
-    keyboard = ret;
-    buttons = new Dictionary<string, Value>();
+    buttons = ret;
   }
   
   /* Populate dictionaries with Xbox 360 buttons. */
@@ -105,7 +108,6 @@ public class DeviceManager{
     ret.Add("DDOWN", new Value(jb + "14"));
     
     buttons = ret;
-    keyboard = new Dictionary<string, Value>();
   }
   
   public List<string[]> GetInputs(){
@@ -117,34 +119,7 @@ public class DeviceManager{
   }
   
   /* Return input actions from keyboard keys. */
-  public List<string[]> KeyboardInputs(){
-    List<string[]> ret = new List<string[]>();
-    foreach(KeyValuePair<string, Value> entry in keyboard){
-      string[] action = KeyAction(entry.Key, entry.Value);
-      if(action != null){ ret.Add(action); }
-    }
-    return ret;
-  }
-  
-  /* Returns DOWN, HELD, or UP action from this key, or null */
-  private string[] KeyAction(string name, Value v){
-    float dt = v.downTime;
-    if(Input.GetKeyUp(v.keyCode)){
-      keyboard[name].downTime = -1.0f;
-      return Up(name, dt);
-    }
-    else if(Input.GetKeyDown(v.keyCode)){
-      keyboard[name].downTime = UnityEngine.Time.time;
-      return Down(name);
-    }
-    else if(Input.GetKey(v.keyCode)){
-      return Held(name, v.downTime);
-    }
-    return null;
-  }
-  
-  /* Return input actions from controller buttons. */
-  private List<string[]> ButtonInputs(){
+  public List<string[]> ButtonActions(){
     List<string[]> ret = new List<string[]>();
     foreach(KeyValuePair<string, Value> entry in buttons){
       string[] action = ButtonAction(entry.Key, entry.Value);
@@ -153,18 +128,18 @@ public class DeviceManager{
     return ret;
   }
   
-  /* Returns DOWN, HELD, or UP action from this button, or null. */
+  /* Returns DOWN, HELD, or UP action from this key, or null */
   private string[] ButtonAction(string name, Value v){
     float dt = v.downTime;
-    if(Input.GetKeyUp(v.button)){
+    if(Input.GetKeyUp(v.keyCode)){
       buttons[name].downTime = -1.0f;
       return Up(name, dt);
     }
-    else if(Input.GetKeyDown(v.button)){
+    else if(Input.GetKeyDown(v.keyCode)){
       buttons[name].downTime = UnityEngine.Time.time;
       return Down(name);
     }
-    else if(Input.GetKey(v.button)){
+    else if(Input.GetKey(v.keyCode)){
       return Held(name, v.downTime);
     }
     return null;
@@ -173,14 +148,43 @@ public class DeviceManager{
   /* Returns inputs from keyboard and mouse. */
   private List<string[]> KBMInputs(){
     List<string[]> ret = new List<string[]>();
-    ret.AddRange(KeyboardInputs());
+    ret.AddRange(ButtonActions());
+    float x, y;
+    
+    x = -Input.GetAxis("Mouse Y");
+    y = Input.GetAxis("Mouse X");
+    if(x > 0 || x < 0 || y > 0 || y < 0){ ret.Add(Axis("MOUSE", x, y)); }
+    
+    for(int i = 0; i < 3; i++){
+      string mkey = "m" + i;
+      if(Input.GetMouseButtonUp(i)){
+      }
+      else if(Input.GetMouseButtonDown(i)){
+        
+      }
+      else if(Input.GetMouseButton(i)){
+      
+      }
+    }
     return ret;
   }
   
   /* Returns inputs gathered from Xbox 360 controller. */
   private List<string[]> Xbox360Inputs(){
     List<string[]> ret = new List<string[]>();
-    ret.AddRange(ButtonInputs());
+    ret.AddRange(ButtonActions());
+    float x, y;
+    
+    x = Input.GetAxis("DX");
+    if(x > 0){
+      //if(keyboard["DRIGHT"]){}
+    }
+    else if(x < 0){
+    
+    }
+    else{
+    
+    }
     return ret;
   }
   
@@ -210,7 +214,23 @@ public class DeviceManager{
     return ret;
   }
   
-  /* A two-field value to populate dictionaries with. */
+  /* Returns an axis input action with only an x value. */
+  private string[] Axis(string name, float x){
+    string[] ret = new string[2];
+    ret[0] = name;
+    ret[1] = "" + x;
+    return ret;
+  }
+  
+  /* Returns an axis input action with an x and y value */
+  private string[] Axis(string name, float x, float y){
+    string[] ret = new string[2];
+    ret[0] = name;
+    ret[1] = "" + x;
+    return ret;
+  }
+  
+  /* A three-field value to populate dictionaries with. */
   private class Value{
     public KeyCode keyCode;
     public string button;
