@@ -29,6 +29,15 @@ public class Equipment : Item{
     }
   }
   
+  /* Changes the color of Equipment in its data form. */
+  public static void SetColor(Color color, ref Data dat){
+    if(dat == null || dat.itemType != Item.EQUIPMENT){ return; }
+    dat.floats[0] = color.r;
+    dat.floats[1] = color.g;
+    dat.floats[2] = color.b;
+    dat.floats[3] = color.a;
+  }
+  
   public override Data GetData(){
     Data dat = GetBaseData();
     dat.ints.Add(intelligence);// Starts with index 1

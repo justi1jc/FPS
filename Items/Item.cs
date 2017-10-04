@@ -124,6 +124,10 @@ public class Item : MonoBehaviour{
     return dat;
   }
   
+  public static void FullStack(ref Data dat){
+    dat.stack = dat.stackSize;
+  }
+  
   public virtual void ReceiveDamage(int damage, GameObject weapon){}
   
   /* Loads the base variables from a Data */

@@ -215,6 +215,10 @@ public class Ranged : Weapon{
     }
   }
   
+  public static void MaxAmmo(ref Data dat){
+    dat.ints[1] = dat.ints[2];
+  }
+  
   /* Adds ammo to weapon externally */
   public virtual void LoadAmmo(){
     if(holder == null){ return; }
@@ -230,6 +234,7 @@ public class Ranged : Weapon{
   public override Data GetData(){
     Data dat = GetBaseData();
     dat.ints.Add(ammo);
+    dat.ints.Add(maxAmmo);
     dat.strings.Add(ammunition);
     dat.itemType = Item.RANGED;
     return dat;
