@@ -78,6 +78,7 @@ public class Actor : MonoBehaviour{
   public bool walking = false;
   public bool sprinting = false;
   public bool crouched = false;
+  public int moveX, moveY; // Current direction.
   
   //Jumping
   public bool jumpReady = true;
@@ -110,6 +111,9 @@ public class Actor : MonoBehaviour{
   // AI
   public AIManager ai;
   public string defaultAI = "";
+  
+  // Controller
+  ActorInputHandler input;
   
   /* Before Start */
   void Awake(){
@@ -219,44 +223,32 @@ public class Actor : MonoBehaviour{
     playerNumber = player;
     StartCoroutine(RegenRoutine());
     if(player <5 && player > 0){
-      stats.abilities.Add(0);
-      stats.abilities.Add(1);
-      stats.abilities.Add(2);
-      stats.abilities.Add(3);
+      //stats.abilities.Add(0);
+      //stats.abilities.Add(1);
+      //stats.abilities.Add(2);
+      //stats.abilities.Add(3);
       SetMenuOpen(false);
       if(menu){ menu.Change("HUD");  menu.actor = this; }
       if(Session.session != null && cam != null){
         Session.session.RegisterPlayer(this, player, cam); 
       }
       else{ print("Session or cam is null"); }
-      if(player == 1){ 
-        StartCoroutine(KeyboardInputRoutine());
-        if(PlayerPrefs.HasKey("mouseSensitivity")){
-          sensitivityX = PlayerPrefs.GetFloat("mouseSensitivity");
-          sensitivityY = PlayerPrefs.GetFloat("mouseSensitivity");
-        }
-        else{
-          sensitivityX = 1f;
-          sensitivityY = 1f;
-        }
-      }
-      else{
-        StartCoroutine(ControllerInputRoutine()); 
-        if(PlayerPrefs.HasKey("controllerSensitivity")){
-          sensitivityX = PlayerPrefs.GetFloat("controllerSensitivity");
-          sensitivityY = PlayerPrefs.GetFloat("controllerSensitivity");
-        } 
-        else{
-          sensitivityX = 1f;
-          sensitivityY = 1f;
-        }
-      }
+      if(player == 1){ input = new ActorInputHandler(this, "KEYBOARD AND MOUSE"); }
+      else{ input = new ActorInputHandler(this, "XBOX 360 CONTROLLER"); }
+      StartCoroutine(InputRoutine());
     }
     else if(player == 5){
       stats.abilities.Add(0);
       if(defaultAI == ""){ ai = new AIManager(this, "PASSIVE"); }
       else{ ai = new AIManager(this, defaultAI); }
       if(speechTreeFile != ""){ speechTree = new SpeechTree(speechTreeFile); }
+    }
+  }
+  
+  public IEnumerator InputRoutine(){
+    while(Alive()){
+      input.Update();
+      yield return new WaitForSeconds(0.01f);
     }
   }
   
@@ -284,6 +276,7 @@ public class Actor : MonoBehaviour{
       if(!val){ Cursor.lockState = CursorLockMode.Locked; }
       else{ Cursor.lockState = CursorLockMode.None; }
     }
+    if(input != null){ input.SetMenuOpen(val); }
   }
   
   IEnumerator RegenRoutine(){
@@ -326,6 +319,7 @@ public class Actor : MonoBehaviour{
       yield return new WaitForSeconds(0.01f);
     }
   }
+  
   
   /* Handle keyboard input when not paused. */
   void KeyboardActorInput(){
@@ -385,6 +379,15 @@ public class Actor : MonoBehaviour{
     }
   }
   
+  /* Changes the menu. */
+  public void ChangeMenu(string choice){
+    if(menu != null){
+      menu.Change(choice);
+      if(choice == "HUD"){ SetMenuOpen(false); }
+      else{ SetMenuOpen(true); }
+    }
+  }
+  
   /* Handles pause menu keyboard input. */
   void KeyboardMenuInput(){
     if(!menu){ SetMenuOpen(false); } // Return control if menu not available
@@ -410,6 +413,13 @@ public class Actor : MonoBehaviour{
     }
   }
 
+  public MenuManager GetMenu(){
+    return menu;
+  }
+  
+  /* External jump method. */
+  public void Jump(){
+  }
   
   /* Handles controller input when not paused. */
   void ControllerActorInput(){
@@ -443,8 +453,10 @@ public class Actor : MonoBehaviour{
     //Buttons
     if(Input.GetKeyDown(Session.A)){ StartCoroutine(JumpRoutine()); }
     if(Input.GetKeyDown(Session.B)){ Use(7); }
+    
     if(Input.GetKeyDown(Session.X)){ Interact(); }
     else if(Input.GetKeyDown(Session.X)){ Use(2); }
+    
     if(Input.GetKeyDown(Session.Y) && menu){ 
       menu.Change("INVENTORY");
       SetMenuOpen(true); 
@@ -544,6 +556,11 @@ public class Actor : MonoBehaviour{
     ExecuteMove(pace, dir);
   }
   
+  /* Set sprinting. */
+  public void SetSprinting(bool sprint){
+    sprinting = sprint;
+  }
+
   /* Move relative to transform.forward and transform.right */
   public void StickMove(float x, float y){
     if(ragdoll){  return; }
@@ -572,6 +589,12 @@ public class Actor : MonoBehaviour{
      If cannot move, tries to move at 45 degree angle */
   void ExecuteMove(float pace, Vector3 dir){
     Vector3 dest = transform.position +  dir * pace;
+    if(dir.x == 0f){ moveX = 0; }
+    if(dir.y == 0f){ moveY = 0; }
+    if(walking && moveX == 0 && moveY == 0){ SetAnimBool("walking", false); }
+    else if(!walking && (moveX != 0 || moveY != 0)){ 
+      SetAnimBool("walking", true); 
+    }
     Vector3 pos = transform.position;
     Rigidbody rb = GetComponent<Rigidbody>();
     int runCost = (int)Vector3.Magnitude(pace * dir * 6);
@@ -729,7 +752,7 @@ public class Actor : MonoBehaviour{
   }
   
   /* Toggles model's crouch */
-  void ToggleCrouch(){
+  public void ToggleCrouch(){
     crouched = !crouched;
     SetAnimBool("crouching", crouched);
   }

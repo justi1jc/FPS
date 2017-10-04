@@ -30,7 +30,7 @@ public class Menu{
   public int sxMax, syMax, sxMin, syMin; // Secondary focus boundaries.
   public Vector2 scrollPosition = Vector2.zero;  // Primary scroll position
   public Vector3 scrollPositionB = Vector2.zero; // Secondary scroll position
-  
+  protected bool ready = true;
   
   public Menu(MenuManager manager){
     this.manager = manager;
@@ -134,6 +134,8 @@ public class Menu{
   
   /* Handles directional input and defers other inputs to Input() */
   public void Press(int button){
+    if(!ready){ return; }
+    Delay();
     switch(button){
       case UP:
         sy--;
@@ -163,6 +165,16 @@ public class Menu{
     Box("X", x-h, y-h, s, s);
   }
   
+  private void Delay(){
+    manager.StartCoroutine(DelayRoutine());
+  }
+  
+  private IEnumerator DelayRoutine(){
+    ready = false;
+    yield return new WaitForSeconds(0.2f);
+    ready = true;
+  }
+  
   /* Plays sound through manager. */
   public void Sound(int i){
     if(manager != null){ manager.Sound(i); }
@@ -173,7 +185,7 @@ public class Menu{
   
   /* Convenience method for default exit conditions. */
   public void DefaultExit(int button){
-    if(button == B || button == Y){
+    if(button == B || button == Y || button == START){
       manager.Change("HUD");
       manager.actor.SetMenuOpen(false);
     }

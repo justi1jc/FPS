@@ -46,6 +46,7 @@ public class DeviceManager{
   Dictionary<string, Value> buttons;
   private float[] mouseDownTimes; // Mouse button downtimes
   private float[] triggers; // trigger downtimes
+  private float sensitivityX, sensitivityY;
   public DeviceManager(string device){
     this.device = device.ToUpper();
     switch( this.device){
@@ -56,43 +57,95 @@ public class DeviceManager{
   
   /* Populate dictionaries with keyboard keys. */
   private void InitKBM(){
+    if(PlayerPrefs.HasKey("mouseSensitivity")){
+      sensitivityX = sensitivityY = PlayerPrefs.GetFloat("mouseSensitivity");
+    }
+    else{
+      sensitivityX = sensitivityY = 1.0f;
+      PlayerPrefs.SetFloat("mouseSensitivity", 1f);
+    }
     Dictionary<string, Value> ret = new Dictionary<string, Value>();
     mouseDownTimes = new float[3];
     mouseDownTimes[0] = -1.0f;
     mouseDownTimes[1] = -1.0f;
     mouseDownTimes[2] = -1.0f;
     
-    ret.Add("W", new Value(KeyCode.W));
-    ret.Add("A", new Value(KeyCode.A));
-    ret.Add("S", new Value(KeyCode.S));
-    ret.Add("D", new Value(KeyCode.D));
-    ret.Add("Q", new Value(KeyCode.Q));
-    ret.Add("E", new Value(KeyCode.E));
-    ret.Add("R", new Value(KeyCode.R));
-    ret.Add("F", new Value(KeyCode.F));
-    ret.Add("G", new Value(KeyCode.G));
+    ret.Add("K_Q", new Value(KeyCode.Q));
+    ret.Add("K_W", new Value(KeyCode.W));
+    ret.Add("K_E", new Value(KeyCode.E));
+    ret.Add("K_R", new Value(KeyCode.R));
+    ret.Add("K_T", new Value(KeyCode.T));
+    ret.Add("K_Y", new Value(KeyCode.Y));
+    ret.Add("K_U", new Value(KeyCode.U));
+    ret.Add("K_I", new Value(KeyCode.I));
+    ret.Add("K_O", new Value(KeyCode.O));
+    ret.Add("K_P", new Value(KeyCode.P));
     
-    ret.Add("TAB", new Value(KeyCode.Tab));
-    ret.Add("SHIFT", new Value(KeyCode.LeftShift));
-    ret.Add("CTRL", new Value(KeyCode.LeftControl));
-    ret.Add("ENTER", new Value(KeyCode.Return));
-    ret.Add("ESCAPE", new Value(KeyCode.Escape));
+    ret.Add("K_A", new Value(KeyCode.A));
+    ret.Add("K_S", new Value(KeyCode.S));
+    ret.Add("K_D", new Value(KeyCode.D));
+    ret.Add("K_F", new Value(KeyCode.F));
+    ret.Add("K_G", new Value(KeyCode.G));
+    ret.Add("K_H", new Value(KeyCode.H));
+    ret.Add("K_J", new Value(KeyCode.J));
+    ret.Add("K_K", new Value(KeyCode.K));
+    ret.Add("K_L", new Value(KeyCode.L));
     
-    ret.Add("0", new Value(KeyCode.Alpha0));
-    ret.Add("1", new Value(KeyCode.Alpha1));
-    ret.Add("2", new Value(KeyCode.Alpha2));
-    ret.Add("3", new Value(KeyCode.Alpha3));
-    ret.Add("4", new Value(KeyCode.Alpha4));
-    ret.Add("5", new Value(KeyCode.Alpha5));
-    ret.Add("6", new Value(KeyCode.Alpha6));
-    ret.Add("7", new Value(KeyCode.Alpha7));
-    ret.Add("8", new Value(KeyCode.Alpha8));
-    ret.Add("9", new Value(KeyCode.Alpha9));
+    ret.Add("K_Z", new Value(KeyCode.Z));
+    ret.Add("K_X", new Value(KeyCode.X));
+    ret.Add("K_C", new Value(KeyCode.C));
+    ret.Add("K_V", new Value(KeyCode.V));
+    ret.Add("K_B", new Value(KeyCode.B));
+    ret.Add("K_N", new Value(KeyCode.N));
+    ret.Add("K_M", new Value(KeyCode.M));
+
+    ret.Add("K_UP", new Value(KeyCode.UpArrow));
+    ret.Add("K_DOWN", new Value(KeyCode.DownArrow));
+    ret.Add("K_LEFT", new Value(KeyCode.LeftArrow));
+    ret.Add("K_RIGHT", new Value(KeyCode.RightArrow));
+    ret.Add("K_TAB", new Value(KeyCode.Tab));
+    ret.Add("K_SHIFT", new Value(KeyCode.LeftShift));
+    ret.Add("K_CTRL", new Value(KeyCode.LeftControl));
+    ret.Add("K_ENTER", new Value(KeyCode.Return));
+    ret.Add("K_ESCAPE", new Value(KeyCode.Escape));
+    ret.Add("K_BACKSPACE", new Value(KeyCode.Backspace));
+    
+    // Numbers on top of alphanumeric keyboard
+    ret.Add("K_0", new Value(KeyCode.Alpha0));
+    ret.Add("K_1", new Value(KeyCode.Alpha1));
+    ret.Add("K_2", new Value(KeyCode.Alpha2));
+    ret.Add("K_3", new Value(KeyCode.Alpha3));
+    ret.Add("K_4", new Value(KeyCode.Alpha4));
+    ret.Add("K_5", new Value(KeyCode.Alpha5));
+    ret.Add("K_6", new Value(KeyCode.Alpha6));
+    ret.Add("K_7", new Value(KeyCode.Alpha7));
+    ret.Add("K_8", new Value(KeyCode.Alpha8));
+    ret.Add("K_9", new Value(KeyCode.Alpha9));
+    
+    // Numbers on keypad
+    ret.Add("K_K_0", new Value(KeyCode.Alpha0));
+    ret.Add("K_K_1", new Value(KeyCode.Alpha1));
+    ret.Add("K_K_2", new Value(KeyCode.Alpha2));
+    ret.Add("K_K_3", new Value(KeyCode.Alpha3));
+    ret.Add("K_K_4", new Value(KeyCode.Alpha4));
+    ret.Add("K_K_5", new Value(KeyCode.Alpha5));
+    ret.Add("K_K_6", new Value(KeyCode.Alpha6));
+    ret.Add("K_K_7", new Value(KeyCode.Alpha7));
+    ret.Add("K_K_8", new Value(KeyCode.Alpha8));
+    ret.Add("K_K_9", new Value(KeyCode.Alpha9));
     buttons = ret;
   }
   
   /* Populate dictionaries with Xbox 360 buttons. */
   private void Init360(){
+    if(PlayerPrefs.HasKey("controllerSensitivity")){
+      sensitivityX = sensitivityY = PlayerPrefs.GetFloat("controllerSensitivity");
+    }
+    else{
+      sensitivityX = sensitivityY = 3.0f;
+      PlayerPrefs.SetFloat("controllerSensitivity", 1f);
+    }
+    
     Dictionary<string, Value> ret = new Dictionary<string, Value>();
     string jb = "joystick button ";
     triggers = new float[2];
@@ -113,7 +166,7 @@ public class DeviceManager{
     ret.Add("DLEFT", new Value(jb + "12"));
     ret.Add("DUP", new Value(jb + "13"));
     ret.Add("DDOWN", new Value(jb + "14"));
-    
+
     buttons = ret;
   }
   
@@ -175,12 +228,12 @@ public class DeviceManager{
     ret.AddRange(ButtonActions());
     float x, y;
     
-    x = -Input.GetAxis("Mouse Y");
-    y = Input.GetAxis("Mouse X");
+    x = -Input.GetAxis("Mouse Y") * sensitivityX;
+    y = Input.GetAxis("Mouse X") * sensitivityY;
     if(x > 0 || x < 0 || y > 0 || y < 0){ ret.Add(Axis("MOUSE", x, y)); }
     
     for(int i = 0; i < 3; i++){
-      string mkey = "m" + i;
+      string mkey = "M" + i;
       if(Input.GetMouseButtonUp(i)){
         ret.Add(Up(mkey, mouseDownTimes[i]));
         mouseDownTimes[i] = -1.0f;
@@ -193,6 +246,11 @@ public class DeviceManager{
         ret.Add(Held(mkey, mouseDownTimes[i]));
       }
     }
+    
+    x = Input.GetAxis("Mouse ScrollWheel");
+    if(x > 0){ ret.Add(Down("M_UP")); }
+    else if(x < 0){ ret.Add(Down("M_DOWN")); }
+    
     return ret;
   }
   
@@ -290,11 +348,11 @@ public class DeviceManager{
     
     
     x = Input.GetAxis("XL");
-    y = Input.GetAxis("YL");
+    y = -Input.GetAxis("YL");
     if( x != 0 || y != 0){ ret.Add(Axis("LEFTSTICK", x, y)); }
     
-    x = Input.GetAxis("XR");
-    y = Input.GetAxis("YR");
+    x = Input.GetAxis("YR") * sensitivityX;
+    y = Input.GetAxis("XR") * sensitivityY;
     if( x != 0 || y != 0){ ret.Add(Axis("RIGHTSTICK", x, y)); }
     
     return ret;
@@ -336,10 +394,11 @@ public class DeviceManager{
   
   /* Returns an axis input action with an x and y value */
   private string[] Axis(string name, float x, float y){
-    string[] ret = new string[3];
+    string[] ret = new string[4];
     ret[0] = name;
-    ret[1] = "" + x;
-    ret[2] = "" + y;
+    ret[1] = "AXIS";
+    ret[2] = "" + x;
+    ret[3] = "" + y;
     return ret;
   }
   

@@ -73,7 +73,7 @@ public class Session : MonoBehaviour {
   Camera sesCam;
   public MenuManager sesMenu;
   public JukeBox jukeBox;
-  public DeviceManager keyboard, controller;
+
   void Awake(){
     DontDestroyOnLoad(gameObject);
     if(Session.session != null){ Destroy(this); }
@@ -81,33 +81,6 @@ public class Session : MonoBehaviour {
     decks = new List<HoloDeck>();
     if(jukeBox == null){ jukeBox = new JukeBox(this); }
     CreateMenu();
-    keyboard = new DeviceManager("KEYBOARD AND MOUSE");
-    controller = new DeviceManager("XBOX 360 CONTROLLER");
-  }
-  
-  void Update(){
-    string message = "";
-    foreach(string[] action in keyboard.GetInputs()){
-      message += action[0];
-      if(action.Length > 1){
-        message += action[1];
-        if(action.Length > 2){
-          message += action[2];
-        }
-      }
-      print(message);
-    }
-    message = "";
-    foreach(string[] action in controller.GetInputs()){
-      message += action[0];
-      if(action.Length > 1){
-        message += action[1];
-        if(action.Length > 2){
-          message += action[2];
-        }
-      }
-      print(message);
-    }
   }
   
   /* Updates cameras and associates player with appropriate HoloDeck. */
