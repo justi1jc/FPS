@@ -45,16 +45,14 @@ Reoadmap:
 Current version: 0.5.4
 
 Backlog
--Rewrite Hotbar
+-Rewrite Hotbar and Inventory to keep items in-place when equipped.
 -Refactor EquipSlot
 -Cone of fire
 -Iron-sights
 -Streamline Arena Lobby
--Create Kit class that reads from config file.
 
 Current Objective
--Create class for keyboard/controller input logic.
-
+-Create Kit Class that reads from config file.
 
 ********************************************************************************
   ___           _     _ _            _                  
@@ -96,11 +94,12 @@ World.cs- Manages the "Adventure" mode.
 /Actor/- Components of Actor.cs class.
   EquipSlot.cs- Manages the equipping and use of Actor's weapon slots.
   PaperDoll.cs- Manages the equipping of the Actor's body with clothes.
-  HitBox.cs- Routes attacks to specified destination.
+  HitBox.cs- Routes attacks to actor.
   Inventory.cs- Storage for an Actor's unequipped items. 
   HotBar.cs- Manages quick-switching between weapons in Actor's inventory.
   StatHandler.cs- Handles the roleplaying number-crunching of an Actor. 
   SpeechTree.cs- Handles the dialogue state of an NPC Actor.
-    SpeechNode.cs = A single dialogue prompt.
+    SpeechNode.cs - A single dialogue prompt.
     Option.cs- A single dialogue option.
-  
+  DeviceManager.cs - Collects input from selected device. 
+  ActorInputHandler.cs - Controls Actor according to input from DeviceManager.
