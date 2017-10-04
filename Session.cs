@@ -26,32 +26,6 @@ public class Session : MonoBehaviour {
   public string sessionName; //Name Used in save file.
   public Data arenaData = null;
   
-  
-  // Controller one linux values
-  public static string C1 = "Joystick 1"; //Controller 1
-  public static string XL = "XL"; // "X Axis" DeadZone: 0.2 Accuracy: 1
-  public static string YL = "YL"; // "Y Axis" DeadZone: 0.2 Accuracy: 1
-  public static string XR = "XR"; // "4rd Axis" DeadZone: 0.2 Accuracy: 1
-  public static string YR = "YR"; // "5th Axis" DeadZone: 0.2 Accuracy: 1
-  public static string RT = "RT"; // "6th Axis" DeadZone: 0.1 
-  public static string LT = "LT"; // "3rd Axis" DeadZone: 0.1
-  public static string DX = "DX"; // "7th Axis" for wired controllers
-  public static string DY = "DY"; // "8th Axis"
-  public static string RB = "joystick button 5"; // 5 Right bumper
-  public static string LB = "joystick button 4"; // 4 Left bumper
-  public static string A = "joystick button 0"; // 0
-  public static string B = "joystick button 1"; // 1
-  public static string X = "joystick button 2"; // 2
-  public static string Y = "joystick button 3"; // 3
-  public static string START = "joystick button 7"; // 7
-  public static string SELECT = "joystick button 6"; // 6
-  public static string DUB = "joystick button 13"; // 13  D-pad Up For wireless controllers
-  public static string DDB = "joystick button 14"; // 14  D-pad down
-  public static string DRB = "joystick button 11"; // 11  D-pad right
-  public static string DLB = "joystick button 12"; // 12  D-pad left
-  public static string RSC = "joystick button 10"; // 10  Right stick click
-  public static string LSC = "joystick button 9";  // 9   left stick click
-  
   // Arena
   public int playerCount = 1;
   public int gameMode = -1;
