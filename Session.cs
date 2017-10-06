@@ -1,14 +1,9 @@
 /*
-*
-*   A singleton whose purpose is to manage the session's data and 
-*   route calls to their appropriate destination..
-*   
-*
-*
-*   Note: Axes and buttons must be added manually in the editor to
-*   a specific project.
-*
-*
+    A singleton whose purpose is to manage the session's data and 
+    route calls to their appropriate destination..
+   
+    Note: Axes and buttons must be added manually in the editor to
+    a specific project.
 */
 
 
@@ -29,6 +24,7 @@ public class Session : MonoBehaviour {
   // Arena
   public int playerCount = 1;
   public int gameMode = -1;
+  private List<Kit> kits;
   
   // Adventure
   public World world;
@@ -82,6 +78,20 @@ public class Session : MonoBehaviour {
     gameMode = 0;
   }
 
+  /* Cached access to Kit.GetKits() to reduce file parsing.*/
+  public List<Kit> GetKits(){
+    if(kits == null){ kits = Kit.GetKits(); }
+    return new List<Kit>(kits);
+  }
+  
+  /* Returns a specific kit by name, or null. */
+  public Kit GetKit(string kitName){
+    if(kits == null){ kits = Kit.GetKits(); }
+    foreach(Kit kit in kits){
+      if(kit.name == kitName){ return kit; }
+    }
+    return null;
+  }
   
   /* Load contents from a specific file. */
   public void LoadGame(string fileName){

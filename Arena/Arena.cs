@@ -115,7 +115,7 @@ public class Arena : MonoBehaviour{
       Data dat = player.GetData();
       int id = player.id;
       Destroy(player.gameObject);
-      SpawnPlayer(dat.prefabName, id);
+      if(time > 0){ SpawnPlayer(dat.prefabName, id); }
     }
     else{ 
       if(playerHUD != null){ playerHUD.message = "You are dead."; }
@@ -191,18 +191,27 @@ public class Arena : MonoBehaviour{
     Actor actor = go.GetComponent<Actor>();
     if(actor != null){
       players.Add(actor);
-      if(kit != ""){ LootTable.Kit(kit, ref actor); }
+      if(kit != "NONE"){
+        Kit k = Session.session.GetKit(kit);
+        if(k != null){ k.ApplyKit(ref actor); }
+      }
       if(id != -1){
         actor.id = id;
         if(teams){
           actor.stats.faction = factions[id];
-          string shirt = (factions[id] == 1) ? "RED" : "BLUE";
-          LootTable.Kit(shirt, ref actor);
+          if(factions[id] == 1){
+            Kit.ApplyToClothes("Equipment/Shirt", ref actor, true, 1f, 0f, 0f, 1f);
+          }
+          else{
+            Kit.ApplyToClothes("Equipment/Shirt", ref actor, true, 0f, 0f, 1f, 1f);
+          }
+          
         }
         else{
-          LootTable.Kit("PANTS", ref actor);
+          //LootTable.Kit("PANTS", ref actor);
           actor.stats.faction = 1;
         }
+        Kit.ApplyToClothes("Equipment/Pants", ref actor, true, 0f, 0f, 0f, 1f);
       }
     }
   }

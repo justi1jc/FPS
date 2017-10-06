@@ -2,6 +2,27 @@
     A Kit contains a list of items to be stored in an Actor's inventory
     along with at most two items to put in the player's hands and at most
     four Equipment items for the Actor to wear.
+    
+    Note: The available kits should be defined in /Resources/Kits.txt
+    with the following format:
+    
+    KIT
+    <Kit name>
+    ARMS
+    [Primary]
+    [Secondary]
+    CLOTHES
+    [Head]
+    [Torso]
+    [Legs]
+    [Feet]
+    INVENTORY
+    [item]
+    /KIT
+    
+    END
+    
+    
 */
 
 using System;
@@ -11,6 +32,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Kit{
+  public string name;
   public List<string> arms;
   public List<string> clothes;
   public List<string> inventory;
@@ -41,6 +63,7 @@ public class Kit{
       if(dat.itemType == Item.RANGED){ Ranged.MaxAmmo(ref dat); }
       actor.Equip(dat, true);
     }
+    else{ MonoBehaviour.print(item + " was null!"); }
   }
   
   /* Applies clothing with optional arguments for a specific color. */
@@ -58,17 +81,21 @@ public class Kit{
       if(color){ Equipment.SetColor(new Color(r, g, b, a), ref dat); }
       actor.Equip(dat);
     }
+    else{ MonoBehaviour.print(item + " was null!"); }
   }
   
   /* Applies an item to inventory with optional */
   public static void ApplyToInventory(
-    string item, ref Actor actor,
+    string item,
+    ref Actor actor,
     bool fullStack = true
   ){
     Data dat = GetItem(item);
     if(dat != null){
       if(dat.itemType == Item.ITEM && fullStack){ Item.FullStack(ref dat); }
+      actor.StoreItem(dat);
     }
+    else{ MonoBehaviour.print(item + " was null!"); }
   }
   
   private void FullStack(ref Data dat){
@@ -102,6 +129,14 @@ public class Kit{
     return dat;
   }
   
+  public string ToString(){
+    string ret = name;
+    ret += " arms: " + arms.Count;
+    ret += " clothes: " + clothes.Count;
+    ret += " inventory: " + inventory.Count;
+    return ret;
+  }
+  
   /*
       KitParser performs the parsing of the /Resources/Kits.txt file into
       a list of kits.
@@ -111,13 +146,14 @@ public class Kit{
     
     public KitParser(){}
     
+    /* Parses available kits from the kits.txt file. */
     public List<Kit> Parse(){
       lineCount = 0;
       List<Kit> ret = new List<Kit>();
       try{
         string path = Application.dataPath + "/Resources/Kits.txt";
-        if(File.Exists(path)){
-          MonoBehaviour.print("Kits file does not exist!"); 
+        if(!File.Exists(path)){
+          MonoBehaviour.print("Kits file does not exist at " + path); 
           return ret;
         }
         using(StreamReader sr = new StreamReader(path)){
@@ -143,6 +179,7 @@ public class Kit{
       Kit ret = new Kit();
       string line = sr.ReadLine();
       lineCount++;
+      ret.name = line;
       while(line.ToUpper() != "ARMS"){
         line = sr.ReadLine();
         lineCount++;

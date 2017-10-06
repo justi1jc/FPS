@@ -16,16 +16,18 @@ public class ArenaLobbyMenu : Menu{
   private int mapIndex; // Index of currently selected map.
   private bool respawns = true; // True if players will respawn.
   private int bots = 15; // Number of bots;
-  private string kit = "RANDOM";
+  private string kit = "NONE";
   private int kitId = 0;
   private bool teams = false;
   private bool p1red = false; // True if player1 is on the red team.
   private bool p2red = false; // True if player2 is on the red team.
+  private List<Kit> kits;
   
   public ArenaLobbyMenu(MenuManager manager) : base(manager){
     duration = 10;
     map = "Arena_Empty";
     mapIndex = 0;
+    kits = Session.session.GetKits();
   }
 
   public override void Render(){
@@ -79,15 +81,9 @@ public class ArenaLobbyMenu : Menu{
   /* Cycles through available kits. */
   void NextKit(){
     kitId++;
-    if(kitId > 5){ kitId = 0; }
-    switch(kitId){
-      case 0: kit = "RANDOM"; break;
-      case 1: kit = "GUNRUNNER"; break;
-      case 2: kit = "RIFLEMAN"; break;
-      case 3: kit = "SHOTGUNNER"; break;
-      case 4: kit = "SWORDSMAN"; break;
-      case 5: kit = "ASSASSIN"; break;
-    }
+    if(kitId >= kits.Count){ kitId = 0; }
+    if(kits.Count == 0){ kit = "NONE"; }
+    else{ kit = kits[kitId].name; }
   }
   
   /* Cycles through valid durations. */
@@ -106,12 +102,8 @@ public class ArenaLobbyMenu : Menu{
   /* Changes map text based on map index. */
   void UpdateMap(){
     switch(mapIndex){
-      case 0:
-        map = "Arena_Empty";
-        break;
-      case 1:
-        map = "Arena_Urban";
-        break;
+      case 0: map = "Arena_Empty"; break;
+      case 1: map = "Arena_Urban"; break;
     }
   }
   
