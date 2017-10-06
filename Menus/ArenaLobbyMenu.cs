@@ -22,18 +22,19 @@ public class ArenaLobbyMenu : Menu{
   private bool p1red = false; // True if player1 is on the red team.
   private bool p2red = false; // True if player2 is on the red team.
   private List<Kit> kits;
+  private Texture thumbnail;
   
   public ArenaLobbyMenu(MenuManager manager) : base(manager){
     duration = 10;
-    map = "Arena_Empty";
     mapIndex = 0;
+    UpdateMap();
     kits = Session.session.GetKits();
   }
 
   public override void Render(){
     int ih = Height()/10;
     int iw = Width()/5;
-    Box("Arena Lobby", 2*iw, ih, iw, ih);
+    Box("Arena Lobby", 2*iw, 0, iw, ih);
     string str = "Players: " + Session.session.playerCount;
     if(Button(str, 0, 2*ih, iw, ih)){ TogglePlayers(); Sound(0); }
     str = "Map:" + map;
@@ -44,7 +45,7 @@ public class ArenaLobbyMenu : Menu{
     if(Button(str, 0, 5*ih, iw, ih)){ respawns = !respawns; }
     if(Button("Start", Width()-iw, Height()-ih, iw, ih)){ StartArena(); }
     if(Button("Back", 0, Height()-ih, iw, ih)){ 
-      manager.Change("MAIN"); 
+      manager.Change("MAIN");
       Sound(0);
     }
     str = "Bots: " + bots;
@@ -57,6 +58,10 @@ public class ArenaLobbyMenu : Menu{
     
     str = "Teams: " + (teams ? "Yes" : "No");
     if(Button(str, 0, 8*ih, iw, ih)){ teams = !teams; } 
+    
+    if(thumbnail != null){ Box(thumbnail, iw, 2*ih, 4*iw, 7*ih); }
+    else{ MonoBehaviour.print( map + " has null thumbnail"); }
+    
     
     int players = Session.session.playerCount;
     if(players > 0){
@@ -79,7 +84,7 @@ public class ArenaLobbyMenu : Menu{
   }
   
   /* Cycles through available kits. */
-  void NextKit(){
+  private void NextKit(){
     kitId++;
     if(kitId >= kits.Count){ kitId = 0; }
     if(kits.Count == 0){ kit = "NONE"; }
@@ -87,24 +92,26 @@ public class ArenaLobbyMenu : Menu{
   }
   
   /* Cycles through valid durations. */
-  void NextDuration(){
+  private void NextDuration(){
     duration += 5;
     if(duration > 20){ duration = 5; }
   }
   
   /* Cycles through valid maps. */
-  void NextMap(){
+  private void NextMap(){
     mapIndex++;
     if(mapIndex > 1){ mapIndex = 0; }
     UpdateMap();
   }
+  
 
   /* Changes map text based on map index. */
-  void UpdateMap(){
+  private void UpdateMap(){
     switch(mapIndex){
       case 0: map = "Arena_Empty"; break;
       case 1: map = "Arena_Urban"; break;
     }
+    thumbnail = Resources.Load("Textures/Thumbnails/" + map) as Texture;
   }
   
   /* Set arena options to session and begin arena mode */

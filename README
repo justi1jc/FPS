@@ -54,7 +54,7 @@ Backlog
 arrays with a more efficient data structure(to reduce string operations).
 
 Current Objective
--Create Kit Class that reads from config file.
+- Add thumbnails to Arena Lobby.
 
 ********************************************************************************
   ___           _     _ _            _                  
@@ -74,6 +74,8 @@ global state.
 JukeBox.cs- Responsible for loading and playing music from /Resources/Music/
 
 /Arena/Arena.cs- Manages the "Arena" gamemode.
+  Kit.cs - Contains items to equip and store on an Actor. Loads kits defined in
+  /Resources/Kits.txt configuration file.
 
 CellSaver.cs- Used to automatically create or update /Resources/world.master
 using open Unity scenes.

@@ -77,6 +77,18 @@ public class Menu{
     GUI.Box(new Rect(posx, posy, scalex, scaley), text);
   }
   
+  /* Overloaded convenience method to render box with a texture. */
+  public void Box(
+    Texture image,
+    int posx,
+    int posy,
+    int scalex,
+    int scaley
+  ){
+    GUI.color = new Color(1f, 1f, 1f, 1f);
+    GUI.Box(new Rect(posx, posy, scalex, scaley), image);
+  }
+  
   /* Convenience method to render button and return if it's been clicked. */
   public bool Button(
     string text,

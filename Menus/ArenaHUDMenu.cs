@@ -34,6 +34,7 @@ public class ArenaHUDMenu : Menu{
     Box(message, (Width()-iw)/2, 0, iw, 2*ih);
   }
   
+  /* Renders the end game report. */
   public void RenderEndGame(){
     int ih = Height()/20;
     int iw = Width()/5;
