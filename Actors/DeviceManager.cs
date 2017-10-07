@@ -109,6 +109,7 @@ public class DeviceManager{
     ret.Add(InputEvent.K_ENTER, new Value(KeyCode.Return));
     ret.Add(InputEvent.K_ESC, new Value(KeyCode.Escape));
     ret.Add(InputEvent.K_BACKSPACE, new Value(KeyCode.Backspace));
+    ret.Add(InputEvent.K_SPACE, new Value(KeyCode.Space));
     
     // Numbers on top of alphanumeric keyboard
     ret.Add(InputEvent.K_0, new Value(KeyCode.Alpha0));
@@ -225,8 +226,8 @@ public class DeviceManager{
       int mkey = 0;
       switch(i){
         case 0: mkey = InputEvent.MOUSE_0; break;
-        case 1: mkey = InputEvent.MOUSE_0; break;
-        case 2: mkey = InputEvent.MOUSE_0; break;
+        case 1: mkey = InputEvent.MOUSE_1; break;
+        case 2: mkey = InputEvent.MOUSE_2; break;
       }
       if(Input.GetMouseButtonUp(i)){
         ret.Add(Up(mkey, mouseDownTimes[i]));

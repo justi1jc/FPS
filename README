@@ -53,8 +53,6 @@ Backlog
 -Specify Arena maps in config file Resources/Maps.txt
 
 Current Objective
--Optimize DeviceManager and ActorInputHandler performance by replacing string 
-arrays with a more efficient data structure(to reduce string operations).
 
 ********************************************************************************
   ___           _     _ _            _                  

@@ -157,7 +157,7 @@ public class InputEvent{
     
     this.axis = axis;
     this.x = x;
-    this.y = x;
+    this.y = y;
   }
   
   public InputEvent(int button, int pressType, float downTime){
