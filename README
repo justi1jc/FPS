@@ -50,11 +50,11 @@ Backlog
 -Cone of fire
 -Iron-sights
 -Streamline Arena Lobby
--Optimize DeviceManager and ActorInputHandler performance by replacing string 
-arrays with a more efficient data structure(to reduce string operations).
+-Specify Arena maps in config file Resources/Maps.txt
 
 Current Objective
-- Add thumbnails to Arena Lobby.
+-Optimize DeviceManager and ActorInputHandler performance by replacing string 
+arrays with a more efficient data structure(to reduce string operations).
 
 ********************************************************************************
   ___           _     _ _            _                  
