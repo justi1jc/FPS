@@ -20,7 +20,7 @@ public class ActorInputHandler{
   
   /* Collects inputs and calls appropriate method to handle them. */
   public void Update(){
-    foreach(string[] action in devMan.GetInputs()){ 
+    foreach(InputEvent action in devMan.GetInputs()){ 
       if(menuOpen){ HandleMenuAction(action); }
       else{ HandleActorAction(action); }
     }
@@ -31,110 +31,160 @@ public class ActorInputHandler{
   }
   
   /* Acts upon action in the context of controlling an open menu. */
-  private void HandleMenuAction(string[] action){
-    if(
-      actor == null || actor.GetMenu() == null || action == null ||
-      action.Length == 0
-    ){ 
-      return;
-    }
+  private void HandleMenuAction(InputEvent action){
+    if( actor == null || actor.GetMenu() == null || action == null){ return; }
+    if(action.IsButton()){ HandleMenuButton(action); }
+    else{ HandleMenuAxis(action); }
+  }
+  
+  /* Handles button input in menu. */
+  public void HandleMenuButton(InputEvent action){
+    int btn = action.button;
+    int pt = action.pressType;
+    float dt = action.downTime;
     MenuManager menu = actor.GetMenu();
-    string btn = action[0];
-    float x, y;
     
-    if(action.Length > 1 && (action[1] == "DOWN" || action[1] == "HELD")){
-      if(btn == "K_W" || btn == "K_UP" || btn == "DUP"){ 
-        menu.Press(Menu.UP);
-      }
-      if(btn == "K_S" || btn == "K_DOWN" || btn == "DDOWN"){
-        menu.Press(Menu.DOWN);
-      }
-      if(btn == "K_A" || btn == "K_LEFT" || btn == "DLEFT"){
-        menu.Press(Menu.LEFT);
-      }
-      if(btn == "K_D" || btn == "K_RIGHT" || btn == "DRIGHT"){
-        menu.Press(Menu.RIGHT);
+    if(pt == InputEvent.DOWN || pt == InputEvent.HELD){
+      switch(btn){
+        case InputEvent.K_W: menu.Press(Menu.UP); break;
+        case InputEvent.K_UP: menu.Press(Menu.UP); break;
+        case InputEvent.X360_DUP: menu.Press(Menu.UP); break;
+        
+        case InputEvent.K_S: menu.Press(Menu.DOWN); break;
+        case InputEvent.K_DOWN: menu.Press(Menu.DOWN); break;
+        case InputEvent.X360_DDOWN: menu.Press(Menu.DOWN); break;
+        
+        case InputEvent.K_A: menu.Press(Menu.LEFT); break;
+        case InputEvent.K_LEFT: menu.Press(Menu.LEFT); break;
+        case InputEvent.X360_DLEFT: menu.Press(Menu.LEFT); break;
+        
+        case InputEvent.K_D: menu.Press(Menu.RIGHT); break;
+        case InputEvent.K_RIGHT: menu.Press(Menu.RIGHT); break;
+        case InputEvent.X360_DRIGHT: menu.Press(Menu.RIGHT); break;
       }
     }
-    
-    if(action.Length > 1 && action[1] == "DOWN"){
-      if(btn == "K_ENTER" || btn == "K_E" || btn == "A"){ menu.Press(Menu.A); }
-      if(btn == "B" || btn == "K_BACKSPACE" || btn == "K_TAB"){
-        menu.Press(Menu.B);
+    if(pt == InputEvent.DOWN){
+      switch(btn){
+        case InputEvent.K_E: menu.Press(Menu.A); break;
+        case InputEvent.K_ENTER: menu.Press(Menu.A); break;
+        case InputEvent.X360_A: menu.Press(Menu.A); break;
+        
+        case InputEvent.K_BACKSPACE: menu.Press(Menu.B); break;
+        case InputEvent.K_TAB: menu.Press(Menu.B); break;
+        case InputEvent.X360_B: menu.Press(Menu.B); break;
+        
+        case InputEvent.K_R: menu.Press(Menu.X); break;
+        case InputEvent.X360_X: menu.Press(Menu.X); break;
+        
+        case InputEvent.K_ESC: menu.Press(Menu.START); break;
+        case InputEvent.X360_START: menu.Press(Menu.START); break;
       }
-      if(btn == "K_R" || btn == "X"){
-        menu.Press(Menu.X);
-      }
-      if(btn == "START" || btn == "K_ESCAPE"){ menu.Press(Menu.START); }
-    }
-    
-    if(action.Length > 3 && action[0] == "LEFTSTICK"){
-      x = float.Parse(action[2],
-        System.Globalization.CultureInfo.InvariantCulture);
-      y = float.Parse(action[3],
-        System.Globalization.CultureInfo.InvariantCulture);
-      if(y > 0){ actor.menu.Press(Menu.UP); }
-      else if(y < 0){ actor.menu.Press(Menu.DOWN); }
-      if(x < 0){ actor.menu.Press(Menu.LEFT); }
-      else if(x > 0){ actor.menu.Press(Menu.RIGHT); }
     }
   }
   
+  /* Handles axis input in menu. */
+  public void HandleMenuAxis(InputEvent action){
+    if(action.axis != InputEvent.X360_LEFTSTICK){ return; }
+    float x = action.x;
+    float y = action.y;
+    if(y > 0){ actor.menu.Press(Menu.UP); }
+    else if( y < 0){ actor.menu.Press(Menu.DOWN); }
+    if(x < 0){ actor.menu.Press(Menu.LEFT); }
+    else if(x > 0){ actor.menu.Press(Menu.RIGHT); }
+  }
+  
   /* Acts upon action in the context of controlling actor. */
-  private void HandleActorAction(string[] action){
-    if(actor == null || action == null || action.Length == 0){ return; }
-    string btn = action[0];
-    float x, y;
-    
-    if(action.Length > 1 && (action[1] == "DOWN" || action[1] == "HELD")){
-      x = y = 0f;
-      if(btn == "K_W"){ y = 1f; }
-      else if(btn == "K_S"){ y = -1f; }
-      if(btn == "K_D"){ x = 1f; }
-      else if(btn == "K_A"){ x = -1f; }
-      actor.StickMove(x, y);
-    }
-    
-    if(action.Length > 1 && action[1] == "DOWN"){
-      if(btn == "M0" || btn == "RT"){ actor.Use(0); }
-      if(btn == "M1" || btn == "LT"){ actor.Use(1); }
-      if(btn == "K_SHIFT" || btn == "LB"){ actor.SetSprinting(true); }
-      if(btn == "K_Q" || btn == "RB"){ actor.Drop(); }
-      if(btn == "K_F" || btn == "B"){ actor.Use(7); }
-      if((btn == "K_ESCAPE" || btn == "START")){ actor.ChangeMenu("OPTIONS"); }
-      if((btn == "Y"  || btn == "K_TAB")){ actor.ChangeMenu("INVENTORY"); }
-      if(btn == "X"){
-        actor.Interact(0);
-        actor.Use(2);
-      }
-      if(btn == "K_SPACEBAR" || btn == "A"){ actor.Jump(); }
-      if(btn == "LSTICKCLICK" || btn == "K_CTRL"){ actor.ToggleCrouch(); }
+  private void HandleActorAction(InputEvent action){
+    if(actor == null || action == null){ return; }
+    if(action.IsButton()){ HandleActorButton(action); }
+    else{ HandleActorAxis(action); }
+  }
+  
+  /* Handles button input for Actor. */
+  public void HandleActorButton(InputEvent action){
+    int btn = action.button;
+    int pt = action.pressType;
+    float dt = action.downTime;
+    if(pt == InputEvent.HELD || pt == InputEvent.DOWN){
       switch(btn){
-        case "K_R": actor.Use(2); break;
-        case "K_E": actor.Interact(0); break;
+        case InputEvent.K_W: actor.StickMove(0.0f, 1.0f); break;
+        case InputEvent.K_S: actor.StickMove(0.0f, -1.0f); break;
+        case InputEvent.K_D: actor.StickMove(1.0f, 0.0f); break;
+        case InputEvent.K_A: actor.StickMove(-1.0f, 0.0f); break;
       }
-    }
-    else if(action.Length > 1 && action[1] == "HELD"){
-      if(btn == "M0" || btn == "RT"){ actor.Use(3); }
-      if(btn == "M1" || btn == "LT"){ actor.Use(4); }
-    }
-    else if(action.Length > 1 && action[1] == "UP"){
-      if(btn == "M0" || btn == "RT"){ actor.Use(5); }
-      if(btn == "M1" || btn == "LT"){ actor.Use(6); }
-      if(btn == "K_SHIFT" || btn == "LB"){ actor.SetSprinting(false); }
     }
     
-    if(action.Length > 3 && action[1] == "AXIS"){
-      x = float.Parse(action[2],
-          System.Globalization.CultureInfo.InvariantCulture);
-      y = float.Parse(action[3],
-        System.Globalization.CultureInfo.InvariantCulture);
-      if(action[0] == "LEFTSTICK"){
-        actor.StickMove(x, y);
-      }
-      else if(action[0] == "RIGHTSTICK" || action[0] == "MOUSE"){
-        actor.Turn(new Vector3(x, y, 0f));
+    if(pt == InputEvent.DOWN){
+      switch(btn){
+        case InputEvent.MOUSE_0: actor.Use(0); break;
+        case InputEvent.X360_RT: actor.Use(0); break;
+        
+        case InputEvent.MOUSE_1: actor.Use(1); break;
+        case InputEvent.X360_LT: actor.Use(1); break;
+        
+        case InputEvent.K_L_SHIFT: actor.SetSprinting(true); break;
+        case InputEvent.X360_LB: actor.SetSprinting(true); break;
+        
+        case InputEvent.K_Q: actor.Drop(); break;
+        case InputEvent.X360_RB: actor.Drop(); break;
+        
+        case InputEvent.K_F: actor.Use(7); break;
+        case InputEvent.X360_B: actor.Use(7); break;
+        
+        case InputEvent.K_ESC: actor.ChangeMenu("OPTIONS"); break;
+        case InputEvent.X360_START: actor.ChangeMenu("OPTIONS"); break;
+        
+        case InputEvent.K_TAB: actor.ChangeMenu("INVENTORY"); break;
+        case InputEvent.X360_Y: actor.ChangeMenu("INVENTORY"); break;
+        
+        case InputEvent.K_R: actor.Use(2); break;
+        case InputEvent.K_E: actor.Interact(0); break;
+        case InputEvent.X360_X: 
+          actor.Interact(0); 
+          actor.Use(2); 
+          break;
+        
+        case InputEvent.K_SPACE: actor.Jump(); break;
+        case InputEvent.X360_A: actor.Jump(); break;
+        
+        case InputEvent.K_L_CTRL: actor.ToggleCrouch(); break;
+        case InputEvent.X360_LSTICKCLICK: actor.ToggleCrouch(); break;
       }
     }
+    else if(pt == InputEvent.HELD){
+      switch(btn){
+        case InputEvent.MOUSE_0: actor.Use(3); break;
+        case InputEvent.X360_RT : actor.Use(3);  break;
+        
+        case InputEvent.MOUSE_1: actor.Use(4); break;
+        case InputEvent.X360_LT: actor.Use(4); break;
+      }
+    }
+    else if(pt == InputEvent.UP){
+      switch(btn){
+        case InputEvent.MOUSE_0: actor.Use(5); break;
+        case InputEvent.X360_RT: actor.Use(5); break;
+        
+        case InputEvent.MOUSE_1: actor.Use(6); break;
+        case InputEvent.X360_LT: actor.Use(6); break;
+        
+        case InputEvent.K_L_SHIFT: actor.SetSprinting(false); break;
+        case InputEvent.X360_LB: actor.SetSprinting(false); break;
+        
+        case InputEvent.K_L_CTRL: actor.ToggleCrouch(); break;
+      }
+    }
+  }
+  
+  /* Handles axis input for Actor. */
+  public void HandleActorAxis(InputEvent action){
+    int axis = action.axis;
+    float x = action.x;
+    float y = action.y;
+    
+    if(axis == InputEvent.MOUSE || axis == InputEvent.X360_RIGHTSTICK){
+      actor.Turn(new Vector3(x, y, 0f));
+    }
+    else if(axis == InputEvent.X360_LEFTSTICK){ actor.StickMove(x, y); }
   }
 }
