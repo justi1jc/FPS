@@ -97,4 +97,12 @@ public class Equipment : Item{
     slot = dat.strings[0];
     material = dat.strings[1];
   }
+  
+  /* Returns the slot this equipment should be associated with. */
+  public static string SlotType(Data dat){
+    if(dat.itemType == Item.EQUIPMENT && dat.strings.Count > 0){
+      return dat.strings[0];
+    }
+    return "";
+  }
 }

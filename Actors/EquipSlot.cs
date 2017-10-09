@@ -32,6 +32,12 @@ public class EquipSlot{
     }
   }
   
+  /* Returns true if this item would be equipped to the Primary hand. */
+  public bool IsPrimaryEquip(Data dat, bool primary){
+    if(dat.oneHanded && offHandItem == null){ return false; }
+    return true;
+  }
+  
   /* Enters a dormant state to be serialized. */
   public void Save(){
     if(handItem != null){ handData = handItem.GetData(); }
@@ -63,8 +69,18 @@ public class EquipSlot{
     if(item != null){
       item.transform.position = hand.transform.position;
       item.Drop();
-      if(handItem == item){ handItem = null; }
-      else if(offHandItem == item){ offHandItem = null; }
+      if(handItem == item){ 
+        handItem = null;
+        if(actor.inventory != null){
+          actor.inventory.ClearEquipped(Inventory.PRIMARY);
+        }
+      }
+      else if(offHandItem == item){
+        offHandItem = null;
+        if(actor.inventory != null){
+          actor.inventory.ClearEquipped(Inventory.SECONDARY);
+        }
+      }
       if(offHandItem != null || offHandAbility > 0){ 
         actor.SetAnimBool("twoHanded", true);
       }
@@ -73,6 +89,9 @@ public class EquipSlot{
     }
     if(handItem != null){
       handItem.Drop();
+      if(actor.inventory != null){
+        actor.inventory.ClearEquipped(Inventory.PRIMARY);
+      }
       handItem = null;
       EquipAbility(0, true);
       if(offHandItem != null || offHandAbility > 0){ 
@@ -82,6 +101,9 @@ public class EquipSlot{
     }
     else if(offHandItem != null){
       offHandItem.Drop();
+      if(actor.inventory != null){
+        actor.inventory.ClearEquipped(Inventory.SECONDARY);
+      }
       offHandItem = null;
       EquipAbility(0, false);
       actor.SetAnimBool("twoHanded", false);

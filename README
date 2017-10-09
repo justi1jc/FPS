@@ -53,6 +53,7 @@ Backlog
 
 Current Objective
 -Rewrite Hotbar and Inventory to keep items in-place when equipped.
+(Account for dropping items.)
 
 ********************************************************************************
   ___           _     _ _            _                  

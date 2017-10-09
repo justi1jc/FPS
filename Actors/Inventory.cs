@@ -20,7 +20,6 @@ public class Inventory{
   public const int HEAD = 4; // Item is equipped to head slot.
   public const int TORSO = 5; // Item is equipped to torso slot.
   public const int LEGS = 6; // Item is equipped to leg slot.
-  public const int FEET = 7; // Item is equippd to Feet slot.
 
   public List<Data> inv; // Item data each slot.
   public List<int> status; // Status of this slot's item.
@@ -58,14 +57,45 @@ public class Inventory{
     return inv[favs[favSlot]];
   }
   
-  
+  /* Stores an equipped item by its favslot. */
   public void StoreFav(int favSlot, Data dat){
     if(favSlot < 0 || favSlot > favs.Count){ return; }
-    if(status[favs[favSlot]] != STORED){ return; }
+    if(status[favs[favSlot]] == STORED){ return; }
     inv[favs[favSlot]] = new Data(dat);
     status[favs[favSlot]] = STORED;
   }
   
+  /* Returns the first slot with the desired status, or -1. */
+  public int GetSlotByStatus(int stat){
+    for(int i = 0; i < slots; i++){
+      if(status[i] == stat){ return i; }
+    }
+    return -1;
+  }
+  
+  /* Returns the status of an item if it were to be equipped. */
+  public static int GetStatusByData(Data dat, bool primary){
+    if(dat == null){ return -1; }
+    int status = -1;
+    if(dat.itemType == Item.EQUIPMENT){
+      switch(Equipment.SlotType(dat)){
+        case "": return -1; break;
+        case "HEAD": status = Inventory.HEAD; break;
+        case "TORSO": status = Inventory.TORSO; break;
+        case "LEGS": status = Inventory.LEGS; break;
+      }
+    }
+    else if(primary){ status = Inventory.PRIMARY; }
+    else{ status = Inventory.SECONDARY; }
+    return status;
+  }
+  
+  /* Returns an equipped item to its slot, updating its status as STORED. */
+  public void StoreEquipped(int slot, Data dat){
+    if(slot < 0 || slot >= slots || dat == null){ return; }
+    inv[slot] = dat;
+    status[slot] = STORED;
+  }
   
   /* Setter for status. */
   public void SetStatus(int slot, int val){
@@ -152,6 +182,7 @@ public class Inventory{
     for(int i = 0; i < slots; i++){
       if(inv[i] == null){
         inv[i] = dat;
+        status[i] = STORED;
         return 0;
       }
     }
@@ -186,17 +217,19 @@ public class Inventory{
   
   /* Returns the contents of this slot, marking it with the given status */
   public Data Equip(int slot, int stat){
-    if(slot < 0 || slot > inv.Count || status[slot] != STORED){ return null; }
+    if(slot < 0 || slot >= inv.Count || status[slot] != STORED){ return null; }
     status[slot] = stat;
     return new Data(inv[slot]);
   }
   
   /* Clears all slots with the given status. */
   public void ClearEquipped(int stat){
+    MonoBehaviour.print("Clearing for stat" + stat);
     for(int i = 0; i < inv.Count; i++){
       if(status[i] == stat){
         inv[i] = null;
         status[i] = EMPTY;
+        MonoBehaviour.print("Cleared slot " + i);
       }
     }
   }

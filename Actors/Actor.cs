@@ -595,8 +595,24 @@ public class Actor : MonoBehaviour{
   /* Drops an item from actor's arms.. */
   public void Drop(bool primary = true){ arms.Drop(); }
   
+  /* Public equip method for an unstored object. */
   public void Equip(Data dat, bool primary = true){
-    if(dat == null){ return; }
+    int slot = StoreItem(dat);
+    if(slot == null){ print("Inventory full."); return; }
+    Equip(slot, primary);
+  }
+  
+  /* Selects an item in inventory to equip. */
+  public void Equip(int itemIndex, bool primary){
+    int status = GetStatus(itemIndex, primary);
+    if(status < 0){ print("Status was " + status); return; }
+    Data dat = inventory.Equip(itemIndex, status);
+    EquipStored(dat, primary);
+  }
+  
+  /* Equips an item that has already been stored in the inventory. */
+  private void EquipStored(Data dat, bool primary = true){
+    if(dat == null){ print("Dat null"); return; }
     List<Data> displaced = new List<Data>();
     if(dat.itemType == Item.EQUIPMENT){
       displaced.Add(doll.Equip(dat));
@@ -614,12 +630,11 @@ public class Actor : MonoBehaviour{
     }
   }
   
-  /* Selects an item in inventory to equip. */
-  public void Equip(int itemIndex, bool primary){
-    if(itemIndex < 0 || itemIndex >= inventory.slots){ return; }
-    Data dat = inventory.Retrieve(itemIndex);
-    if(dat == null){ return; }
-    Equip(dat, primary);
+  /* Returns the inventory status an item will get if equipped, or -1. */
+  private int GetStatus(int itemIndex, bool primary){
+    if(itemIndex < 0 || itemIndex >= inventory.slots){ return -1; }
+    Data dat = inventory.Peek(itemIndex);
+    return Inventory.GetStatusByData(dat, primary);
   }
   
   /* Removes number of available ammo, up to max, and returns that number*/
@@ -637,8 +652,8 @@ public class Actor : MonoBehaviour{
     return 0;
   }
 
-  /* Adds item data to inventory. */
-  public void StoreItem(Data item){
+  /* Adds item data to inventory, returning the slot it was stored in. */
+  public int StoreItem(Data item){
     int remainder = inventory.Store(item);
     int slot = inventory.IndexOf(item);
     if(remainder > 0){
@@ -646,6 +661,7 @@ public class Actor : MonoBehaviour{
       item.stack = remainder;
       DiscardItem(item); 
     }
+    return slot;
   }
   
   /* Discards all items in inventory. */
