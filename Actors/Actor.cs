@@ -101,7 +101,6 @@ public class Actor : MonoBehaviour{
   public EquipSlot arms;
   public PaperDoll doll;
   public bool armsReady = true;
-  public HotBar hotbar;
   
   // Speech
   public Actor interlocutor; // Conversation partner
@@ -122,7 +121,6 @@ public class Actor : MonoBehaviour{
     arms = new EquipSlot(hand, offHand, this);
     doll = new PaperDoll(this);
     arms.actor = this;
-    hotbar = new HotBar(this);
     stats = new StatHandler(this);
   }
   
@@ -604,8 +602,6 @@ public class Actor : MonoBehaviour{
       displaced.Add(doll.Equip(dat));
     }
     else{
-      int arm = primary ? -2 : -1;
-      hotbar.Update(-3, arm, dat); 
       displaced.AddRange(arms.Equip(dat, primary));
     }
     for(int i = 0; i < displaced.Count; i++){
@@ -623,7 +619,6 @@ public class Actor : MonoBehaviour{
     if(itemIndex < 0 || itemIndex >= inventory.slots){ return; }
     Data dat = inventory.Retrieve(itemIndex);
     if(dat == null){ return; }
-    hotbar.Update(itemIndex, -3);
     Equip(dat, primary);
   }
   
@@ -646,7 +641,6 @@ public class Actor : MonoBehaviour{
   public void StoreItem(Data item){
     int remainder = inventory.Store(item);
     int slot = inventory.IndexOf(item);
-    if(slot > -1){ hotbar.Update(-3, slot, item); }
     if(remainder > 0){
       item = new Data(item);
       item.stack = remainder;
@@ -665,8 +659,7 @@ public class Actor : MonoBehaviour{
   public Item DiscardItem(int slot ){
     if(inventory.Peek(slot) == null){ return null; }
     Data dat = inventory.Retrieve(slot, inventory.Peek(slot).stack);
-    if(dat == null){ return null;  }
-    hotbar.Update(slot, -3);   
+    if(dat == null){ return null;  }  
     GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
     if(prefab == null){ print("Prefab null:" + dat.prefabName);  return null;}
     GameObject itemGO = (GameObject)GameObject.Instantiate(

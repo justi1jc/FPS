@@ -45,7 +45,6 @@ Reoadmap:
 Current version: 0.5.4
 
 Backlog
--Rewrite Hotbar and Inventory to keep items in-place when equipped.
 -Refactor EquipSlot
 -Cone of fire
 -Iron-sights
@@ -53,6 +52,7 @@ Backlog
 -Specify Arena maps in config file Resources/Maps.txt
 
 Current Objective
+-Rewrite Hotbar and Inventory to keep items in-place when equipped.
 
 ********************************************************************************
   ___           _     _ _            _                  
@@ -64,7 +64,7 @@ Current Objective
                                                         
 ********************************************************************************
 
-Architectural Overview:
+Architecture at a glance:
 
 Session.cs- Singleton that routes method calls between classes and contains
 global state.

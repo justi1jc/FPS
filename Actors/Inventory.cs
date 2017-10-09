@@ -1,8 +1,7 @@
 /*
-*     Author: James Justice
-*       
-*     Serializeable list of Data objects
-*     TODO: Migrate inventory logic here from Actor for modularity
+       
+     Inventory used for 
+     
 */
 
 using UnityEngine;
@@ -12,18 +11,74 @@ using System.Collections.Generic;
 
 //[System.Serializable] Prevents null slots.
 public class Inventory{
-  public List<Data> inv;
-  public int slots = 20; // Max number of slots.
-  public int hotSlots = 3;
+
+  // location constants 
+  public const int EMPTY = 0; // Empty slot
+  public const int STORED = 1; // Item is not equipped
+  public const int PRIMARY = 2; // Item is equipped to primary slot.
+  public const int SECONDARY = 3; // Item is eqipped to Secondary slot.
+  public const int HEAD = 4; // Item is equipped to head slot.
+  public const int TORSO = 5; // Item is equipped to torso slot.
+  public const int LEGS = 6; // Item is equipped to leg slot.
+  public const int FEET = 7; // Item is equippd to Feet slot.
+
+  public List<Data> inv; // Item data each slot.
+  public List<int> status; // Status of this slot's item.
+  public int slots = 10; // Max number of slots.
+  public const int favCount = 4;// Max number of fav slots.
+  public List<int> favs; // Slots marked as favorite for quick access.
   int nextSlot = 0;
   
   public Inventory(){
     inv = new List<Data>();
-    for(int i = 0 ; i < slots+hotSlots; i++){
+    status = new List<int>();
+    favs = new List<int>();
+    for(int i = 0 ; i < slots; i++){
       inv.Add(null);
+      status.Add(EMPTY);
+    }
+    for(int i = 0; i < 4; i++){
+      favs.Add(-1);
     }
   }
-
+  
+  
+  public void SetFav(int favSlot, int val){
+    if(favSlot < 0 || val < 0 || favSlot < favs.Count || val < inv.Count){ 
+      return;
+    }
+    favs[favSlot] = val;
+  }
+  
+  /* Returns the item from a fav slot, updating its status. */
+  public Data EquipFav(int favSlot, int slot){
+    if(favSlot < 0 || favSlot > favs.Count){ return null; }
+    if(status[favs[favSlot]] != STORED){ return null; }
+    status[favs[favSlot]] = slot;
+    return inv[favs[favSlot]];
+  }
+  
+  
+  public void StoreFav(int favSlot, Data dat){
+    if(favSlot < 0 || favSlot > favs.Count){ return; }
+    if(status[favs[favSlot]] != STORED){ return; }
+    inv[favs[favSlot]] = new Data(dat);
+    status[favs[favSlot]] = STORED;
+  }
+  
+  
+  /* Setter for status. */
+  public void SetStatus(int slot, int val){
+    if(slot >= status.Count || slot < 0){ return; }
+    status[slot] = val;
+  }
+  
+  /* Getter for status. */
+  public int GetStatus(int slot){
+    if(slot >= status.Count || slot < 0){ return EMPTY; }
+    return status[slot];
+  }
+  
   /* Returns next weapon starting from nextSlot or null. */
   public Data NextWeapon(){
     int fromBeginning = -1;
@@ -123,9 +178,27 @@ public class Inventory{
       inv[slot].stack -= quantity;
     }
     else{
-      inv[slot] = null; 
+      inv[slot] = null;
+      status[slot] = EMPTY;
     }
     return ret;
+  }
+  
+  /* Returns the contents of this slot, marking it with the given status */
+  public Data Equip(int slot, int stat){
+    if(slot < 0 || slot > inv.Count || status[slot] != STORED){ return null; }
+    status[slot] = stat;
+    return new Data(inv[slot]);
+  }
+  
+  /* Clears all slots with the given status. */
+  public void ClearEquipped(int stat){
+    for(int i = 0; i < inv.Count; i++){
+      if(status[i] == stat){
+        inv[i] = null;
+        status[i] = EMPTY;
+      }
+    }
   }
   
   /* Return the contents of a slot, or null */

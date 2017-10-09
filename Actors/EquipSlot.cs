@@ -72,7 +72,6 @@ public class EquipSlot{
       return;
     }
     if(handItem != null){
-      actor.hotbar.Update(-1, -3);
       handItem.Drop();
       handItem = null;
       EquipAbility(0, true);
@@ -82,7 +81,6 @@ public class EquipSlot{
       else{ actor.SetAnimBool("twoHanded", false); }
     }
     else if(offHandItem != null){
-      actor.hotbar.Update(-2, -3);
       offHandItem.Drop();
       offHandItem = null;
       EquipAbility(0, false);
@@ -205,8 +203,6 @@ public class EquipSlot{
     GameObject itemGO = item.gameObject;
     if(!item.oneHanded){
       ret.Add(Remove(true));
-      actor.hotbar.Update(-1, -5);
-      actor.hotbar.Update(-2, -6);
       ret.Add(Remove(false));
       handAbility = 0;
       Mount(item, offHand);
@@ -219,7 +215,6 @@ public class EquipSlot{
     else if(primary){
       if(handItem != null){
         ret.Add(Remove(true));
-        actor.hotbar.Update(-1, -5);
         handAbility = 0;
         offHandItem = item;
         Mount(item, offHand);
@@ -244,7 +239,6 @@ public class EquipSlot{
     else{
       if(offHandItem != null){ 
         ret.Add(Remove(false));
-        actor.hotbar.Update(-2, -6);
         offHandAbility = 0;
       }
       offHandItem = item;
