@@ -237,12 +237,10 @@ public class Inventory{
   
   /* Clears all slots with the given status. */
   public void ClearEquipped(int stat){
-    MonoBehaviour.print("Clearing for stat" + stat);
     for(int i = 0; i < inv.Count; i++){
       if(status[i] == stat){
         inv[i] = null;
         status[i] = EMPTY;
-        MonoBehaviour.print("Cleared slot " + i);
       }
     }
   }

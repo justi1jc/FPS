@@ -27,6 +27,23 @@ public class Item : MonoBehaviour{
   public const int PROJECTILE = 9;
   public const int EQUIPMENT = 10;
   
+  
+  // Input constants.
+  public const int A_DOWN = 0;
+  public const int B_DOWN = 1;
+  public const int C_DOWN = 2;
+  public const int D_DOWN = 3;
+  public const int E_DOWN = 4;
+  public const int F_DOWN = 5;
+  public const int G_DOWN = 6;
+  public const int A_UP = 7;
+  public const int B_UP = 8;
+  public const int C_UP = 9;
+  public const int D_UP = 10;
+  public const int E_UP = 11;
+  public const int F_UP = 12;
+  public const int G_UP = 13;
+
   // Base variables
   public string prefabName;
   public Vector3 heldPos;
@@ -50,7 +67,7 @@ public class Item : MonoBehaviour{
   public virtual string GetInfo(){ return ""; }
   
   // Implemented base methods
-  /* Bonds an item to  an item */
+  /* Bonds an item to an actor */
   public void Hold(Actor a){
     if(held){ return; }
     held = true;
@@ -62,17 +79,15 @@ public class Item : MonoBehaviour{
       rb.useGravity = false;
     }
     transform.localPosition = heldPos;
-    transform.localRotation = Quaternion.Euler(
-                                                heldRot.x,    
-                                                heldRot.y, 
-                                                heldRot.z
-                                              );
+    Quaternion lr = Quaternion.Euler(heldRot.x, heldRot.y, heldRot.z);
+    transform.localRotation = lr;
     Collider c = transform.GetComponent<Collider>();
     c.isTrigger = true;
   }
   
   /* Drop item from actor's hand. */
   public virtual void Drop(){
+    print(displayName + " dropped");
     held = false;
     Rigidbody rb = transform.GetComponent<Rigidbody>();
     if(rb){

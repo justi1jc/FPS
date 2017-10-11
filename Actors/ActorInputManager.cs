@@ -116,11 +116,11 @@ public class ActorInputHandler{
     
     if(pt == InputEvent.DOWN){
       switch(btn){
-        case InputEvent.MOUSE_0: actor.Use(0); break;
-        case InputEvent.X360_RT: actor.Use(0); break;
+        case InputEvent.MOUSE_0: actor.Use(Item.A_DOWN); break;
+        case InputEvent.X360_RT: actor.Use(Item.A_DOWN); break;
         
-        case InputEvent.MOUSE_1: actor.Use(1); break;
-        case InputEvent.X360_LT: actor.Use(1); break;
+        case InputEvent.MOUSE_1: actor.Use(Item.B_DOWN); break;
+        case InputEvent.X360_LT: actor.Use(Item.B_DOWN); break;
         
         case InputEvent.K_L_SHIFT: actor.SetSprinting(true); break;
         case InputEvent.X360_LB: actor.SetSprinting(true); break;
@@ -128,8 +128,8 @@ public class ActorInputHandler{
         case InputEvent.K_Q: actor.Drop(); break;
         case InputEvent.X360_RB: actor.Drop(); break;
         
-        case InputEvent.K_F: actor.Use(7); break;
-        case InputEvent.X360_B: actor.Use(7); break;
+        case InputEvent.K_F: actor.Use(Item.D_DOWN); break;
+        case InputEvent.X360_B: actor.Use(Item.D_DOWN); break;
         
         case InputEvent.K_ESC: actor.ChangeMenu("OPTIONS"); break;
         case InputEvent.X360_START: actor.ChangeMenu("OPTIONS"); break;
@@ -137,13 +137,12 @@ public class ActorInputHandler{
         case InputEvent.K_TAB: actor.ChangeMenu("INVENTORY"); break;
         case InputEvent.X360_Y: actor.ChangeMenu("INVENTORY"); break;
         
-        case InputEvent.K_R: actor.Use(2); break;
-        case InputEvent.K_E: actor.Interact(0); break;
+        case InputEvent.K_R: actor.Use(Item.C_DOWN); break;
+        case InputEvent.K_E: actor.Interact(); break;
         case InputEvent.X360_X: 
-          actor.Interact(0); 
-          actor.Use(2); 
+          if(actor.actorInReach != null){ actor.Interact(); }
+          else{ actor.Use(Item.C_DOWN); }
           break;
-        
         case InputEvent.K_SPACE: actor.Jump(); break;
         case InputEvent.X360_A: actor.Jump(); break;
         
@@ -153,20 +152,15 @@ public class ActorInputHandler{
     }
     else if(pt == InputEvent.HELD){
       switch(btn){
-        case InputEvent.MOUSE_0: actor.Use(3); break;
-        case InputEvent.X360_RT : actor.Use(3);  break;
-        
-        case InputEvent.MOUSE_1: actor.Use(4); break;
-        case InputEvent.X360_LT: actor.Use(4); break;
       }
     }
     else if(pt == InputEvent.UP){
       switch(btn){
-        case InputEvent.MOUSE_0: actor.Use(5); break;
-        case InputEvent.X360_RT: actor.Use(5); break;
+        case InputEvent.MOUSE_0: actor.Use(Item.A_UP); break;
+        case InputEvent.X360_RT: actor.Use(Item.A_UP); break;
         
-        case InputEvent.MOUSE_1: actor.Use(6); break;
-        case InputEvent.X360_LT: actor.Use(6); break;
+        case InputEvent.MOUSE_1: actor.Use(Item.B_UP); break;
+        case InputEvent.X360_LT: actor.Use(Item.B_UP); break;
         
         case InputEvent.K_L_SHIFT: actor.SetSprinting(false); break;
         case InputEvent.X360_LB: actor.SetSprinting(false); break;

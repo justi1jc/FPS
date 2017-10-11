@@ -19,7 +19,7 @@ public class Melee : Weapon{
   }
   
   public override void Use(int action){
-    if(action == 0 && ready){ StartCoroutine(Swing()); }
+    if(action == A_DOWN && ready){ StartCoroutine(Swing()); }
   }
   
   /* Swings melee weapon. */

@@ -49,27 +49,39 @@ public class PaperDoll{
   public Data Retrieve(string slot = "NONE"){
     Data ret = null;
     Material[] materials = renderer.materials;
-    switch(slot.ToUpper()){
-      case "HEAD":
-        ret = layers[0];
-        layers[0] = null;
-        materials[1] = null;
-        break;
-      case "TORSO":
-        ret = layers[1];
-        layers[1] = null;
-        materials[2] = null;
-        break;
-      case "LEGS":
-        ret = layers[2];
-        layers[2] = null;
-        materials[3] = null;
-        break; 
-    }
+    int si =SlotInt(slot);
+    if(si < 0){ return null; }
+    ret = layers[si];
+    layers[si] = null;
+    materials[si+1] = null;
     renderer.materials = materials;
     return ret;
   }
-
+  
+  /* Returns integer representation of slot. */
+  public int SlotInt(string slot){
+    switch(slot){
+      case "NONE": return -1; break;
+      case "HEAD": return 0; break;
+      case "TORSO": return 0; break;
+      case "LEGS":  return 0; break;
+    }
+    return -1;
+  }
+  
+  /* Stores item from particular slot into actor's inventory, if possible. */
+  public void Store(string slot = "NONE"){
+    int status = -1;
+    switch(slot){
+      case "HEAD": status = Inventory.HEAD; break;
+      case "TORSO": status = Inventory.TORSO; break;
+      case "LEGS":  status = Inventory.LEGS; break;
+    }
+    if(status == -1){ MonoBehaviour.print("Status was -1"); return; }
+    Data dat = Retrieve(slot);
+    actor.inventory.StoreEquipped(dat, status);
+  }
+  
   /* Equips equipment to specified slot and stores displaced if possible.*/
   public void EquipFromInventory(int index){
     if(actor == null || actor.inventory == null){ return; }

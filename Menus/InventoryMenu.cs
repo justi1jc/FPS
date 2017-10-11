@@ -43,32 +43,42 @@ public class InventoryMenu : Menu{
       new Rect(0, 0, 200, 200)
     );
     for(int i = 0; i < inv.slots; i++){
-      Data item = inv.Peek(i);
-      string status = "";
-      switch(inv.GetStatus(i)){
-        case Inventory.PRIMARY: status = "[Left]"; break;
-        case Inventory.SECONDARY: status = "[Right]"; break;
-        case Inventory.HEAD: status = "[Head]"; break;
-        case Inventory.TORSO: status = "[Torso]"; break;
-        case Inventory.LEGS: status = "[Legs]"; break;
-      }
-      string name = item == null ? "EMPTY" : item.displayName;
-      string info = item == null ? "" : " " + item.stack + "/" + item.stackSize;
-      str = status + name + info;
-      if(Button(str, 0, ih * i, iw, ih, 0, i)){ 
-        Equip(i, true);
-        Sound(0); 
-      }
-      if(Button("OffHand", iw, ih * i, iw/2, ih, 1, i)){ 
-        Equip(i, false);
-        Sound(0);
-      }
-      if(Button("Drop", iw + iw/2, ih * i, iw/2, ih, 2, i)){ 
-        actor.DiscardItem(i);
+      RenderItemRow(i, iw, ih);
+    }
+    GUI.EndScrollView();
+  }
+  
+  public void RenderItemRow(int i, int iw, int ih){
+    Inventory inv = manager.actor.inventory;
+    Data item = inv.Peek(i);
+    EquipSlot arms = manager.actor.arms;
+    string statusText = "";
+    int status = inv.GetStatus(i);
+    switch(status){
+      case Inventory.PRIMARY: statusText = "[Right]"; break;
+      case Inventory.SECONDARY: statusText = "[Left]"; break;
+      case Inventory.HEAD: statusText = "[Head]"; break;
+      case Inventory.TORSO: statusText = "[Torso]"; break;
+      case Inventory.LEGS: statusText = "[Legs]"; break;
+    }
+    string name = item == null ? "EMPTY" : item.displayName;
+    string info = item == null ? "" : " " + item.stack + "/" + item.stackSize;
+    string str = statusText + name + info;
+    if(Button(str, 0, ih * i, iw, ih, 0, i)){ 
+      if(status == Inventory.STORED){ manager.actor.Equip(i); }
+      else if(status != Inventory.EMPTY){ UnequipByIndex(i); }
+      Sound(0); 
+    }
+    if(status == Inventory.STORED && arms.DualEquipAvailable(item)){
+      if(Button("Dual Wield", iw, ih * i, iw/2, ih, 1, i)){ 
+        manager.actor.DualEquip(i);
         Sound(0);
       }
     }
-    GUI.EndScrollView();
+    if(Button("Drop", iw + iw/2, ih * i, iw/2, ih, 2, i)){ 
+      manager.actor.DiscardItem(i);
+      Sound(0);
+    }
   }
   
   void RenderArms(int iw, int ih){
@@ -79,7 +89,7 @@ public class InventoryMenu : Menu{
       y = (Height()/2) - (2*ih);
       x = XOffset() + iw;
       if(Button(str, x, y, iw + iw/2, ih, 0, -2)){ 
-        UnEquip(EquipSlot.LEFT);
+        arms.Store(EquipSlot.LEFT);
         Sound(0);
       }
     }
@@ -88,9 +98,26 @@ public class InventoryMenu : Menu{
       y = (Height()/2) -ih;
       x = XOffset() + iw;
       if(Button(str, x, y, iw + iw/2, ih, 0, -1)){
-        UnEquip(EquipSlot.RIGHT);
+        arms.Store(EquipSlot.RIGHT);
         Sound(0);
       }
+    }
+  }
+  
+  /* Unequips item found at this index. */
+  void UnequipByIndex(int index){
+    Inventory inv = manager.actor.inventory;
+    int status = inv.GetStatus(index);
+    switch(status){
+      case Inventory.PRIMARY: 
+        manager.actor.arms.Store(EquipSlot.RIGHT);
+        break;
+      case Inventory.SECONDARY:
+        manager.actor.arms.Store(EquipSlot.LEFT);
+        break;
+      case Inventory.HEAD: manager.actor.doll.Store("HEAD"); break;
+      case Inventory.TORSO: manager.actor.doll.Store("TORSO"); break;
+      case Inventory.LEGS: manager.actor.doll.Store("LEGS"); break;
     }
   }
   
@@ -130,8 +157,8 @@ public class InventoryMenu : Menu{
     else if(status == Inventory.STORED){ manager.actor.Equip(slot); }
     else{
       switch(status){
-        case Inventory.PRIMARY: UnEquip(EquipSlot.RIGHT); break;
-        case Inventory.SECONDARY: UnEquip(EquipSlot.LEFT); break;
+        case Inventory.PRIMARY: arms.Store(EquipSlot.RIGHT); break;
+        case Inventory.SECONDARY: arms.Store(EquipSlot.LEFT); break;
         case Inventory.HEAD: StoreEquipment("HEAD"); break;
         case Inventory.TORSO: StoreEquipment("TORSO"); break;
         case Inventory.LEGS: StoreEquipment("LEGS"); break;
@@ -156,8 +183,8 @@ public class InventoryMenu : Menu{
         if(sy == -5){ StoreEquipment("HEAD"); }
         if(sy == -4){ StoreEquipment("TORSO"); }
         if(sy == -3){ StoreEquipment("LEGS"); }
-        if(sy == -2){ UnEquip(EquipSlot.RIGHT); }
-        else if(sy == -1){ UnEquip(EquipSlot.LEFT); }
+        if(sy == -2){ arms.Store(EquipSlot.RIGHT); }
+        else if(sy == -1){ arms.Store(EquipSlot.LEFT); }
         else if(sy < inv.slots){
           if(button == A){ Equip(sy, false); }
           DefaultItemInput(button);
@@ -184,15 +211,5 @@ public class InventoryMenu : Menu{
     else if(button == RT){ Equip(sy, false); }
     else if(button == LT){ Equip(sy, true); }
   }
-  
-  /* Return to inventory or drop. */
-  public void UnEquip(int hand){
-    Data displaced = arms.Remove(hand);
-    if(displaced == null){ return; }
-    int remainder = inv.Store(new Data(displaced));
-    if(remainder > 0){
-      displaced.stack = remainder;
-      manager.actor.DiscardItem(displaced); 
-    }
-  }
+
 }

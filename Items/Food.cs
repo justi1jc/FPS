@@ -12,7 +12,7 @@ public class Food : Item{
   public float cooldown; // Delay between uses
   
   public override void Use(int action){
-    if(action == 0){ Consume(); }
+    if(action == A_DOWN){ Consume(); }
   }
   
   /* Heals holder. */

@@ -54,9 +54,7 @@ Backlog
 -Make exhaustive constants for Item.Use()
 
 Current Objectives
--Rewrite Hotbar and Inventory to keep items in-place when equipped.
-(Account for dropping items.)
--Refactor EquipSlot
+
 
 ********************************************************************************
   ___           _     _ _            _                  

@@ -716,7 +716,6 @@ public class Actor : MonoBehaviour{
     Data dat = item.GetData();
     Destroy(item.gameObject);
     StoreItem(dat);
-    Destroy(item.gameObject);
   }
   
   /* Prevents picking up the same items. */

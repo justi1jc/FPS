@@ -29,7 +29,8 @@ public class Ranged : Weapon{
     InitMuzzlePoint();
     ready = true;
   }
-
+  
+  /* Locates child muzzlepoint gameObject, if one exists. */
   void InitMuzzlePoint(){
     foreach(Transform t in transform){
       if(t.gameObject.name == "MuzzlePoint"){ 
@@ -38,15 +39,15 @@ public class Ranged : Weapon{
       }
     }
   }
-
+  
   public override void Use(int action){
-    if(action == 0 && ammo < 1){ Sound(2); }
-    if(action == 0 || (fullAuto && action == 3)){ Fire(); }
-    else if(action == 1){ ToggleAim(); }
-    else if(action == 2 && ammo < maxAmmo){
-      if(ready){ StartCoroutine(Reload()); }
+    if(action == A_DOWN && ammo < 1){ Sound(2); }
+    if(action == A_DOWN || (fullAuto && action == 3)){ Fire(); }
+    else if(action == B_DOWN){ ToggleAim(); }
+    else if(action == C_DOWN && ammo < maxAmmo && ready){
+      StartCoroutine(Reload());
     }
-    else if(action == 5 && ready){
+    else if(action == D_DOWN && ready){
       StartCoroutine(Melee());
     }
   }
@@ -55,7 +56,7 @@ public class Ranged : Weapon{
     return displayName + " " + ammo + "/" + maxAmmo;
   }
 
-  /* Fires ranged weapon. */
+  /* Fires this ranged weapon, consuming ammo. */
   public virtual void Fire(){
     if(ammo < 1 || !ready){ return; }
     if(hitScan){ FireHitScan(); }
@@ -218,7 +219,7 @@ public class Ranged : Weapon{
   /* Returns the current ammo of an item's data. */
   public static int Ammo(Data dat){
     if(dat == null || dat.ints.Count < 2){ return 0; }
-    return dat.ints[1];
+    return dat.ints[2];
   }
   
   /* Returns the display name of the ammo this ranged weapon uses. */
@@ -228,7 +229,7 @@ public class Ranged : Weapon{
   }
   
   public static void MaxAmmo(ref Data dat){
-    dat.ints[1] = dat.ints[2];
+    dat.ints[2] = dat.ints[3];
   }
   
   /* Adds ammo to weapon externally */

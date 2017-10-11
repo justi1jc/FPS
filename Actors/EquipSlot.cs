@@ -27,6 +27,11 @@ public class EquipSlot{
     hands = new GameObject[2];
     items = new Item[2];
     itemData = new Data[2];
+    hands[RIGHT] = rightHand;
+    hands[LEFT] = leftHand;
+    if(rightHand == null || leftHand == null){
+      MonoBehaviour.print("One or more hands are null.");
+    }
   }
   
   /* Prepares for serialization. */
@@ -79,10 +84,25 @@ public class EquipSlot{
   public void EquipFromInventory(int index){
     if(actor == null || actor.inventory == null){ return; }
     Data dat = actor.inventory.Peek(index);
-    if(dat == null){ return; }
-    if(!Item.OneHanded(dat)){ StoreAll(); }
-    else{ Store(RIGHT); }
+    if(dat == null){
+      MonoBehaviour.print("Dat at index " + index + "is null.");
+      return;
+    }
+    actor.SetAnimBool("leftEquip", true);
+    actor.SetAnimBool("rightEquip", true);
+    if(!Item.OneHanded(dat)){
+      StoreAll();
+      actor.SetAnimBool("twoHanded", true);
+    }
+    else{
+      Store(RIGHT);
+      if(items[LEFT] != null){ actor.SetAnimBool("twoHanded", false); }
+    }
     items[RIGHT] = Item.GetItem(dat);
+    if(items[RIGHT] == null){
+      MonoBehaviour.print("Dat null:" + dat.prefabName);
+      return;
+    }
     Mount(items[RIGHT], hands[RIGHT]);
     actor.inventory.SetStatus(index, GetStatus(RIGHT));
   }
@@ -91,9 +111,20 @@ public class EquipSlot{
   public void DualEquipFromInventory(int index){
     if(actor == null || actor.inventory == null){ return; }
     Data dat = actor.inventory.Peek(index);
-    if(dat == null || !DualEquipAvailable(dat)){ return; }
+    if(dat == null){
+      MonoBehaviour.print("Dat at index " + index + "is null.");
+      return;
+    }
+    if(!DualEquipAvailable(dat)){ return; }
+    actor.SetAnimBool("leftEquip", true);
+    actor.SetAnimBool("rightEquip", true);
+    actor.SetAnimBool("twoHanded", false);
     Store(LEFT);
     items[LEFT] = Item.GetItem(dat);
+    if(items[LEFT] == null){
+      MonoBehaviour.print("Dat null:" + dat.prefabName);
+      return;
+    }
     Mount(items[LEFT], hands[LEFT]);
     actor.inventory.SetStatus(index, GetStatus(LEFT));
   }
@@ -104,7 +135,7 @@ public class EquipSlot{
   }
   
   /* Stores item from a particular hand into Actor's inventory. */
-  private void Store(int hand){
+  public void Store(int hand){
     if(hand < 0 || hand > hands.Length || items[hand] == null){ return; }
     int status = GetStatus(hand);
     Data dat = items[hand].GetData();
@@ -112,7 +143,7 @@ public class EquipSlot{
       return;
     }
     actor.inventory.StoreEquipped(dat, status);
-    MonoBehaviour.Destroy(items[hand]);
+    MonoBehaviour.Destroy(items[hand].gameObject);
     items[hand] = null;
   }
   
@@ -127,6 +158,10 @@ public class EquipSlot{
   public void Drop(Item item){
     int hand = FindHand(item);
     if(hand == -1){ return; }
+    if(actor != null){
+      if(hand == RIGHT){ actor.inventory.ClearEquipped(Inventory.PRIMARY); }
+      if(hand == LEFT){ actor.inventory.ClearEquipped(Inventory.SECONDARY); }
+    }
     items[hand].Drop();
     items[hand] = null;
   }
@@ -136,10 +171,14 @@ public class EquipSlot{
   */
   public void Drop(){
     if(hands.Length == 0){ return; }
-    for(int i = hands.Length-1; i > 0; i--){
+    for(int i = hands.Length-1; i >= 0; i--){
       if(items[i] != null){
         items[i].Drop();
         items[i] = null;
+        if(actor != null){
+          if(i == RIGHT){ actor.inventory.ClearEquipped(Inventory.PRIMARY); }
+          if(i == LEFT){ actor.inventory.ClearEquipped(Inventory.SECONDARY); }
+        }
         return;
       }
     }
@@ -231,14 +270,32 @@ public class EquipSlot{
     return null;
   }
   
+  /* Use one of the equipped items */
   public void Use(int use){
+    
+    if(Single()){
+      if(items[RIGHT] == null){ return; }
+      items[RIGHT].Use(use);
+    }
+    else{
+      if(items[RIGHT] == null || items[LEFT] == null){ 
+        MonoBehaviour.print("" + items[RIGHT] + "," + items[LEFT]);
+        return;
+      }
+      switch(use){
+        case Item.A_DOWN: items[LEFT].Use(Item.A_DOWN); break;
+        case Item.B_DOWN: items[RIGHT].Use(Item.A_DOWN); break;
+        case Item.A_UP: items[LEFT].Use(Item.A_UP); break;
+        case Item.B_UP: items[RIGHT].Use(Item.A_UP); break;
+      }
+    }
   }
 
   /* Removes an item from its specified hand and returns its data, or null. */
   public Data Remove(int hand){
     if(hand < 0 || hand > hands.Length || items[hand] == null){ return null; }
     Data ret = items[hand].GetData();
-    MonoBehaviour.Destroy(items[hand]);
+    MonoBehaviour.Destroy(items[hand].gameObject);
     items[hand] = null;
     return ret;
   }
