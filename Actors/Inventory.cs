@@ -12,7 +12,7 @@ using System.Collections.Generic;
 //[System.Serializable] Prevents null slots.
 public class Inventory{
 
-  // location constants 
+  // Equip status constants 
   public const int EMPTY = 0; // Empty slot
   public const int STORED = 1; // Item is not equipped
   public const int PRIMARY = 2; // Item is equipped to primary slot.
@@ -90,8 +90,20 @@ public class Inventory{
     return status;
   }
   
-  /* Returns an equipped item to its slot, updating its status as STORED. */
-  public void StoreEquipped(int slot, Data dat){
+  /* Returns the total count of items with given displayName. */
+  public int ItemCount(string name){
+    int count = 0;
+    for(int i = 0; i < slots; i++){
+      if(inv[i] != null && inv[i].displayName == name){
+        count += inv[i].stack;
+      }
+    }
+    return count;
+  }
+  
+  /* Uses an equipped item's status to locate and update its slot. */
+  public void StoreEquipped(Data dat, int stat){
+    int slot = GetSlotByStatus(stat);
     if(slot < 0 || slot >= slots || dat == null){ return; }
     inv[slot] = dat;
     status[slot] = STORED;
@@ -172,7 +184,8 @@ public class Inventory{
       if(
           inv[i] != null &&
           inv[i].displayName == dat.displayName &&
-          inv[i].stack < inv[i].stackSize 
+          inv[i].stack < inv[i].stackSize &&
+          status[i] == STORED
       ){
         dat.stack = StackItem(i, dat);
       }
@@ -180,7 +193,7 @@ public class Inventory{
     if(dat.stack == 0){ return 0; }
     
     for(int i = 0; i < slots; i++){
-      if(inv[i] == null){
+      if(inv[i] == null && status[i] == EMPTY){
         inv[i] = dat;
         status[i] = STORED;
         return 0;

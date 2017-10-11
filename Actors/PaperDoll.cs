@@ -70,19 +70,24 @@ public class PaperDoll{
     return ret;
   }
 
-  /* Equips equipment to specified slot and returns displaced
-     equipment, or null. */
-  public Data Equip(Data dat){
-    if(dat == null){ return null; }
+  /* Equips equipment to specified slot and stores displaced if possible.*/
+  public void EquipFromInventory(int index){
+    if(actor == null || actor.inventory == null){ return; }
+    Data dat = actor.inventory.Peek(index);
+    if(dat == null || dat.itemType != Item.EQUIPMENT){ return; }
     string slot = dat.strings[0];
-    int index = -1;
+    int status = -1;
     switch(slot.ToUpper()){
-      case "HEAD": index = 0; break;
-      case "TORSO": index = 1; break;
-      case "LEGS": index = 2; break;
+      case "HEAD": index = 0; status = Inventory.HEAD; break;
+      case "TORSO": index = 1; status = Inventory.TORSO; break;
+      case "LEGS": index = 2; status = Inventory.LEGS; break;
     }
-    if(index == -1){ return dat; }
+    if(index == -1){ return; }
     Data displaced = new Data(layers[index]);
+    if(actor != null && actor.inventory != null){
+      actor.inventory.StoreEquipped(dat, status);
+    }
+    actor.inventory.SetStatus(index, status);
     layers[index] = dat;
     if(dat.strings.Count > 1){
       Material material = Resources.Load(dat.strings[1], typeof(Material)) as Material;
@@ -100,7 +105,6 @@ public class PaperDoll{
       renderer.materials = materials;
     }
     else{ MonoBehaviour.print(dat.prefabName + " lacks a material."); }
-    return null;
   }
   
   /* Returns the total modifier of equipped clothing. */

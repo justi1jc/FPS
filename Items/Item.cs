@@ -121,9 +121,17 @@ public class Item : MonoBehaviour{
     dat.ints.Add(weight);
     dat.baseValue = baseValue;
     dat.itemType = Item.ITEM;
+    dat.bools.Add(oneHanded);
     return dat;
   }
   
+  /* Returns true if an item stored in a Data is one-handed. */
+  public static bool OneHanded(Data dat){
+    if(dat == null || dat.bools.Count < 1){ return true; }
+    return dat.bools[0];
+  }
+  
+  /* Fills the stack of a given dat. */
   public static void FullStack(ref Data dat){
     dat.stack = dat.stackSize;
   }
@@ -143,5 +151,22 @@ public class Item : MonoBehaviour{
     ready = false;
     yield return new WaitForSeconds(duration);
     ready = true;
+  }
+  
+  /* Returns an Item from data */
+  public static Item GetItem(Data dat){
+    if(dat == null){ MonoBehaviour.print("Equipped null data"); return null; }
+    GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
+    if(!prefab){ MonoBehaviour.print("Prefab null:" + dat.displayName); return null;}
+    Vector3 position = new Vector3();
+    GameObject itemGO = (GameObject)GameObject.Instantiate(
+      prefab,
+      position,
+      Quaternion.identity
+    );
+    if(!itemGO){MonoBehaviour.print("GameObject null:" + dat.displayName); return null; }
+    Item item = itemGO.GetComponent<Item>();
+    item.LoadData(dat);
+    return item;
   }
 }

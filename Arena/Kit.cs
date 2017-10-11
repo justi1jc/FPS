@@ -61,7 +61,7 @@ public class Kit{
     Data dat = GetItem(item);
     if(dat != null){
       if(dat.itemType == Item.RANGED){ Ranged.MaxAmmo(ref dat); }
-      actor.Equip(dat, true);
+      actor.Equip(dat);
     }
     else{ MonoBehaviour.print(item + " was null!"); }
   }

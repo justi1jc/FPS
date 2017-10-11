@@ -45,15 +45,18 @@ Reoadmap:
 Current version: 0.5.4
 
 Backlog
--Refactor EquipSlot
+
 -Cone of fire
 -Iron-sights
 -Streamline Arena Lobby
 -Specify Arena maps in config file Resources/Maps.txt
+-Add in Ability classes.
+-Make exhaustive constants for Item.Use()
 
-Current Objective
+Current Objectives
 -Rewrite Hotbar and Inventory to keep items in-place when equipped.
 (Account for dropping items.)
+-Refactor EquipSlot
 
 ********************************************************************************
   ___           _     _ _            _                  

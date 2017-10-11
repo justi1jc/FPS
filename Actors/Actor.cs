@@ -118,7 +118,7 @@ public class Actor : MonoBehaviour{
   void Awake(){
     body = gameObject;
     inventory = new Inventory();
-    arms = new EquipSlot(hand, offHand, this);
+    arms = new EquipSlot(offHand, hand, this);
     doll = new PaperDoll(this);
     arms.actor = this;
     stats = new StatHandler(this);
@@ -252,7 +252,7 @@ public class Actor : MonoBehaviour{
   
   /* Returns an empty string or the info of the active item. */
   public string ItemInfo(){
-    return arms.Info();
+    return arms.GetInfo();
   }
   
   /* Returns an empty string, or info about interacting with the actor in reach */
@@ -513,7 +513,7 @@ public class Actor : MonoBehaviour{
   public void ReceiveDamage(int damage, GameObject weapon){
     if(stats.dead){ return; }
     if(weapon == null || GetRoot(weapon.transform) == transform){ return; }
-    if(stats.health < 1 || (weapon == arms.handItem && damage > 0)){ return; }
+    if(stats.health < 1){ return; }
     stats.DrainCondition("HEALTH", damage);
     Actor attacker = Attacker(weapon);
     if(ai != null && attacker != null){ ai.ReceiveDamage(damage, attacker); }
@@ -580,62 +580,30 @@ public class Actor : MonoBehaviour{
     }
   }
   
-  /* Equips ability to selected hand, storing items displaced. */
-  public void EquipAbility(int ability, bool primary){
-    List<Data> displaced = arms.EquipAbility(ability, primary);
-    for(int i = 0; i < displaced.Count; i++){
-      displaced[i].stack = inventory.Store(displaced[i]);
-      if(displaced[i].stack > 0){ DiscardItem(displaced[i]); }
-    }
-  }
-  
   /* Use primary or secondary item */
   public void Use(int use){ arms.Use(use); }
   
-  /* Drops an item from actor's arms.. */
-  public void Drop(bool primary = true){ arms.Drop(); }
+  /* Drops an item from actor's arms. */
+  public void Drop(){ arms.Drop(); }
   
   /* Public equip method for an unstored object. */
-  public void Equip(Data dat, bool primary = true){
+  public void Equip(Data dat){
     int slot = StoreItem(dat);
-    if(slot == null){ print("Inventory full."); return; }
-    Equip(slot, primary);
+    if(slot == -1){ print("Inventory full."); return; }
+    Equip(slot);
   }
   
-  /* Selects an item in inventory to equip. */
-  public void Equip(int itemIndex, bool primary){
-    int status = GetStatus(itemIndex, primary);
-    if(status < 0){ print("Status was " + status); return; }
-    Data dat = inventory.Equip(itemIndex, status);
-    EquipStored(dat, primary);
-  }
-  
-  /* Equips an item that has already been stored in the inventory. */
-  private void EquipStored(Data dat, bool primary = true){
-    if(dat == null){ print("Dat null"); return; }
-    List<Data> displaced = new List<Data>();
-    if(dat.itemType == Item.EQUIPMENT){
-      displaced.Add(doll.Equip(dat));
-    }
-    else{
-      displaced.AddRange(arms.Equip(dat, primary));
-    }
-    for(int i = 0; i < displaced.Count; i++){
-      if(displaced[i] != null){
-        displaced[i].stack = inventory.Store(new Data(displaced[i]));
-        if(displaced[i].stack > 0){
-          DiscardItem(displaced[i]);
-        }
-      }
-    }
-  }
-  
-  /* Returns the inventory status an item will get if equipped, or -1. */
-  private int GetStatus(int itemIndex, bool primary){
-    if(itemIndex < 0 || itemIndex >= inventory.slots){ return -1; }
+  /* Equips item in inventory by its index. */
+  public void Equip(int itemIndex){
     Data dat = inventory.Peek(itemIndex);
-    return Inventory.GetStatusByData(dat, primary);
+    if(dat == null){ return; }
+    if(dat.itemType == Item.EQUIPMENT){ doll.EquipFromInventory(itemIndex); }
+    else{ arms.EquipFromInventory(itemIndex); }
   }
+  
+  /* Attempts to dual equip to arms by its index. */
+  public void DualEquip(int itemIndex){ arms.DualEquipFromInventory(itemIndex);}
+  
   
   /* Removes number of available ammo, up to max, and returns that number*/
   public int RequestAmmo(string ammoName,int max){
@@ -794,7 +762,7 @@ public class Actor : MonoBehaviour{
     int i = 0;
     arms = dat.equipSlot;
     doll = dat.doll;
-    arms.Load(this, hand, offHand);
+    arms.Load(offHand, hand, this);
     inventory.LoadData(dat.inventoryRecord);
     id = dat.ints[i]; i++;
     lastPos = dat.lastPos;

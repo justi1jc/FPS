@@ -68,6 +68,7 @@ public class Melee : Weapon{
   
   public override Data GetData(){
     Data dat = GetBaseData();
+    AddWeaponData(dat);
     dat.itemType = Item.MELEE;
     return dat;
   }

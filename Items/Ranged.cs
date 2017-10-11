@@ -215,6 +215,18 @@ public class Ranged : Weapon{
     }
   }
   
+  /* Returns the current ammo of an item's data. */
+  public static int Ammo(Data dat){
+    if(dat == null || dat.ints.Count < 2){ return 0; }
+    return dat.ints[1];
+  }
+  
+  /* Returns the display name of the ammo this ranged weapon uses. */
+  public static string AmmoName(Data dat){
+    if(dat == null || dat.strings.Count < 1){ return ""; }
+    return dat.strings[0];
+  }
+  
   public static void MaxAmmo(ref Data dat){
     dat.ints[1] = dat.ints[2];
   }
@@ -233,6 +245,7 @@ public class Ranged : Weapon{
 
   public override Data GetData(){
     Data dat = GetBaseData();
+    AddWeaponData(dat);
     dat.ints.Add(ammo);
     dat.ints.Add(maxAmmo);
     dat.strings.Add(ammunition);
@@ -242,7 +255,7 @@ public class Ranged : Weapon{
 
   public override void LoadData(Data dat){
     LoadBaseData(dat);
-    ammo = dat.ints[1];
+    ammo = dat.ints[2];
   }
   
 }

@@ -35,18 +35,7 @@ public class InventoryMenu : Menu{
     if(actor == null || inv == null || arms == null){ return; }
     
     RenderEquipment(XOffset() + iw, (Height()/2)-(5*ih));
-    if(arms.handItem != null){
-      str = "Left" + arms.handItem.GetInfo();
-      y = (Height()/2) - (2*ih);
-      x = XOffset() + iw;
-      if(Button(str, x, y, iw + iw/2, ih, 0, -2)){ UnEquip(true); Sound(0);}
-    }
-    if(arms.offHandItem != null){
-      str = "Right" + arms.offHandItem.GetInfo();
-      y = (Height()/2) -ih;
-      x = XOffset() + iw;
-      if(Button(str, x, y, iw + iw/2, ih, 0, -1)){ UnEquip(false); Sound(0);}
-    }
+    RenderArms(iw, ih);
     
     scrollPosition = GUI.BeginScrollView(
       new Rect(XOffset() +iw, Height()/2, Width()-iw, ih * inv.slots),
@@ -82,6 +71,29 @@ public class InventoryMenu : Menu{
     GUI.EndScrollView();
   }
   
+  void RenderArms(int iw, int ih){
+    int x, y;
+    string str;
+    if(arms.Peek(EquipSlot.LEFT) != null){
+      str = "Left" + arms.Peek(EquipSlot.LEFT).GetInfo();
+      y = (Height()/2) - (2*ih);
+      x = XOffset() + iw;
+      if(Button(str, x, y, iw + iw/2, ih, 0, -2)){ 
+        UnEquip(EquipSlot.LEFT);
+        Sound(0);
+      }
+    }
+    if(arms.Peek(EquipSlot.RIGHT) != null){
+      str = "Right" + arms.Peek(EquipSlot.RIGHT).GetInfo();
+      y = (Height()/2) -ih;
+      x = XOffset() + iw;
+      if(Button(str, x, y, iw + iw/2, ih, 0, -1)){
+        UnEquip(EquipSlot.RIGHT);
+        Sound(0);
+      }
+    }
+  }
+  
   void RenderEquipment(int x, int y){
     if(manager.actor.doll == null){ return; }
     int iw = Width()/4;
@@ -108,23 +120,18 @@ public class InventoryMenu : Menu{
       case "TORSO": status = Inventory.TORSO; break;
       case "LEGS": status = Inventory.LEGS; break;
     }
-    int invSlot = inv.GetSlotByStatus(status);
-    if(invSlot < 0){
-      manager.actor.StoreItem(dat);
-      return;
-    }
-    inv.StoreEquipped(invSlot, dat);
+    inv.StoreEquipped(dat, status);
   }
 
   /* Deligates to actor */
   void Equip(int slot, bool primary){
     int status = inv.GetStatus(slot);
     if(status == Inventory.EMPTY){ return; }
-    else if(status == Inventory.STORED){ manager.actor.Equip(slot, primary); }
+    else if(status == Inventory.STORED){ manager.actor.Equip(slot); }
     else{
       switch(status){
-        case Inventory.PRIMARY: UnEquip(true); break;
-        case Inventory.SECONDARY: UnEquip(false); break;
+        case Inventory.PRIMARY: UnEquip(EquipSlot.RIGHT); break;
+        case Inventory.SECONDARY: UnEquip(EquipSlot.LEFT); break;
         case Inventory.HEAD: StoreEquipment("HEAD"); break;
         case Inventory.TORSO: StoreEquipment("TORSO"); break;
         case Inventory.LEGS: StoreEquipment("LEGS"); break;
@@ -134,10 +141,8 @@ public class InventoryMenu : Menu{
   
   public override void UpdateFocus(){
     if(inv != null){ syMax = inv.slots-1; }
-    if(sy > 0){
-      if(sx < 0){ sx = 0; }
-      else if(sx > 2){ sx = 2; }
-    }
+    if(sx < 0){ sx = 0; }
+    else if(sx > 2){ sx = 2; }
     SecondaryBounds();
   }
   
@@ -147,15 +152,12 @@ public class InventoryMenu : Menu{
     Actor actor = manager.actor;
     if(button == A){ Sound(0); }
     switch(sx){
-      case -1:
-        if(button == A){ manager.Change("QUEST"); }
-        break;
       case 0:
         if(sy == -5){ StoreEquipment("HEAD"); }
         if(sy == -4){ StoreEquipment("TORSO"); }
         if(sy == -3){ StoreEquipment("LEGS"); }
-        if(sy == -2){ UnEquip(true); }
-        else if(sy == -1){ UnEquip(false); }
+        if(sy == -2){ UnEquip(EquipSlot.RIGHT); }
+        else if(sy == -1){ UnEquip(EquipSlot.LEFT); }
         else if(sy < inv.slots){
           if(button == A){ Equip(sy, false); }
           DefaultItemInput(button);
@@ -173,9 +175,6 @@ public class InventoryMenu : Menu{
           DefaultItemInput(button);
         }
         break;
-      case 3:
-        if(button == A){ manager.Change("ABILITY"); }
-        break;
     }
   }
   
@@ -187,8 +186,9 @@ public class InventoryMenu : Menu{
   }
   
   /* Return to inventory or drop. */
-  public void UnEquip(bool primary){
-    Data displaced = arms.Remove(primary);
+  public void UnEquip(int hand){
+    Data displaced = arms.Remove(hand);
+    if(displaced == null){ return; }
     int remainder = inv.Store(new Data(displaced));
     if(remainder > 0){
       displaced.stack = remainder;
