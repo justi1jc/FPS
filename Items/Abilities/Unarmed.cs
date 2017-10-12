@@ -1,25 +1,28 @@
 /*
-    A Melee weapon delivers damage upon contact for the duration of its swing.
-    sounds[0] is striking sound
+    Unarmed enables an Actor to punch with both hands.
 */
 
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Melee : Weapon{
-  public float damageStart; // Begin of effective swing
-  public float damageEnd;   // End of effective swing
-  public bool damageActive; // True if damage can be given
-  public float knockBack;   // Magnitude of force exerted on target
-  public bool stab; // Actor stabs with this item if true
-  
-  public void Start(){
+public class Unarmed : Ability{
+  public float damageStart, damageEnd, knockBack, cooldown;
+  public int damage;
+  bool damageActive;
+  public void Awake(){
+    oneHanded = false;
     ready = true;
   }
   
-  public override void Use(int action){
-    if(action == A_DOWN && ready){ StartCoroutine(Swing()); }
+  public override void Use(int use){
+    if(use == Item.A_DOWN && ready){ RightPunch(); }
+  }
+  
+  /* Triggers Actor's Right punch animation */
+  private void RightPunch(){
+    StartCoroutine(Swing());
+    if(holder != null){ holder.SetAnimTrigger("rightPunch"); }
   }
   
   /* Swings melee weapon. */
@@ -68,8 +71,8 @@ public class Melee : Weapon{
   
   public override Data GetData(){
     Data dat = GetBaseData();
-    AddWeaponData(dat);
-    dat.itemType = Item.MELEE;
+    AddAbilityData(ref dat);
     return dat;
   }
+  
 }

@@ -1,11 +1,5 @@
 /*
     Item serves as the base class for specic types of items.
-    Use codes
-    0 Main Click
-    1 Secondary Click
-    2 Reload
-    3 Charge
-    4 Relase
 */
 
 
@@ -26,7 +20,7 @@ public class Item : MonoBehaviour{
   public const int RANGED = 8;
   public const int PROJECTILE = 9;
   public const int EQUIPMENT = 10;
-  
+  public const int ABILITY = 11;
   
   // Input constants.
   public const int A_DOWN = 0;
@@ -59,7 +53,6 @@ public class Item : MonoBehaviour{
   public bool ready = true;
   public bool oneHanded = true; // True if this item can be held in one hand.
   public bool held = false;
-  public bool ability = false;
   
   
   // Empty base methods
@@ -68,7 +61,7 @@ public class Item : MonoBehaviour{
   
   // Implemented base methods
   /* Bonds an item to an actor */
-  public void Hold(Actor a){
+  public virtual void Hold(Actor a){
     if(held){ return; }
     held = true;
     holder = a;
@@ -166,6 +159,34 @@ public class Item : MonoBehaviour{
     ready = false;
     yield return new WaitForSeconds(duration);
     ready = true;
+  }
+  
+  /* Returns an item's data based on its prefab name. */
+  /* Factory that returns the data of an Item. */
+  public static Data GetItem(string prefab, int quantity = 1){
+    GameObject pref = (GameObject)Resources.Load("Prefabs/" + prefab, typeof(GameObject));
+    if(pref == null){
+      MonoBehaviour.print("Prefab null " + prefab);
+      return null;
+    }
+    GameObject go = (GameObject)GameObject.Instantiate(
+      pref,
+      new Vector3(),
+      Quaternion.identity
+    );
+    if(go == null){
+      MonoBehaviour.print("Game object null " + prefab);
+      return null;
+    }
+    Item item = go.GetComponent<Item>();
+    if(item == null){ 
+      MonoBehaviour.print("Item not found " + prefab);
+      return null; 
+    }
+    Data dat = item.GetData();
+    dat.stack = quantity;
+    GameObject.Destroy(go);
+    return dat;
   }
   
   /* Returns an Item from data */

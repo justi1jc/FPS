@@ -58,7 +58,7 @@ public class Kit{
   
   /* Equips an item to an actor's arms, giving it max ammo if relevant. */
   public static void ApplyToArms(string item, ref Actor actor){
-    Data dat = GetItem(item);
+    Data dat = Item.GetItem(item);
     if(dat != null){
       if(dat.itemType == Item.RANGED){ Ranged.MaxAmmo(ref dat); }
       actor.Equip(dat);
@@ -76,7 +76,7 @@ public class Kit{
     float b = 0f,
     float a = 0f
   ){
-    Data dat = GetItem(item);
+    Data dat = Item.GetItem(item);
     if(dat != null){
       if(color){ Equipment.SetColor(new Color(r, g, b, a), ref dat); }
       actor.Equip(dat);
@@ -90,7 +90,7 @@ public class Kit{
     ref Actor actor,
     bool fullStack = true
   ){
-    Data dat = GetItem(item);
+    Data dat = Item.GetItem(item);
     if(dat != null){
       if(dat.itemType == Item.ITEM && fullStack){ Item.FullStack(ref dat); }
       actor.StoreItem(dat);
@@ -100,33 +100,6 @@ public class Kit{
   
   private void FullStack(ref Data dat){
     dat.stack = dat.stackSize;
-  }
-  
-  /* Factory that returns the data of an Item. */
-  public static Data GetItem(string prefab, int quantity = 1){
-    GameObject pref = (GameObject)Resources.Load("Prefabs/" + prefab, typeof(GameObject));
-    if(pref == null){
-      MonoBehaviour.print("Prefab null " + prefab);
-      return null;
-    }
-    GameObject go = (GameObject)GameObject.Instantiate(
-      pref,
-      new Vector3(),
-      Quaternion.identity
-    );
-    if(go == null){
-      MonoBehaviour.print("Game object null " + prefab);
-      return null;
-    }
-    Item item = go.GetComponent<Item>();
-    if(item == null){ 
-      MonoBehaviour.print("Item not found " + prefab);
-      return null; 
-    }
-    Data dat = item.GetData();
-    dat.stack = quantity;
-    GameObject.Destroy(go);
-    return dat;
   }
   
   public string ToString(){

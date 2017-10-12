@@ -210,7 +210,7 @@ public class Ranged : Weapon{
         Sound(3);
       }
       Item item = col.gameObject.GetComponent<Item>();
-      if(item != null && item.holder!= null && !item.ability){
+      if(item != null && item.holder!= null){
         item.holder.arms.Drop(item);
       }
     }

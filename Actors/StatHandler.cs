@@ -41,8 +41,8 @@ public class StatHandler{
   public int xp;
   
   // Abilities
-  public List<int> abilities;
-  
+  public List<Data> abilities;
+
   /* Faction id 
      0 = neutral(only retaliates)
      1 = feral(attacks anything)
@@ -57,7 +57,7 @@ public class StatHandler{
   public StatHandler(Actor actor){
     this.actor = actor;
     dead = false;
-    abilities = new List<int>();
+    abilities = new List<Data>();
     intelligence = charisma = endurance = perception = agility = willpower = strength = 1;
     ranged = melee = unarmed = magic = stealth = skillPoints = xp = 0;
     level = nextLevel = 0;

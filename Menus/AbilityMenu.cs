@@ -6,17 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-public class AbilityMenu : Menu{
-  public List<int> selections;
-  
+public class AbilityMenu : Menu{  
   public AbilityMenu(MenuManager manager) : base(manager){
-    syMin = 0;
-    sxMin = -1;
-    syMax = 1;
-    
-    selections = new List<int>();
     if(manager.actor == null || manager.actor.stats != null){ return; }
-    selections = manager.actor.stats.abilities;
   }
   
   public override void Render(){

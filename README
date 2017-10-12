@@ -46,15 +46,15 @@ Current version: 0.5.4
 
 Backlog
 
+-Make items dropped in Arena SelfDestruct after a minute.
 -Cone of fire
 -Iron-sights
 -Streamline Arena Lobby
 -Specify Arena maps in config file Resources/Maps.txt
--Add in Ability classes.
 -Make exhaustive constants for Item.Use()
 
 Current Objectives
-
+-Add in Ability and UnarmedAbility classes.
 
 ********************************************************************************
   ___           _     _ _            _                  

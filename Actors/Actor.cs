@@ -219,12 +219,11 @@ public class Actor : MonoBehaviour{
   */
   void AssignPlayer(int player){
     playerNumber = player;
+    if(arms.Empty()){
+      arms.EquipAbility(Item.GetItem("Abilities/Unarmed"));
+    }
     StartCoroutine(RegenRoutine());
     if(player <5 && player > 0){
-      //stats.abilities.Add(0);
-      //stats.abilities.Add(1);
-      //stats.abilities.Add(2);
-      //stats.abilities.Add(3);
       SetMenuOpen(false);
       if(menu){ menu.Change("HUD");  menu.actor = this; }
       if(Session.session != null && cam != null){
@@ -236,7 +235,6 @@ public class Actor : MonoBehaviour{
       StartCoroutine(InputRoutine());
     }
     else if(player == 5){
-      stats.abilities.Add(0);
       if(defaultAI == ""){ ai = new AIManager(this, "PASSIVE"); }
       else{ ai = new AIManager(this, defaultAI); }
       if(speechTreeFile != ""){ speechTree = new SpeechTree(speechTreeFile); }
@@ -584,7 +582,10 @@ public class Actor : MonoBehaviour{
   public void Use(int use){ arms.Use(use); }
   
   /* Drops an item from actor's arms. */
-  public void Drop(){ arms.Drop(); }
+  public void Drop(){ 
+    arms.Drop();
+    if(arms.Empty()){ arms.EquipAbility(Item.GetItem("Abilities/Unarmed")); }
+  }
   
   /* Public equip method for an unstored object. */
   public void Equip(Data dat){
@@ -711,7 +712,7 @@ public class Actor : MonoBehaviour{
   
   /* Pick up item in world. */
   public void PickUp(Item item){
-    if(!item || !pickupCooldown || item.ability){ return; }
+    if(!item || !pickupCooldown || item is Ability){ return; }
     StartCoroutine(PickupCooldown());
     Data dat = item.GetData();
     Destroy(item.gameObject);

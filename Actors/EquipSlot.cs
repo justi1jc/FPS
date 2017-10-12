@@ -78,6 +78,29 @@ public class EquipSlot{
     return true;
   }
   
+  
+  /*
+    Equips an ability for use with right hand.
+  */
+  public void EquipAbility(Data ability){
+    if(ability == null){ return; }
+    Item item = Item.GetItem(ability);
+    items[RIGHT] = item;
+    Mount(items[RIGHT], hands[RIGHT]);
+    
+    actor.SetAnimBool("rightEquip", true);
+    if(!item.oneHanded){ 
+      if(items[LEFT] != null && items[LEFT] is Ability){ 
+        MonoBehaviour.Destroy(items[LEFT]);
+        items[LEFT] = null;
+      }
+      else if(items[LEFT] != null){ Store(LEFT); }
+      actor.SetAnimBool("twoHanded", true); 
+      actor.SetAnimBool("leftEquip", false);
+    }
+    else{ actor.SetAnimBool("twoHanded", false); }
+  }
+  
   /* Equip an item to right hand, storing any displaced item into actor's 
      inventory. 
   */
@@ -90,14 +113,9 @@ public class EquipSlot{
     }
     actor.SetAnimBool("leftEquip", true);
     actor.SetAnimBool("rightEquip", true);
-    if(!Item.OneHanded(dat)){
-      StoreAll();
-      actor.SetAnimBool("twoHanded", true);
-    }
-    else{
-      Store(RIGHT);
-      if(items[LEFT] != null){ actor.SetAnimBool("twoHanded", false); }
-    }
+    actor.SetAnimBool("twoHanded", false);
+    if(!Item.OneHanded(dat)){ StoreAll(); }
+    else{ Store(RIGHT); }
     items[RIGHT] = Item.GetItem(dat);
     if(items[RIGHT] == null){
       MonoBehaviour.print("Dat null:" + dat.prefabName);
@@ -137,6 +155,7 @@ public class EquipSlot{
   /* Stores item from a particular hand into Actor's inventory. */
   public void Store(int hand){
     if(hand < 0 || hand > hands.Length || items[hand] == null){ return; }
+    if(items[hand] is Ability){ return; }
     int status = GetStatus(hand);
     Data dat = items[hand].GetData();
     if(status == -1 || actor == null || actor.inventory == null || dat == null){
@@ -158,7 +177,7 @@ public class EquipSlot{
   public void Drop(Item item){
     int hand = FindHand(item);
     if(hand == -1){ return; }
-    if(actor != null){
+    if(actor != null && !(item is Ability)){
       if(hand == RIGHT){ actor.inventory.ClearEquipped(Inventory.PRIMARY); }
       if(hand == LEFT){ actor.inventory.ClearEquipped(Inventory.SECONDARY); }
     }
@@ -308,33 +327,4 @@ public class EquipSlot{
     }
     return ret;
   }
-  
-  
-  /* Initializes unarmed attack. */
-  void InitPunch(GameObject user){
-    Melee item = user.AddComponent<Melee>();
-    item.ability = true;
-    item.cooldown = 0.25f;
-    item.damageStart = 0.25f;
-    item.damageEnd = 0.75f;
-    item.knockBack = 50;
-    item.ready = true;
-    item.damage = 20;
-    item.holder = actor;
-  }
-
-  /* Performs unarmed attack. */
-  public void UsePunch(GameObject user, int use, bool primary){
-    Item fist = user.GetComponent<Melee>();
-    if(fist == null){ return; }
-    if(actor != null){
-      string trigger = primary ? "leftPunch" : "rightPunch";
-      if(fist.ready){
-        actor.SetAnimTrigger(trigger);
-        fist.Use(0);
-      }
-    }
-    else{ MonoBehaviour.print("Actor missing"); }
-  }
-  
 }

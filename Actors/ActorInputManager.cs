@@ -115,6 +115,12 @@ public class ActorInputHandler{
     }
     
     if(pt == InputEvent.DOWN){
+      if(!actor.arms.Single()){
+        switch(btn){
+          case InputEvent.X360_RT: actor.Use(Item.B_DOWN); return; break;
+          case InputEvent.X360_LT: actor.Use(Item.A_DOWN); return; break;
+        }
+      }
       switch(btn){
         case InputEvent.MOUSE_0: actor.Use(Item.A_DOWN); break;
         case InputEvent.X360_RT: actor.Use(Item.A_DOWN); break;
@@ -155,6 +161,12 @@ public class ActorInputHandler{
       }
     }
     else if(pt == InputEvent.UP){
+      if(!actor.arms.Single()){
+        switch(btn){
+          case InputEvent.X360_RT: actor.Use(Item.B_UP); return; break;
+          case InputEvent.X360_LT: actor.Use(Item.A_UP); return; break;
+        }
+      }
       switch(btn){
         case InputEvent.MOUSE_0: actor.Use(Item.A_UP); break;
         case InputEvent.X360_RT: actor.Use(Item.A_UP); break;
