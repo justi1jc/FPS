@@ -17,6 +17,10 @@ public class PaperDoll{
   [System.NonSerialized]public SkinnedMeshRenderer renderer = null;
   [System.NonSerialized]public Mesh mesh = null;
   [System.NonSerialized]public Actor actor = null;
+  public const int HEAD = 0;
+  public const int TORSO = 1;
+  public const int LEGS = 2;
+  
   
   Data[] layers;
 
@@ -35,72 +39,74 @@ public class PaperDoll{
   
   
   /* Shows the contents of the desired slot. */
-  public Data Peek(string slot = "NONE"){
-    switch(slot.ToUpper()){
-      case "NONE": return null; break;
-      case "HEAD": return layers[0]; break;
-      case "TORSO": return layers[1]; break;
-      case "LEGS": return layers[2]; break; 
+  public Data Peek(int slot){
+    switch(slot){
+      case HEAD: return layers[0]; break;
+      case TORSO: return layers[1]; break;
+      case LEGS: return layers[2]; break; 
     }
     return null;
   }
 
   /* Removes and returns the contents of the desired slot. */
-  public Data Retrieve(string slot = "NONE"){
+  public Data Retrieve(int slot){
     Data ret = null;
     Material[] materials = renderer.materials;
-    int si =SlotInt(slot);
-    if(si < 0){ return null; }
-    ret = layers[si];
-    layers[si] = null;
-    materials[si+1] = null;
+    if(slot < 0){ return null; }
+    ret = layers[slot];
+    layers[slot] = null;
+    materials[slot+1] = null;
     renderer.materials = materials;
     return ret;
   }
   
-  /* Returns integer representation of slot. */
-  public int SlotInt(string slot){
+  /* Returns the integer representation of a slot from its name. 
+     Returns -1 on failure.
+  */
+  public static int GetSlotByName(string slotName){
+    switch(slotName.ToUpper()){
+      case "HEAD": return HEAD; break;
+      case "TORSO": return TORSO; break;
+      case "LEGS": return LEGS; break;
+    }
+    return -1;
+  }
+  
+  /* Returns the Inventory status associated with a given slot, or -1 on 
+     failure.
+  */
+  public static int MapSlotToStatus(int slot){
     switch(slot){
-      case "NONE": return -1; break;
-      case "HEAD": return 0; break;
-      case "TORSO": return 0; break;
-      case "LEGS":  return 0; break;
+      case HEAD: return Inventory.HEAD; break;
+      case TORSO: return Inventory.TORSO; break;
+      case LEGS: return Inventory.LEGS; break;
     }
     return -1;
   }
   
   /* Stores item from particular slot into actor's inventory, if possible. */
-  public void Store(string slot = "NONE"){
-    int status = -1;
-    switch(slot){
-      case "HEAD": status = Inventory.HEAD; break;
-      case "TORSO": status = Inventory.TORSO; break;
-      case "LEGS":  status = Inventory.LEGS; break;
-    }
+  public void Store(int slot = -1){
+    int status = MapSlotToStatus(slot);
     if(status == -1){ MonoBehaviour.print("Status was -1"); return; }
     Data dat = Retrieve(slot);
+    if(dat == null){ return; }
     actor.inventory.StoreEquipped(dat, status);
   }
   
   /* Equips equipment to specified slot and stores displaced if possible.*/
-  public void EquipFromInventory(int index){
+  public void EquipFromInventory(int invIndex){
     if(actor == null || actor.inventory == null){ return; }
-    Data dat = actor.inventory.Peek(index);
+    Data dat = actor.inventory.Peek(invIndex);
     if(dat == null || dat.itemType != Item.EQUIPMENT){ return; }
-    string slot = dat.strings[0];
-    int status = -1;
-    switch(slot.ToUpper()){
-      case "HEAD": index = 0; status = Inventory.HEAD; break;
-      case "TORSO": index = 1; status = Inventory.TORSO; break;
-      case "LEGS": index = 2; status = Inventory.LEGS; break;
-    }
-    if(index == -1){ return; }
-    Data displaced = new Data(layers[index]);
+    int slot = GetSlotByName(dat.strings[0]);
+    int status = MapSlotToStatus(slot);
+    if(invIndex == -1){ return; }
+    Data displaced = new Data(layers[slot]);
     if(actor != null && actor.inventory != null){
-      actor.inventory.StoreEquipped(dat, status);
+      actor.inventory.StoreEquipped(displaced, status);
     }
-    actor.inventory.SetStatus(index, status);
-    layers[index] = dat;
+    actor.inventory.SetStatus(invIndex, status);
+    layers[slot] = dat;
     if(dat.strings.Count > 1){
       Material material = Resources.Load(dat.strings[1], typeof(Material)) as Material;
       material = new Material(material);
@@ -113,7 +119,7 @@ public class PaperDoll{
       }
       else{ MonoBehaviour.print(dat.prefabName + " lacks a color."); }
       Material[] materials = renderer.materials;
-      materials[index+1] = material;
+      materials[invIndex+1] = material;
       renderer.materials = materials;
     }
     else{ MonoBehaviour.print(dat.prefabName + " lacks a material."); }

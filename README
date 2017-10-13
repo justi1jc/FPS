@@ -45,16 +45,48 @@ Reoadmap:
 Current version: 0.5.4
 
 Backlog
-
--Make items dropped in Arena SelfDestruct after a minute.
+  Base FPS Features
 -Cone of fire
 -Iron-sights
--Streamline Arena Lobby
+
+  Arena Features
+-Make items dropped in Arena SelfDestruct after a minute according to setting.
 -Specify Arena maps in config file Resources/Maps.txt
--Make exhaustive constants for Item.Use()
+-Offer game-modes to make arena config faster. 
+  -Deathmatch mode-
+    -No teams
+    -Respawns
+    -Fixed starter kits.
+  -TeamDeathmatch mode-
+    -Teams
+    -Respawns
+    -Fixed starter kits.
+  -LastManStanding mode-
+    -No teams
+    -No respawns
+    -Custom starter kits.
+  -SWAT mode-
+    -Teams
+    -No respawns
+    -Custom starter kits.
+-Provide callback argument for AI state transitions.
+-Store and access user-defined kits.
+-Weapon spawners for modes that don't use kits.
+
+  UI Features
+-Use sliders in the Arena Lobby.
+-Create a convenience method for cycling back and forth through options.
+-Discard items from inventory by right-clicking.
+-Troubleshoot scroll-views using technique shown in
+http://answers.unity3d.com/questions/354044/scrollview-notscrolling.html
+-Allow right-click functionality for Menu.Button() using technique shown in
+http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.html
+-Budget-based kit customization menu.
 
 Current Objectives
--Add in Ability and UnarmedAbility classes.
+Seek and destroy bugs.
+  Identified bugs:
+    -Equipment in inventory does not unequip when clicked.
 
 ********************************************************************************
   ___           _     _ _            _                  
@@ -100,7 +132,6 @@ World.cs- Manages the "Adventure" mode.
   PaperDoll.cs- Manages the equipping of the Actor's body with clothes.
   HitBox.cs- Routes attacks to actor.
   Inventory.cs- Storage for an Actor's unequipped items. 
-  HotBar.cs- Manages quick-switching between weapons in Actor's inventory.
   StatHandler.cs- Handles the roleplaying number-crunching of an Actor. 
   SpeechTree.cs- Handles the dialogue state of an NPC Actor.
     SpeechNode.cs - A single dialogue prompt.

@@ -597,7 +597,7 @@ public class Actor : MonoBehaviour{
   /* Equips item in inventory by its index. */
   public void Equip(int itemIndex){
     Data dat = inventory.Peek(itemIndex);
-    if(dat == null){ return; }
+    if(dat == null){ print("Tried to equip null item."); return; }
     if(dat.itemType == Item.EQUIPMENT){ doll.EquipFromInventory(itemIndex); }
     else{ arms.EquipFromInventory(itemIndex); }
   }
