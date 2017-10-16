@@ -86,8 +86,8 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 Current Objectives
 Seek and destroy bugs.
   Identified bugs:
-    -Equipment in inventory does not unequip when clicked.
-
+    Player does not immediately hold rifle in two hands.
+    Full auto doesn't work.
 ********************************************************************************
   ___           _     _ _            _                  
  / _ \         | |   (_) |          | |                 

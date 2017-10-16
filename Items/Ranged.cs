@@ -139,6 +139,11 @@ public class Ranged : Weapon{
   
   /* Drop item from actor's hand, unzooming. */
   public override void Drop(){
+    meleeActive = false;
+    if(holder != null){
+      holder.SetAnimBool("reload", false);
+      holder.SetAnimBool("rangedMelee", false);
+    }
     held = false;
     if(holder != null && holder.cam != null){
       holder.cam.fieldOfView = 60;
