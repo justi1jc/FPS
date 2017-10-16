@@ -24,6 +24,7 @@ public class Ranged : Weapon{
   Transform muzzlePoint; // Source of projectile
   public float recoil; // Muzzle climb of the weapon when fired.
   public bool meleeActive = false;
+  private bool autoFireActive = false;
   
   public void Start(){
     InitMuzzlePoint();
@@ -42,7 +43,9 @@ public class Ranged : Weapon{
   
   public override void Use(int action){
     if(action == A_DOWN && ammo < 1){ Sound(2); }
-    if(action == A_DOWN || (fullAuto && action == 3)){ Fire(); }
+    if(action == A_DOWN && !fullAuto){ Fire(); }
+    else if(action == A_DOWN){ StartCoroutine(AutoFireRoutine()); }
+    if(action == A_UP && fullAuto){ autoFireActive = false; }
     else if(action == B_DOWN){ ToggleAim(); }
     else if(action == C_DOWN && ammo < maxAmmo && ready){
       StartCoroutine(Reload());
@@ -93,22 +96,6 @@ public class Ranged : Weapon{
       p.damageActive = true;
       p.damage = damage;
       p.Despawn();
-      if(chargeable){
-        p.damage = effectiveDamage;
-        effectiveDamage = 0;
-        charge = 0;
-        Light light = item.gameObject.GetComponent<Light>();
-        if(light){
-          if(p.damage < 0){
-            light.intensity = -(float)p.damage/10f;
-            light.range = -p.damage;
-          }
-          else{
-            light.intensity = ((float)p.damage)/10f;
-            light.range = p.damage;
-          }
-        }
-      }
     }
     float x = Random.Range(-spread, spread);
     float y = Random.Range(-spread, spread);
@@ -247,6 +234,17 @@ public class Ranged : Weapon{
   /* Aims weapon or returns it to the hip.*/
   public void ToggleAim(){
     holder.ToggleAim();
+  }
+  
+  /* Fires automatically until ammo runs out or autoFireActive is set to false. 
+  */
+  private IEnumerator AutoFireRoutine(){
+    autoFireActive = true;
+    while(autoFireActive){
+      Fire();
+      yield return new WaitForSeconds(cooldown);
+      if(ammo < 1){ autoFireActive = false; }
+    }
   }
 
   public override Data GetData(){

@@ -113,7 +113,7 @@ public class EquipSlot{
     }
     actor.SetAnimBool("leftEquip", true);
     actor.SetAnimBool("rightEquip", true);
-    actor.SetAnimBool("twoHanded", false);
+    actor.SetAnimBool("twoHanded", true);
     if(!Item.OneHanded(dat)){ StoreAll(); }
     else{ Store(RIGHT); }
     items[RIGHT] = Item.GetItem(dat);

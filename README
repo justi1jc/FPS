@@ -72,8 +72,10 @@ Backlog
 -Provide callback argument for AI state transitions.
 -Store and access user-defined kits.
 -Weapon spawners for modes that don't use kits.
+-Create Caster weapon that replenishes ammo from user's mana.
 
   UI Features
+-Create classes for popups. 
 -Use sliders in the Arena Lobby.
 -Create a convenience method for cycling back and forth through options.
 -Discard items from inventory by right-clicking.
@@ -84,10 +86,6 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 -Budget-based kit customization menu.
 
 Current Objectives
-Seek and destroy bugs.
-  Identified bugs:
-    Player does not immediately hold rifle in two hands.
-    Full auto doesn't work.
 ********************************************************************************
   ___           _     _ _            _                  
  / _ \         | |   (_) |          | |                 
