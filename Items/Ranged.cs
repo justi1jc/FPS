@@ -23,7 +23,6 @@ public class Ranged : Weapon{
   public bool hitScan = false; // True if this weapon doesn't use a projectile.
   Transform muzzlePoint; // Source of projectile
   public float recoil; // Muzzle climb of the weapon when fired.
-  public bool meleeActive = false;
   private bool autoFireActive = false;
   
   public void Start(){
@@ -62,17 +61,23 @@ public class Ranged : Weapon{
   /* Fires this ranged weapon, consuming ammo. */
   public virtual void Fire(){
     if(ammo < 1 || !ready){ return; }
+    Vector3 off = holder != null ? holder.stats.AccuracyPenalty() : new Vector3();
     if(hitScan){ FireHitScan(); }
-    else{ FireProjectile(); }
+    else{ FireProjectile(0f, off.x, off.y, off.z); }
     Sound(0);
     ammo--;
     if(holder != null){ holder.Recoil(recoil); }
   }
 
   /* Creates and propels a projectile */
-  public void FireProjectile(float spread = 0f){
+  public void FireProjectile(
+    float spread = 0f,
+    float offX = 0.0f,
+    float offY = 0.0f,
+    float offZ = 0.0f
+  ){
     StartCoroutine(CoolDown(cooldown));
-    Vector3 relPos = transform.forward;
+    Vector3 relPos = transform.forward + new Vector3(offX, offY, offZ);
     Vector3 spawnPos = muzzlePoint != null ? muzzlePoint.position : transform.position;
     Quaternion projRot = Quaternion.LookRotation(relPos);
     GameObject pref = (GameObject)Resources.Load(
@@ -126,7 +131,7 @@ public class Ranged : Weapon{
   
   /* Drop item from actor's hand, unzooming. */
   public override void Drop(){
-    meleeActive = false;
+    damageActive = false;
     if(holder != null){
       holder.SetAnimBool("reload", false);
       holder.SetAnimBool("rangedMelee", false);
@@ -163,50 +168,15 @@ public class Ranged : Weapon{
     ready = false;
     if(holder != null){ holder.SetAnimBool("rangedMelee", true); }
     yield return new WaitForSeconds(0.5f);
-    meleeActive = true;
+    damageActive = true;
     yield return new WaitForSeconds(0.5f);
-    meleeActive = false;
+    damageActive = false;
     if(holder != null){ holder.SetAnimBool("rangedMelee", false); }
     ready = true;
   }
   
   void OnTriggerEnter(Collider col){ Strike(col); }
   void OnTriggerStay(Collider col){ Strike(col); }
-  
-  /* Exert force and damage onto target. Damage and knockback are hardcoded. */
-  void Strike(Collider col){
-    if(col.gameObject == null){ MonoBehaviour.print("Gameobject missing"); return; }
-    if(meleeActive){
-      float knockBack = 100f;
-      int dmg = 35;
-      if(holder != null){
-        if(holder.GetRoot(col.gameObject.transform) == holder.transform.transform){
-          return;
-        }
-      }
-      HitBox hb = col.gameObject.GetComponent<HitBox>();
-      if(hb){
-        StartCoroutine(CoolDown(cooldown));
-        hb.ReceiveDamage(dmg, gameObject);
-        meleeActive = false;
-        if(hb.body != null){
-          Rigidbody hbrb = hb.body.gameObject.GetComponent<Rigidbody>();
-          Vector3 forward = transform.position - hb.body.transform.position;
-          forward = new Vector3(forward.x, 0f, forward.y);
-          if(hbrb){ hbrb.AddForce(forward * knockBack); }
-        }
-      }
-      Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
-      if(rb){ 
-        rb.AddForce(transform.forward * knockBack); 
-        Sound(3);
-      }
-      Item item = col.gameObject.GetComponent<Item>();
-      if(item != null && item.holder!= null){
-        item.holder.arms.Drop(item);
-      }
-    }
-  }
   
   /* Returns the current ammo of an item's data. */
   public static int Ammo(Data dat){

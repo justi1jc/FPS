@@ -218,15 +218,6 @@ public class EquipSlot{
     }
   }
   
-  /* Get offset for trackpoint. */
-  public Vector3 TrackPointOffset(){
-    float offset = actor.stats.AccuracyOffset();
-    float x = Random.Range(-offset, offset);
-    float y = Random.Range(-offset, offset);
-    float z = Random.Range(-offset, offset);
-    return new Vector3(x, y, z);
-  }
-  
   /* Returns true if this gameObject belongs to an equipped item. */
   private bool GameObjectMatchesItem(GameObject obj){
     for(int i = 0; i < hands.Length; i++){

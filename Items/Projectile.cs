@@ -10,8 +10,6 @@ using System.Collections.Generic;
 public class Projectile : Item{
   public GameObject weaponOfOrigin;
   public float impactForce;
-  public int damage;
-  public bool damageActive;
   
   void OnTriggerEnter(Collider col){
     if(damageActive && weaponOfOrigin != col.gameObject){ Impact(col); }

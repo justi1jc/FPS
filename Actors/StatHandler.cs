@@ -51,28 +51,23 @@ public class StatHandler{
   */
   public int faction = 0;
   
-  // Accuracy
-  public int aimPenalty = 0;
+
   
   public StatHandler(Actor actor){
     this.actor = actor;
     dead = false;
     abilities = new List<Data>();
-    intelligence = charisma = endurance = perception = agility = willpower = strength = 1;
+    intelligence = charisma = endurance = perception = agility = willpower = strength = 5;
     ranged = melee = unarmed = magic = stealth = skillPoints = xp = 0;
     level = nextLevel = 0;
-    health = healthMax = stamina = staminaMax = mana = manaMax = 100;
+    InitCondition();
     LevelUp();
   }
   
-    /* Offset of trackpoint based on accuracy. */
-  public float AccuracyOffset(){
-    int mp = actor.walking ? 20 : 0;
-    int rp = actor.sprinting ? 30 : 0;
-    if(aimPenalty > 50){ aimPenalty = 50; }
-    float numerator = (float)(mp + rp + aimPenalty); 
-    float offset = numerator/1000f;
-    return offset;
+  private void InitCondition(){
+    health = healthMax = 50+(endurance * 10);
+    stamina = staminaMax = 50+(endurance * 10);
+    mana = manaMax = 50 + (willpower * 10);
   }
   
   /* Updates condition. */
@@ -83,23 +78,11 @@ public class StatHandler{
   /* Regenerates condition. */
   public void Regen(){
     if(dead){ return; }
-    int healthDifficulty = (healthMax - health) / healthMax;
-    int staminaDifficulty = (staminaMax - stamina) / staminaMax;
-    int manaDifficulty = (manaMax - mana) / manaMax;
-    if(health < healthMax && StatCheck("ENDURANCE", healthDifficulty+5)){
-      health++; 
-    }
-    if(stamina < staminaMax && StatCheck("AGILITY", staminaDifficulty)){ 
-      stamina++; 
-    }
-    if(mana < manaMax && StatCheck("WILLPOWER", manaDifficulty+5)){ 
-      mana++; 
-    }
-    if(aimPenalty > 0 && (StatCheck("PERCEPTION") || StatCheck("RANGED"))){
-      aimPenalty -= 5;
-      if(aimPenalty < 0){ aimPenalty = 0; }
+    if(stamina < staminaMax && StatCheck("AGILITY")){
+      stamina++;
     }
   }
+  
   
   /* Performs a roll for competency.
      difficulty directly lowers effective threshold.
@@ -149,6 +132,38 @@ public class StatHandler{
     int roll = Random.Range(0, 100);
     if(roll < threshold){ return true; }
     return false;
+  }
+  
+  /* Calculates a score between 0 and 100 based on aim penalties and bonuses. */
+  public int AccuracyScore(){
+    int score = 50;
+    if(actor.walking){
+      score -= 25;
+      if(actor.sprinting){ score -= 25; }
+    }
+    else if(actor.crouched){ score += 10; }
+    if(!actor.walking && actor.aiming){ score += 40; }
+    if(score < 0){ return 0; }
+    else if(score > 100){ return 100; }
+    return score;
+  }
+  
+  /* Calculates an offset of aim for use by ranged weapons. */
+  public Vector3 AccuracyPenalty(){
+    float score = (float)AccuracyScore();
+    float mag = 0.1f - score/1000f;
+    if(mag < 0){ new Vector3(); }
+    float x = Random.Range(0f, mag);
+    mag -= x;
+    x = Random.Range(-x, x);
+    float y = Random.Range(0f, mag);
+    mag -= y;
+    y = Random.Range(-y, y);
+    float z = Random.Range(0f, mag);
+    mag -= z;
+    z = Random.Range(-z, z);
+    
+    return new Vector3(x,y,z);
   }
   
   /* Returns a stat without modifiers, or -1*/

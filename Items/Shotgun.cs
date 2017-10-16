@@ -19,7 +19,10 @@ public class Shotgun : Ranged{
     if(ammo < 1 || !ready){ return; }
     ammo--;
     Sound(0);
-    for(int i = 0; i < pellets; i++){ FireProjectile(spread); }
+    Vector3 off = holder != null ? holder.stats.AccuracyPenalty() : new Vector3();
+    for(int i = 0; i < pellets; i++){
+      FireProjectile(spread, off.x, off.y, off.z);
+    }
     if(holder != null){ holder.Recoil(recoil); }
   }
   

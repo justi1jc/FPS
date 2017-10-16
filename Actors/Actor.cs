@@ -441,10 +441,10 @@ public class Actor : MonoBehaviour{
   }  
   
   public void Recoil(float recoil){
-    stats.aimPenalty += 1;
     float x = recoil;
     x = Random.Range(-x, x);
     float y = Random.Range(recoil, recoil*1.5f);
+    stats.DrainCondition("STAMINA", (int)(5*recoil));
     Turn(new Vector3(-y, x, 0f) );
   }
   
@@ -584,6 +584,12 @@ public class Actor : MonoBehaviour{
   /* Drops an item from actor's arms. */
   public void Drop(){ 
     arms.Drop();
+    if(arms.Empty()){ arms.EquipAbility(Item.GetItem("Abilities/Unarmed")); }
+  }
+  
+  /* Drop a specified item from actor's arms. */
+  public void Drop(Item item){
+    arms.Drop(item);
     if(arms.Empty()){ arms.EquipAbility(Item.GetItem("Abilities/Unarmed")); }
   }
   

@@ -46,8 +46,16 @@ Current version: 0.5.4
 
 Backlog
   Base FPS Features
--Cone of fire
 -Iron-sights
+-CasterWeapon.cs that consumes mana.
+-Make melee damage change based on fatigue.
+-Make recoil consume fatigue.
+-Create Damage class that is passed to targets.
+-Add mana and fatigue damage to damage class.
+-Graphic reticle that grows and shrinks with accuracy.
+-Fatigue-based accuracy bonus/penalty
+-Transition between ragdoll and up-right states.
+-Fatigue damage has chance to stagger or ragdoll.
 
   Arena Features
 -Make items dropped in Arena SelfDestruct after a minute according to setting.
@@ -72,7 +80,7 @@ Backlog
 -Provide callback argument for AI state transitions.
 -Store and access user-defined kits.
 -Weapon spawners for modes that don't use kits.
--Create Caster weapon that replenishes ammo from user's mana.
+
 
   UI Features
 -Create classes for popups. 
@@ -84,8 +92,11 @@ http://answers.unity3d.com/questions/354044/scrollview-notscrolling.html
 -Allow right-click functionality for Menu.Button() using technique shown in
 http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.html
 -Budget-based kit customization menu.
+-Bars for health, mana, fatigue.
 
-Current Objectives
+Current Objective
+-Make melee and sprinting consume fatigue.
+  
 ********************************************************************************
   ___           _     _ _            _                  
  / _ \         | |   (_) |          | |                 
