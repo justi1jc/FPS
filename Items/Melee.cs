@@ -24,7 +24,8 @@ public class Melee : Weapon{
     ready = false;
     damageActive = false;
     if(holder != null){
-      meleeDamage = (damage * holder.stats.DrainCondition("STAMINA", 25))/25;
+      int stam = holder.stats.DrainCondition(StatHandler.STAMINA, 25);
+      meleeDamage = (damage * stam)/25;
     }
     else{ meleeDamage = damage; }
     yield return new WaitForSeconds(damageStart);

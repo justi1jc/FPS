@@ -48,10 +48,6 @@ Backlog
   Base FPS Features
 -Iron-sights
 -CasterWeapon.cs that consumes mana.
--Make melee damage change based on fatigue.
--Make recoil consume fatigue.
--Create Damage class that is passed to targets.
--Add mana and fatigue damage to damage class.
 -Graphic reticle that grows and shrinks with accuracy.
 -Transition between ragdoll and up-right states.
 -Fatigue damage has chance to stagger or ragdoll.

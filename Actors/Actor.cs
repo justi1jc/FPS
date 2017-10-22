@@ -334,7 +334,7 @@ public class Actor : MonoBehaviour{
   /* Attempts to move the Actor. Applies stamina limitations.
      If cannot move, tries to move at 45 degree angle */
   void ExecuteMove(float pace, Vector3 dir){
-    if(sprinting && stats.DrainCondition("STAMINA", 1) == 0){
+    if(sprinting && stats.DrainCondition(StatHandler.STAMINA, 1) == 0){
       sprinting = false;
       return;
     }
@@ -452,7 +452,7 @@ public class Actor : MonoBehaviour{
     float x = recoil;
     x = Random.Range(-x, x);
     float y = Random.Range(recoil, recoil*1.5f);
-    stats.DrainCondition("STAMINA", (int)(5*recoil));
+    stats.DrainCondition(StatHandler.STAMINA, (int)(5*recoil));
     Turn(new Vector3(-y, x, 0f) );
   }
   
@@ -520,9 +520,9 @@ public class Actor : MonoBehaviour{
     GameObject weapon = dam.source;
     if(stats.dead){ return; }
     if(weapon == null || GetRoot(weapon.transform) == transform){ return; }
-    if(dam.health != 0){ stats.DrainCondition("HEALTH", dam.health); }
-    if(dam.stamina != 0){ stats.DrainCondition("STAMINA", dam.stamina); }
-    if(dam.mana != 0){ stats.DrainCondition("MANA", dam.mana); }  
+    if(dam.health != 0){ stats.DrainCondition(StatHandler.HEALTH, dam.health); }
+    if(dam.stamina != 0){ stats.DrainCondition(StatHandler.STAMINA, dam.stamina); }
+    if(dam.mana != 0){ stats.DrainCondition(StatHandler.MANA, dam.mana); }  
     Actor attacker = Attacker(weapon);
   }
   

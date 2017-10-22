@@ -18,7 +18,8 @@ public class RangedCombatAI : AI{
   
   public override IEnumerator Begin(){
     yield return new WaitForSeconds(0f);
-    weapon = (Ranged)actor.arms.Peek(EquipSlot.RIGHT);
+    Item item = actor.arms.Peek(EquipSlot.RIGHT);
+    if(item is Ranged){ weapon = (Ranged)item; }
     if(weapon == null){
       manager.Change("HOSTILE");
       yield break;

@@ -169,8 +169,8 @@ public class Ranged : Weapon{
     ready = false;
     if(holder != null){
       holder.SetAnimBool("rangedMelee", true);
-      meleeDamage = holder.stats.DrainCondition("STAMINA", 25);
-      meleeDamage += holder.stats.GetStat("STRENGTH");
+      meleeDamage = holder.stats.DrainCondition(StatHandler.STAMINA, 25);
+      meleeDamage += holder.stats.GetStat(StatHandler.STRENGTH);
     }
     else{ meleeDamage = 25; }
     

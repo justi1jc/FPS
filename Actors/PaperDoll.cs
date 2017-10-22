@@ -126,27 +126,11 @@ public class PaperDoll{
   }
   
   /* Returns the total modifier of equipped clothing. */
-  public int Modifier(string stat){
+  public int Modifier(int stat){
     int sum = 0;
     for(int i = 0; i < layers.Length; i++){
       Data dat = layers[i];
-      if(dat != null){
-        switch(stat.ToUpper()){
-          case "INTELLIGENCE": sum+= dat.ints[1]; break;
-          case "CHARISMA": sum+= dat.ints[2]; break;
-          case "Endurance": sum+= dat.ints[3]; break;
-          case "PERCEPTION": sum+= dat.ints[4]; break;
-          case "AGILITY": sum+= dat.ints[5]; break;
-          case "WILLPOWER": sum+= dat.ints[6]; break;
-          case "STRENGTH": sum+= dat.ints[7]; break;
-          case "RANGED": sum+= dat.ints[8]; break;
-          case "MELEE": sum+= dat.ints[9]; break;
-          case "UNARMED": sum+= dat.ints[10]; break;
-          case "MAGIC": sum+= dat.ints[11]; break;
-          case "STEALTH": sum+= dat.ints[12]; break;
-          case "SLOTS": sum+= dat.ints[13]; break;
-        }
-      }
+      if(dat != null){ sum += Equipment.GetMod(dat, stat); }
     }
     return sum;
   }

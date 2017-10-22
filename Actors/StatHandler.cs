@@ -11,6 +11,24 @@ public class StatHandler{
   
   public Actor actor;
   
+  // stat constants
+  public const int HEALTH = 0;
+  public const int STAMINA = 1;
+  public const int MANA = 2;
+  public const int INTELLIGENCE = 3;
+  public const int CHARISMA = 4;
+  public const int ENDURANCE = 5;
+  public const int PERCEPTION = 6;
+  public const int AGILITY = 7;
+  public const int WILLPOWER = 8;
+  public const int STRENGTH = 9;
+  public const int SLOTS = 10;
+  public const int RANGED = 11;
+  public const int MELEE = 12;
+  public const int UNARMED = 13;
+  public const int MAGIC = 14;
+  public const int STEALTH = 15;
+  
   //Conditions
   public bool dead;
   public int health, healthMax;
@@ -19,20 +37,20 @@ public class StatHandler{
   public int slots;
   
   // ICEPAWS attributes, max value is 10
-  public int intelligence, intelligenceMod;
-  public int charisma, charismaMod;
-  public int endurance, enduranceMod; 
-  public int perception, perceptionMod; 
-  public int agility, agilityMod;     
-  public int willpower, willpowerMod; 
-  public int strength, strengthMod;   
+  public int intelligence;
+  public int charisma;
+  public int endurance; 
+  public int perception; 
+  public int agility;     
+  public int willpower; 
+  public int strength;   
   
-  // Skill levels, max 100. The mod is a temporary stat modifier.
-  public int ranged, rangedMod;
-  public int melee, meleeMod;
-  public int unarmed, unarmedMod;
-  public int magic, magicMod;
-  public int stealth, stealthMod;
+  // Skill levels, max 100.
+  public int ranged;
+  public int melee;
+  public int unarmed;
+  public int magic;
+  public int stealth;
   
   // leveling
   public int skillPoints;
@@ -90,44 +108,44 @@ public class StatHandler{
   /* Performs a roll for competency.
      difficulty directly lowers effective threshold.
   */
-  public bool StatCheck(string stat, int difficulty = 0){
+  public bool StatCheck(int stat, int difficulty = 0){
     int threshold = 0;
-    switch(stat.ToUpper()){
-      case "INTELLIGENCE":
-        threshold = 10 * (intelligence + intelligenceMod);
+    switch(stat){
+      case INTELLIGENCE:
+        threshold = 10 * (intelligence);
         break;
-      case "CHARISMA":
-        threshold = 10 * (charisma + charismaMod);
+      case CHARISMA:
+        threshold = 10 * (charisma);
         break;
-      case "ENDURANCE":
-        threshold = 10 * (endurance + enduranceMod);
+      case ENDURANCE:
+        threshold = 10 * (endurance);
         break;
-      case "PERCEPTION":
-        threshold = 10 * (perception + perceptionMod);
+      case PERCEPTION:
+        threshold = 10 * (perception);
         break;
-      case "AGILITY":
-        threshold = 10 * (agility + agilityMod);
+      case AGILITY:
+        threshold = 10 * (agility);
         break;
-      case "WILLPOWER":
-        threshold = 10 * (willpower + willpowerMod);
+      case WILLPOWER:
+        threshold = 10 * (willpower);
         break;
-      case "STRENGTH":
-        threshold = 10 * (strength + strengthMod);
+      case STRENGTH:
+        threshold = 10 * (strength);
         break;
-      case "RANGED":
-        threshold = ranged + rangedMod;
+      case RANGED:
+        threshold = ranged;
         break;
-      case "MELEE":
-        threshold = melee + meleeMod;
+      case MELEE:
+        threshold = melee;
         break;
-      case "UNARMED":
-        threshold = unarmed + unarmedMod;
+      case UNARMED:
+        threshold = unarmed;
         break;
-      case "MAGIC":
-        threshold = magic + magicMod;
+      case MAGIC:
+        threshold = magic;
         break;
-      case "STEALTH":
-        threshold = stealth + stealthMod;
+      case STEALTH:
+        threshold = stealth;
         break;
     }
     threshold -= difficulty;
@@ -170,31 +188,31 @@ public class StatHandler{
     return new Vector3(x,y,z);
   }
   
-  public int GetStat(string stat){
+  public int GetStat(int stat){
     return BaseStat(stat) + Modifier(stat);
   }
   
   /* Returns a stat without modifiers, or -1*/
-  public int BaseStat(string stat){
+  public int BaseStat(int stat){
     switch(stat){
-      case "INTELLIGENCE": return intelligence; break;
-      case "CHARISMA": return charisma; break;
-      case "Endurance": return endurance; break;
-      case "PERCEPTION": return perception; break;
-      case "AGILITY": return agility; break;
-      case "WILLPOWER": return willpower; break;
-      case "STRENGTH": return strength; break;
-      case "RANGED": return ranged; break;
-      case "MELEE": return melee; break;
-      case "UNARMED": return unarmed; break;
-      case "MAGIC": return magic; break;
-      case "STEALTH": return stealth; break;
-      case "SLOTS": return slots; break;
+      case INTELLIGENCE: return intelligence; break;
+      case CHARISMA: return charisma; break;
+      case ENDURANCE: return endurance; break;
+      case PERCEPTION: return perception; break;
+      case AGILITY: return agility; break;
+      case WILLPOWER: return willpower; break;
+      case STRENGTH: return strength; break;
+      case RANGED: return ranged; break;
+      case MELEE: return melee; break;
+      case UNARMED: return unarmed; break;
+      case MAGIC: return magic; break;
+      case STEALTH: return stealth; break;
+      case SLOTS: return slots; break;
     }
     return -1;
   }
   
-  public int Modifier(string stat){
+  public int Modifier(int stat){
     int mod = 0;
     if(actor.doll != null){ mod += actor.doll.Modifier(stat); }
     return mod;
@@ -222,10 +240,10 @@ public class StatHandler{
   /* Reduce a particular condition.
      Returns the condition drained. 
   */
-  public int DrainCondition(string condition, int drain){
+  public int DrainCondition(int condition, int drain){
     int ret = drain;
-    switch(condition.ToUpper()){
-      case "HEALTH":
+    switch(condition){
+      case HEALTH:
         health -= drain;
         if(health < 0){
           ret = drain + health;
@@ -234,7 +252,7 @@ public class StatHandler{
         }
         if(health > healthMax){ health = healthMax; }
         break;
-      case "STAMINA":
+      case STAMINA:
         stamina -= drain;
         if(stamina < 0){
           ret = drain + stamina; 
@@ -242,7 +260,7 @@ public class StatHandler{
         }
         if(stamina > staminaMax){ stamina = staminaMax; }
         break;
-      case "MANA":
+      case MANA:
         mana -= drain;
         if(mana < 0){
           ret = drain + mana; 
