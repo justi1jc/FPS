@@ -280,9 +280,41 @@ public class EquipSlot{
     return null;
   }
   
-  /* Use one of the equipped items */
+  /* Triggers melee animations when appropriate. */
+  public void MeleeAnim(int use){
+    if(actor == null || (use != Item.A_DOWN && use != Item.B_DOWN)){ return; }
+    Melee melee = null;
+    bool r = false;
+    if(Single() && use == Item.A_DOWN){ 
+      if(items[RIGHT] != null && items[RIGHT] is Melee){
+        melee = (Melee)items[RIGHT];
+      }
+      r = true;
+    }
+    else{
+      if(use == Item.A_DOWN){ 
+        r = false;
+        if(items[LEFT] != null && items[LEFT] is Melee){ 
+          melee = (Melee)items[LEFT];
+        }
+      }
+      else{ 
+        r = true;
+        if(items[RIGHT] != null && items[RIGHT] is Melee){
+          melee = (Melee)items[RIGHT];
+        }
+      }
+    }
+    if(melee == null){ return; }
+    string hand = r ? "right" : "left";
+    string action = melee.stab ? "Stab" : "Swing";
+    actor.SetAnimTrigger(hand + action);
+  }
+  
+  
+  /* Use one of the equipped items. */
   public void Use(int use){
-    
+    MeleeAnim(use);
     if(Single()){
       if(items[RIGHT] == null){ return; }
       items[RIGHT].Use(use);

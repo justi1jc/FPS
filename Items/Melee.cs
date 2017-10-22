@@ -9,6 +9,7 @@ using System.Collections.Generic;
 
 public class Melee : Weapon{
   public bool stab; // Actor stabs with this item if true
+  private int meleeDamage;
   
   public void Start(){
     ready = true;
@@ -22,6 +23,10 @@ public class Melee : Weapon{
   IEnumerator Swing(){
     ready = false;
     damageActive = false;
+    if(holder != null){
+      meleeDamage = (damage * holder.stats.DrainCondition("STAMINA", 25))/25;
+    }
+    else{ meleeDamage = damage; }
     yield return new WaitForSeconds(damageStart);
     damageActive = true;
     yield return new WaitForSeconds(damageEnd);
@@ -29,8 +34,8 @@ public class Melee : Weapon{
     ready = true;
   }
   
-  void OnTriggerEnter(Collider col){ Strike(col); }
-  void OnTriggerStay(Collider col){ Strike(col); }
+  void OnTriggerEnter(Collider col){ Strike(col, meleeDamage); }
+  void OnTriggerStay(Collider col){ Strike(col, meleeDamage); }
   
   public override Data GetData(){
     Data dat = GetBaseData();

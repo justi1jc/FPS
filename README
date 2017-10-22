@@ -53,7 +53,6 @@ Backlog
 -Create Damage class that is passed to targets.
 -Add mana and fatigue damage to damage class.
 -Graphic reticle that grows and shrinks with accuracy.
--Fatigue-based accuracy bonus/penalty
 -Transition between ragdoll and up-right states.
 -Fatigue damage has chance to stagger or ragdoll.
 
@@ -95,7 +94,6 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 -Bars for health, mana, fatigue.
 
 Current Objective
--Make melee and sprinting consume fatigue.
   
 ********************************************************************************
   ___           _     _ _            _                  

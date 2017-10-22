@@ -24,6 +24,7 @@ public class Ranged : Weapon{
   Transform muzzlePoint; // Source of projectile
   public float recoil; // Muzzle climb of the weapon when fired.
   private bool autoFireActive = false;
+  private int meleeDamage;
   
   public void Start(){
     InitMuzzlePoint();
@@ -123,7 +124,7 @@ public class Ranged : Weapon{
   /* Applies damage if the target has a HitBox and force if it has a rigidBody */
   void Impact(GameObject target){
     HitBox hb = target.GetComponent<HitBox>();
-    if(hb != null){ hb.ReceiveDamage(damage, gameObject); }
+    if(hb != null){ hb.ReceiveDamage(new Damage(damage, gameObject)); }
     Rigidbody rb = target.GetComponent<Rigidbody>();
     if(rb != null){ rb.AddForce(impactForce * transform.forward); }
     print("Hit " + target.name);
@@ -166,7 +167,13 @@ public class Ranged : Weapon{
   
   public IEnumerator Melee(){
     ready = false;
-    if(holder != null){ holder.SetAnimBool("rangedMelee", true); }
+    if(holder != null){
+      holder.SetAnimBool("rangedMelee", true);
+      meleeDamage = holder.stats.DrainCondition("STAMINA", 25);
+      meleeDamage += holder.stats.GetStat("STRENGTH");
+    }
+    else{ meleeDamage = 25; }
+    
     yield return new WaitForSeconds(0.5f);
     damageActive = true;
     yield return new WaitForSeconds(0.5f);
@@ -175,8 +182,9 @@ public class Ranged : Weapon{
     ready = true;
   }
   
-  void OnTriggerEnter(Collider col){ Strike(col); }
-  void OnTriggerStay(Collider col){ Strike(col); }
+  void OnTriggerEnter(Collider col){ Strike(col, meleeDamage); }
+  void OnTriggerStay(Collider col){ Strike(col, meleeDamage); }
+
   
   /* Returns the current ammo of an item's data. */
   public static int Ammo(Data dat){

@@ -78,8 +78,11 @@ public class StatHandler{
   /* Regenerates condition. */
   public void Regen(){
     if(dead){ return; }
-    if(stamina < staminaMax && StatCheck("AGILITY")){
-      stamina++;
+    if(stamina < staminaMax){
+      stamina += agility;
+      if(stamina > staminaMax){
+        stamina = staminaMax;
+      }
     }
   }
   
@@ -142,6 +145,7 @@ public class StatHandler{
       if(actor.sprinting){ score -= 25; }
     }
     else if(actor.crouched){ score += 10; }
+    if(stamina < (staminaMax/4)){ score -= 25; }
     if(!actor.walking && actor.aiming){ score += 40; }
     if(score < 0){ return 0; }
     else if(score > 100){ return 100; }
@@ -164,6 +168,10 @@ public class StatHandler{
     z = Random.Range(-z, z);
     
     return new Vector3(x,y,z);
+  }
+  
+  public int GetStat(string stat){
+    return BaseStat(stat) + Modifier(stat);
   }
   
   /* Returns a stat without modifiers, or -1*/
@@ -211,25 +219,39 @@ public class StatHandler{
     return ((currentLevel + 1) * (currentLevel + 1)) * 100;
   }
   
-  /* Reduce a particular condition. */
-  public void DrainCondition(string condition, int drain){
+  /* Reduce a particular condition.
+     Returns the condition drained. 
+  */
+  public int DrainCondition(string condition, int drain){
+    int ret = drain;
     switch(condition.ToUpper()){
       case "HEALTH":
         health -= drain;
-        if(health < 0){ health = 0; }
+        if(health < 0){
+          ret = drain + health;
+          health = 0;
+          actor.Die();
+        }
         if(health > healthMax){ health = healthMax; }
         break;
       case "STAMINA":
         stamina -= drain;
-        if(stamina < 0){ stamina = 0; }
+        if(stamina < 0){
+          ret = drain + stamina; 
+          stamina = 0;
+        }
         if(stamina > staminaMax){ stamina = staminaMax; }
         break;
       case "MANA":
         mana -= drain;
-        if(mana < 0){ mana = 0; }
+        if(mana < 0){
+          ret = drain + mana; 
+          mana = 0;
+        }
         if(mana > manaMax){ mana = manaMax; }
         break;
     }
+    return ret;
   }
   
   /* Returns true if the selected actor is an enemy of this one. */

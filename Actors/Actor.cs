@@ -210,6 +210,7 @@ public class Actor : MonoBehaviour{
   /* Sets the specified trigger if the animator exists. */
   public void SetAnimTrigger(string trigger){
     if(!anim){ return; }
+    anim.ResetTrigger(trigger);
     anim.SetTrigger(trigger);
   }
   
@@ -333,17 +334,24 @@ public class Actor : MonoBehaviour{
   /* Attempts to move the Actor. Applies stamina limitations.
      If cannot move, tries to move at 45 degree angle */
   void ExecuteMove(float pace, Vector3 dir){
+    if(sprinting && stats.DrainCondition("STAMINA", 1) == 0){
+      sprinting = false;
+      return;
+    }
     Vector3 dest = transform.position +  dir * pace;
     if(dir.x == 0f){ moveX = 0; }
     if(dir.y == 0f){ moveY = 0; }
-    if(walking && moveX == 0 && moveY == 0){ SetAnimBool("walking", false); }
-    else if(!walking && (moveX != 0 || moveY != 0)){ 
-      SetAnimBool("walking", true); 
+    if(walking && moveX == 0 && moveY == 0){
+      SetAnimBool("walking", false);
+      return;
     }
+    else if(!walking && (moveX != 0 || moveY != 0)){
+      SetAnimBool("walking", true);
+    }
+    
     Vector3 pos = transform.position;
     Rigidbody rb = GetComponent<Rigidbody>();
     int runCost = (int)Vector3.Magnitude(pace * dir * 6);
-    if(stats.StatCheck("ENDURANCE", 50)){ runCost = 0; }
     if(MoveCheck(dir, pace * 3)){
       transform.position += (dir * pace);
       return;
@@ -491,8 +499,8 @@ public class Actor : MonoBehaviour{
     falling = false;
     jumpReady = true;
     if(distanceFallen > safeFallDistance){
-      int damage = (int)(distanceFallen - safeFallDistance) * 5;
-      ReceiveDamage(damage, gameObject);
+      int fallDam = (int)(distanceFallen - safeFallDistance) * 5;
+      ReceiveDamage(new Damage(fallDam, gameObject));
     }
   }
   
@@ -508,20 +516,16 @@ public class Actor : MonoBehaviour{
   }
   
   /* Applies damage from attack. Ignores active weapon. */
-  public void ReceiveDamage(int damage, GameObject weapon){
+  public void ReceiveDamage(Damage dam){
+    GameObject weapon = dam.source;
     if(stats.dead){ return; }
     if(weapon == null || GetRoot(weapon.transform) == transform){ return; }
-    if(stats.health < 1){ return; }
-    stats.DrainCondition("HEALTH", damage);
+    if(dam.health != 0){ stats.DrainCondition("HEALTH", dam.health); }
+    if(dam.stamina != 0){ stats.DrainCondition("STAMINA", dam.stamina); }
+    if(dam.mana != 0){ stats.DrainCondition("MANA", dam.mana); }  
     Actor attacker = Attacker(weapon);
-    if(ai != null && attacker != null){ ai.ReceiveDamage(damage, attacker); }
-    if(stats.health < 1){ Die(weapon); }
-    else if (damage > 0){
-      bool check = stats.StatCheck("ENDURANCE", damage);
-      if(check){ StartCoroutine(Stagger()); }
-      else{ StartCoroutine(FallDown()); }
-    }
   }
+  
   
   /* Returns the actor responsible for damage, provided it is not this actor. */
   public Actor Attacker(GameObject weapon){
@@ -532,14 +536,13 @@ public class Actor : MonoBehaviour{
   }
   
   /* Enter dead state, warding experience to the killder. */
-  public void Die(GameObject weapon){
+  public void Die(GameObject weapon = null){
     stats.dead = true;
-    //StopAllCoroutines();
     Ragdoll(true);
     arms.Drop();
     arms.Drop();
     if(ai != null){ ai.Pause(); }
-    Item item = weapon.GetComponent<Item>();
+    Item item = weapon != null ? weapon.GetComponent<Item>() : null;
     if(item && item.holder){
       item.holder.ReceiveXp(stats.NextLevel(stats.level -1));
       killerId = item.holder.id;
@@ -552,15 +555,21 @@ public class Actor : MonoBehaviour{
     foreach(Rigidbody rb in rbs){ rb.isKinematic = false; }
   }
   
-  /* Actor rocks a bit. */
-  IEnumerator Stagger(){
-    yield return null;
+  /* Begins the stagger routine. */
+  public void Stagger(){
+    StartCoroutine(StaggerRoutine());
   }
   
-  /* Actor is knocked over */
-  IEnumerator FallDown(){
-    yield return null;
+  /* STUB: Actor rocks a bit. */
+  IEnumerator StaggerRoutine(){ yield return null; }
+  
+  /* Begins the FallDown routine */
+  public void FallDown(){
+    StartCoroutine(FallDownRoutine());
   }
+  
+  /* STUB: Actor is knocked over */
+  IEnumerator FallDownRoutine(){ yield return null; }
   
   /* Adds or removes the ragdoll effect on the actor. */
   void Ragdoll(bool state){

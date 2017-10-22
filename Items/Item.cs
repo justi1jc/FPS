@@ -150,7 +150,8 @@ public class Item : MonoBehaviour{
     dat.stack = dat.stackSize;
   }
   
-  public virtual void ReceiveDamage(int damage, GameObject weapon){}
+  /* Receiving damage from external sources. */
+  public virtual void ReceiveDamage(Damage dam){}
   
   /* Loads the base variables from a Data */
   public void LoadBaseData(Data dat){
@@ -213,7 +214,7 @@ public class Item : MonoBehaviour{
   }
   
   /* Exert force and damage onto target. */
-  protected void Strike(Collider col){
+  protected void Strike(Collider col, int dmg = 0){
     if(col.gameObject == null){ MonoBehaviour.print("Gameobject missing"); return; }
     if(damageActive){
       if(holder != null){
@@ -224,7 +225,9 @@ public class Item : MonoBehaviour{
       HitBox hb = col.gameObject.GetComponent<HitBox>();
       if(hb){
         StartCoroutine(CoolDown(cooldown));
-        hb.ReceiveDamage(damage, gameObject);
+        if(dmg == 0){ dmg = damage; }
+        Damage dam = new Damage(dmg, gameObject);
+        hb.ReceiveDamage(dam);
         damageActive = false;
         if(hb.body != null){
           Rigidbody hbrb = hb.body.gameObject.GetComponent<Rigidbody>();

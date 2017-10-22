@@ -26,8 +26,6 @@ public class Shotgun : Ranged{
     if(holder != null){ holder.Recoil(recoil); }
   }
   
-  
-  
   /* Adds ammo to weapon individually. */
   public override void LoadAmmo(){
     if(holder == null){ return; }
