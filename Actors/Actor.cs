@@ -341,12 +341,10 @@ public class Actor : MonoBehaviour{
     Vector3 dest = transform.position +  dir * pace;
     if(walking && dir.x == 0f && dir.y == 0f){
       SetAnimBool("walking", false);
-      print("Stop walking.");
       walking = false;
       return;
     }
     else if(!walking && (dir.x != 0f || dir.y != 0f)){
-      print("Start walking");
       SetAnimBool("walking", true);
       walking = true;
     }
@@ -592,8 +590,12 @@ public class Actor : MonoBehaviour{
   /* Use primary or secondary item */
   public void Use(int use){ arms.Use(use); }
   
-  /* Drops an item from actor's arms. */
-  public void Drop(){ 
+  /* Drops an item from actor's arms. Equips a weapon if hands are empty.*/
+  public void Drop(){
+    if(arms.Empty()){ 
+      QuickEquip();
+      return;
+    } 
     arms.Drop();
     if(arms.Empty()){ arms.EquipAbility(Item.GetItem("Abilities/Unarmed")); }
   }
@@ -602,6 +604,13 @@ public class Actor : MonoBehaviour{
   public void Drop(Item item){
     arms.Drop(item);
     if(arms.Empty()){ arms.EquipAbility(Item.GetItem("Abilities/Unarmed")); }
+  }
+  
+  /* Equips the first weapon available to inventory, if one exists. */
+  public void QuickEquip(){
+    int item = inventory.FirstWeapon();
+    if(item == -1){ return; }
+    arms.EquipFromInventory(item);
   }
   
   /* Public equip method for an unstored object. */

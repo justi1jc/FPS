@@ -121,48 +121,17 @@ public class Inventory{
     return status[slot];
   }
   
-  /* Returns next weapon starting from nextSlot or null. */
-  public Data NextWeapon(){
-    int fromBeginning = -1;
+  /* Returns the index of the first weapon in inventory, or -1. */
+  public int FirstWeapon(){
     for(int i = 0; i < slots; i++){
       if(inv[i] != null && (inv[i].itemType == Item.WEAPON ||
         inv[i].itemType == Item.MELEE ||
         inv[i].itemType == Item.RANGED)
       ){
-        if(i < nextSlot){ fromBeginning = i; }
-        else if(i >= nextSlot){
-          nextSlot = i + 1;
-          if(nextSlot >= slots){ nextSlot = 0; }
-          return Retrieve(i, inv[i].stack);
-        }
+        return i;
       }
     }
-    if(fromBeginning == -1){ return null; }
-    nextSlot = fromBeginning -1;
-    if(nextSlot < 0){ nextSlot = slots -1; }
-    return Retrieve(fromBeginning, inv[fromBeginning].stack);
-  }
-  
-  /* Returns the previous weapon starting from next slot or null. */
-  public Data PreviousWeapon(){
-    int fromEnd = -1;
-    for(int i = slots-1; i > -1; i--){
-      if(inv[i] != null && (inv[i].itemType == Item.WEAPON ||
-        inv[i].itemType == Item.MELEE ||
-        inv[i].itemType == Item.RANGED)
-      ){
-        if(i > nextSlot){ fromEnd = i; }
-        else if(i < nextSlot){
-          nextSlot = i - 1;
-          if(nextSlot < 0){ nextSlot = slots-1; }
-          return Retrieve(i, inv[i].stack);
-        }
-      }
-    }
-    if(fromEnd == -1){ return null; }
-    nextSlot = fromEnd + 1;
-    if(nextSlot >= slots){ nextSlot = 0; }
-    return Retrieve(fromEnd, inv[fromEnd].stack);
+    return -1;
   }
 
   public Inventory(List<Data> _inv){

@@ -263,7 +263,7 @@ public class EquipSlot{
   /* Returns true if no items are currently equipped. */
   public bool Empty(){
     for(int i = 0; i < hands.Length; i++){
-      if(items[i] != null){ return false; }
+      if(items[i] != null && !(items[i] is Unarmed)){ return false; }
     }
     return true;
   }

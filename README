@@ -87,9 +87,9 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 -Create some additional convenience methods for Menu
   -Slider with title.
   -Selection with next/prev buttons.
+-Bars for health, mana, fatigue.
 
 Current Objective
--Bars for health, mana, fatigue.
 
 ********************************************************************************
   ___           _     _ _            _                  
@@ -141,3 +141,4 @@ World.cs- Manages the "Adventure" mode.
     Option.cs- A single dialogue option.
   DeviceManager.cs - Collects input from selected device. 
   ActorInputHandler.cs - Controls Actor according to input from DeviceManager.
+  Damage.cs - A record containing the data of a single attack.
