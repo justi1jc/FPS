@@ -339,14 +339,16 @@ public class Actor : MonoBehaviour{
       return;
     }
     Vector3 dest = transform.position +  dir * pace;
-    if(dir.x == 0f){ moveX = 0; }
-    if(dir.y == 0f){ moveY = 0; }
-    if(walking && moveX == 0 && moveY == 0){
+    if(walking && dir.x == 0f && dir.y == 0f){
       SetAnimBool("walking", false);
+      print("Stop walking.");
+      walking = false;
       return;
     }
-    else if(!walking && (moveX != 0 || moveY != 0)){
+    else if(!walking && (dir.x != 0f || dir.y != 0f)){
+      print("Start walking");
       SetAnimBool("walking", true);
+      walking = true;
     }
     
     Vector3 pos = transform.position;

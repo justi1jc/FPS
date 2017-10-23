@@ -13,6 +13,7 @@ public class ActorInputHandler{
   private Actor actor;
   private DeviceManager devMan;
   private bool menuOpen = false;
+  private int x, y;
   public ActorInputHandler(Actor actor, string device){
     this.actor = actor;
     this.devMan = new DeviceManager(device);
@@ -98,6 +99,9 @@ public class ActorInputHandler{
     if(actor == null || action == null){ return; }
     if(action.IsButton()){ HandleActorButton(action); }
     else{ HandleActorAxis(action); }
+    if(x == 0 && y == 0 && actor.walking){
+      actor.StickMove(0f, 0f);
+    }
   }
   
   /* Handles button input for Actor. */
@@ -107,10 +111,19 @@ public class ActorInputHandler{
     float dt = action.downTime;
     if(pt == InputEvent.HELD || pt == InputEvent.DOWN){
       switch(btn){
-        case InputEvent.K_W: actor.StickMove(0.0f, 1.0f); break;
-        case InputEvent.K_S: actor.StickMove(0.0f, -1.0f); break;
-        case InputEvent.K_D: actor.StickMove(1.0f, 0.0f); break;
-        case InputEvent.K_A: actor.StickMove(-1.0f, 0.0f); break;
+        case InputEvent.K_W: actor.StickMove(0.0f, 1.0f); y = 1; break;
+        case InputEvent.K_S: actor.StickMove(0.0f, -1.0f); y = -1; break;
+        case InputEvent.K_D: actor.StickMove(1.0f, 0.0f); x = 1; break;
+        case InputEvent.K_A: actor.StickMove(-1.0f, 0.0f); x = -1; break;
+      }
+      
+    }
+    else if(pt == InputEvent.UP){
+      switch(btn){
+        case InputEvent.K_W: y = 0; break;
+        case InputEvent.K_S: y = 0; break;
+        case InputEvent.K_D: x = 0; break;
+        case InputEvent.K_A: x = 0; break;
       }
     }
     
@@ -191,6 +204,10 @@ public class ActorInputHandler{
     if(axis == InputEvent.MOUSE || axis == InputEvent.X360_RIGHTSTICK){
       actor.Turn(new Vector3(x, y, 0f));
     }
-    else if(axis == InputEvent.X360_LEFTSTICK){ actor.StickMove(x, y); }
+    else if(axis == InputEvent.X360_LEFTSTICK){ 
+      actor.StickMove(x, y);
+      x = (int)x;
+      y = (int)y; 
+    }
   }
 }
