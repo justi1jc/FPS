@@ -87,9 +87,10 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 -Create some additional convenience methods for Menu
   -Slider with title.
   -Selection with next/prev buttons.
--Bars for health, mana, fatigue.
+
 
 Current Objective
+-Bars for health, mana, fatigue.
 
 ********************************************************************************
   ___           _     _ _            _                  

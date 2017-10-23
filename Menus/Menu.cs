@@ -31,9 +31,11 @@ public class Menu{
   public Vector2 scrollPosition = Vector2.zero;  // Primary scroll position
   public Vector3 scrollPositionB = Vector2.zero; // Secondary scroll position
   protected bool ready = true;
+  public Texture progress;
   
   public Menu(MenuManager manager){
     this.manager = manager;
+    progress = Resources.Load("Textures/progress") as Texture;
   }
   
   /* Queue a notification. */
@@ -64,6 +66,26 @@ public class Menu{
     if(manager.right){ return Width(); }
     return 0;
   }
+  
+  /* Convenience method to render progress bar.*/
+  public void ProgressBar(
+    float current,
+    float max,
+    float x,
+    float y,
+    Color color,
+    string label
+  ){
+    float w = (Width()-XOffset())/3;
+    float h = Height()/20;
+    float scale = current/max;
+    GUI.color = color;
+    GUI.DrawTexture(new Rect(x, y, scale*w, h), progress);
+    Box("", (int)x, (int)y, (int)w, (int)h);
+    GUI.color = Color.white;
+    GUI.TextField(new Rect(x+(w/2), y, w, h), label, 100, "Label");
+  }
+  
   
   /* Convenience method to render box. */
   public void Box(string text, int posx, int posy, int scalex, int scaley){

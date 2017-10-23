@@ -245,7 +245,7 @@ public class StatHandler{
     switch(condition){
       case HEALTH:
         health -= drain;
-        if(health < 0){
+        if(health <= 0){
           ret = drain + health;
           health = 0;
           actor.Die();

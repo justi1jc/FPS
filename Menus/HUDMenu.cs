@@ -30,16 +30,26 @@ public class HUDMenu : Menu{
     int ih = Height()/20;
     int iw = Width()/3;
     int x, y;
-    string str;
+    string str = "";
     
-    str = "Health: " + stats.health;
-    Box(str, XOffset(), 17*ih, iw, ih);
+    float current = (float)stats.health;
+    float max = (float)stats.healthMax;
+    x = XOffset();
+    y = 17*ih;
+    str = "" + stats.health + "/" + stats.healthMax;
+    ProgressBar(current, max, (float)x, (float)y, Color.red, str);
     
-    str = "Stamina: " + stats.stamina;
-    Box(str, XOffset(), 18*ih, iw, ih);
+    current = (float)stats.stamina;
+    max = (float)stats.staminaMax; 
+    y = 18*ih;
+    str = "" + stats.stamina + "/" + stats.staminaMax;
+    ProgressBar(current, max, (float)x, (float)y, Color.green, str);
     
-    str = "Mana: " + stats.mana;
-    Box(str, XOffset(), 19*ih, iw, ih);
+    current = (float)stats.mana; 
+    max = (float)stats.manaMax;
+    y = 19*ih;
+    str = "" + stats.mana + "/" + stats.manaMax;
+    ProgressBar(current, max, (float)x, (float)y, Color.blue, str);
     
     RenderReticle();
     
