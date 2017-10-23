@@ -99,7 +99,14 @@ public class Arena : MonoBehaviour{
       else if( teams){ scores[player.killerId]++; }
       scores[player.killerId]++;
     }
-    player.DiscardAllItems();
+    List<Item> items = player.DiscardAllItems();
+    if(player.droppedLoot != null){ items.AddRange(player.droppedLoot); }
+    foreach(Item item in items){
+      if(item != null && item.gameObject != null){
+        Despawner d = item.gameObject.AddComponent(typeof(Despawner)) as Despawner;
+        d.Despawn(60f);
+      }
+    }
     int respawnTimer = 5;
     HUDMenu playerHUD = null;
     if(player.playerNumber > 0 && player.playerNumber < 5){

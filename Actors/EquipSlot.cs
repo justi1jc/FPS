@@ -260,6 +260,17 @@ public class EquipSlot{
     return false;
   }
   
+  /* Returns all items equipped. */
+  public List<Item> AllItems(){
+    List<Item> ret = new List<Item>();
+    for(int i = 0; i < items.Length; i++){
+      if(items[i] != null){
+        ret.Add(items[i]);
+      }
+    }
+    return ret;
+  }
+  
   /* Returns true if no items are currently equipped. */
   public bool Empty(){
     for(int i = 0; i < hands.Length; i++){

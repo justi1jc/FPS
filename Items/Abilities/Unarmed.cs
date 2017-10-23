@@ -1,5 +1,6 @@
 /*
     Unarmed enables an Actor to punch with both hands.
+    sounds[0] is the striking sound.
 */
 
 ﻿using UnityEngine;
@@ -26,6 +27,8 @@ public class Unarmed : Ability{
   IEnumerator Swing(){
     ready = false;
     damageActive = false;
+    damage = holder.stats.DrainCondition(StatHandler.STAMINA, 25);
+    damage += holder.stats.GetStat(StatHandler.STRENGTH);
     yield return new WaitForSeconds(damageStart);
     damageActive = true;
     yield return new WaitForSeconds(damageEnd);
@@ -33,8 +36,8 @@ public class Unarmed : Ability{
     ready = true;
   }
   
-  void OnTriggerEnter(Collider col){ Strike(col); }
-  void OnTriggerStay(Collider col){ Strike(col); }
+  void OnTriggerEnter(Collider col){ Strike(col, damage); }
+  void OnTriggerStay(Collider col){ Strike(col, damage); }
   
   
   

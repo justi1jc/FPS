@@ -101,6 +101,7 @@ public class Actor : MonoBehaviour{
   public EquipSlot arms;
   public PaperDoll doll;
   public bool armsReady = true;
+  public List<Item> droppedLoot; // Items dropped upon death
   
   // Speech
   public Actor interlocutor; // Conversation partner
@@ -539,6 +540,7 @@ public class Actor : MonoBehaviour{
   public void Die(GameObject weapon = null){
     stats.dead = true;
     Ragdoll(true);
+    droppedLoot = arms.AllItems();
     arms.Drop();
     arms.Drop();
     if(ai != null){ ai.Pause(); }
@@ -659,14 +661,16 @@ public class Actor : MonoBehaviour{
     return slot;
   }
   
-  /* Discards all items in inventory. */
-  public void DiscardAllItems(){
+  /* Discards all items in inventory, returning discarded items. */
+  public List<Item> DiscardAllItems(){
+    List<Item> items = new List<Item>();
     for(int i = 0; i < inventory.slots; i++){ 
-      DiscardItem(i); 
+      items.Add(DiscardItem(i)); 
     }
-  }  
+    return items;
+  }
   
-  /* Drops item onto ground from inventory. */
+  /* Drops item onto ground from inventory. Returns discarded item. */
   public Item DiscardItem(int slot ){
     if(inventory.Peek(slot) == null){ return null; }
     Data dat = inventory.Retrieve(slot, inventory.Peek(slot).stack);
@@ -685,8 +689,8 @@ public class Actor : MonoBehaviour{
   }
   
   /* Drops item onto ground based on data. */
-  public void DiscardItem(Data dat){
-    if(dat == null){ return; }
+  public Item DiscardItem(Data dat){
+    if(dat == null){ return null; }
     GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
     GameObject itemGO = (GameObject)GameObject.Instantiate(
       prefab,
@@ -697,6 +701,7 @@ public class Actor : MonoBehaviour{
     item.LoadData(dat);
     item.stack = dat.stack;
     itemGO.transform.position = hand.transform.position;
+    return item;
   }
   
   /* Convenience method. */
