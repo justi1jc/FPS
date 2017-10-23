@@ -77,7 +77,6 @@ Backlog
 -Weapon spawners for modes that don't use kits.
 
   UI Features
--Create classes for popups. 
 -Use sliders in the Arena Lobby.
 -Discard items from inventory by right-clicking.
 -Troubleshoot scroll-views using technique shown in
@@ -85,12 +84,12 @@ http://answers.unity3d.com/questions/354044/scrollview-notscrolling.html
 -Allow right-click functionality for Menu.Button() using technique shown in
 http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.html
 -Budget-based kit customization menu.
--Bars for health, mana, fatigue.
 -Create some additional convenience methods for Menu
   -Slider with title.
   -Selection with next/prev buttons.
 
 Current Objective
+-Bars for health, mana, fatigue.
 
 ********************************************************************************
   ___           _     _ _            _                  
