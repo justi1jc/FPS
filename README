@@ -48,8 +48,6 @@ Backlog
   Base FPS Features
 -Iron-sights
 -CasterWeapon.cs that consumes mana.
--Fatigue damage has chance to stagger or Knock Over actor.
--Stagger animation.
 -Transition between ragdoll and up-right states for proper ragdolling.
 
   Arena Features
@@ -90,6 +88,8 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 
 
 Current Objective
+-Fatigue damage has chance to stagger or Knock Over actor.
+-Stagger animation.
 
 ********************************************************************************
   ___           _     _ _            _                  

@@ -78,8 +78,8 @@ public class Actor : MonoBehaviour{
   public bool walking = false;
   public bool sprinting = false;
   public bool crouched = false;
-  public int moveX, moveY; // Current direction.
-  
+  public bool stagger = false;
+    
   //Jumping
   public bool jumpReady = true;
   public bool falling;
@@ -187,6 +187,7 @@ public class Actor : MonoBehaviour{
   /* Toggles between 60 and 30 field of view. */
   public void ToggleAim(){
     aiming = !aiming;
+    SetAnimBool("aiming", aiming);
     if(cam != null && doneAiming){
       StartCoroutine(SetAim());
     }
@@ -340,7 +341,7 @@ public class Actor : MonoBehaviour{
       return;
     }
     Vector3 dest = transform.position +  dir * pace;
-    if(walking && dir.x == 0f && dir.y == 0f){
+    if(stagger || (walking && dir.x == 0f && dir.y == 0f)){
       SetAnimBool("walking", false);
       walking = false;
       return;
@@ -459,7 +460,7 @@ public class Actor : MonoBehaviour{
   
   /* Rotates head along xyz, torso over x axis*/
   public void Turn(Vector3 direction){
-    if(ragdoll){ return; }
+    if(ragdoll || stagger){ return; }
     headRotx += direction.x;
     headRoty += direction.y;
     bodyRoty += direction.y;
@@ -522,6 +523,7 @@ public class Actor : MonoBehaviour{
     if(stats.dead){ return; }
     if(weapon == null || GetRoot(weapon.transform) == transform){ return; }
     if(dam.health != 0){ stats.DrainCondition(StatHandler.HEALTH, dam.health); }
+    if(dam.health > 20){ Stagger(); }
     if(dam.stamina != 0){ stats.DrainCondition(StatHandler.STAMINA, dam.stamina); }
     if(dam.mana != 0){ stats.DrainCondition(StatHandler.MANA, dam.mana); }  
     Actor attacker = Attacker(weapon);
@@ -559,11 +561,18 @@ public class Actor : MonoBehaviour{
   
   /* Begins the stagger routine. */
   public void Stagger(){
+    StopCoroutine("StaggerRoutine");
     StartCoroutine(StaggerRoutine());
   }
   
-  /* STUB: Actor rocks a bit. */
-  IEnumerator StaggerRoutine(){ yield return null; }
+  /* Sets animation controller to stagger. */
+  IEnumerator StaggerRoutine(){
+    stagger = true;
+    SetAnimBool("stagger", true);
+    yield return new WaitForSeconds(1.5f);
+    stagger = false;
+    SetAnimBool("stagger", false); 
+  }
   
   /* Begins the FallDown routine */
   public void FallDown(){
@@ -597,14 +606,16 @@ public class Actor : MonoBehaviour{
     if(arms.Empty()){ 
       QuickEquip();
       return;
-    } 
+    }
     arms.Drop();
+    if(aiming){ ToggleAim(); }
     if(arms.Empty()){ arms.EquipAbility(Item.GetItem("Abilities/Unarmed")); }
   }
   
   /* Drop a specified item from actor's arms. */
   public void Drop(Item item){
     arms.Drop(item);
+    if(aiming){ ToggleAim(); }
     if(arms.Empty()){ arms.EquipAbility(Item.GetItem("Abilities/Unarmed")); }
   }
   
@@ -710,35 +721,12 @@ public class Actor : MonoBehaviour{
   }
   
   /* Interact with item in reach.
-     i is the argument for the interaction, if relevant 
-     -2 will not reload.
   */
-  public void Interact(int mode = -1){
+  public void Interact(){
     if(itemInReach){
       Item item = itemInReach.GetComponent<Item>();
-      if(item){ item.Interact(this, mode); }
+      if(item){ item.Interact(this); }
     }
-    else if(actorInReach){
-      Actor actor = actorInReach.GetComponent<Actor>();
-      if(actor == null){ return; }
-      if(actor.speechTree != null && mode == -1 && actor.Alive()){
-        interlocutor = actor;
-        menu.Change("SPEECH");
-        SetMenuOpen(true);
-      }
-      else if(mode == 0 && actor.Alive()){
-        print("Steal from " + actor.gameObject.name);
-      }
-      else if(!actor.Alive()){
-        menu.contents = actor.inventory;
-        menu.Change("LOOT");
-        SetMenuOpen(true);
-      }
-    }
-    else if( mode != -2){
-      Use(2);
-    }
-    
   }
   
   /* Pick up item in world. */

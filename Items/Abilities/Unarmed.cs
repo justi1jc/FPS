@@ -17,6 +17,24 @@ public class Unarmed : Ability{
     if(use == Item.A_DOWN && ready){ RightPunch(); }
   }
   
+  /* Bonds an item to an actor */
+  public override void Hold(Actor a){
+    if(held){ return; }
+    held = true;
+    holder = a;
+    holder.SetAnimBool("leftEquip", false);
+    Rigidbody rb = transform.GetComponent<Rigidbody>();
+    if(rb != null){
+      rb.isKinematic = true;
+      rb.useGravity = false;
+    }
+    transform.localPosition = heldPos;
+    Quaternion lr = Quaternion.Euler(heldRot.x, heldRot.y, heldRot.z);
+    transform.localRotation = lr;
+    Collider c = transform.GetComponent<Collider>();
+    c.isTrigger = true;
+  }
+  
   /* Triggers Actor's Right punch animation */
   private void RightPunch(){
     StartCoroutine(Swing());

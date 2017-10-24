@@ -24,6 +24,11 @@ public class Arena : MonoBehaviour{
   MenuManager menu;
 
   public void Start(){
+    StartCoroutine(StartGame());
+  }
+  
+  public IEnumerator StartGame(){
+    yield return new WaitForSeconds(0.05f);
     Initialize();
   }
 

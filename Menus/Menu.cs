@@ -76,7 +76,7 @@ public class Menu{
     Color color,
     string label
   ){
-    float w = (Width()-XOffset())/3;
+    float w = Width()/3;
     float h = Height()/20;
     float scale = current/max;
     GUI.color = color;
