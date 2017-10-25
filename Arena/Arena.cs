@@ -103,7 +103,6 @@ public class Arena : MonoBehaviour{
 
   /* Displays respawn timer and respawns the player at its completion. */
   IEnumerator RespawnPlayer(Actor player){
-    RecordKill(player.killerId, player.stats.faction);
     List<Item> items = player.DiscardAllItems();
     if(player.droppedLoot != null){ items.AddRange(player.droppedLoot); }
     foreach(Item item in items){

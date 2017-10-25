@@ -95,7 +95,6 @@ public class Actor : MonoBehaviour{
   //Stats
   public StatHandler stats;
   public int id = -1;
-  public int killerId = -1;
   
   // Equipped items and abilities.
   public EquipSlot arms;
@@ -522,7 +521,9 @@ public class Actor : MonoBehaviour{
     GameObject weapon = dam.source;
     if(stats.dead){ return; }
     if(weapon == null || GetRoot(weapon.transform) == transform){ return; }
-    if(dam.health != 0){ stats.DrainCondition(StatHandler.HEALTH, dam.health); }
+    if(dam.health != 0){
+      stats.DrainCondition(StatHandler.HEALTH, dam.health, weapon);
+    }
     if(dam.health > 20){ Stagger(); }
     if(dam.stamina != 0){ stats.DrainCondition(StatHandler.STAMINA, dam.stamina); }
     if(dam.mana != 0){ stats.DrainCondition(StatHandler.MANA, dam.mana); }  
@@ -538,21 +539,29 @@ public class Actor : MonoBehaviour{
     return item.holder;
   }
   
+  /* Sends a SessionEvent to session, if appropriate. */
+  private void CreateDeathEvent(Item item){
+    if(!Session.Active()){ return; }
+    Data vctm = SessionEvent.ActorDeathData(this);
+    Data klr = null;
+    Data wep = item != null ? item.GetData() : null;
+    if(item != null){ klr = SessionEvent.ActorDeathData(item.holder); }
+    SessionEvent sevt = SessionEvent.DeathEvent(vctm, klr, wep);
+    Session.session.ReceiveEvent(sevt);
+  }
+  
   /* Enter dead state, warding experience to the killder. */
   public void Die(GameObject weapon = null){
-    if(Session.Active()){
-      Session.session.ReceiveEvent(SessionEvent.DeathEvent());
-    }
+    Item item = weapon != null ? weapon.GetComponent<Item>() : null;
+    CreateDeathEvent(item);
     stats.dead = true;
     Ragdoll(true);
     droppedLoot = arms.AllItems();
     arms.Drop();
     arms.Drop();
     if(ai != null){ ai.Pause(); }
-    Item item = weapon != null ? weapon.GetComponent<Item>() : null;
     if(item && item.holder){
       item.holder.ReceiveXp(stats.NextLevel(stats.level -1));
-      killerId = item.holder.id;
     }
     GetComponent<BoxCollider>().isTrigger = false;
     BoxCollider[] colliders = GetComponentsInChildren<BoxCollider>();

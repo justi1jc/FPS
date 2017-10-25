@@ -240,7 +240,7 @@ public class StatHandler{
   /* Reduce a particular condition.
      Returns the condition drained. 
   */
-  public int DrainCondition(int condition, int drain){
+  public int DrainCondition(int condition, int drain, GameObject weapon = null){
     int ret = drain;
     switch(condition){
       case HEALTH:
@@ -248,7 +248,7 @@ public class StatHandler{
         if(health <= 0){
           ret = drain + health;
           health = 0;
-          actor.Die();
+          actor.Die(weapon);
         }
         if(health > healthMax){ health = healthMax; }
         break;
