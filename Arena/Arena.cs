@@ -27,6 +27,8 @@ public class Arena : MonoBehaviour{
     StartCoroutine(StartGame());
   }
   
+  /* This co-routine exists to work around an animation bug caused 
+     by Initializing() while loading the scene without a delay. */
   public IEnumerator StartGame(){
     yield return new WaitForSeconds(0.05f);
     Initialize();
@@ -97,13 +99,7 @@ public class Arena : MonoBehaviour{
 
   /* Displays respawn timer and respawns the player at its completion. */
   IEnumerator RespawnPlayer(Actor player){
-    if(player.killerId != -1){
-      if(teams && factions[player.killerId] == player.stats.faction){ 
-        scores[player.killerId]--;
-      }
-      else if( teams){ scores[player.killerId]++; }
-      scores[player.killerId]++;
-    }
+    RecordKill(player.killerId, player.stats.faction);
     List<Item> items = player.DiscardAllItems();
     if(player.droppedLoot != null){ items.AddRange(player.droppedLoot); }
     foreach(Item item in items){
@@ -112,7 +108,6 @@ public class Arena : MonoBehaviour{
         d.Despawn(60f);
       }
     }
-    int respawnTimer = 5;
     HUDMenu playerHUD = null;
     if(player.playerNumber > 0 && player.playerNumber < 5){
       MenuManager playerMenu = player.menu;
@@ -120,10 +115,7 @@ public class Arena : MonoBehaviour{
       if(playerMenu){ playerHUD = (HUDMenu)playerMenu.active; }
     }
     if(respawns){
-      for(int i = respawnTimer; i > 0; i--){
-        if(playerHUD != null){ playerHUD.message = "Respawn in \n" + i; }  
-        yield return new WaitForSeconds(1f);
-      }
+      yield return RespawnTimer(player, playerHUD);
       Data dat = player.GetData();
       int id = player.id;
       Destroy(player.gameObject);
@@ -139,7 +131,30 @@ public class Arena : MonoBehaviour{
     yield return new WaitForSeconds(0f);
   }
   
+  /* Records the points for a kill individually or for the team according to
+     the teams setting. Friendly kills subtract points.
+  */
+  private void RecordKill(int killerId, int faction){
+    if(killerId != -1){
+      if(teams && factions[killerId] == faction){ 
+        scores[killerId]--;
+      }
+      else if(teams){ scores[killerId]++; }
+      else{ scores[killerId]++; }
+    }
+  }
+  
+  /* Displays the respawn timer for a dead player. */
+  private IEnumerator RespawnTimer(Actor player, HUDMenu playerHUD){
+    int respawnTimer = 5;
+    for(int i = respawnTimer; i > 0; i--){
+      if(playerHUD != null){ playerHUD.message = "Respawn in \n" + i; }  
+      yield return new WaitForSeconds(1f);
+    }
+  }
+  
   bool OneTeamLeft(){
+    if(!teams){ return false; }
     int reds = 0;
     int blues = 0;
     foreach(Actor player in players){
@@ -220,7 +235,6 @@ public class Arena : MonoBehaviour{
           
         }
         else{
-          //LootTable.Kit("PANTS", ref actor);
           actor.stats.faction = 1;
         }
         Kit.ApplyToClothes("Equipment/Pants", ref actor, true, 0f, 0f, 0f, 1f);

@@ -81,13 +81,13 @@ public class HUDMenu : Menu{
   public void RenderReticle(){
     GUI.backgroundColor = new Color(0f, 0f, 0f, 0f);
     float size = 100f;
-    float x = (Width() - size)/2f;
+    float x = (Width() - size)/2f + XOffset();
     float y = (Height() - size)/2f;
     GUI.Box(new Rect(x, y, size, size), innerReticle);
     int accuracy = manager.actor.stats.AccuracyScore();
     float scale = 1.5f - ((float)accuracy)/100f;
     size *= scale;
-    x = (Width() - size)/2f;
+    x = (Width() - size)/2f + XOffset();
     y = (Height() - size)/2f;
     GUI.Box(new Rect(x, y, size, size), outerReticle);
     GUI.backgroundColor = new Color(1f, 1f, 1f, 1f);
