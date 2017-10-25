@@ -42,7 +42,7 @@ ______               _                                  _
 Reoadmap:
 0.5.X- Arena gamemode.
 
-Current version: 0.5.4
+Current version: 0.5.5
 
 Backlog
   Base FPS Features
@@ -128,6 +128,8 @@ Architecture at a glance:
 
 Session.cs- Singleton that routes method calls between classes and contains
 global state.
+SessionEvent.cs- A record for an event to be handled by either the session,
+arena, or world.
 
 JukeBox.cs- Responsible for loading and playing music from /Resources/Music/
 
