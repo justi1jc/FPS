@@ -22,7 +22,16 @@ public class Arena : MonoBehaviour{
   bool p1red, p2red; // True if respective player is on red team.
   string kit; // Default kit for players.
   MenuManager menu;
-
+  int gameMode; // Active gamemode selected from lobby.
+  
+  
+  // GameMode  constants
+  public const int NONE = -1;
+  public const int DEATHMATCH = 0;
+  public const int TEAMDEATHMATCH = 1;
+  public const int ELIMINATION = 2;
+  public const int TEAMELIMINATION = 3;
+  
   public void Start(){
     if(Session.Active()){ 
       Session.session.arena = this;
@@ -136,14 +145,26 @@ public class Arena : MonoBehaviour{
   
   /* Handles a SessionEvent according to the game mode. */
   public void HandleEvent(SessionEvent evt){
-    print(evt.message);
+    switch(evt.code){
+      case SessionEvent.DEATH:
+        if(
+          gameMode == DEATHMATCH || gameMode == TEAMDEATHMATCH ||
+          gameMode == ELIMINATION || gameMode == TEAMELIMINATION
+        ){ RecordKill(evt); }
+        break;
+    }
   }
   
   
   /* Records the points for a kill individually or for the team according to
      the teams setting. Friendly kills subtract points.
   */
-  private void RecordKill(int killerId, int faction){
+  private void RecordKill(SessionEvent evt){
+    if(evt.args == null || evt.args.Length < 3){ return; }
+    if(evt.args[0] == null || evt.args[1] == null){ return; }
+    if(evt.args[0].ints.Count < 3 || evt.args[1].ints.Count < 3){ return; }
+    int killerId = evt.args[1].ints[1]; // Killer's id from ActorDeathData
+    int faction = evt.args[0].ints[2]; // Victim's faction from ActorDeathData
     if(killerId != -1){
       if(teams && factions[killerId] == faction){ 
         scores[killerId]--;

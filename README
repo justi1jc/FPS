@@ -56,18 +56,19 @@ Backlog
     -No teams
     -Respawns
     -Fixed starter kits.
-  -TeamDeathmatch mode-
+  -Team Deathmatch mode-
     -Teams
     -Respawns
     -Fixed starter kits.
-  -LastManStanding mode-
+  -Elimination mode-
     -No teams
     -No respawns
-    -Custom starter kits.
-  -SWAT mode-
+    -Fixed starter kits.
+  -Team Elimination mode-
     -Teams
     -No respawns
-    -Custom starter kits.
+    -Fixed starter kits.
+  
 -Provide callback argument for AI state transitions.
 -Store and access user-defined kits.
 -Weapon spawners for modes that don't use kits.
