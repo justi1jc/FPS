@@ -98,9 +98,11 @@ public class StatHandler{
     if(dead){ return; }
     if(stamina < staminaMax){
       stamina += agility;
-      if(stamina > staminaMax){
-        stamina = staminaMax;
-      }
+      if(stamina > staminaMax){ stamina = staminaMax; }
+    }
+    if(mana < manaMax){
+      mana += willpower;
+      if(mana > manaMax){ mana = manaMax; }
     }
   }
   
