@@ -45,11 +45,6 @@ public class LoadMenu : Menu{
       x = XOffset() + 3 * iw; 
       Box(str,x, 0, iw, ih/2);
       
-      if(files[py].players.Count > 0){
-        str = files[py].players[0].displayName;
-        y = ih/2;
-        Box(str, x, y, iw, ih/2);
-      }
       str = "Load";
       y = ih;
       if(Button(str, x, y, iw, ih/2, 1, 0)){ 

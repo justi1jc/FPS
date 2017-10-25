@@ -88,14 +88,10 @@ public class MainMenu : Menu{
     if(button == A){ Sound(0); }
     switch(sy){
       case 0:
-        if(subMenu == 0){ subMenu = 1; }
-        else if(subMenu == 1){ Session.session.CreateGame(sesName); }
         break;
       case 1:
-        manager.Change("LOAD");
         break;
       case 2:
-        Application.Quit();
         break;
     }
   }

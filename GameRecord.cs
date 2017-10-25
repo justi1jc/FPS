@@ -1,5 +1,5 @@
 /*
-    A game record is used to store a Session's persistent data.
+    A GameRecord is used to store a particular session of the Adventure mode.
 */
 
 
@@ -8,14 +8,11 @@ using System.Collections.Generic;
 [System.Serializable]
 public class GameRecord{
   public string sessionName;
+  public List<Data> playerData;
   public MapRecord map;
-  public int currentID; // Current ID for identifying NPCs
-  public List<Data> quests; // Quest data.
-  public List<Data> players;
   public GameRecord(){
-    map = new MapRecord();
-    quests    = new List<Data>();
-    players   = new List<Data>();
-    quests = new List<Data>();
+    sessionName = "Null";
+    map = null;
+    playerData = new List<Data>();
   }
 } 

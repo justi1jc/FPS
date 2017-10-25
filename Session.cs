@@ -1,13 +1,9 @@
 /*
-*
-*   A singleton whose purpose is to manage the session's data.
-*   
-*
-*
-*   Note: Axes and buttons must be added manually in the editor to
-*   a specific project.
-*
-*
+    A singleton whose purpose is to manage the session's data and 
+    route calls to their appropriate destination..
+   
+    Note: Axes and buttons must be added manually in the editor to
+    a specific project.
 */
 
 
@@ -23,76 +19,50 @@ public class Session : MonoBehaviour {
   public static bool fileAccess = false; //True if files are currently accessed
   private readonly object syncLock = new object(); // Mutex lock
   public string sessionName; //Name Used in save file.
-  public List<Quest> quests;
   public Data arenaData = null;
+  public int gameMode = -1;
   
-  
-  // Controller one linux values
-  public static string C1 = "Joystick 1"; //Controller 1
-  public static string XL = "XL"; // "X Axis" DeadZone: 0.2 Accuracy: 1
-  public static string YL = "YL"; // "Y Axis" DeadZone: 0.2 Accuracy: 1
-  public static string XR = "XR"; // "4rd Axis" DeadZone: 0.2 Accuracy: 1
-  public static string YR = "YR"; // "5th Axis" DeadZone: 0.2 Accuracy: 1
-  public static string RT = "RT"; // "6th Axis" DeadZone: 0.1 
-  public static string LT = "LT"; // "3rd Axis" DeadZone: 0.1
-  public static string DX = "DX"; // "7th Axis" for wired controllers
-  public static string DY = "DY"; // "8th Axis"
-  public static string RB = "joystick button 5"; // 5 Right bumper
-  public static string LB = "joystick button 4"; // 4 Left bumper
-  public static string A = "joystick button 0"; // 0
-  public static string B = "joystick button 1"; // 1
-  public static string X = "joystick button 2"; // 2
-  public static string Y = "joystick button 3"; // 3
-  public static string START = "joystick button 7"; // 7
-  public static string SELECT = "joystick button 6"; // 6
-  public static string DUB = "joystick button 13"; // 13  D-pad Up For wireless controllers
-  public static string DDB = "joystick button 14"; // 14  D-pad down
-  public static string DRB = "joystick button 11"; // 11  D-pad right
-  public static string DLB = "joystick button 12"; // 12  D-pad left
-  public static string RSC = "joystick button 10"; // 10  Right stick click
-  public static string LSC = "joystick button 9";  // 9   left stick click
+  // gameMode constants
+  public const int NONE = -1;
+  public const int ARENA = 0;
+  public const int ADVENTURE = 1;
   
   // Arena
   public int playerCount = 1;
-  public int gameMode = -1;
+  private List<Kit> kits;
+  public Arena arena;
+  
+  // Adventure
+  public World world;
+  public List<HoloDeck> decks; // active HoloDecks
+  int currentID = 0;
   
   // players
   List<Data> playerData;
   Camera cam1;
   Camera cam2;
-  
-  // World.
-  public List<HoloDeck> decks; // active HoloDecks
-  public MapRecord map; // World map.
-  int currentID = 0;
-  bool runQuests = true;
+
   
   // Main menu UI
-  bool mainMenu; // True when main menu is active.
-  HoloCell menuCell;
   Camera sesCam;
   public MenuManager sesMenu;
   public JukeBox jukeBox;
-  
+
   void Awake(){
     DontDestroyOnLoad(gameObject);
     if(Session.session != null){ Destroy(this); }
     else{ Session.session = this; }
     decks = new List<HoloDeck>();
-    quests = new List<Quest>();
     if(jukeBox == null){ jukeBox = new JukeBox(this); }
     CreateMenu();
   }
   
   /* Updates cameras and associates player with appropriate HoloDeck. */
   public void RegisterPlayer(Actor actor, int player, Camera cam){
-    //print("Player " + player + " registered");
     if(player == 1){ cam1 = cam; }
     else if(player == 2){ cam2 = cam; }
     UpdateCameras();
-    for(int i = 0; i < decks.Count; i++){
-      if(decks[i].RegisterPlayer(actor)){ break; }
-    }
+    world.RegisterPlayer(actor);
   }
   
   /* Updates the cameras according to remaining players. */
@@ -102,107 +72,44 @@ public class Session : MonoBehaviour {
     UpdateCameras();
   }
   
+  /* Returns true if the session instance exists. */
+  public static bool Active(){
+    return Session.session != null;
+  }
+  
   /* Create a new game.
      Warning: This is hardcoded in a project-specific fashion.
   */
-  public void CreateGame(string sesName){
-    sessionName = sesName;
-    gameMode = 0;
-    currentID = 0;
-    if(mainMenu){ DestroyMenu();}
-    CreateLoadingScreen();
-    map = Cartographer.GetMaster();
-    map = Cartographer.Generate(map, 16, 16);
-    HoloDeck deck = CreateDeck();
-    Cell initCell = GetStartingCell();
-    if(initCell == null){ print("Init cell null"); return; }
-    deck.LoadInterior(initCell, 0, false);
-    deck.AddPlayer("player1");
-    DestroyLoadingScreen();
-    StartCoroutine(QuestRoutine());
-    CreateStartingQuests();
-    
+  public void CreateAdventure(){
+    if(sesMenu != null){ DestroyMenu(); }
+    world = new World();
+    world.CreateAdventure();
+  }
+
+  /* Cached access to Kit.GetKits() to reduce file parsing.*/
+  public List<Kit> GetKits(){
+    if(kits == null){ kits = Kit.GetKits(); }
+    return new List<Kit>(kits);
   }
   
-  /* Initializes Starting quests for a new Game.
-     NOTE: This is as hard-coded as Quest.Factory()
-  */
-  void CreateStartingQuests(){
-    //quests.Add(Quest.Factory("kill the enemies!"));
-  }
-  
-  /* Initializes a specified quest. */
-  public void StartQuest(int quest){
-    quests.Add(Quest.Factory(quest));
-  }
-  
-  /* Gives xp to all players. */
-  public void AwardXP(int amount){
-    string str = amount + " xp awarded!";
-    Notify(str);
-  }
-  
-  /* Routine that checks all the quests. */
-  IEnumerator QuestRoutine(){
-    while(runQuests){
-      for(int i = 0; i < quests.Count; i++){
-        quests[i].Update();
-      }
-      yield return new WaitForSeconds(3f);
-    }
-  }
-  
-  
-  /* Returns the interior cell the player aught to start in at the beginning of
-     the game.
-     WARNING: This is hardcoded and must be updated to match the master file.
-  */
-  public Cell GetStartingCell(){
-    string INIT_BUILDING = "House";
-    string INIT_ROOM = "Entrance";
-    for(int i = 0; i < map.interiors.Count; i++){
-      bool bmatch = map.interiors[i].building == INIT_BUILDING;
-      bool rmatch = map.interiors[i].displayName == INIT_ROOM;
-      if(bmatch && rmatch){
-        return map.interiors[i];
-      }
+  /* Returns a specific kit by name, or null. */
+  public Kit GetKit(string kitName){
+    if(kits == null){ kits = Kit.GetKits(); }
+    foreach(Kit kit in kits){
+      if(kit.name == kitName){ return kit; }
     }
     return null;
   }
   
-  /*
-    Loads a particular interior into a specified deck. If init is false, 
-    the player will be placed at the specified door.
-  */
-  public void LoadInterior(
-    string building, 
-    string cellName, 
-    int x, int y,
-    int deck = 0, 
-    int door = -1,
-    bool saveFirst = true
-  ){
-    decks[deck].LoadInterior(building, cellName, door, x, y, saveFirst);
+  /* Load contents from a specific file. */
+  public void LoadGame(string fileName){
+    print("method stub");
+    if(sesMenu != null){ DestroyMenu();}
+    if(world != null){ world.Clear(); }
+    world = new World();
+    world.LoadGame(fileName);
   }
   
-  /* Packs the current cell and loads an exterior. */
-  public void LoadExterior(
-    int x, int y,
-    int deck = 0,
-    int door = -1,
-    bool saveFirst = true
-  ){
-    decks[deck].LoadExterior(door, x, y, saveFirst);
-  }
-  
-  
-  /* Create camera and menu to display loading screen. */
-  public void CreateLoadingScreen(){
-  }
-  
-  /* Remove camera and menu. */
-  public void DestroyLoadingScreen(){
-  }
   
   /* Sets up each player's Menu */
   void UpdateCameras(){
@@ -240,35 +147,12 @@ public class Session : MonoBehaviour {
     Cursor.visible = false;
     string MENU_BUILDING = "House";
     string MENU_INTERIOR = "Entrance";
-    mainMenu = true;
     GameObject go = new GameObject();
-    go.transform.position = transform.position + new Vector3(10f, 50f, 0f);
-    go.transform.LookAt(transform);
     sesCam = go.AddComponent(typeof(Camera)) as Camera;
     sesMenu = go.AddComponent(typeof(MenuManager)) as MenuManager;
+    go.AddComponent<AudioListener>();
     sesMenu.Change("MAIN");
     jukeBox.Play("Menu");
-    menuCell = new HoloCell(transform.position);
-    map = Cartographer.GetMaster();
-    Cell c = GetMasterInterior(MENU_BUILDING, MENU_INTERIOR);
-    if(c == null){ print("Couldn't find menu cell"); return; }
-    menuCell.LoadData(c);
-  }
-  
-  /* Grabs specified interior from loaded master file's buildings list. */
-  public Cell GetMasterInterior(string building, string name){
-    for(int i = 0; i < map.buildings.Count; i++){
-      //print("Building:" + map.buildings[i][0].building);
-      if(map.buildings[i][0].building == building){
-        for(int j = 0; j < map.buildings[i].Length; j++){
-          //print("CellName:" + map.buildings[i][j].displayName);
-          if(map.buildings[i][j].displayName == name){
-            return map.buildings[i][j];
-          }
-        }
-      }
-    }
-    return null;
   }
   
   /* Destroys Camera and Menu attached to gameObject */
@@ -277,11 +161,6 @@ public class Session : MonoBehaviour {
     Camera cam = sesCam;
     sesCam = null;
     if(cam != null){ Destroy(cam.gameObject); }
-    mainMenu = false;
-    if(menuCell != null){
-      menuCell.Clear();
-      menuCell = null;
-    }
   }
   
   /* Clears all HoloDecks and then removes them. */
@@ -317,70 +196,15 @@ public class Session : MonoBehaviour {
     return ret;
   }
   
-  /* Overwrite specific file with current session's game data. */
-  public void SaveGame(string fileName){
-    if(fileAccess){ return; }
-    fileAccess = true;
-    BinaryFormatter bf = new BinaryFormatter();
-    string path = Application.persistentDataPath + "/" + fileName + ".save"; 
-    using(FileStream file = File.Create(path)){
-      GameRecord record = GetData();
-      bf.Serialize(file, record);
-      file.Close();
-    }
-    fileAccess = false;
-  }
-  
-  /* Load contents from a specific file. */
-  public void LoadGame(string fileName){
-    if(mainMenu){ DestroyMenu(); print("Destroy Main Menu"); }
-    GameRecord record = LoadFile(fileName);
-    if(record == null){ print("Null game record"); return; }
-    LoadData(record);
-    if(playerData.Count == 0){ print("There are no players."); return; }
-    HoloDeck hd = CreateDeck();
-    Data player = playerData[0];
-    Cell c = player.lastPos;
-    if(c.interior){
-      print("Loading interior");
-      hd.LoadInterior(c.building, c.displayName, -1, c.x, c.y, false);
-    }
-    else{
-      print("Loading exterior");
-      hd.LoadExterior(-1, c.x, c.y, false);
-    }
-    hd.AddPlayer(player, false);
-    playerData.Remove(player);
-    StopAllCoroutines();
-    StartCoroutine(QuestRoutine());
-  }
-  
   /* Returns a GameRecord containing this Session's data. */
   GameRecord GetData(){
-    GameRecord record = new GameRecord();
-    record.sessionName = sessionName;
-    for(int i = 0; i < decks.Count; i++){
-      if(decks[i].interior){ decks[i].SaveInterior(); }
-      else{ decks[i].SaveExterior(); }
-    }
-    record.map = map;
-    record.players = GetPlayerData();
-    record.currentID = currentID;
-    for(int i = 0; i < quests.Count; i++){
-      record.quests.Add(quests[i].GetData());
-    }
-    return record;
+    if(world != null){ return world.GetData(); }
+    return null;
   }
   
   /* Loads the contents of a GameRecord */
   public void LoadData(GameRecord dat){
     sessionName = dat.sessionName;
-    map = dat.map;
-    playerData = dat.players;
-    currentID = dat.currentID;
-    for(int i = 0; i < dat.quests.Count; i++){
-      quests.Add(Quest.Factory(dat.quests[i]));
-    }
   }
   
   
@@ -428,75 +252,6 @@ public class Session : MonoBehaviour {
     return records;
   }
   
-  /* Returns a requested interior or null.
-     TODO: Cache map to reduce overhead.
-     TODO: Make sure requested cell is not already active.
-     NOTE: Ignoring coordinate matching until the need for multiple
-     instances of a building presents itself.
-  */
-  public Cell GetInterior(string building, string name, int x, int y){
-    for(int i = 0; i < map.interiors.Count; i++){
-      bool bmatch = building == map.interiors[i].building;
-      bool nmatch = name == map.interiors[i].displayName;
-      bool xmatch = true; //x == map.interiors[i].x;
-      bool ymatch = true; //y == map.interiors[i].y;
-      if(bmatch && nmatch && xmatch && ymatch){ return map.interiors[i]; }
-    }
-    return null;
-  }
-  
-  /* Updates a specified interior. */
-  public void SetInterior(string building, string name, int x, int y, Cell c){
-    for(int i = 0; i < map.interiors.Count; i++){
-      bool bmatch = building == map.interiors[i].building;
-      bool nmatch = name == map.interiors[i].displayName;
-      bool xmatch = x == map.interiors[i].x;
-      bool ymatch = y == map.interiors[i].y;
-      if(bmatch && nmatch && xmatch && ymatch){
-        map.interiors[i] = c;
-        return; 
-      }
-    }
-  }
-  
-  /* Returns a specififed exterior or null. 
-     TODO: Cache map to reduce overhead.
-     TODO: Make sure requested cell is not already active.
-  */
-  public Cell GetExterior(int x, int y){
-    for(int i = 0; i < map.exteriors.Count; i++){
-      bool xmatch = map.exteriors[i].x == x;
-      bool ymatch = map.exteriors[i].y == y;
-      if(xmatch && ymatch){ return map.exteriors[i]; }
-    }
-    return null;
-  }
-  
-  /* Updates a specified exterior. */
-  public void SetExterior(int x, int y, Cell c){
-    for(int i = 0; i < map.exteriors.Count; i++){
-      bool xmatch = map.exteriors[i].x == x;
-      bool ymatch = map.exteriors[i].y == y;
-      if(xmatch && ymatch){
-        map.exteriors[i] = c;
-        return; 
-      }
-    }
-  }
-  
-  /* Convenience method */
-  public void SetExterior(Cell c){
-    if(c != null){ SetExterior(c.x, c.y, c); }
-  }
-  
-  
-  /* Returns an auto-incremented id number for all NPCs.
-     NOTE: May want to either use a long or make another ID for items.
-  */
-  public int NextId(){
-    lock(syncLock){ return currentID++; }
-  }
-  
   /* Returns all active actors in this session. */
   public List<Actor> GetActors(){
     List<Actor> ret = new List<Actor>();
@@ -522,6 +277,28 @@ public class Session : MonoBehaviour {
     for(int i = 0; i < players.Count; i++){ 
       if(player == null || player == players[i]){ players[i].Notify(message); }
     }
+  }
+  
+  /* Route a SessionEvent to its appropriate destination. */
+  public void ReceiveEvent(SessionEvent evt){
+    if(evt.destination == SessionEvent.SESSION){ HandleEvent(evt); }
+    else if(evt.destination == SessionEvent.ARENA && arena != null){
+      arena.HandleEvent(evt);
+    }
+    else if(evt.destination == SessionEvent.WORLD && world != null){
+      // STUB awaiting World.cs implementation.
+    }
+    else{
+      if(gameMode == ARENA && arena != null){ arena.HandleEvent(evt); }
+      if(gameMode == ADVENTURE && world != null){
+        // STUB awaiting World.cs implementation
+      }
+    }
+  }
+  
+  /* Handle a SessionEvent directed toward the session. */
+  public void HandleEvent(SessionEvent evt){
+    print(evt.message);
   }
   
 }

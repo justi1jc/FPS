@@ -1,10 +1,6 @@
 /*
-    An EquipSlot is a component that uses up to two gameObjects as mount points
-    as anchor points for held items and manages the equipment and use of abilities.
+    An EquipSlot manages equipping and using items with an actor and its hands.
     
-    The current mapping is as follows
-    dual wield: primary = left(hand), secondary = right(offHand)
-    single wield: primary = right(offHand)
 */
 
 using UnityEngine;
@@ -12,145 +8,222 @@ using System.Collections;
 using System.Collections.Generic;
 [System.Serializable]
 public class EquipSlot{
+  
+  // Hands
+  public const int RIGHT = 0;
+  public const int LEFT = 1;
+  
   [System.NonSerialized]public Actor actor = null; // Actor, if one is associated with this EquipSlot
-  [System.NonSerialized]public GameObject hand, offHand;
-  [System.NonSerialized]public Item handItem, offHandItem; // Equipped item
+  [System.NonSerialized]private GameObject[] hands;
+  [System.NonSerialized]private Item[] items;
+  [System.NonSerialized]private Data[] itemData;
   [System.NonSerialized]private Vector3 prevTrackPoint = new Vector3();
-  Data handData = null;
-  Data offHandData = null;
-  public int handAbility = -1;
-  public int offHandAbility = -1;
-  int updateDelay = 0;
+  
+  private int updateDelay = 0; // Update time. 
 
-  public EquipSlot(GameObject hand = null, GameObject offHand = null, Actor actor = null){
-    this.hand = hand;
-    this.offHand = offHand;
+  /* Constructor using the two hands of an Actor. */
+  public EquipSlot(GameObject rightHand, GameObject leftHand, Actor actor){
     this.actor = actor;
-    if(actor){
-      EquipAbility(0, true);
-      EquipAbility(0, false);
+    hands = new GameObject[2];
+    items = new Item[2];
+    itemData = new Data[2];
+    hands[RIGHT] = rightHand;
+    hands[LEFT] = leftHand;
+    if(rightHand == null || leftHand == null){
+      MonoBehaviour.print("One or more hands are null.");
     }
   }
   
-  /* Enters a dormant state to be serialized. */
+  /* Prepares for serialization. */
   public void Save(){
-    if(handItem != null){ handData = handItem.GetData(); }
-    else{ handData = null;}
-    if(offHandItem != null){  offHandData = offHandItem.GetData(); }
-    else{ offHandData = null; }
+    for(int i = 0; i < hands.Length; i++){
+      if(items[i] == null){ itemData[i] = null; }
+      else{ itemData[i] = items[i].GetData(); }
+    }
+  }
+  
+  /* Returns the item in this hand. */
+  public Item Peek(int hand){
+    if(hand < 0 || hand >= hands.Length){ return null; }
+    return items[hand];
+  }
+  
+  /* Retuns from serialization when attached to an actor. */
+  public void Load(GameObject rightHand, GameObject leftHand, Actor actor){
+    hands[RIGHT] = rightHand;
+    hands[LEFT] = leftHand;
+    for(int i = 0; i < hands.Length; i++){
+      if(itemData[i] == null){ items[i] = null; }
+      else{ items[i] = Item.GetItem(itemData[i]); } 
+    }
+  }
+  
+  /* Returns the index of an item's hand, or -1 if it is not currently held. */
+  private int FindHand(Item item){
+    if(item == null){ return -1; }
+    for(int i = 0; i < items.Length; i++){
+      if(item == items[i]){ return i; }
+    }
+    return -1;
+  }
+  
+  /* Returns true if this item can currently be dual equipped.
+     An item can only be dual equipped if it is one handed and there is a
+     one handed item in the right hand.
+  */
+  public bool DualEquipAvailable(Data dat){
+    if(items[RIGHT] == null || !items[RIGHT].oneHanded || !Item.OneHanded(dat)){
+      return false;
+    }
+    return true;
+  }
+  
+  
+  /*
+    Equips an ability for use with right hand.
+  */
+  public void EquipAbility(Data ability){
+    if(ability == null){ return; }
+    Item item = Item.GetItem(ability);
+    items[RIGHT] = item;
+    Mount(items[RIGHT], hands[RIGHT]);
     
-  }
-  
-  /* Return to active state after being deserialized */
-  public void Load(Actor actor = null, GameObject hand = null, GameObject offHand = null){
-    this.actor = actor;
-    this.hand = hand;
-    this.offHand = offHand;
-    if(handData != null){
-      Equip(handData, true);
-      handData = null;
-    }
-    else if(handAbility != -1){ EquipAbility(handAbility, true); }
-    if(offHandData != null){
-      Equip(offHandData, false);
-      offHandData = null;
-    }
-    else if(offHandAbility != -1){ EquipAbility(offHandAbility, true); }
-  }
-  
-  /* Drop item from hand, or offHand if hand is empty. */
-  public void Drop(Item item = null){
-    if(item != null){
-      item.transform.position = hand.transform.position;
-      item.Drop();
-      if(handItem == item){ handItem = null; }
-      else if(offHandItem == item){ offHandItem = null; }
-      if(offHandItem != null || offHandAbility > 0){ 
-        actor.SetAnimBool("twoHanded", true);
+    actor.SetAnimBool("rightEquip", true);
+    if(!item.oneHanded){ 
+      if(items[LEFT] != null && items[LEFT] is Ability){ 
+        MonoBehaviour.Destroy(items[LEFT]);
+        items[LEFT] = null;
       }
-      else{ actor.SetAnimBool("twoHanded", false); }
+      else if(items[LEFT] != null){ Store(LEFT); }
+      actor.SetAnimBool("twoHanded", true); 
+      actor.SetAnimBool("leftEquip", false);
+    }
+    else{ actor.SetAnimBool("twoHanded", false); }
+  }
+  
+  /* Equip an item to right hand, storing any displaced item into actor's 
+     inventory. 
+  */
+  public void EquipFromInventory(int index){
+    if(actor == null || actor.inventory == null){ return; }
+    Data dat = actor.inventory.Peek(index);
+    if(dat == null){
+      MonoBehaviour.print("Dat at index " + index + "is null.");
       return;
     }
-    if(handItem != null){
-      actor.hotbar.Update(-1, -3);
-      handItem.Drop();
-      handItem = null;
-      EquipAbility(0, true);
-      if(offHandItem != null || offHandAbility > 0){ 
-        actor.SetAnimBool("twoHanded", true);
-      }
-      else{ actor.SetAnimBool("twoHanded", false); }
-    }
-    else if(offHandItem != null){
-      actor.hotbar.Update(-2, -3);
-      offHandItem.Drop();
-      offHandItem = null;
-      EquipAbility(0, false);
-      actor.SetAnimBool("twoHanded", false);
-    }
-  }
-  
-  /* Equips the next item from the player's inventory, if one exists. */
-  public void NextWeapon(){
-    Data dat = actor.inventory.NextWeapon();
-    if(dat != null){ SwapWeapon(dat); }
-  }
-  
-  /* Equips the previous item from the player's inventory, if one exists. */
-  public void PreviousWeapon(){
-    Data dat = actor.inventory.PreviousWeapon();
-    if(dat != null){ SwapWeapon(dat); }
-    else{ MonoBehaviour.print("Swapped null weapon"); }
-  }
-  
-  /* Stores current items and Equips selected item. */
-  void SwapWeapon(Data dat){
-    if(dat == null){ MonoBehaviour.print("Swapped weapon null"); }
-    if(handItem != null){ Store(true); }
-    if(offHandItem != null){ Store(false); }
-    Equip(dat);
-  }
-  
-  /* Attempts to store item into actor's inventory, else drops item. */
-  public void Store(bool primary){
-    if(actor == null){
-      MonoBehaviour.print("Actor null");
+    actor.SetAnimBool("leftEquip", true);
+    actor.SetAnimBool("rightEquip", true);
+    actor.SetAnimBool("twoHanded", true);
+    if(!Item.OneHanded(dat)){ StoreAll(); }
+    else{ Store(RIGHT); }
+    items[RIGHT] = Item.GetItem(dat);
+    if(items[RIGHT] == null){
+      MonoBehaviour.print("Dat null:" + dat.prefabName);
       return;
     }
-    Data dat = Remove(primary);
-    if(dat == null){ return; }
-    int stack = actor.inventory.Store(dat);
-    if(stack > 0){
-      Data dropped = new Data(dat);
-      dat.stack = stack;
-      Item item = GetItem(dropped);
-      if(item != null){ Drop(item); }
-      else{ MonoBehaviour.print("Null item to drop"); }
+    Mount(items[RIGHT], hands[RIGHT]);
+    actor.inventory.SetStatus(index, GetStatus(RIGHT));
+  }
+  
+  /* Equip an item to left hand if possible, storing displaced item */
+  public void DualEquipFromInventory(int index){
+    if(actor == null || actor.inventory == null){ return; }
+    Data dat = actor.inventory.Peek(index);
+    if(dat == null){
+      MonoBehaviour.print("Dat at index " + index + "is null.");
+      return;
+    }
+    if(!DualEquipAvailable(dat)){ return; }
+    actor.SetAnimBool("leftEquip", true);
+    actor.SetAnimBool("rightEquip", true);
+    actor.SetAnimBool("twoHanded", false);
+    Store(LEFT);
+    items[LEFT] = Item.GetItem(dat);
+    if(items[LEFT] == null){
+      MonoBehaviour.print("Dat null:" + dat.prefabName);
+      return;
+    }
+    Mount(items[LEFT], hands[LEFT]);
+    actor.inventory.SetStatus(index, GetStatus(LEFT));
+  }
+  
+  /* Stores all items into Actor's inventory. */
+  public void StoreAll(){
+    for(int i = 0; i < hands.Length; i++){ Store(i); }
+  }
+  
+  /* Stores item from a particular hand into Actor's inventory. */
+  public void Store(int hand){
+    if(hand < 0 || hand > hands.Length || items[hand] == null){ return; }
+    if(items[hand] is Ability){ return; }
+    int status = GetStatus(hand);
+    Data dat = items[hand].GetData();
+    if(status == -1 || actor == null || actor.inventory == null || dat == null){
+      return;
+    }
+    actor.inventory.StoreEquipped(dat, status);
+    MonoBehaviour.Destroy(items[hand].gameObject);
+    items[hand] = null;
+  }
+  
+  /* Returns corresponding hand's equip status according to Inventory. */
+  private int GetStatus(int hand){
+    if(hand == RIGHT){ return Inventory.PRIMARY; }
+    if(hand == LEFT){ return Inventory.SECONDARY; }
+    return -1;
+  }
+  
+  /* Drop particular item from hand */
+  public void Drop(Item item){
+    int hand = FindHand(item);
+    if(hand == -1){ return; }
+    if(actor != null && !(item is Ability)){
+      if(hand == RIGHT){ actor.inventory.ClearEquipped(Inventory.PRIMARY); }
+      if(hand == LEFT){ actor.inventory.ClearEquipped(Inventory.SECONDARY); }
+    }
+    items[hand].Drop();
+    items[hand] = null;
+  }
+  
+  /* Drops a single item if possible. Removes from hand with greatest index
+    first.
+  */
+  public void Drop(){
+    if(hands.Length == 0){ return; }
+    for(int i = hands.Length-1; i >= 0; i--){
+      if(items[i] != null){
+        items[i].Drop();
+        items[i] = null;
+        if(actor != null){
+          if(i == RIGHT){ actor.inventory.ClearEquipped(Inventory.PRIMARY); }
+          if(i == LEFT){ actor.inventory.ClearEquipped(Inventory.SECONDARY); }
+        }
+        return;
+      }
     }
   }
   
   /* Called from late update */
   public void Update(){
+    int delayMax = 2;
     updateDelay++;
-    if(updateDelay > 2){
+    if(updateDelay > delayMax){
       updateDelay = 0;
-      bool lr = handItem != null && handItem is Ranged; 
-      bool rr = offHandItem != null && offHandItem is Ranged;
-      if(lr || rr){
-        Vector3 point = TrackPoint();
-        if(lr){ Track(handItem.gameObject, point); }
-        if(rr){ Track(offHandItem.gameObject, point); }
+      Vector3 point = TrackPoint();
+      for(int i = 0; i < hands.Length; i++){
+        if(items[i] != null && items[i] is Ranged){
+          Track(items[i].gameObject, point);
+        }
       }
     }
   }
   
-  /* Get offset for trackpoint. */
-  public Vector3 TrackPointOffset(){
-    float offset = actor.stats.AccuracyOffset();
-    float x = Random.Range(-offset, offset);
-    float y = Random.Range(-offset, offset);
-    float z = Random.Range(-offset, offset);
-    return new Vector3(x, y, z);
+  /* Returns true if this gameObject belongs to an equipped item. */
+  private bool GameObjectMatchesItem(GameObject obj){
+    for(int i = 0; i < hands.Length; i++){
+      if(items[i] != null && items[i].gameObject == obj){ return true; }
+    }
+    return false;
   }
   
   /* Returns the current point ranged weapons should aim at. */
@@ -163,11 +236,7 @@ public class EquipSlot{
     RaycastHit hit; 
     if(Physics.Raycast(pos, dir, out hit) && hit.distance > 1f){ 
       GameObject go = hit.collider.gameObject;
-      if((handItem != null && handItem.gameObject == go)
-        || (offHandItem != null && offHandItem.gameObject == go)
-      ){
-        return prevTrackPoint; 
-      }
+      if(GameObjectMatchesItem(go)){ return prevTrackPoint; }
       offset *= Vector3.Distance(pos, hit.point);
       prevTrackPoint = offset + hit.point;
       return offset + hit.point;
@@ -187,411 +256,109 @@ public class EquipSlot{
   
   /* Returns true if both hands are used on single item. */
   public bool Single(){
-    bool l = handItem != null;
-    bool r = offHandItem != null;
-    bool ret = l != r;
+    if(LEFT > hands.Length || items[LEFT] == null){ return true; }
+    return false;
+  }
+  
+  /* Returns all items equipped. */
+  public List<Item> AllItems(){
+    List<Item> ret = new List<Item>();
+    for(int i = 0; i < items.Length; i++){
+      if(items[i] != null){
+        ret.Add(items[i]);
+      }
+    }
     return ret;
   }
   
-  /* Equips an item to the desired slot, returning any items displaced. */
-  public List<Data> Equip(Data dat, bool primary = true){
-    if(actor != null){
-      actor.SetAnimBool("leftEquip", true);
-      actor.SetAnimBool("rightEquip", true);
+  /* Returns true if no items are currently equipped. */
+  public bool Empty(){
+    for(int i = 0; i < hands.Length; i++){
+      if(items[i] != null && !(items[i] is Unarmed)){ return false; }
     }
-    List<Data> ret = new List<Data>();
-    Item item = GetItem(dat);
-    if(item == null){ return ret; }
-    GameObject itemGO = item.gameObject;
-    if(!item.oneHanded){
-      ret.Add(Remove(true));
-      actor.hotbar.Update(-1, -5);
-      actor.hotbar.Update(-2, -6);
-      ret.Add(Remove(false));
-      handAbility = 0;
-      Mount(item, offHand);
-      offHandAbility = 0;
-      offHandItem = item;
-      if(actor != null){
-        actor.SetAnimBool("twoHanded", true);
-      }
-    }
-    else if(primary){
-      if(handItem != null){
-        ret.Add(Remove(true));
-        actor.hotbar.Update(-1, -5);
-        handAbility = 0;
-        offHandItem = item;
-        Mount(item, offHand);
-      }
-      else if(offHandItem == null && offHandAbility < 1){
-        GameObject.Destroy(item.gameObject);
-        ret.AddRange(Equip(dat, false));
-        return ret;
-      }
-      else if(offHandItem != null && !offHandItem.oneHanded){
-        ret.Add(Remove(false));
-        offHandItem = item;
-        Mount(item, offHand);
-        return ret;
-      }
-      else{
-        if(actor != null){ actor.SetAnimBool("twoHanded", false); }
-        handItem = item;
-        Mount(item, hand);
-      }
-    }
-    else{
-      if(offHandItem != null){ 
-        ret.Add(Remove(false));
-        actor.hotbar.Update(-2, -6);
-        offHandAbility = 0;
-      }
-      offHandItem = item;
-      Mount(item, offHand);
-      if(actor != null){ 
-        if(handItem == null && handAbility < 1){ 
-          actor.SetAnimBool("twoHanded", true); 
-        }
-        else{
-          actor.SetAnimBool("twoHanded", false);
-        }
-      }
-    }
-    
-    return ret;
+    return true;
   }
   
+  /* Connects an item to a particular hand */
   public void Mount(Item item, GameObject hand){
     item.transform.parent = MountPoint(hand.transform);
     item.Hold(actor);
   }
   
   /* Returns mount point from hand. */
-  Transform MountPoint(Transform selectedHand){
+  private Transform MountPoint(Transform selectedHand){
     foreach(Transform t in selectedHand){ if(t.gameObject.name == "MountPoint"){ return t; } }
     return null;
   }
   
-  /* Returns an Item from data */
-  Item GetItem(Data dat){
-    if(dat == null){ MonoBehaviour.print("Equipped null data"); return null; }
-    GameObject prefab = Resources.Load("Prefabs/" + dat.prefabName) as GameObject;
-    if(!prefab){ MonoBehaviour.print("Prefab null:" + dat.displayName); return null;}
-    Vector3 position = actor != null ? actor.transform.position : new Vector3();
-    GameObject itemGO = (GameObject)GameObject.Instantiate(
-      prefab,
-      position,
-      Quaternion.identity
-    );
-    if(!itemGO){MonoBehaviour.print("GameObject null:" + dat.displayName); return null; }
-    Item item = itemGO.GetComponent<Item>();
-    item.LoadData(dat);
-    return item;
-  }
-  
-  public void Use(int use){
+  /* Triggers melee animations when appropriate. */
+  public void MeleeAnim(int use){
+    if(actor == null || (use != Item.A_DOWN && use != Item.B_DOWN)){ return; }
     Melee melee = null;
-    if(use == 2){
-      if(offHandItem != null && handItem == null){ offHandItem.Use(2); }
-    }
-    
-    if(offHandItem != null && (!offHandItem.oneHanded || handItem == null && handAbility < 1)){
-      switch(use){
-        case 0:
-          melee = offHandItem.gameObject.GetComponent<Melee>();
-          if(melee != null){
-            string trigger = melee.stab ? "rightStab" : "rightSwing";
-            if(actor && melee.ready){ actor.SetAnimTrigger(trigger); }
-          }
-          offHandItem.Use(0);
-          break;
-        case 1: offHandItem.Use(1); break;
-        case 3: offHandItem.Use(3); break;
-        case 5: offHandItem.Use(4); break;
-        case 7: offHandItem.Use(5); break;
+    bool r = false;
+    if(Single() && use == Item.A_DOWN){ 
+      if(items[RIGHT] != null && items[RIGHT] is Melee){
+        melee = (Melee)items[RIGHT];
       }
-      return;
+      r = true;
     }
-    
-    if(handItem != null){
-      switch(use){
-        case 0:
-          melee = handItem.gameObject.GetComponent<Melee>();
-          if(melee != null){
-            string trigger = melee.stab ? "leftStab" : "leftSwing";
-            if(actor && melee.ready){ actor.SetAnimTrigger(trigger); }
-          }
-          handItem.Use(0);
-          break;
-        case 3: handItem.Use(3); break;
-        case 5: handItem.Use(4); break;
-        case 7: handItem.Use(5); break;
+    else{
+      if(use == Item.A_DOWN){ 
+        r = false;
+        if(items[LEFT] != null && items[LEFT] is Melee){ 
+          melee = (Melee)items[LEFT];
+        }
+      }
+      else{ 
+        r = true;
+        if(items[RIGHT] != null && items[RIGHT] is Melee){
+          melee = (Melee)items[RIGHT];
+        }
       }
     }
-    else if(handAbility != -1){
-      switch(use){
-        case 0: UseAbility(0, true); break;
-        case 3: UseAbility(3, true); break;
-        case 5: UseAbility(4, true); break;
-        case 7: UseAbility(5, true); break;
-      }
-    }
-    
-    if(offHandItem != null){
-      switch(use){
-        case 1:
-          melee = offHandItem.gameObject.GetComponent<Melee>();
-          if(melee != null){
-            string trigger = melee.stab ? "rightStab" : "rightSwing";
-            if(actor && melee.ready){ actor.SetAnimTrigger(trigger); }
-          }
-          offHandItem.Use(0);
-          break;
-        case 4: offHandItem.Use(3); break;
-        case 6: offHandItem.Use(4); break;
-      }
-    }
-    else if(offHandAbility != -1){
-      switch(use){
-        case 1: UseAbility(0, false); break;
-        case 4: UseAbility(3, false); break;
-        case 6: UseAbility(4, false); break;
-      }
-    }
+    if(melee == null){ return; }
+    string hand = r ? "right" : "left";
+    string action = melee.stab ? "Stab" : "Swing";
+    actor.SetAnimTrigger(hand + action);
   }
   
   
-  /* Use an ability. Primary is false if offhand is selected. */
-  public void UseAbility(int use, bool primary){
-    GameObject user = primary ? hand : offHand;
-    if(user == false){ return; }
-    int ability = primary ? handAbility : offHandAbility;
-    if(ability == -1){ return; }
-    switch(ability){
-      case 0: UsePunch(user, use, primary); break;
-      case 1: UseFireBall(user, use); break;
-      case 2: UseHealSelf(user, use); break;
-      case 3: UseHealOther(user, use); break;
+  /* Use one of the equipped items. */
+  public void Use(int use){
+    MeleeAnim(use);
+    if(Single()){
+      if(items[RIGHT] == null){ return; }
+      items[RIGHT].Use(use);
+    }
+    else{
+      if(items[RIGHT] == null || items[LEFT] == null){ 
+        MonoBehaviour.print("" + items[RIGHT] + "," + items[LEFT]);
+        return;
+      }
+      switch(use){
+        case Item.A_DOWN: items[LEFT].Use(Item.A_DOWN); break;
+        case Item.B_DOWN: items[RIGHT].Use(Item.A_DOWN); break;
+        case Item.A_UP: items[LEFT].Use(Item.A_UP); break;
+        case Item.B_UP: items[RIGHT].Use(Item.A_UP); break;
+      }
     }
   }
-  
-  
-  /* Removes an item and returns its data, or null. */
-  public Data Remove(bool primary = true){
-    if(primary && handItem != null){
-      Data ret = handItem.GetData();
-      MonoBehaviour.Destroy(handItem.gameObject);
-      handItem = null;
-      return ret;
-    }
-    else if(primary && offHandItem != null && !offHandItem.oneHanded){
-      Data ret = offHandItem.GetData();
-      MonoBehaviour.Destroy(offHandItem.gameObject);
-      offHandItem = null;
-      return ret;
-    }
-    else if(!primary && offHandItem != null){
-      Data ret = offHandItem.GetData();
-      MonoBehaviour.Destroy(offHandItem.gameObject);
-      offHandItem = null;
-      return ret;
-    }
-    return null;
-  }
-  
-  /* Initializes an ability. If primary is false, the offHand will be equipped.
-     Returns a displaced item or null.
-   */
-  public List<Data> EquipAbility(int ability, bool primary = true){
-    if(actor != null){
-      if(primary){ actor.SetAnimBool("leftEquip", true); }
-      else{ actor.SetAnimBool("rightEquip", true); }
-    }
-    List<Data> ret = new List<Data>();
-    if(ability < 0 || ability > 4){ return ret; }
-    GameObject selectedHand = null;
-    Item displacedItem = null;
-    if(hand != null && primary){
-      selectedHand = hand;
-      displacedItem = handItem; 
-    }
-    else if(offHand != null && !primary){
-      selectedHand = offHand;
-      displacedItem = offHandItem;
-    }
-    if(selectedHand == null){ MonoBehaviour.print("selected hand is null."); return ret; }
-    if(displacedItem != null){
-      ret.Add(displacedItem.GetData());
-      MonoBehaviour.Destroy(displacedItem.gameObject);
-    }
-    Item oldAbility = selectedHand.GetComponent<Item>();
-    if(oldAbility){ MonoBehaviour.Destroy(oldAbility); }
-    if(primary){ handAbility = ability; }
-    else{ offHandAbility = ability; }
-    switch(ability){
-      case 0:
-        InitPunch(selectedHand);
-        break;
-      case 1:
-        InitFireBall(selectedHand);
-        break;
-      case 2:
-        InitHealSelf(selectedHand);
-        break;
-      case 3:
-        InitHealOther(selectedHand);
-        break;
-    }
+
+  /* Removes an item from its specified hand and returns its data, or null. */
+  public Data Remove(int hand){
+    if(hand < 0 || hand > hands.Length || items[hand] == null){ return null; }
+    Data ret = items[hand].GetData();
+    MonoBehaviour.Destroy(items[hand].gameObject);
+    items[hand] = null;
     return ret;
-  }
-  
-  /* Performs unarmed attack. */
-  void UsePunch(GameObject user, int use, bool primary){
-    Item fist = user.GetComponent<Melee>();
-    if(fist == null){ return; }
-    if(actor != null){
-      string trigger = primary ? "leftPunch" : "rightPunch";
-      if(fist.ready){
-        actor.SetAnimTrigger(trigger);
-        fist.Use(0);
-      }
-    }
-    else{ MonoBehaviour.print("Actor missing"); }
-    //TODO: Consume stamina
   }
   
   /* Returns info on the selected items or abilities. */
-  public string Info(){
+  public string GetInfo(){
     string ret = "";
-    if(handItem != null){
-      ret += handItem.GetInfo();
-    }
-    else if(handAbility != -1){
-      ret += AbilityInfo(handAbility);
-    }
-    ret += "\n";
-    if(offHandItem != null){
-      ret += offHandItem.GetInfo();
-    }
-    else if(offHandAbility != -1){
-      ret += AbilityInfo(offHandAbility);
+    for(int i = 0; i < hands.Length; i++){
+      if(items[i] != null){ ret += items[i].GetInfo(); }
     }
     return ret;
   }
-  
-  /* Returns the name of the ability. */
-  public string AbilityInfo(int ability){
-    string ret = "";
-    switch(ability){
-        case 0:
-          ret += "Unarmed";
-          break;
-        case 1:
-          ret += "Fireball";
-          break;
-        case 2:
-          ret += "Heal Self";
-          break;
-        case 3:
-          ret += "Heal other";
-          break;
-      }
-      return ret;
-  }
-  
-  /* Performs fireball spell. */
-  void UseFireBall(GameObject user, int use){
-    Ranged fist = user.GetComponent<Ranged>();
-    if(fist == null){ return; }
-    fist.ammo = 2;
-    fist.Use(use);
-    //TODO: Consume stamina
-  }
-  
-  /* Performs heal self spell.*/
-  void UseHealSelf(GameObject user, int use){
-    Food fist = user.GetComponent<Food>();
-    if(fist == null){ return; }
-    fist.stack = 2;
-    fist.Use(use);
-    Light l = user.gameObject.GetComponent<Light>();
-    if(l && use == 0){
-      l.intensity = 2f;
-      l.range = 10f;
-      l.color = Color.blue;
-      
-    }
-    else if(l && use == 4){
-      l.intensity = 0f;
-      l.range = 0f;
-    }
-    
-  }
-  
-  /* Performs heal other spell. */
-  void UseHealOther(GameObject user, int use){
-    Ranged fist = user.GetComponent<Ranged>();
-    if(fist == null){ return; }
-    fist.ammo = 2;
-    fist.Use(use);
-    //TODO: Consume mana
-  }
-  
-  /* Initializes unarmed attack. */
-  void InitPunch(GameObject user){
-    Melee item = user.AddComponent<Melee>();
-    item.ability = true;
-    item.cooldown = 0.25f;
-    item.damageStart = 0.25f;
-    item.damageEnd = 0.75f;
-    item.knockBack = 50;
-    item.ready = true;
-    item.damage = 20;
-    item.holder = actor;
-  }
-  
-  /* Initializes fireball spell. */
-  void InitFireBall(GameObject user){
-    Ranged item = user.AddComponent<Ranged>();
-    item.ability = true;
-    item.cooldown = 0.5f;
-    item.chargeable = true;
-    item.executeOnCharge = false;
-    item.projectile = "FireBall";
-    item.charge = 10;
-    item.chargeMax = 25;
-    item.muzzleVelocity = 100;
-    item.impactForce = 150;
-    item.damage = 10;
-    item.effectiveDamage = 10;
-  }
-  
-  /* Initializes self healing spell. */
-  void InitHealSelf(GameObject user){
-    if(actor == null){ return; }
-    Light l = user.GetComponent<Light>();
-    if(!l){ user.AddComponent<Light>(); }
-    Food item  = user.AddComponent<Food>();
-    item.ability = true;
-    item.healing = 25;
-    item.cooldown = 3f;
-  }
-  
-  /* Initializes heal other spell. */
-  void InitHealOther(GameObject user){
-    Ranged item = user.AddComponent<Ranged>();
-    item.ability = true;
-    item.cooldown = 1.5f;
-    item.chargeable = true;
-    item.executeOnCharge = false;
-    item.projectile = "HealBall";
-    item.charge = 10;
-    item.chargeMax = 25;
-    item.muzzleVelocity = 50;
-    item.impactForce = 200;
-    item.damage = -10;
-    item.effectiveDamage = -10;
-  }
-  
 }

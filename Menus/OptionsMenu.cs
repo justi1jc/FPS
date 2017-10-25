@@ -50,7 +50,7 @@ public class OptionsMenu : Menu{
       }
       str = "Save";
       if(Button(str, x, 4*ih, 2*iw, ih, 0, 4)){
-        Session.session.SaveGame(Session.session.sessionName);
+        Session.session.world.SaveGame();
         Sound(0);
       }
     }
@@ -72,8 +72,6 @@ public class OptionsMenu : Menu{
     
     str = "Main Menu";
     if(Button(str, x, ih, 2*iw, ih, 0, 1)){
-      //Session.session.CreateMenu();
-      //Session.session.sesMenu.Change("MAIN");
       SceneManager.LoadScene("Main");
     }
     
@@ -87,7 +85,7 @@ public class OptionsMenu : Menu{
     if(Session.session != null && Session.session.gameMode == 0){
       str = "Save and Quit.";
       if(Button(str, x, 3*ih, 2*iw, ih, 0, 3)){
-        Session.session.SaveGame(Session.session.sessionName);
+        Session.session.world.SaveGame();
         Application.Quit();
         Sound(0);
       }
@@ -121,10 +119,10 @@ public class OptionsMenu : Menu{
           MonoBehaviour.print("Settings");
           break;
         case 3:
-          Session.session.SaveGame(Session.session.sessionName);
+          Session.session.world.SaveGame();
           break;
         case 4:
-          Session.session.SaveGame(Session.session.sessionName);
+          Session.session.world.SaveGame();
           Application.Quit();
           break;
         case 5:
@@ -149,10 +147,10 @@ public class OptionsMenu : Menu{
           MonoBehaviour.print("Settings");
           break;
         case 3:
-          Session.session.SaveGame(Session.session.sessionName);
+          Session.session.world.SaveGame();
           break;
         case 4:
-          Session.session.SaveGame(Session.session.sessionName);
+          Session.session.world.SaveGame();
           Application.Quit();
           break;
         case 5:

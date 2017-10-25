@@ -11,6 +11,24 @@ public class StatHandler{
   
   public Actor actor;
   
+  // stat constants
+  public const int HEALTH = 0;
+  public const int STAMINA = 1;
+  public const int MANA = 2;
+  public const int INTELLIGENCE = 3;
+  public const int CHARISMA = 4;
+  public const int ENDURANCE = 5;
+  public const int PERCEPTION = 6;
+  public const int AGILITY = 7;
+  public const int WILLPOWER = 8;
+  public const int STRENGTH = 9;
+  public const int SLOTS = 10;
+  public const int RANGED = 11;
+  public const int MELEE = 12;
+  public const int UNARMED = 13;
+  public const int MAGIC = 14;
+  public const int STEALTH = 15;
+  
   //Conditions
   public bool dead;
   public int health, healthMax;
@@ -19,20 +37,20 @@ public class StatHandler{
   public int slots;
   
   // ICEPAWS attributes, max value is 10
-  public int intelligence, intelligenceMod;
-  public int charisma, charismaMod;
-  public int endurance, enduranceMod; 
-  public int perception, perceptionMod; 
-  public int agility, agilityMod;     
-  public int willpower, willpowerMod; 
-  public int strength, strengthMod;   
+  public int intelligence;
+  public int charisma;
+  public int endurance; 
+  public int perception; 
+  public int agility;     
+  public int willpower; 
+  public int strength;   
   
-  // Skill levels, max 100. The mod is a temporary stat modifier.
-  public int ranged, rangedMod;
-  public int melee, meleeMod;
-  public int unarmed, unarmedMod;
-  public int magic, magicMod;
-  public int stealth, stealthMod;
+  // Skill levels, max 100.
+  public int ranged;
+  public int melee;
+  public int unarmed;
+  public int magic;
+  public int stealth;
   
   // leveling
   public int skillPoints;
@@ -41,8 +59,8 @@ public class StatHandler{
   public int xp;
   
   // Abilities
-  public List<int> abilities;
-  
+  public List<Data> abilities;
+
   /* Faction id 
      0 = neutral(only retaliates)
      1 = feral(attacks anything)
@@ -51,28 +69,23 @@ public class StatHandler{
   */
   public int faction = 0;
   
-  // Accuracy
-  public int aimPenalty = 0;
+
   
   public StatHandler(Actor actor){
     this.actor = actor;
     dead = false;
-    abilities = new List<int>();
-    intelligence = charisma = endurance = perception = agility = willpower = strength = 1;
+    abilities = new List<Data>();
+    intelligence = charisma = endurance = perception = agility = willpower = strength = 5;
     ranged = melee = unarmed = magic = stealth = skillPoints = xp = 0;
     level = nextLevel = 0;
-    health = healthMax = stamina = staminaMax = mana = manaMax = 100;
+    InitCondition();
     LevelUp();
   }
   
-    /* Offset of trackpoint based on accuracy. */
-  public float AccuracyOffset(){
-    int mp = actor.walking ? 20 : 0;
-    int rp = actor.sprinting ? 30 : 0;
-    if(aimPenalty > 50){ aimPenalty = 50; }
-    float numerator = (float)(mp + rp + aimPenalty); 
-    float offset = numerator/1000f;
-    return offset;
+  private void InitCondition(){
+    health = healthMax = 50+(endurance * 10);
+    stamina = staminaMax = 50+(endurance * 10);
+    mana = manaMax = 50 + (willpower * 10);
   }
   
   /* Updates condition. */
@@ -83,65 +96,56 @@ public class StatHandler{
   /* Regenerates condition. */
   public void Regen(){
     if(dead){ return; }
-    int healthDifficulty = (healthMax - health) / healthMax;
-    int staminaDifficulty = (staminaMax - stamina) / staminaMax;
-    int manaDifficulty = (manaMax - mana) / manaMax;
-    if(health < healthMax && StatCheck("ENDURANCE", healthDifficulty+5)){
-      health++; 
-    }
-    if(stamina < staminaMax && StatCheck("AGILITY", staminaDifficulty)){ 
-      stamina++; 
-    }
-    if(mana < manaMax && StatCheck("WILLPOWER", manaDifficulty+5)){ 
-      mana++; 
-    }
-    if(aimPenalty > 0 && (StatCheck("PERCEPTION") || StatCheck("RANGED"))){
-      aimPenalty -= 5;
-      if(aimPenalty < 0){ aimPenalty = 0; }
+    if(stamina < staminaMax){
+      stamina += agility;
+      if(stamina > staminaMax){
+        stamina = staminaMax;
+      }
     }
   }
+  
   
   /* Performs a roll for competency.
      difficulty directly lowers effective threshold.
   */
-  public bool StatCheck(string stat, int difficulty = 0){
+  public bool StatCheck(int stat, int difficulty = 0){
     int threshold = 0;
-    switch(stat.ToUpper()){
-      case "INTELLIGENCE":
-        threshold = 10 * (intelligence + intelligenceMod);
+    switch(stat){
+      case INTELLIGENCE:
+        threshold = 10 * (intelligence);
         break;
-      case "CHARISMA":
-        threshold = 10 * (charisma + charismaMod);
+      case CHARISMA:
+        threshold = 10 * (charisma);
         break;
-      case "ENDURANCE":
-        threshold = 10 * (endurance + enduranceMod);
+      case ENDURANCE:
+        threshold = 10 * (endurance);
         break;
-      case "PERCEPTION":
-        threshold = 10 * (perception + perceptionMod);
+      case PERCEPTION:
+        threshold = 10 * (perception);
         break;
-      case "AGILITY":
-        threshold = 10 * (agility + agilityMod);
+      case AGILITY:
+        threshold = 10 * (agility);
         break;
-      case "WILLPOWER":
-        threshold = 10 * (willpower + willpowerMod);
+      case WILLPOWER:
+        threshold = 10 * (willpower);
         break;
-      case "STRENGTH":
-        threshold = 10 * (strength + strengthMod);
+      case STRENGTH:
+        threshold = 10 * (strength);
         break;
-      case "RANGED":
-        threshold = ranged + rangedMod;
+      case RANGED:
+        threshold = ranged;
         break;
-      case "MELEE":
-        threshold = melee + meleeMod;
+      case MELEE:
+        threshold = melee;
         break;
-      case "UNARMED":
-        threshold = unarmed + unarmedMod;
+      case UNARMED:
+        threshold = unarmed;
         break;
-      case "MAGIC":
-        threshold = magic + magicMod;
+      case MAGIC:
+        threshold = magic;
         break;
-      case "STEALTH":
-        threshold = stealth + stealthMod;
+      case STEALTH:
+        threshold = stealth;
         break;
     }
     threshold -= difficulty;
@@ -151,27 +155,64 @@ public class StatHandler{
     return false;
   }
   
+  /* Calculates a score between 0 and 100 based on aim penalties and bonuses. */
+  public int AccuracyScore(){
+    int score = 50;
+    if(actor.walking){
+      score -= 25;
+      if(actor.sprinting){ score -= 25; }
+    }
+    else if(actor.crouched){ score += 10; }
+    if(stamina < (staminaMax/4)){ score -= 25; }
+    if(!actor.walking && actor.aiming){ score += 40; }
+    if(score < 0){ return 0; }
+    else if(score > 100){ return 100; }
+    return score;
+  }
+  
+  /* Calculates an offset of aim for use by ranged weapons. */
+  public Vector3 AccuracyPenalty(){
+    float score = (float)AccuracyScore();
+    float mag = 0.1f - score/1000f;
+    if(mag < 0){ new Vector3(); }
+    float x = Random.Range(0f, mag);
+    mag -= x;
+    x = Random.Range(-x, x);
+    float y = Random.Range(0f, mag);
+    mag -= y;
+    y = Random.Range(-y, y);
+    float z = Random.Range(0f, mag);
+    mag -= z;
+    z = Random.Range(-z, z);
+    
+    return new Vector3(x,y,z);
+  }
+  
+  public int GetStat(int stat){
+    return BaseStat(stat) + Modifier(stat);
+  }
+  
   /* Returns a stat without modifiers, or -1*/
-  public int BaseStat(string stat){
+  public int BaseStat(int stat){
     switch(stat){
-      case "INTELLIGENCE": return intelligence; break;
-      case "CHARISMA": return charisma; break;
-      case "Endurance": return endurance; break;
-      case "PERCEPTION": return perception; break;
-      case "AGILITY": return agility; break;
-      case "WILLPOWER": return willpower; break;
-      case "STRENGTH": return strength; break;
-      case "RANGED": return ranged; break;
-      case "MELEE": return melee; break;
-      case "UNARMED": return unarmed; break;
-      case "MAGIC": return magic; break;
-      case "STEALTH": return stealth; break;
-      case "SLOTS": return slots; break;
+      case INTELLIGENCE: return intelligence; break;
+      case CHARISMA: return charisma; break;
+      case ENDURANCE: return endurance; break;
+      case PERCEPTION: return perception; break;
+      case AGILITY: return agility; break;
+      case WILLPOWER: return willpower; break;
+      case STRENGTH: return strength; break;
+      case RANGED: return ranged; break;
+      case MELEE: return melee; break;
+      case UNARMED: return unarmed; break;
+      case MAGIC: return magic; break;
+      case STEALTH: return stealth; break;
+      case SLOTS: return slots; break;
     }
     return -1;
   }
   
-  public int Modifier(string stat){
+  public int Modifier(int stat){
     int mod = 0;
     if(actor.doll != null){ mod += actor.doll.Modifier(stat); }
     return mod;
@@ -196,25 +237,39 @@ public class StatHandler{
     return ((currentLevel + 1) * (currentLevel + 1)) * 100;
   }
   
-  /* Reduce a particular condition. */
-  public void DrainCondition(string condition, int drain){
-    switch(condition.ToUpper()){
-      case "HEALTH":
+  /* Reduce a particular condition.
+     Returns the condition drained. 
+  */
+  public int DrainCondition(int condition, int drain, GameObject weapon = null){
+    int ret = drain;
+    switch(condition){
+      case HEALTH:
         health -= drain;
-        if(health < 0){ health = 0; }
+        if(health <= 0){
+          ret = drain + health;
+          health = 0;
+          actor.Die(weapon);
+        }
         if(health > healthMax){ health = healthMax; }
         break;
-      case "STAMINA":
+      case STAMINA:
         stamina -= drain;
-        if(stamina < 0){ stamina = 0; }
+        if(stamina < 0){
+          ret = drain + stamina; 
+          stamina = 0;
+        }
         if(stamina > staminaMax){ stamina = staminaMax; }
         break;
-      case "MANA":
+      case MANA:
         mana -= drain;
-        if(mana < 0){ mana = 0; }
+        if(mana < 0){
+          ret = drain + mana; 
+          mana = 0;
+        }
         if(mana > manaMax){ mana = manaMax; }
         break;
     }
+    return ret;
   }
   
   /* Returns true if the selected actor is an enemy of this one. */

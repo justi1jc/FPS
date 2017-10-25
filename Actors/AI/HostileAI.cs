@@ -15,7 +15,7 @@ public class HostileAI : AI{
   
   public override IEnumerator Begin(){
     yield return actor.StartCoroutine(FindEnemy());
-    Equip();
+    ChooseWeapon();
   }
   
   /* Returns true if this ranged weapon has ammo in it, or in the actor's
@@ -41,45 +41,20 @@ public class HostileAI : AI{
     return false;
   }
   
-  /* Selects either a ranged or melee weapon, then changes to
-     the appropriate combat ai. */
-  void Equip(){
-    bool ranged = false;
-    Ranged r = null;
-    Inventory inv = actor.inventory;
-    if(actor.arms.handItem != null && actor.arms.handItem is Ranged){
-      r = (Ranged)actor.arms.handItem;
-    }
-    else if(actor.arms.offHandItem != null && actor.arms.offHandItem is Ranged){
-      r = (Ranged)actor.arms.offHandItem;
-    }
-    if(r != null && HasAmmo(r)){
-      ranged = true;
-    }
-    else{
-      List<int> rangedWeapons = RangedWeapons();
-      for(int i = 0; i < rangedWeapons.Count; i++){
-        if(HasAmmo(inv.Peek(rangedWeapons[i]))){
-          actor.Equip(rangedWeapons[0], true);
-          ranged = true;
-          break;
-        }
-      }
-    }
-    if(ranged == true){
+  /* Chooses a weapon and changes to the appropriate AI for it.*/
+  void ChooseWeapon(){
+    actor.arms.StoreAll();
+    List<int> rangedWeapons = RangedWeapons();
+    if(rangedWeapons.Count > 0){
+      int ranged = MaxDamage(rangedWeapons);
+      actor.Equip(ranged);
       manager.Change("RANGEDCOMBAT");
       return;
     }
-    
-    bool melee = false;
-    if(actor.arms.handItem != null && !(actor.arms.handItem is Melee)){
-      List<int> meleeWeapons = MeleeWeapons();
-      if(meleeWeapons.Count > 0){
-        actor.Equip(meleeWeapons[0], true);
-      }
-      else{
-        actor.EquipAbility(0, true);
-      }
+    List<int> meleeWeapons = MeleeWeapons();
+    if(meleeWeapons.Count > 0){
+      int melee = MaxDamage(meleeWeapons);
+      actor.Equip(melee);
     }
     manager.Change("MELEECOMBAT");
   }
@@ -99,8 +74,24 @@ public class HostileAI : AI{
     return ret;
   }
   
+  /* Returns the weapon with the highest damage. */
+  public int MaxDamage(List<int> choices){
+    Inventory inv = actor.inventory;
+    int choice = 0;
+    int maxDamage = Weapon.Damage(inv.Peek(choice));
+    for(int i = 0; i < choices.Count; i++){
+      int currentDamage = Weapon.Damage(inv.Peek(choices[i]));
+      if(currentDamage > maxDamage){
+        maxDamage = currentDamage;
+        choice = i;
+      }
+    }
+    return choice;
+  }
   
-  /* Returns the slot numbers of all ranged weapons in inventory. */
+  /* Returns the slot numbers of all ranged weapons in inventory that either
+    have ammo loaded, or can be loaded from ammo in the inventory.
+  */
   public List<int> RangedWeapons(){
     List<int> ret = new List<int>();
     if(actor == null || actor.inventory == null){ return ret; }
@@ -108,7 +99,14 @@ public class HostileAI : AI{
     for(int i = 0; i < inv.slots; i++){
       Data dat = inv.Peek(i);
       if(dat != null){
-        if(dat.itemType == Item.RANGED){ ret.Add(i); }
+        if(dat.itemType == Item.RANGED){ 
+          bool hasAmmo = Ranged.Ammo(dat) > 0;
+          if(!hasAmmo){
+            string ammoName = Ranged.AmmoName(dat);
+            hasAmmo = inv.ItemCount(ammoName) > 0;
+          }
+          if(hasAmmo){ ret.Add(i); }
+        }
       }
     }
     return ret;

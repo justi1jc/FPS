@@ -40,6 +40,7 @@ public class HoloCell{
   /* Places the contents of a cell into the scene. */
   public void LoadData(Cell c, int doorId = -1){
     spawnDoor = doorId;
+    
     cell = c;
     if(c == null){ return; }
     for(int i = 0; i < cell.items.Count; i++){ CreateItem(cell.items[i]); }
@@ -50,12 +51,13 @@ public class HoloCell{
   public void Clear(){
     List<GameObject> obs = GetContents();
     for(int i = 0; i < obs.Count; i++){
-      Object.Destroy(obs[i]);
+      GameObject.Destroy(obs[i]);
     }
     ClearWalls();
   }
   
   public void CreateItem(Data dat){
+    
     if(dat == null){ return; }
     Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
     sPos += position;
@@ -73,10 +75,11 @@ public class HoloCell{
       item.LoadData(dat);
       if(item is WarpDoor){
         WarpDoor w = item as WarpDoor;
-        w.deck = deck;
-        if(spawnDoor == -1 || w.doorId == spawnDoor){
-          spawnPos = w.destPos;
-          spawnRot = w.destRot;
+        w.deck = deck.id;
+        w.LoadRecord(deck.GetDoor(cell, w.id));
+        if(spawnDoor == -1 || w.id == spawnDoor){
+          spawnPos = w.DestPos();
+          spawnRot = w.DestRot();
         }
       }
     }
@@ -100,7 +103,8 @@ public class HoloCell{
     dat.yr = spawnRot.y;
     dat.zr = spawnRot.z;
     a.LoadData(dat);
-    if(a.id == -1){ a.id = Session.session.NextId(); }
+    if(a.id == -1){ a.id = NextId(); }
+    MonoBehaviour.print("Adding player to cell" + cell.name);
   }
   
   /* Creates an NPC with the given data. 
@@ -108,17 +112,15 @@ public class HoloCell{
     their last known position. Otherwise it is assumed players are entering the 
     cell via a spawnpoint.  */
   public void CreateNPC(Data dat, bool ignoreDoor = false, bool player = false){
-    if(dat == null){ return; }
+    if(dat == null){ MonoBehaviour.print("Data null"); return; }
+    Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
+    sPos += position;
     if(!ignoreDoor && player){
-      dat.x = spawnPos.x;
-      dat.y = spawnPos.y;
-      dat.z = spawnPos.z;
+      sPos = spawnPos;
       dat.xr = spawnRot.x;
       dat.yr = spawnRot.y;
       dat.zr = spawnRot.z;
     }
-    Vector3 sPos = new Vector3(dat.x, dat.y, dat.z);
-    sPos += position;
     Quaternion rot = Quaternion.Euler(new Vector3(dat.xr, dat.yr, dat.zr));
     GameObject pref = (GameObject)Resources.Load("Prefabs/" + dat.prefabName, typeof(GameObject));
     if(!pref){
@@ -129,9 +131,14 @@ public class HoloCell{
     Actor actor = go.GetComponent<Actor>();
     if(actor){ 
       actor.LoadData(dat);
-      if(actor.id == -1){ actor.id = Session.session.NextId(); } 
+      if(actor.id == -1){ actor.id = NextId(); } 
     }
     go.transform.position = sPos;
+  }
+  
+  /* Returns the next NPC id from Session's active world*/
+  private int NextId(){
+    return Session.session.world.map.NextNPCId();
   }
   
   /* Returns the gameObjects caught by boxcasting with min and max.*/
@@ -142,7 +149,7 @@ public class HoloCell{
     Vector3 direction = new Vector3(0f,0.001f,0f);
     Quaternion orientation = Quaternion.identity;
     float distance = 1f;
-    int layerMask = ~(1 << 8);
+    int layerMask = -1;
     RaycastHit[] found = Physics.BoxCastAll(
       center,
       halfExtents,
@@ -332,18 +339,19 @@ public class HoloCell{
     float x = position.x;
     float y = position.y;
     float z = position.z;
+    float margin = 0f;
     switch(direction){
       case 0:
-        x += (cell.heX + 1);
+        x += (cell.heX + margin);
         break;
       case 1:
-        x -= (cell.heX + 1);
+        x -= (cell.heX + margin);
         break;
       case 2:
-        z += (cell.heZ + 1);
+        z += (cell.heZ + margin);
         break;
       case 3:
-        z -= (cell.heZ + 1);
+        z -= (cell.heZ + margin);
         break;
     }
     return new Vector3(x, y, z);

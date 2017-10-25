@@ -1,62 +1,62 @@
 /*
-  A cell is the basic unit of the game's world. It can describe either the
-  an interior space, or an exterior space.
-
-  An interior cell exists within a building and has up to four doors corresponding
-  to the four cardinal directions. The locations of each door are likewise
-  maintained in order to programatically generate building interiors.
+  A cell is the base unit of the map. 
   
-  An exterior cell is loaded to create a grid. By breaking up the contents
-  into buildings, NPCs, and Items, cells distant from the player can load
-  buildings first, then later load NPCs and Items as the player nears.
+  The overworld is comprised of multiple cells filling a 2D grid.
+  
+  Buildings are made up of Cells representing individual rooms.
 */
 
 using System.Collections.Generic;
 [System.Serializable]
 public class Cell{
-  // Cardinal Directions 
-  public const int NORTH = 0;
-  public const int EAST  = 1;
-  public const int WEST  = 2;
-  public const int SOUTH = 3;
-  public int x, y; // Position on the map.
-  public bool interior;   // True if this cell is an interior.
+  
+  public string name;
+  public bool interior;
+  public string building; // The parent building of this room cell resides in.
+  public int x, y; // Position on the map this exterior cell resides in.
+  public int id = -1; // Id of this cell, or its building.
   public List<Data> items;
   public List<Data> npcs;
+  public List<DoorRecord> doors;
   public float heX, heY, heZ; // Half extents for boxcasts
   
-  // Interior
-  public string building; // The name of the building this interior resides within.
-  public string displayName; // Base name for room.
-  public string exteriorName; //Linked exterior, if any
-  
-  // Exterior
-  public bool entrance; // True if this contains a door to an interior.
-  
+  /* Cloning constructor */
   public Cell(Cell c){
     x = c.x;
     y = c.y;
-    interior = c.interior;
-    items = c.items;
-    npcs = c.npcs;
+    id = c.id;
+    items = new List<Data>(c.items);
+    npcs = new List<Data>(c.npcs);
+    doors = new List<DoorRecord>(c.doors);
     heX = c.heX;
     heY = c.heY;
     heZ = c.heZ;
-    building = c.building;
-    displayName = c.displayName;
-    exteriorName = c.exteriorName;
+    name = c.name;
+    interior = c.interior;
   }
   
   public Cell(){
     items = new List<Data>();
     npcs = new List<Data>();
+    doors = new List<DoorRecord>();
+  }
+  
+  /* Returns the door matching this id, or null. */
+  public DoorRecord GetDoor(int doorID){
+    DoorRecord ret = null;
+    foreach(DoorRecord dr in doors){
+      if(dr.id == doorID){
+        ret = dr;
+        break;
+      }
+    }
+    return ret;
   }
   
   public string ToString(){
-    string ret = "";
-    ret += displayName;
-    ret += "(" + x + "," + y + "),";
-    ret += exteriorName;
+    string ret = "[";
+    ret += name;
+    ret += "(" + x + "," + y + ")," + id;
     return ret;
   }
   
