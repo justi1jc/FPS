@@ -30,10 +30,12 @@ public class Menu{
   public int sxMax, syMax, sxMin, syMin; // Secondary focus boundaries.
   public Vector2 scrollPosition = Vector2.zero;  // Primary scroll position
   public Vector3 scrollPositionB = Vector2.zero; // Secondary scroll position
-  
+  protected bool ready = true;
+  public Texture progress;
   
   public Menu(MenuManager manager){
     this.manager = manager;
+    progress = Resources.Load("Textures/progress") as Texture;
   }
   
   /* Queue a notification. */
@@ -65,6 +67,26 @@ public class Menu{
     return 0;
   }
   
+  /* Convenience method to render progress bar.*/
+  public void ProgressBar(
+    float current,
+    float max,
+    float x,
+    float y,
+    Color color,
+    string label
+  ){
+    float w = Width()/3;
+    float h = Height()/20;
+    float scale = current/max;
+    GUI.color = color;
+    GUI.DrawTexture(new Rect(x, y, scale*w, h), progress);
+    Box("", (int)x, (int)y, (int)w, (int)h);
+    GUI.color = Color.white;
+    GUI.TextField(new Rect(x+(w/2), y, w, h), label, 100, "Label");
+  }
+  
+  
   /* Convenience method to render box. */
   public void Box(string text, int posx, int posy, int scalex, int scaley){
     GUI.color = Color.green;
@@ -75,6 +97,18 @@ public class Menu{
   public void Box(string text, int posx, int posy, int scalex, int scaley, Color color){
     GUI.color = color;
     GUI.Box(new Rect(posx, posy, scalex, scaley), text);
+  }
+  
+  /* Overloaded convenience method to render box with a texture. */
+  public void Box(
+    Texture image,
+    int posx,
+    int posy,
+    int scalex,
+    int scaley
+  ){
+    GUI.color = new Color(1f, 1f, 1f, 1f);
+    GUI.Box(new Rect(posx, posy, scalex, scaley), image);
   }
   
   /* Convenience method to render button and return if it's been clicked. */
@@ -134,6 +168,8 @@ public class Menu{
   
   /* Handles directional input and defers other inputs to Input() */
   public void Press(int button){
+    if(!ready){ return; }
+    Delay();
     switch(button){
       case UP:
         sy--;
@@ -163,6 +199,16 @@ public class Menu{
     Box("X", x-h, y-h, s, s);
   }
   
+  private void Delay(){
+    manager.StartCoroutine(DelayRoutine());
+  }
+  
+  private IEnumerator DelayRoutine(){
+    ready = false;
+    yield return new WaitForSeconds(0.2f);
+    ready = true;
+  }
+  
   /* Plays sound through manager. */
   public void Sound(int i){
     if(manager != null){ manager.Sound(i); }
@@ -173,7 +219,7 @@ public class Menu{
   
   /* Convenience method for default exit conditions. */
   public void DefaultExit(int button){
-    if(button == B || button == Y){
+    if(button == B || button == Y || button == START){
       manager.Change("HUD");
       manager.actor.SetMenuOpen(false);
     }

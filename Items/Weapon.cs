@@ -8,16 +8,20 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Weapon : Item{
-  public int damage;     // Damage this weapon does.
-  public float cooldown; // Time between uses.
-  public bool chargeable; // Weather or not this weapon can be charged.
-  public int charge;     // Current charge of weapon
-  public int chargeMax;  // Max charge a weapon can have before swinging.
-  public int effectiveDamage;     // Damage as the result of charging.
-  public bool executeOnCharge; // If true, weapon will trigger upon full charge.
-  
+public class Weapon : Item{  
   public override string GetInfo(){
     return displayName + " " + damage + " dmg"; 
+  }
+  
+  protected void AddWeaponData(Data dat){
+    dat.ints.Add(damage);
+  }
+  
+  /* Returns the damage of a weapon's data, or 0 upon failure. */
+  public static int Damage(Data dat){
+    if(dat == null || dat.ints.Count < 2){
+      return dat.ints[1];
+    }
+    return 0;
   }
 }

@@ -38,9 +38,9 @@ public class MenuManager: MonoBehaviour{
   /* Called once per frame. */
   void OnGUI(){
     if(active != null){
-      active.RenderCursor();
       active.RenderNotifications();
       active.Render();
+      active.RenderCursor();
     }
   }
   

@@ -36,8 +36,8 @@ public class Floater : Decor{
     }
   }
   
-  public override void ReceiveDamage(int damage, GameObject weapon){
-    health -= damage;
+  public override void ReceiveDamage(Damage dam){
+    health -= dam.health;
     if(health <= 0){
       toggleAble = false;
       toggled = false;

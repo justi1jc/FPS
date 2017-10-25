@@ -23,13 +23,15 @@ public class Ranged : Weapon{
   public bool hitScan = false; // True if this weapon doesn't use a projectile.
   Transform muzzlePoint; // Source of projectile
   public float recoil; // Muzzle climb of the weapon when fired.
-  public bool meleeActive = false;
+  private bool autoFireActive = false;
+  private int meleeDamage;
   
   public void Start(){
     InitMuzzlePoint();
     ready = true;
   }
-
+  
+  /* Locates child muzzlepoint gameObject, if one exists. */
   void InitMuzzlePoint(){
     foreach(Transform t in transform){
       if(t.gameObject.name == "MuzzlePoint"){ 
@@ -38,15 +40,17 @@ public class Ranged : Weapon{
       }
     }
   }
-
+  
   public override void Use(int action){
-    if(action == 0 && ammo < 1){ Sound(2); }
-    if(action == 0 || (fullAuto && action == 3)){ Fire(); }
-    else if(action == 1){ ToggleAim(); }
-    else if(action == 2 && ammo < maxAmmo){
-      if(ready){ StartCoroutine(Reload()); }
+    if(action == A_DOWN && ammo < 1){ Sound(2); }
+    if(action == A_DOWN && !fullAuto){ Fire(); }
+    else if(action == A_DOWN){ StartCoroutine(AutoFireRoutine()); }
+    if(action == A_UP && fullAuto){ autoFireActive = false; }
+    else if(action == B_DOWN){ ToggleAim(); }
+    else if(action == C_DOWN && ammo < maxAmmo && ready){
+      StartCoroutine(Reload());
     }
-    else if(action == 5 && ready){
+    else if(action == D_DOWN && ready){
       StartCoroutine(Melee());
     }
   }
@@ -55,20 +59,26 @@ public class Ranged : Weapon{
     return displayName + " " + ammo + "/" + maxAmmo;
   }
 
-  /* Fires ranged weapon. */
+  /* Fires this ranged weapon, consuming ammo. */
   public virtual void Fire(){
     if(ammo < 1 || !ready){ return; }
+    Vector3 off = holder != null ? holder.stats.AccuracyPenalty() : new Vector3();
     if(hitScan){ FireHitScan(); }
-    else{ FireProjectile(); }
+    else{ FireProjectile(0f, off.x, off.y, off.z); }
     Sound(0);
     ammo--;
     if(holder != null){ holder.Recoil(recoil); }
   }
 
   /* Creates and propels a projectile */
-  public void FireProjectile(float spread = 0f){
+  public void FireProjectile(
+    float spread = 0f,
+    float offX = 0.0f,
+    float offY = 0.0f,
+    float offZ = 0.0f
+  ){
     StartCoroutine(CoolDown(cooldown));
-    Vector3 relPos = transform.forward;
+    Vector3 relPos = transform.forward + new Vector3(offX, offY, offZ);
     Vector3 spawnPos = muzzlePoint != null ? muzzlePoint.position : transform.position;
     Quaternion projRot = Quaternion.LookRotation(relPos);
     GameObject pref = (GameObject)Resources.Load(
@@ -92,22 +102,6 @@ public class Ranged : Weapon{
       p.damageActive = true;
       p.damage = damage;
       p.Despawn();
-      if(chargeable){
-        p.damage = effectiveDamage;
-        effectiveDamage = 0;
-        charge = 0;
-        Light light = item.gameObject.GetComponent<Light>();
-        if(light){
-          if(p.damage < 0){
-            light.intensity = -(float)p.damage/10f;
-            light.range = -p.damage;
-          }
-          else{
-            light.intensity = ((float)p.damage)/10f;
-            light.range = p.damage;
-          }
-        }
-      }
     }
     float x = Random.Range(-spread, spread);
     float y = Random.Range(-spread, spread);
@@ -130,7 +124,7 @@ public class Ranged : Weapon{
   /* Applies damage if the target has a HitBox and force if it has a rigidBody */
   void Impact(GameObject target){
     HitBox hb = target.GetComponent<HitBox>();
-    if(hb != null){ hb.ReceiveDamage(damage, gameObject); }
+    if(hb != null){ hb.ReceiveDamage(new Damage(damage, gameObject)); }
     Rigidbody rb = target.GetComponent<Rigidbody>();
     if(rb != null){ rb.AddForce(impactForce * transform.forward); }
     print("Hit " + target.name);
@@ -138,6 +132,11 @@ public class Ranged : Weapon{
   
   /* Drop item from actor's hand, unzooming. */
   public override void Drop(){
+    damageActive = false;
+    if(holder != null){
+      holder.SetAnimBool("reload", false);
+      holder.SetAnimBool("rangedMelee", false);
+    }
     held = false;
     if(holder != null && holder.cam != null){
       holder.cam.fieldOfView = 60;
@@ -168,51 +167,39 @@ public class Ranged : Weapon{
   
   public IEnumerator Melee(){
     ready = false;
-    if(holder != null){ holder.SetAnimBool("rangedMelee", true); }
+    if(holder != null){
+      holder.SetAnimBool("rangedMelee", true);
+      meleeDamage = holder.stats.DrainCondition(StatHandler.STAMINA, 25);
+      meleeDamage += holder.stats.GetStat(StatHandler.STRENGTH);
+    }
+    else{ meleeDamage = 25; }
+    
     yield return new WaitForSeconds(0.5f);
-    meleeActive = true;
+    damageActive = true;
     yield return new WaitForSeconds(0.5f);
-    meleeActive = false;
+    damageActive = false;
     if(holder != null){ holder.SetAnimBool("rangedMelee", false); }
     ready = true;
   }
   
-  void OnTriggerEnter(Collider col){ Strike(col); }
-  void OnTriggerStay(Collider col){ Strike(col); }
+  void OnTriggerEnter(Collider col){ Strike(col, meleeDamage); }
+  void OnTriggerStay(Collider col){ Strike(col, meleeDamage); }
+
   
-  /* Exert force and damage onto target. Damage and knockback are hardcoded. */
-  void Strike(Collider col){
-    if(col.gameObject == null){ MonoBehaviour.print("Gameobject missing"); return; }
-    if(meleeActive){
-      float knockBack = 100f;
-      int dmg = 35;
-      if(holder != null){
-        if(holder.GetRoot(col.gameObject.transform) == holder.transform.transform){
-          return;
-        }
-      }
-      HitBox hb = col.gameObject.GetComponent<HitBox>();
-      if(hb){
-        StartCoroutine(CoolDown(cooldown));
-        hb.ReceiveDamage(dmg, gameObject);
-        meleeActive = false;
-        if(hb.body != null){
-          Rigidbody hbrb = hb.body.gameObject.GetComponent<Rigidbody>();
-          Vector3 forward = transform.position - hb.body.transform.position;
-          forward = new Vector3(forward.x, 0f, forward.y);
-          if(hbrb){ hbrb.AddForce(forward * knockBack); }
-        }
-      }
-      Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
-      if(rb){ 
-        rb.AddForce(transform.forward * knockBack); 
-        Sound(3);
-      }
-      Item item = col.gameObject.GetComponent<Item>();
-      if(item != null && item.holder!= null && !item.ability){
-        item.holder.arms.Drop(item);
-      }
-    }
+  /* Returns the current ammo of an item's data. */
+  public static int Ammo(Data dat){
+    if(dat == null || dat.ints.Count < 2){ return 0; }
+    return dat.ints[2];
+  }
+  
+  /* Returns the display name of the ammo this ranged weapon uses. */
+  public static string AmmoName(Data dat){
+    if(dat == null || dat.strings.Count < 1){ return ""; }
+    return dat.strings[0];
+  }
+  
+  public static void MaxAmmo(ref Data dat){
+    dat.ints[2] = dat.ints[3];
   }
   
   /* Adds ammo to weapon externally */
@@ -226,10 +213,23 @@ public class Ranged : Weapon{
   public void ToggleAim(){
     holder.ToggleAim();
   }
+  
+  /* Fires automatically until ammo runs out or autoFireActive is set to false. 
+  */
+  private IEnumerator AutoFireRoutine(){
+    autoFireActive = true;
+    while(autoFireActive){
+      Fire();
+      yield return new WaitForSeconds(cooldown);
+      if(ammo < 1){ autoFireActive = false; }
+    }
+  }
 
   public override Data GetData(){
     Data dat = GetBaseData();
+    AddWeaponData(dat);
     dat.ints.Add(ammo);
+    dat.ints.Add(maxAmmo);
     dat.strings.Add(ammunition);
     dat.itemType = Item.RANGED;
     return dat;
@@ -237,7 +237,7 @@ public class Ranged : Weapon{
 
   public override void LoadData(Data dat){
     LoadBaseData(dat);
-    ammo = dat.ints[1];
+    ammo = dat.ints[2];
   }
   
 }

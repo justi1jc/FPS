@@ -22,8 +22,28 @@ public class Arena : MonoBehaviour{
   bool p1red, p2red; // True if respective player is on red team.
   string kit; // Default kit for players.
   MenuManager menu;
-
+  int gameMode; // Active gamemode selected from lobby.
+  
+  
+  // GameMode  constants
+  public const int NONE = -1;
+  public const int DEATHMATCH = 0;
+  public const int TEAMDEATHMATCH = 1;
+  public const int ELIMINATION = 2;
+  public const int TEAMELIMINATION = 3;
+  
   public void Start(){
+    if(Session.Active()){ 
+      Session.session.arena = this;
+      Session.session.gameMode = Session.ARENA;
+    }
+    StartCoroutine(StartGame());
+  }
+  
+  /* This co-routine exists to work around an animation bug caused 
+     by Initializing() while loading the scene without a delay. */
+  public IEnumerator StartGame(){
+    yield return new WaitForSeconds(0.05f);
     Initialize();
   }
 
@@ -92,15 +112,14 @@ public class Arena : MonoBehaviour{
 
   /* Displays respawn timer and respawns the player at its completion. */
   IEnumerator RespawnPlayer(Actor player){
-    if(player.killerId != -1){
-      if(teams && factions[player.killerId] == player.stats.faction){ 
-        scores[player.killerId]--;
+    List<Item> items = player.DiscardAllItems();
+    if(player.droppedLoot != null){ items.AddRange(player.droppedLoot); }
+    foreach(Item item in items){
+      if(item != null && item.gameObject != null){
+        Despawner d = item.gameObject.AddComponent(typeof(Despawner)) as Despawner;
+        d.Despawn(60f);
       }
-      else if( teams){ scores[player.killerId]++; }
-      scores[player.killerId]++;
     }
-    player.DiscardAllItems();
-    int respawnTimer = 5;
     HUDMenu playerHUD = null;
     if(player.playerNumber > 0 && player.playerNumber < 5){
       MenuManager playerMenu = player.menu;
@@ -108,14 +127,11 @@ public class Arena : MonoBehaviour{
       if(playerMenu){ playerHUD = (HUDMenu)playerMenu.active; }
     }
     if(respawns){
-      for(int i = respawnTimer; i > 0; i--){
-        if(playerHUD != null){ playerHUD.message = "Respawn in \n" + i; }  
-        yield return new WaitForSeconds(1f);
-      }
+      yield return RespawnTimer(player, playerHUD);
       Data dat = player.GetData();
       int id = player.id;
       Destroy(player.gameObject);
-      SpawnPlayer(dat.prefabName, id);
+      if(time > 0){ SpawnPlayer(dat.prefabName, id); }
     }
     else{ 
       if(playerHUD != null){ playerHUD.message = "You are dead."; }
@@ -127,7 +143,48 @@ public class Arena : MonoBehaviour{
     yield return new WaitForSeconds(0f);
   }
   
+  /* Handles a SessionEvent according to the game mode. */
+  public void HandleEvent(SessionEvent evt){
+    switch(evt.code){
+      case SessionEvent.DEATH:
+        if(
+          gameMode == DEATHMATCH || gameMode == TEAMDEATHMATCH ||
+          gameMode == ELIMINATION || gameMode == TEAMELIMINATION
+        ){ RecordKill(evt); }
+        break;
+    }
+  }
+  
+  
+  /* Records the points for a kill individually or for the team according to
+     the teams setting. Friendly kills subtract points.
+  */
+  private void RecordKill(SessionEvent evt){
+    if(evt.args == null || evt.args.Length < 3){ return; }
+    if(evt.args[0] == null || evt.args[1] == null){ return; }
+    if(evt.args[0].ints.Count < 3 || evt.args[1].ints.Count < 3){ return; }
+    int killerId = evt.args[1].ints[1]; // Killer's id from ActorDeathData
+    int faction = evt.args[0].ints[2]; // Victim's faction from ActorDeathData
+    if(killerId != -1){
+      if(teams && factions[killerId] == faction){ 
+        scores[killerId]--;
+      }
+      else if(teams){ scores[killerId]++; }
+      else{ scores[killerId]++; }
+    }
+  }
+  
+  /* Displays the respawn timer for a dead player. */
+  private IEnumerator RespawnTimer(Actor player, HUDMenu playerHUD){
+    int respawnTimer = 5;
+    for(int i = respawnTimer; i > 0; i--){
+      if(playerHUD != null){ playerHUD.message = "Respawn in \n" + i; }  
+      yield return new WaitForSeconds(1f);
+    }
+  }
+  
   bool OneTeamLeft(){
+    if(!teams){ return false; }
     int reds = 0;
     int blues = 0;
     foreach(Actor player in players){
@@ -191,18 +248,26 @@ public class Arena : MonoBehaviour{
     Actor actor = go.GetComponent<Actor>();
     if(actor != null){
       players.Add(actor);
-      if(kit != ""){ LootTable.Kit(kit, ref actor); }
+      if(kit != "NONE"){
+        Kit k = Session.session.GetKit(kit);
+        if(k != null){ k.ApplyKit(ref actor); }
+      }
       if(id != -1){
         actor.id = id;
         if(teams){
           actor.stats.faction = factions[id];
-          string shirt = (factions[id] == 1) ? "RED" : "BLUE";
-          LootTable.Kit(shirt, ref actor);
+          if(factions[id] == 1){
+            Kit.ApplyToClothes("Equipment/Shirt", ref actor, true, 1f, 0f, 0f, 1f);
+          }
+          else{
+            Kit.ApplyToClothes("Equipment/Shirt", ref actor, true, 0f, 0f, 1f, 1f);
+          }
+          
         }
         else{
-          LootTable.Kit("PANTS", ref actor);
           actor.stats.faction = 1;
         }
+        Kit.ApplyToClothes("Equipment/Pants", ref actor, true, 0f, 0f, 0f, 1f);
       }
     }
   }

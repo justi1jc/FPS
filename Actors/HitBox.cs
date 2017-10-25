@@ -9,19 +9,14 @@ using System.Collections;
 
 public class HitBox : MonoBehaviour {
   public bool foot; // If true, this hitbox will check for landing.
+  public string limb; // Name of associated limb or hardpoint.
   public Actor body;
   public Item item;
-  public float multiplier = 1.0f; // Multiplies damage coming through.
-  public void ReceiveDamage(int damage, GameObject weapon){
-    int finalDamage = (int)((float)damage * multiplier);
-    if(body){
-      
-      body.ReceiveDamage(finalDamage, weapon);
-      return;
-    }
-    if(item){
-      item.ReceiveDamage(finalDamage, weapon);
-      return;
-    }
+  
+  /* Routes damage to connected entities. */
+  public void ReceiveDamage(Damage dam){
+    dam.limb = limb;
+    if(body){ body.ReceiveDamage(dam); }
+    if(item){ item.ReceiveDamage(dam); }
   }
 }

@@ -106,7 +106,7 @@ public class AI{
       if(a && a != actor && ret.IndexOf(a) == -1){
         if(a){
           bool check = a.stats != null 
-            && !a.stats.StatCheck("STEALTH", actor.stats.perception);
+            && !a.stats.StatCheck(StatHandler.STEALTH, actor.stats.perception);
           if(check){ ret.Add(a); }
           else{ MonoBehaviour.print("Check failed"); }
         }

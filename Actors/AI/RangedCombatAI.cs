@@ -18,8 +18,12 @@ public class RangedCombatAI : AI{
   
   public override IEnumerator Begin(){
     yield return new WaitForSeconds(0f);
-    weapon = (Ranged)actor.arms.handItem;
-    if(weapon == null){ weapon = (Ranged)actor.arms.offHandItem; }
+    Item item = actor.arms.Peek(EquipSlot.RIGHT);
+    if(item is Ranged){ weapon = (Ranged)item; }
+    if(weapon == null){
+      manager.Change("HOSTILE");
+      yield break;
+    }
     if(manager.target != null){ combatant = manager.target.GetComponent<Actor>(); }
     if(combatant != null && combatant.Alive()){
       actor.StartCoroutine(FireAt());

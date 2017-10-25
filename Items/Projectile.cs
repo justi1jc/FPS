@@ -10,8 +10,6 @@ using System.Collections.Generic;
 public class Projectile : Item{
   public GameObject weaponOfOrigin;
   public float impactForce;
-  public int damage;
-  public bool damageActive;
   
   void OnTriggerEnter(Collider col){
     if(damageActive && weaponOfOrigin != col.gameObject){ Impact(col); }
@@ -41,12 +39,12 @@ public class Projectile : Item{
     HitBox hb = col.gameObject.GetComponent<HitBox>();
     if(hb){
       if(hb.body == holder){ return; } 
-      hb.ReceiveDamage(damage, weaponOfOrigin);
+      hb.ReceiveDamage(new Damage(damage, weaponOfOrigin));
     }
     Item item = col.gameObject.GetComponent<Item>();
-    bool itemCheck = item && !item.ability;
+    bool itemCheck = item;
     if(itemCheck && weaponOfOrigin != null && item != weaponOfOrigin.GetComponent<Item>() && item.holder != null){
-      item.holder.arms.Drop(item);
+      item.holder.Drop(item);
     }
     Rigidbody rb = col.gameObject.GetComponent<Rigidbody>();
     if(rb){ rb.AddForce(transform.forward * impactForce); }
