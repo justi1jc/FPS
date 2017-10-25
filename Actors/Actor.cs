@@ -540,6 +540,9 @@ public class Actor : MonoBehaviour{
   
   /* Enter dead state, warding experience to the killder. */
   public void Die(GameObject weapon = null){
+    if(Session.Active()){
+      Session.session.ReceiveEvent(SessionEvent.DeathEvent());
+    }
     stats.dead = true;
     Ragdoll(true);
     droppedLoot = arms.AllItems();

@@ -20,24 +20,28 @@ public class Session : MonoBehaviour {
   private readonly object syncLock = new object(); // Mutex lock
   public string sessionName; //Name Used in save file.
   public Data arenaData = null;
+  public int gameMode = -1;
+  
+  // gameMode constants
+  public const int NONE = -1;
+  public const int ARENA = 0;
+  public const int ADVENTURE = 1;
   
   // Arena
   public int playerCount = 1;
-  public int gameMode = -1;
   private List<Kit> kits;
+  public Arena arena;
   
   // Adventure
   public World world;
+  public List<HoloDeck> decks; // active HoloDecks
+  int currentID = 0;
   
   // players
   List<Data> playerData;
   Camera cam1;
   Camera cam2;
-  
-  // World.
-  public List<HoloDeck> decks; // active HoloDecks
-  int currentID = 0;
-  bool runQuests = true;
+
   
   // Main menu UI
   Camera sesCam;
@@ -68,6 +72,11 @@ public class Session : MonoBehaviour {
     UpdateCameras();
   }
   
+  /* Returns true if the session instance exists. */
+  public static bool Active(){
+    return Session.session != null;
+  }
+  
   /* Create a new game.
      Warning: This is hardcoded in a project-specific fashion.
   */
@@ -75,7 +84,6 @@ public class Session : MonoBehaviour {
     if(sesMenu != null){ DestroyMenu(); }
     world = new World();
     world.CreateAdventure();
-    gameMode = 0;
   }
 
   /* Cached access to Kit.GetKits() to reduce file parsing.*/
@@ -96,7 +104,6 @@ public class Session : MonoBehaviour {
   /* Load contents from a specific file. */
   public void LoadGame(string fileName){
     print("method stub");
-    gameMode = 0;
     if(sesMenu != null){ DestroyMenu();}
     if(world != null){ world.Clear(); }
     world = new World();
@@ -270,6 +277,28 @@ public class Session : MonoBehaviour {
     for(int i = 0; i < players.Count; i++){ 
       if(player == null || player == players[i]){ players[i].Notify(message); }
     }
+  }
+  
+  /* Route a SessionEvent to its appropriate destination. */
+  public void ReceiveEvent(SessionEvent evt){
+    if(evt.destination == SessionEvent.SESSION){ HandleEvent(evt); }
+    else if(evt.destination == SessionEvent.ARENA && arena != null){
+      arena.HandleEvent(evt);
+    }
+    else if(evt.destination == SessionEvent.WORLD && world != null){
+      // STUB awaiting World.cs implementation.
+    }
+    else{
+      if(gameMode == ARENA && arena != null){ arena.HandleEvent(evt); }
+      if(gameMode == ADVENTURE && world != null){
+        // STUB awaiting World.cs implementation
+      }
+    }
+  }
+  
+  /* Handle a SessionEvent directed toward the session. */
+  public void HandleEvent(SessionEvent evt){
+    print(evt.message);
   }
   
 }

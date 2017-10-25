@@ -24,6 +24,10 @@ public class Arena : MonoBehaviour{
   MenuManager menu;
 
   public void Start(){
+    if(Session.Active()){ 
+      Session.session.arena = this;
+      Session.session.gameMode = Session.ARENA;
+    }
     StartCoroutine(StartGame());
   }
   
@@ -130,6 +134,12 @@ public class Arena : MonoBehaviour{
     }
     yield return new WaitForSeconds(0f);
   }
+  
+  /* Handles a SessionEvent according to the game mode. */
+  public void HandleEvent(SessionEvent evt){
+    print(evt.message);
+  }
+  
   
   /* Records the points for a kill individually or for the team according to
      the teams setting. Friendly kills subtract points.
