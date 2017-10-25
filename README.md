@@ -51,24 +51,6 @@ ______               _                                  _
 
 ### Arena Features
 * Specify Arena maps in config file Resources/Maps.txt
-* Offer game-modes to make arena config faster. 
-  * Deathmatch mode-
-    -No teams
-    -Respawns
-    -Fixed starter kits.
-  * Team Deathmatch mode-
-    -Teams
-    -Respawns
-    -Fixed starter kits.
-  * Elimination mode-
-    -No teams
-    -No respawns
-    -Fixed starter kits.
-  * Team Elimination mode-
-    -Teams
-    -No respawns
-    -Fixed starter kits.
-  
 * Provide callback argument for AI state transitions.
 * Store and access user-defined kits.
 * Weapon spawners for modes that don't use kits.
@@ -82,8 +64,8 @@ http://answers.unity3d.com/questions/354044/scrollview-notscrolling.html
 http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.html
 * Budget-based kit customization menu.
 * Create some additional convenience methods for Menu
-  -Slider with title.
-  -Selection with next/prev buttons.
+    -Slider with title.
+    -Selection with next/prev buttons.
 
 ###  Items
 * Rock- (Ragdoll or stagger upon headshot)
@@ -91,6 +73,7 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Bow- (Special animations for holding/firing, reusable ammunition)
 * Armor- Damage reduction and damage threshold.
 * Shield- Large damage threshold.
+* Wand- Maps keys to different spells.
 
 
 ###  Magic abilities
@@ -113,8 +96,23 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Force push (With some damage and ragdolling)
 
 ## Current Objective
-* CasterWeapon.cs that recharges by consuming mana.
-
+* Offer game-modes to make arena config faster. 
+  * Deathmatch mode-
+    -No teams
+    -Respawns
+    -Fixed starter kits.
+  * Team Deathmatch mode-
+    -Teams
+    -Respawns
+    -Fixed starter kits.
+  * Elimination mode-
+    -No teams
+    -No respawns
+    -Fixed starter kits.
+  * Team Elimination mode-
+    -Teams
+    -No respawns
+    -Fixed starter kits.
 ********************************************************************************
   ___           _     _ _            _                  
  / _ \         | |   (_) |          | |                 

@@ -23,6 +23,8 @@ public class ArenaLobbyMenu : Menu{
   private bool p2red = false; // True if player2 is on the red team.
   private List<Kit> kits;
   private Texture thumbnail;
+  private int gameMode = Arena.DEATHMATCH;
+  
   
   public ArenaLobbyMenu(MenuManager manager) : base(manager){
     duration = 10;
@@ -37,12 +39,12 @@ public class ArenaLobbyMenu : Menu{
     Box("Arena Lobby", 2*iw, 0, iw, ih);
     string str = "Players: " + Session.session.playerCount;
     if(Button(str, 0, 2*ih, iw, ih)){ TogglePlayers(); Sound(0); }
+    str = "GameMode:" + Arena.GameModeName(gameMode);
+    if(Button(str, 0, 3*ih, iw, ih)){ NextGameMode(); }
     str = "Map:" + map;
-    if(Button(str, 0, 3*ih, iw, ih)){ NextMap(); Sound(0);}
+    if(Button(str, 0, 4*ih, iw, ih)){ NextMap(); Sound(0);}
     str = "Duration:" + duration;
-    if(Button(str, 0, 4*ih, iw, ih)){ NextDuration(); }
-    str = "Respawns:" + (respawns ? "Yes" : "No");
-    if(Button(str, 0, 5*ih, iw, ih)){ respawns = !respawns; }
+    if(Button(str, 0, 5*ih, iw, ih)){ NextDuration(); }
     if(Button("Start", Width()-iw, Height()-ih, iw, ih)){ StartArena(); }
     if(Button("Back", 0, Height()-ih, iw, ih)){ 
       manager.Change("MAIN");
@@ -104,6 +106,26 @@ public class ArenaLobbyMenu : Menu{
     UpdateMap();
   }
   
+  /* Cycles through gamemodes. */
+  private void NextGameMode(){
+    gameMode++;
+    if(gameMode > Arena.TEAMELIMINATION){ gameMode = Arena.DEATHMATCH; }
+    UpdateGameMode();
+  }
+  
+  /* Configures games according to gamemode. */
+  private void UpdateGameMode(){
+    if(gameMode == Arena.DEATHMATCH || gameMode == Arena.TEAMDEATHMATCH){
+      respawns = true;
+      teams = false;
+      if(gameMode == Arena.TEAMDEATHMATCH){ teams = true; }
+    }
+    else if(gameMode == Arena.ELIMINATION || gameMode == Arena.TEAMELIMINATION){
+      respawns = false;
+      teams = false;
+      if(gameMode == Arena.TEAMELIMINATION){ teams = true; }
+    }
+  }
 
   /* Changes map text based on map index. */
   private void UpdateMap(){
@@ -120,6 +142,7 @@ public class ArenaLobbyMenu : Menu{
     Data dat = new Data();
     dat.ints.Add(duration);
     dat.ints.Add(bots);
+    dat.ints.Add(gameMode);
     dat.bools.Add(respawns);
     dat.strings.Add(kit);
     dat.bools.Add(teams);

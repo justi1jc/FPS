@@ -23,7 +23,7 @@ public class Arena : MonoBehaviour{
   string kit; // Default kit for players.
   MenuManager menu;
   int gameMode; // Active gamemode selected from lobby.
-  
+  public AudioClip[] gameModeClips; // Audio for gamemodes
   
   // GameMode  constants
   public const int NONE = -1;
@@ -56,6 +56,7 @@ public class Arena : MonoBehaviour{
     menu.arena = this;
     time = startingTime = dat != null ? 60 * dat.ints[0] : 600;
     bots = dat != null ? dat.ints[1] : 0;
+    gameMode = dat != null ? dat.ints[2] : NONE;
     if(dat != null){
       respawns = dat.bools[0];
       teams = dat.bools[1];
@@ -66,6 +67,7 @@ public class Arena : MonoBehaviour{
     }
     PopulateSpawnPoints();
     InitPlayers();
+    GameModeAnnouncement();
     StartCoroutine(UpdateRoutine());
   }
 
@@ -76,6 +78,29 @@ public class Arena : MonoBehaviour{
       yield return new WaitForSeconds(1f);
     }
   }
+  
+  /* Plays the AudioClip for this game mode. */
+  private void GameModeAnnouncement(){
+    if(gameModeClips == null || gameModeClips.Length < gameMode || gameMode == NONE){ 
+      print("Invalid clip.");
+      return; 
+    }
+    float vol = PlayerPrefs.HasKey("masterVolume") ? PlayerPrefs.GetFloat("masterVolume") : 1f;
+    AudioClip clip = gameModeClips[gameMode];
+    Vector3 pos = FindPlayerOne();
+    AudioSource.PlayClipAtPoint(clip, pos, vol);
+  }
+  
+  /* Returns the position of player1 */
+  private Vector3 FindPlayerOne(){
+    foreach(Actor a in players){
+      if(a != null && a.playerNumber == 1){
+        return a.gameObject.transform.position;
+      }
+    }
+    return new Vector3();
+  }
+  
 
   /* Updates hud with current time and objectives */
   void UpdateHUD(){
@@ -271,7 +296,19 @@ public class Arena : MonoBehaviour{
       }
     }
   }
-
+  
+  /* Returns the name of a gamemode based on its constant */
+  public static string GameModeName(int mode){
+    switch(mode){
+      case NONE: return "None"; break;
+      case DEATHMATCH: return "Deathmatch"; break;
+      case TEAMDEATHMATCH: return "Team Deathmatch"; break;
+      case ELIMINATION: return "Elimination"; break;
+      case TEAMELIMINATION: return "Team Elimination"; break;
+    }
+    return "";
+  }
+  
   /* Returns remaining time in minutes and seconds. */
   string Time(){
     int minutes = time/60;
