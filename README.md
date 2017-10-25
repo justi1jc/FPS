@@ -47,7 +47,6 @@ ______               _                                  _
 
 ## Backlog
 ### Base FPS Features
-* CasterWeapon.cs that recharges by consuming mana.
 * Transition between ragdoll and up-right states for proper ragdolling.
 
 ### Arena Features
@@ -114,6 +113,7 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Force push (With some damage and ragdolling)
 
 ## Current Objective
+* CasterWeapon.cs that recharges by consuming mana.
 
 ********************************************************************************
   ___           _     _ _            _                  
