@@ -65,7 +65,6 @@ public class Arena : MonoBehaviour{
       p2red = dat.bools[3];
       spawnWeapons = dat.bools[4];
       kit = dat.strings[0];
-      
     }
     InitPlayers();
     GameModeAnnouncement();
@@ -169,9 +168,9 @@ public class Arena : MonoBehaviour{
     yield return new WaitForSeconds(0f);
   }
   
-  public Transform GetSpawnTransform(int faction = StatHandler.NEUTRAL){
+  public Transform GetSpawnTransform(int faction = StatHandler.FERAL){
     switch(faction){
-      case StatHandler.NEUTRAL: 
+      case StatHandler.FERAL: 
         return soloSpawns[Random.Range(0, soloSpawns.Length)]; 
         break;
       case StatHandler.REDTEAM: 
@@ -243,7 +242,7 @@ public class Arena : MonoBehaviour{
     factions = new List<int>();
     players = new List<Actor>();
     for(int i = 0; i < bots; i++){
-      int faction = StatHandler.NEUTRAL;
+      int faction = StatHandler.FERAL;
       if(teams){
         faction = (i<(bots/2)) ? StatHandler.REDTEAM : StatHandler.BLUETEAM; 
         factions.Add(faction);
@@ -309,7 +308,7 @@ public class Arena : MonoBehaviour{
           
         }
         else{
-          actor.stats.faction = StatHandler.NEUTRAL;
+          actor.stats.faction = StatHandler.FERAL;
         }
         Kit.ApplyToClothes("Equipment/Pants", ref actor, true, 0f, 0f, 0f, 1f);
       }

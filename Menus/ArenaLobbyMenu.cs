@@ -31,6 +31,7 @@ public class ArenaLobbyMenu : Menu{
     mapIndex = 0;
     kits = Session.session.GetKits();
     maps = MapsByMode(gameMode);
+    UpdateGameMode();
   }
 
   public override void Render(){
@@ -157,8 +158,8 @@ public class ArenaLobbyMenu : Menu{
     dat.ints.Add(duration);
     dat.ints.Add(bots);
     dat.ints.Add(gameMode);
-    dat.bools.Add(respawns);
     dat.strings.Add(kit);
+    dat.bools.Add(respawns);
     dat.bools.Add(teams);
     dat.bools.Add(p1red);
     dat.bools.Add(p2red);

@@ -98,7 +98,6 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Provide callback argument for AI state transitions. 
 
 ## Current Objectives
-* Teams should spawn using their respective spawnpoints.
 * Weapon spawners should spawn weapons if their associated arena is set to spawn
 weapons.
 
