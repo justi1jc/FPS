@@ -24,7 +24,7 @@ using UnityEngine;
 
 public class ArenaMap{
   const string mapPath = "/Resources/maps.txt"; // The location of the map file.
-  const string texturePath = "/Textures/Thumbnails/"; // Location of textures.
+  const string texturePath = "Textures/Thumbnails/"; // Location of textures.
   public string name, description;
   public Texture thumbnail; // Preview image for map.
   public int[] gameModes; // Gamemodescompatible with this map.

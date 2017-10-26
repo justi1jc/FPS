@@ -12,7 +12,6 @@ using UnityEngine.SceneManagement;
 
 public class ArenaLobbyMenu : Menu{
   private int duration; // Duration in minutes.
-  private string map;   // map currently selected.
   private int mapIndex; // Index of currently selected map.
   private bool respawns = true; // True if players will respawn.
   private int bots = 15; // Number of bots;
@@ -22,7 +21,6 @@ public class ArenaLobbyMenu : Menu{
   private bool p1red = false; // True if player1 is on the red team.
   private bool p2red = false; // True if player2 is on the red team.
   private List<Kit> kits;
-  private Texture thumbnail;
   private int gameMode = Arena.DEATHMATCH;
   private List<ArenaMap> maps;
   
@@ -30,11 +28,8 @@ public class ArenaLobbyMenu : Menu{
   public ArenaLobbyMenu(MenuManager manager) : base(manager){
     duration = 10;
     mapIndex = 0;
-    UpdateMap();
     kits = Session.session.GetKits();
     maps = ArenaMap.GetMaps();
-    foreach(ArenaMap map in maps){ MonoBehaviour.print(map.ToString()); }
-    
   }
 
   public override void Render(){
@@ -46,10 +41,15 @@ public class ArenaLobbyMenu : Menu{
     if(Button(str, 0, 2*ih, iw, ih)){ TogglePlayers(); Sound(0); }
     str = "GameMode:" + Arena.GameModeName(gameMode);
     if(Button(str, 0, 3*ih, iw, ih)){ NextGameMode(); }
-    str = "Map:" + map;
-    if(Button(str, 0, 4*ih, iw, ih)){ NextMap(); Sound(0);}
+    RenderMap(iw, ih);
     str = "Duration:" + duration;
-    if(Button(str, 0, 5*ih, iw, ih)){ NextDuration(); }
+    Box(str, 0, 5*ih, iw, ih/2);
+    x = 0;
+    y = 5*ih + ih/2;
+    w = iw;
+    h = ih/2;
+    duration = (int)GUI.HorizontalSlider(new Rect(x, y, w, h), duration, 1, 60);
+    
     if(Button("Start", Width()-iw, Height()-ih, iw, ih)){ StartArena(); }
     if(Button("Back", 0, Height()-ih, iw, ih)){ 
       manager.Change("MAIN");
@@ -66,13 +66,6 @@ public class ArenaLobbyMenu : Menu{
     
     str = "Kit: " + kit;
     if(Button(str, 0, 7*ih, iw, ih)){ NextKit(); }
-    
-    str = "Teams: " + (teams ? "Yes" : "No");
-    if(Button(str, 0, 8*ih, iw, ih)){ teams = !teams; } 
-    
-    if(thumbnail != null){ Box(thumbnail, iw, 2*ih, 4*iw, 7*ih); }
-    else{ MonoBehaviour.print( map + " has null thumbnail"); }
-    
     
     int players = Session.session.playerCount;
     if(players > 0){
@@ -94,25 +87,31 @@ public class ArenaLobbyMenu : Menu{
     
   }
   
+  /* Renders the selected map's buttons, boxes, and thumbnail. */
+  public void RenderMap(int iw, int ih){
+    if(mapIndex < 0 || mapIndex >= maps.Count || maps[mapIndex] == null){
+      return;
+    }
+    ArenaMap map = maps[mapIndex];
+    string str = "Map:" + map.name;
+    if(Button(str, 0, 4*ih, iw, ih)){ NextMap(); Sound(0);}
+    if(map.thumbnail != null){ Box(map.thumbnail, iw, 2*ih, 4*iw, 7*ih); }
+    else{ MonoBehaviour.print( map.name + " has null thumbnail"); }
+  }
+  
+  /* Cycles through valid maps. */
+  private void NextMap(){
+    mapIndex++;
+    if(mapIndex >= maps.Count){ mapIndex = 0; }
+  }
+  
+  
   /* Cycles through available kits. */
   private void NextKit(){
     kitId++;
     if(kitId >= kits.Count){ kitId = 0; }
     if(kits.Count == 0){ kit = "NONE"; }
     else{ kit = kits[kitId].name; }
-  }
-  
-  /* Cycles through valid durations. */
-  private void NextDuration(){
-    duration += 5;
-    if(duration > 20){ duration = 5; }
-  }
-  
-  /* Cycles through valid maps. */
-  private void NextMap(){
-    mapIndex++;
-    if(mapIndex > 1){ mapIndex = 0; }
-    UpdateMap();
   }
   
   /* Cycles through gamemodes. */
@@ -135,15 +134,6 @@ public class ArenaLobbyMenu : Menu{
       if(gameMode == Arena.TEAMELIMINATION){ teams = true; }
     }
   }
-
-  /* Changes map text based on map index. */
-  private void UpdateMap(){
-    switch(mapIndex){
-      case 0: map = "Arena_Empty"; break;
-      case 1: map = "Arena_Urban"; break;
-    }
-    thumbnail = Resources.Load("Textures/Thumbnails/" + map) as Texture;
-  }
   
   /* Set arena options to session and begin arena mode */
   public void StartArena(){
@@ -160,7 +150,7 @@ public class ArenaLobbyMenu : Menu{
     Session.session.arenaData = dat;
     manager.Change("NONE");
     Sound(0);
-    SceneManager.LoadScene(map);
+    SceneManager.LoadScene(maps[mapIndex].name);
   }
   
   void TogglePlayers(){
