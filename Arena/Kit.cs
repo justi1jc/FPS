@@ -17,7 +17,7 @@
     [Legs]
     [Feet]
     INVENTORY
-    [item]
+    *[item]
     /KIT
     
     END
@@ -117,6 +117,7 @@ public class Kit{
   private class KitParser{
     int lineCount;
     
+    /* Public constructor to allow Kit access. */
     public KitParser(){}
     
     /* Parses available kits from the kits.txt file. */
@@ -148,6 +149,7 @@ public class Kit{
       return ret;
     }
     
+    /* Parses a single kit and returns it. */
     private Kit ParseKit(StreamReader sr){
       Kit ret = new Kit();
       string line = sr.ReadLine();

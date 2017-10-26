@@ -24,6 +24,7 @@ public class ArenaLobbyMenu : Menu{
   private List<Kit> kits;
   private Texture thumbnail;
   private int gameMode = Arena.DEATHMATCH;
+  private List<ArenaMap> maps;
   
   
   public ArenaLobbyMenu(MenuManager manager) : base(manager){
@@ -31,11 +32,15 @@ public class ArenaLobbyMenu : Menu{
     mapIndex = 0;
     UpdateMap();
     kits = Session.session.GetKits();
+    maps = ArenaMap.GetMaps();
+    foreach(ArenaMap map in maps){ MonoBehaviour.print(map.ToString()); }
+    
   }
 
   public override void Render(){
     int ih = Height()/10;
     int iw = Width()/5;
+    int x, y, h, w;
     Box("Arena Lobby", 2*iw, 0, iw, ih);
     string str = "Players: " + Session.session.playerCount;
     if(Button(str, 0, 2*ih, iw, ih)){ TogglePlayers(); Sound(0); }
@@ -52,8 +57,12 @@ public class ArenaLobbyMenu : Menu{
     }
     str = "Bots: " + bots;
     Box(str, 0, 6*ih, iw, ih/2);
-    if(Button("-", 0, 6*ih + (ih/2), iw/2, ih/2) && bots > 0){ bots--; }
-    if(Button("+", iw/2, 6*ih + (ih/2), iw/2, ih/2) && bots < 32){ bots++; }
+    x = 0;
+    y = 6*ih + ih/2;
+    w = iw;
+    h = ih/2;
+    
+    bots = (int)GUI.HorizontalSlider(new Rect(x,y,w,h), bots, 0, 128);
     
     str = "Kit: " + kit;
     if(Button(str, 0, 7*ih, iw, ih)){ NextKit(); }

@@ -50,13 +50,11 @@ ______               _                                  _
 * Transition between ragdoll and up-right states for proper ragdolling.
 
 ### Arena Features
-* Specify Arena maps in config file Resources/Maps.txt
-* Provide callback argument for AI state transitions.
 * Store and access user-defined kits.
 * Weapon spawners for modes that don't use kits.
 
+
 ### UI Features
-* Use sliders in the Arena Lobby.
 * Discard items from inventory by right-clicking.
 * Troubleshoot scroll-views using technique shown in
 http://answers.unity3d.com/questions/354044/scrollview-notscrolling.html
@@ -95,24 +93,14 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Stealth/chameleon 
 * Force push (With some damage and ragdolling)
 
-## Current Objective
-* Offer game-modes to make arena config faster. 
-  * Deathmatch mode-
-    -No teams
-    -Respawns
-    -Fixed starter kits.
-  * Team Deathmatch mode-
-    -Teams
-    -Respawns
-    -Fixed starter kits.
-  * Elimination mode-
-    -No teams
-    -No respawns
-    -Fixed starter kits.
-  * Team Elimination mode-
-    -Teams
-    -No respawns
-    -Fixed starter kits.
+### AI
+* Keep AI from attempting to fire through obstructions.
+* Follower AI that protects a leader.
+* Provide callback argument for AI state transitions. 
+
+## Current Objectives
+* Specify Arena maps in config file Resources/Maps.txt with gamemodes
+
 ********************************************************************************
   ___           _     _ _            _                  
  / _ \         | |   (_) |          | |                 
