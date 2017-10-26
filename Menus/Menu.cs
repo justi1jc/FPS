@@ -1,7 +1,6 @@
 /*
     Base class for the menus and HUD found in the game.
 */﻿
-
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;

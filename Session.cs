@@ -86,9 +86,11 @@ public class Session : MonoBehaviour {
     world.CreateAdventure();
   }
 
-  /* Cached access to Kit.GetKits() to reduce file parsing.*/
-  public List<Kit> GetKits(){
-    if(kits == null){ kits = Kit.GetKits(); }
+  /* Cached access to Kit.GetKits() to reduce file parsing.
+     Reload clears the cache when set to true.
+  */
+  public List<Kit> GetKits(bool reload = false){
+    if(kits == null || reload){ kits = Kit.GetKits(); }
     return new List<Kit>(kits);
   }
   

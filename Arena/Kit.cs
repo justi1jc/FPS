@@ -31,6 +31,7 @@ using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class Kit{
   public string name;
   public List<string> arms;
@@ -41,6 +42,23 @@ public class Kit{
     arms = new List<string>();
     clothes = new List<string>();
     inventory = new List<string>();
+  }
+  
+  /* Returns a new Kit that has nulls added to each customizeable slot. */
+  public static Kit NullSlotKit(){
+    Kit kit = new Kit();
+    kit.name = "New Kit";
+    kit.arms.Add(null);
+    kit.arms.Add(null);
+    kit.clothes.Add(null);
+    kit.clothes.Add(null);
+    kit.clothes.Add(null);
+    kit.clothes.Add(null);
+    kit.inventory.Add(null);
+    kit.inventory.Add(null);
+    kit.inventory.Add(null);
+    kit.inventory.Add(null);
+    return kit;
   }
   
   /* Returns all the kits parsed from the */

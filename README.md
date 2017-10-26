@@ -50,8 +50,7 @@ ______               _                                  _
 * Transition between ragdoll and up-right states for proper ragdolling.
 
 ### Arena Features
-* Store and access user-defined kits.
-* Weapon spawners for modes that don't use kits.
+
 
 ### UI Features
 * Discard items from inventory by right-clicking.
@@ -98,8 +97,26 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Provide callback argument for AI state transitions. 
 
 ## Current Objectives
-* Weapon spawners should spawn weapons if their associated arena is set to spawn
-weapons.
+* Store and access user-defined kits.
+
+********************************************************************************
+ _____              __ _       
+/  __ \            / _(_)      
+| /  \/ ___  _ __ | |_ _  __ _ 
+| |    / _ \| '_ \|  _| |/ _` |
+| \__/\ (_) | | | | | | | (_| |
+ \____/\___/|_| |_|_| |_|\__, |
+                          __/ |
+                         |___/ 
+********************************************************************************
+
+## Resources/kits.txt
+Contains default kits used in Arena
+## Resources/maps.txt
+Contains all maps used in Arena
+## Resources/items.txt
+Contains all items that can be used in user-defined kits.
+
 
 ********************************************************************************
   ___           _     _ _            _                  

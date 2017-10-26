@@ -69,6 +69,9 @@ public class ArenaLobbyMenu : Menu{
     str = "Kit: " + kit;
     if(Button(str, 0, 7*ih, iw, ih)){ NextKit(); }
     
+    str = "Customize kits";
+    if(Button(str, 0, 8*ih, iw, ih)){ manager.Change("EDITKITMENU"); }
+    
     int players = Session.session.playerCount;
     if(players > 0){
       str = "Player 1";
