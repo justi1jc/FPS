@@ -14,6 +14,7 @@ public class ArenaLobbyMenu : Menu{
   private int duration; // Duration in minutes.
   private int mapIndex; // Index of currently selected map.
   private bool respawns = true; // True if players will respawn.
+  private bool spawnWeapons = false; // True if weaponSpawners will be active.
   private int bots = 15; // Number of bots;
   private string kit = "NONE";
   private int kitId = 0;
@@ -137,11 +138,13 @@ public class ArenaLobbyMenu : Menu{
   private void UpdateGameMode(){
     if(gameMode == Arena.DEATHMATCH || gameMode == Arena.TEAMDEATHMATCH){
       respawns = true;
+      spawnWeapons = true;
       teams = false;
       if(gameMode == Arena.TEAMDEATHMATCH){ teams = true; }
     }
     else if(gameMode == Arena.ELIMINATION || gameMode == Arena.TEAMELIMINATION){
       respawns = false;
+      spawnWeapons = false;
       teams = false;
       if(gameMode == Arena.TEAMELIMINATION){ teams = true; }
     }
@@ -159,6 +162,7 @@ public class ArenaLobbyMenu : Menu{
     dat.bools.Add(teams);
     dat.bools.Add(p1red);
     dat.bools.Add(p2red);
+    dat.bools.Add(spawnWeapons);
     Session.session.arenaData = dat;
     manager.Change("NONE");
     Sound(0);

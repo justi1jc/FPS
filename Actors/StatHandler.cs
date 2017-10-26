@@ -61,13 +61,13 @@ public class StatHandler{
   // Abilities
   public List<Data> abilities;
 
-  /* Faction id 
-     0 = neutral(only retaliates)
-     1 = feral(attacks anything)
-     2 = team Red(Arena)
-     3 = team Blue(Arena)
-  */
+
   public int faction = 0;
+  // Faction constants
+  public const int NEUTRAL = 0;
+  public const int FERAL = 1;
+  public const int REDTEAM = 2;
+  public const int BLUETEAM = 3;
   
 
   
