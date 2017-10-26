@@ -53,7 +53,6 @@ ______               _                                  _
 * Store and access user-defined kits.
 * Weapon spawners for modes that don't use kits.
 
-
 ### UI Features
 * Discard items from inventory by right-clicking.
 * Troubleshoot scroll-views using technique shown in
@@ -99,7 +98,7 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Provide callback argument for AI state transitions. 
 
 ## Current Objectives
-* Specify Arena maps in config file Resources/Maps.txt with gamemodes
+* Define different spawnpoints.
 
 ********************************************************************************
   ___           _     _ _            _                  

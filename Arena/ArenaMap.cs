@@ -38,6 +38,15 @@ public class ArenaMap{
     return ret;
   }
   
+  /* Returns true if this map supports a given gameMode */
+  public bool CompatibleMode(int gameMode){
+    if(gameModes == null){ return false; }
+    for(int i = 0; i < gameModes.Length; i++){
+      if(gameModes[i] == gameMode){ return true; }
+    }
+    return false;
+  }
+  
   /* Returns maps parsed from MapParser. */
   public static List<ArenaMap> GetMaps(){
     MapParser mp = new MapParser();
@@ -107,7 +116,7 @@ public class ArenaMap{
       List<int> ret = new List<int>();
       for(int i = 0; i < entries.Length; i++){
         int x = -1;
-        Int32.TryParse(entries[0], out x);
+        Int32.TryParse(entries[i], out x);
         if(x != -1){ ret.Add(x); }
       }
       return ret.ToArray();

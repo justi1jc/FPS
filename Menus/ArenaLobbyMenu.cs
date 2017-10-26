@@ -29,7 +29,7 @@ public class ArenaLobbyMenu : Menu{
     duration = 10;
     mapIndex = 0;
     kits = Session.session.GetKits();
-    maps = ArenaMap.GetMaps();
+    maps = MapsByMode(gameMode);
   }
 
   public override void Render(){
@@ -87,6 +87,16 @@ public class ArenaLobbyMenu : Menu{
     
   }
   
+  /* Returns a list of maps compatible with the given gamemode */
+  public List<ArenaMap> MapsByMode(int gameMode){
+    List<ArenaMap> allMaps = ArenaMap.GetMaps();
+    List<ArenaMap> ret = new List<ArenaMap>();
+    foreach(ArenaMap map in allMaps){
+      if(map.CompatibleMode(gameMode)){ ret.Add(map); }
+    }
+    return ret;
+  }
+  
   /* Renders the selected map's buttons, boxes, and thumbnail. */
   public void RenderMap(int iw, int ih){
     if(mapIndex < 0 || mapIndex >= maps.Count || maps[mapIndex] == null){
@@ -119,6 +129,8 @@ public class ArenaLobbyMenu : Menu{
     gameMode++;
     if(gameMode > Arena.TEAMELIMINATION){ gameMode = Arena.DEATHMATCH; }
     UpdateGameMode();
+    maps = MapsByMode(gameMode);
+    mapIndex = 0;
   }
   
   /* Configures games according to gamemode. */
