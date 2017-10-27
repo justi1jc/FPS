@@ -27,6 +27,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,6 +38,7 @@ public class Kit{
   public List<string> arms;
   public List<string> clothes;
   public List<string> inventory;
+  private static readonly object syncLock = new object(); // Mutex lock
   
   public Kit(){
     arms = new List<string>();
@@ -82,6 +84,37 @@ public class Kit{
       actor.Equip(dat);
     }
     else{ MonoBehaviour.print(item + " was null!"); }
+  }
+  
+  
+  /* Saves a kit to its corresponding file. */
+  public static void SaveKit(Kit kit, int slot){
+    if(kit == null){ return; }
+    lock(syncLock){
+      BinaryFormatter bf = new BinaryFormatter();
+      string name = "customkit" + slot;
+      string path = Application.persistentDataPath + "/" + name + ".kit";
+      using(FileStream file = File.Create(path)){
+        bf.Serialize(file, kit);
+        file.Close();
+      } 
+    }
+  }
+  
+  /* Loads a kit from file or return null */
+  public static Kit LoadKit(int slot){
+    lock(syncLock){
+      BinaryFormatter bf = new BinaryFormatter();
+      string name = "customkit" + slot;
+      string path = Application.persistentDataPath + "/" + name + ".kit";
+      if(!File.Exists(path)){ return null; }
+      using(FileStream file = File.Open(path, FileMode.Open)){
+        Kit kit = (Kit)bf.Deserialize(file);
+        file.Close();
+        return kit;
+      }
+    }
+    return null;
   }
   
   /* Applies clothing with optional arguments for a specific color. */

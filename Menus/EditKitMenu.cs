@@ -16,6 +16,7 @@ public class EditKitMenu : Menu{
   private int activeSlot = NONE;
   private Item model; // Visual model of active item
   private float zoom = 2f;
+  private int kitIndex = -1;
   
   // Kit Slot constants.
   const int NONE = 0;
@@ -36,7 +37,9 @@ public class EditKitMenu : Menu{
   private void InitKits(){
     kits = new List<Kit>();
     for(int i = 0; i < 6; i++){
-      kits.Add(Kit.NullSlotKit());
+      Kit k = Kit.LoadKit(i);
+      if(k == null){ k = Kit.NullSlotKit(); }
+      kits.Add(k);
     }
   }
   
@@ -76,7 +79,9 @@ public class EditKitMenu : Menu{
   
   /* selects a particular kit for editing. */
   private void UpdateActiveKit(int kit){
+    Kit.SaveKit(activeKit, kitIndex);
     activeKit = kits[kit];
+    kitIndex = kit;
     editName = false;
   }
   
