@@ -271,6 +271,12 @@ public class Item : MonoBehaviour{
     return ret;
   }
   
+  /* Returns information about this item's uses for comparison purposes.
+     Specifying a row allows for multiple pieces of information to be gathered
+     when populating a table.
+  */
+  public virtual string GetUseInfo(int row = 0){ return ""; }
+  
   /* Returns all the lines of the Resources/items.txt file. */
   private static List<string> ParseItemsFile(){
     List<string> ret = new List<string>();

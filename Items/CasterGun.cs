@@ -50,5 +50,18 @@ public class CasterGun : Ranged{
     }
     yield return new WaitForSeconds(0f);
   }
+  
+  /* Accounts for recharging. */
+  public override string GetUseInfo(int row = 0){
+    string ret = "";
+    switch(row){
+      case 0: ret = "Damage: " + damage; break;
+      case 1: ret = "Capacity: " + maxAmmo; break;
+      case 2: ret = "Rate of fire: " + (60f/cooldown) + "/minute"; break;
+      case 3: ret = "Mane per shot: " + conversionCost; break;
+      case 4: ret = "Charges per minute: " + (60f/conversionDelay); break;
+    }
+    return ret;
+  }
 
 }

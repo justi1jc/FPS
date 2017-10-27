@@ -34,5 +34,21 @@ public class Shotgun : Ranged{
     if(available > 0){ ammo = ammo + available; return; }
   }
   
-  
+  /* Updates damage to use pellets */
+  public override string GetUseInfo(int row = 0){
+    string ret = "";
+    switch(row){
+      case 0: 
+        ret = "Damage: " + damage + "X" + pellets;
+        ret += "(" + (damage * pellets) + ")";
+        break;
+      case 1: ret = "Capacity: " + maxAmmo; break;
+      case 2: ret = "Rate of fire: " + (60f/cooldown) + " /minute"; break;
+      case 4: ret = "Spread: " + spread; break;
+      case 5: 
+        ret = "Full reload time: " + (reloadDelay*maxAmmo) + " seconds";
+        break;
+    }
+    return ret;
+  }
 }

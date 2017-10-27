@@ -208,6 +208,18 @@ public class Ranged : Weapon{
     int available = holder.RequestAmmo(ammunition, (maxAmmo - ammo));
     if(available > 0){ ammo = ammo + available; return; }
   }
+  
+  /* Accounts for damage, capacity, rof, and reload speed */
+  public override string GetUseInfo(int row = 0){
+    string ret = "";
+    switch(row){
+      case 0: ret = "Damage: " + damage; break;
+      case 1: ret = "Capacity: " + maxAmmo; break;
+      case 2: ret = "Rate of fire: " + (60f/cooldown) + "/minute"; break;
+      case 3: ret = "Reload speed: " + reloadDelay + " seconds"; break;
+    }
+    return ret;
+  }
 
   /* Aims weapon or returns it to the hip.*/
   public void ToggleAim(){
