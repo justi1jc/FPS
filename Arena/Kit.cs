@@ -50,16 +50,16 @@ public class Kit{
   public static Kit NullSlotKit(){
     Kit kit = new Kit();
     kit.name = "New Kit";
-    kit.arms.Add(null);
-    kit.arms.Add(null);
-    kit.clothes.Add(null);
-    kit.clothes.Add(null);
-    kit.clothes.Add(null);
-    kit.clothes.Add(null);
-    kit.inventory.Add(null);
-    kit.inventory.Add(null);
-    kit.inventory.Add(null);
-    kit.inventory.Add(null);
+    kit.arms.Add("Empty");
+    kit.arms.Add("Empty");
+    kit.clothes.Add("Empty");
+    kit.clothes.Add("Empty");
+    kit.clothes.Add("Empty");
+    kit.clothes.Add("Empty");
+    kit.inventory.Add("Empty");
+    kit.inventory.Add("Empty");
+    kit.inventory.Add("Empty");
+    kit.inventory.Add("Empty");
     return kit;
   }
   

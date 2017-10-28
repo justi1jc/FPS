@@ -44,8 +44,8 @@ public class Shotgun : Ranged{
         break;
       case 1: ret = "Capacity: " + maxAmmo; break;
       case 2: ret = "Rate of fire: " + (60f/cooldown) + " /minute"; break;
-      case 4: ret = "Spread: " + spread; break;
-      case 5: 
+      case 3: ret = "Spread: " + spread; break;
+      case 4: 
         ret = "Full reload time: " + (reloadDelay*maxAmmo) + " seconds";
         break;
     }

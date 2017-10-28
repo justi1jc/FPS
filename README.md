@@ -50,7 +50,9 @@ ______               _                                  _
 * Transition between ragdoll and up-right states for proper ragdolling.
 
 ### Arena Features
-
+* Perks
+* Conquest mode- Control points and limited respawns.
+* Tactic mode- Squad vs squad mode.
 
 ### UI Features
 * Discard items from inventory by right-clicking.
@@ -58,10 +60,6 @@ ______               _                                  _
 http://answers.unity3d.com/questions/354044/scrollview-notscrolling.html
 * Allow right-click functionality for Menu.Button() using technique shown in
 http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.html
-* Budget-based kit customization menu.
-* Create some additional convenience methods for Menu
-    -Slider with title.
-    -Selection with next/prev buttons.
 
 ###  Items
 * Rock- (Ragdoll or stagger upon headshot)
