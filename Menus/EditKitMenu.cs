@@ -140,7 +140,9 @@ public class EditKitMenu : Menu{
     dat = GetKitItem(LEFT);
     str += dat != null ? dat.displayName : "Empty";
     y = 2*h;
-    if(Button(str, x, y, w, h)){ ChangeActiveSlot(LEFT); }
+    if(activeArms[0] == null || Item.OneHanded(activeArms[0])){
+      if(Button(str, x, y, w, h)){ ChangeActiveSlot(LEFT); }
+    }
     str = "Item 1: ";
     dat = GetKitItem(FIRST);
     str += dat != null ? dat.displayName : "Empty";
@@ -298,6 +300,10 @@ public class EditKitMenu : Menu{
       case RIGHT:
         activeKit.arms[0] = name;
         activeArms[0] = Item.GetItem(name);
+        if(activeArms[0] != null && !Item.OneHanded(activeArms[0])){
+          activeKit.arms[1] = ""; 
+          activeArms[1] = null;
+        }
         break;
       case LEFT: 
         activeKit.arms[1] = name;
