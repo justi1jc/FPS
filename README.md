@@ -48,11 +48,24 @@ ______               _                                  _
 ## Backlog
 ### Base FPS Features
 * Transition between ragdoll and up-right states for proper ragdolling.
-
-### Arena Features
-* Perks
-* Conquest mode- Control points and limited respawns.
 * Tactic mode- Squad vs squad mode.
+* Visual hit indicator.
+* Arena.cs should replace itself with relevant script upon startup.
+
+### DeathMatch gamemode
+* Create DeathMatchArena.cs
+* 
+
+### Tactical gamemode
+* 
+
+### Conquest gamemode
+* Create ConquestArena.cs
+* Control point that changes red, white, or blue according to occupier(s).
+* Players choose control point to spawn/respawn at.
+* Players choose kit to spawn with.
+* Respawns reduce side's reinforcements counter.
+* AI attempt to capture command points.
 
 ### UI Features
 * Discard items from inventory by right-clicking.
@@ -61,7 +74,7 @@ http://answers.unity3d.com/questions/354044/scrollview-notscrolling.html
 * Allow right-click functionality for Menu.Button() using technique shown in
 http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.html
 
-###  Items
+### Items
 * Rock- (Ragdoll or stagger upon headshot)
 * Grenade-
 * Bow- (Special animations for holding/firing, reusable ammunition)
@@ -69,8 +82,13 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Shield- Large damage threshold.
 * Wand- Maps keys to different spells.
 
+### Non-magic abilities
+* Add/Dismiss follower.
+* "Move there" order.
+* "Regroup" order.
+* Quick Draw slot 1/2/3/4- Equips specified slot.
 
-###  Magic abilities
+### Magic abilities
 * Fireball
 * Electric touch(High damage melee.)
 * Light beam(Use unity LineRenderer tool)
@@ -92,10 +110,21 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 ### AI
 * Keep AI from attempting to fire through obstructions.
 * Follower AI that protects a leader.
-* Provide callback argument for AI state transitions. 
+* Formation 
+* Provide callback argument for AI state transitions.
+
+### StatHandler.cs
+* Effects(modifies stat)
+* Route attack directly to StatHandler.cs
+* Perks( Bools that give bonuses when set to true.)
+
+### Misc
+* Give abilities a static "one-shot" method that uses them without an instance. 
+* Make 1-4/D-pad into "quick access" slots that uses an ability's one-shot method.
+* Fix slow movement/responsiveness when framerate dips a bit.
 
 ## Current Objectives
-* Store and access user-defined kits.
+
 
 ********************************************************************************
  _____              __ _       

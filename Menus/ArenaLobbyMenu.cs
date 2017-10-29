@@ -29,9 +29,15 @@ public class ArenaLobbyMenu : Menu{
   public ArenaLobbyMenu(MenuManager manager) : base(manager){
     duration = 10;
     mapIndex = 0;
-    kits = Session.session.GetKits();
+    kits = new List<Kit>();
+    for(int i = 0; i < 6; i++){
+      Kit k = Kit.LoadKit(i);
+      if(k != null){ kits.Add(k); }
+    }
+    kits.AddRange(Session.session.GetKits());
     maps = MapsByMode(gameMode);
     UpdateGameMode();
+    PrevKit();
   }
 
   public override void Render(){
@@ -125,6 +131,14 @@ public class ArenaLobbyMenu : Menu{
   private void NextKit(){
     kitId++;
     if(kitId >= kits.Count){ kitId = 0; }
+    if(kits.Count == 0){ kit = "NONE"; }
+    else{ kit = kits[kitId].name; }
+  }
+  
+  /* Cycles through available kits. */
+  private void PrevKit(){
+    kitId--;
+    if(kitId < 0){ kitId = 0; }
     if(kits.Count == 0){ kit = "NONE"; }
     else{ kit = kits[kitId].name; }
   }

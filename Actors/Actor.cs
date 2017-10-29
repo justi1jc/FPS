@@ -74,7 +74,7 @@ public class Actor : MonoBehaviour{
 
   //Movement
   public bool ragdoll = false;
-  public float speed;
+  const float speed = 0.4f; // Base movement speed.
   public bool walking = false;
   public bool sprinting = false;
   public bool crouched = false;
@@ -244,9 +244,10 @@ public class Actor : MonoBehaviour{
   }
   
   public IEnumerator InputRoutine(){
+    const float inputRate = 0.033f; // Roughly 30 times/second.
     while(Alive()){
       input.Update();
-      yield return new WaitForSeconds(0.01f);
+      yield return new WaitForSeconds(0.033f);
     }
   }
   
