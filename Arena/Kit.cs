@@ -50,16 +50,16 @@ public class Kit{
   public static Kit NullSlotKit(){
     Kit kit = new Kit();
     kit.name = "New Kit";
-    kit.arms.Add("Empty");
-    kit.arms.Add("Empty");
-    kit.clothes.Add("Empty");
-    kit.clothes.Add("Empty");
-    kit.clothes.Add("Empty");
-    kit.clothes.Add("Empty");
-    kit.inventory.Add("Empty");
-    kit.inventory.Add("Empty");
-    kit.inventory.Add("Empty");
-    kit.inventory.Add("Empty");
+    kit.arms.Add("");
+    kit.arms.Add("");
+    kit.clothes.Add("");
+    kit.clothes.Add("");
+    kit.clothes.Add("");
+    kit.clothes.Add("");
+    kit.inventory.Add("");
+    kit.inventory.Add("");
+    kit.inventory.Add("");
+    kit.inventory.Add("");
     return kit;
   }
   
@@ -71,17 +71,32 @@ public class Kit{
   
   /* Applies a given kit's contents to an actor. */
   public void ApplyKit(ref Actor actor){
-    foreach(string item in arms){ ApplyToArms(item, ref actor); }
+    MonoBehaviour.print("Applying kit to " + actor);
+    if(arms.Count > 0){ PrimaryEquip(arms[0], ref actor); }
+    if(arms.Count > 1){ DualEquip(arms[1], ref actor); }
     foreach(string item in clothes){ ApplyToClothes(item, ref actor); }
     foreach(string item in inventory){ ApplyToInventory(item, ref actor); }
   }
   
   /* Equips an item to an actor's arms, giving it max ammo if relevant. */
-  public static void ApplyToArms(string item, ref Actor actor){
+  public static void PrimaryEquip(string item, ref Actor actor){
     Data dat = Item.GetItem(item);
     if(dat != null){
       if(dat.itemType == Item.RANGED){ Ranged.MaxAmmo(ref dat); }
       actor.Equip(dat);
+    }
+    else{ MonoBehaviour.print(item + " was null!"); }
+  }
+  
+  public static void DualEquip(string item, ref Actor actor){
+    Data dat = Item.GetItem(item);
+    if(dat != null){
+      if(dat.itemType == Item.RANGED){ Ranged.MaxAmmo(ref dat); }
+      if(!actor.arms.DualEquipAvailable(dat)){
+        MonoBehaviour.print("Could not dual equip " + item);
+        return;
+      }
+      actor.DualEquip(dat);
     }
     else{ MonoBehaviour.print(item + " was null!"); }
   }

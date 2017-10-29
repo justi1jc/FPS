@@ -67,6 +67,10 @@ public class EditKitMenu : Menu{
     int y = Height()-h;
     if(Button(str, x, y, w, h)){ 
       Kit.SaveKit(activeKit, kitIndex);
+      Session.session.GetKits(true);
+      if(model != null){
+        MonoBehaviour.Destroy(model.gameObject);
+      }
       manager.Change("ARENALOBBY"); 
     }
   }
@@ -174,6 +178,7 @@ public class EditKitMenu : Menu{
     else if(slot == RIGHT){ availableItems = GetWeapons(); }
     else if(slot == LEFT){ availableItems = GetOneHandedWeapons(); }
     else{ availableItems = new List<Data>(allItems); }
+    availableItems.Insert(0, null);
     UpdateModel(GetKitItem(slot));
   }
   
@@ -238,9 +243,12 @@ public class EditKitMenu : Menu{
     if(availableItems == null){ return; }
     for(int i = 0; i < availableItems.Count; i++){
       y = (i+1)*h;
-      str = availableItems[i].displayName;
+      bool aim = availableItems[i] == null;
+      str = aim ? "None" : availableItems[i].displayName;
       if(Button(str, x, y, w, h)){ 
-        UpdateActiveItem(new Data(availableItems[i]));
+        activeItem = availableItems[i];
+        UpdateModel(activeItem);
+        if(activeItem == null){ Equip(""); }
       }
     }
   }
@@ -295,7 +303,7 @@ public class EditKitMenu : Menu{
   
   /* Equips active item to active slot */
   private void Equip(string name){
-    if(activeItem == null || activeSlot == NONE){ return; }
+    if(activeSlot == NONE){ return; }
     switch(activeSlot){
       case RIGHT:
         activeKit.arms[0] = name;

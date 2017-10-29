@@ -646,6 +646,13 @@ public class Actor : MonoBehaviour{
     Equip(slot);
   }
   
+  /* Public dualequip for an unstored object. */
+  public void DualEquip(Data dat){
+    int slot = StoreItem(dat);
+    if(slot == -1){ print("Inventory full"); return; }
+    DualEquip(slot);
+  }
+  
   /* Equips item in inventory by its index. */
   public void Equip(int itemIndex){
     Data dat = inventory.Peek(itemIndex);
@@ -811,7 +818,7 @@ public class Actor : MonoBehaviour{
     }
     if(interlocutor == other && other.interlocutor == this){
       interlocutor.ReceiveSpeech(option);
-    }
+    } 
   }
 
   /* Respond to being talked to by other Actor. */

@@ -182,6 +182,7 @@ public class Item : MonoBehaviour{
   /* Returns an item's data based on its prefab name. */
   /* Factory that returns the data of an Item. */
   public static Data GetItem(string prefab, int quantity = 1){
+    if(prefab == ""){ return null; }
     GameObject pref = (GameObject)Resources.Load("Prefabs/" + prefab, typeof(GameObject));
     if(pref == null){
       MonoBehaviour.print("Prefab null " + prefab);

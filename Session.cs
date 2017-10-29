@@ -90,7 +90,10 @@ public class Session : MonoBehaviour {
      Reload clears the cache when set to true.
   */
   public List<Kit> GetKits(bool reload = false){
-    if(kits == null || reload){ kits = Kit.GetKits(); }
+    if(kits == null || reload){ 
+      kits = Kit.GetKits();
+      for(int i = 0; i < 6; i++){ kits.Add(Kit.LoadKit(i)); }
+    }
     return new List<Kit>(kits);
   }
   
@@ -100,6 +103,7 @@ public class Session : MonoBehaviour {
     foreach(Kit kit in kits){
       if(kit.name == kitName){ return kit; }
     }
+    print(kitName + " not found.");
     return null;
   }
   
