@@ -12,7 +12,6 @@ public class Arena : MonoBehaviour{
   public List<int> scores;
   public List<int> factions; 
   public List<string> names;
-  public List<Transform> spawnPoints; //Stores direction and position to spawn players in.
   public List<Actor> players;
   int time;// Remaining round time in seconds.
   int bots;// Number of bots in arena.
@@ -23,7 +22,9 @@ public class Arena : MonoBehaviour{
   string kit; // Default kit for players.
   MenuManager menu;
   int gameMode; // Active gamemode selected from lobby.
-  
+  public AudioClip[] gameModeClips; // Audio for gamemodes
+  public Transform[] soloSpawns, redSpawns, blueSpawns;
+  public bool spawnWeapons; // If set to true, spawners will spawn weapons. 
   
   // GameMode  constants
   public const int NONE = -1;
@@ -56,16 +57,17 @@ public class Arena : MonoBehaviour{
     menu.arena = this;
     time = startingTime = dat != null ? 60 * dat.ints[0] : 600;
     bots = dat != null ? dat.ints[1] : 0;
+    gameMode = dat != null ? dat.ints[2] : NONE;
     if(dat != null){
       respawns = dat.bools[0];
       teams = dat.bools[1];
       p1red = dat.bools[2];
       p2red = dat.bools[3];
+      spawnWeapons = dat.bools[4];
       kit = dat.strings[0];
-      
     }
-    PopulateSpawnPoints();
     InitPlayers();
+    GameModeAnnouncement();
     StartCoroutine(UpdateRoutine());
   }
 
@@ -76,6 +78,29 @@ public class Arena : MonoBehaviour{
       yield return new WaitForSeconds(1f);
     }
   }
+  
+  /* Plays the AudioClip for this game mode. */
+  private void GameModeAnnouncement(){
+    if(gameModeClips == null || gameModeClips.Length < gameMode || gameMode == NONE){ 
+      print("Invalid clip.");
+      return; 
+    }
+    float vol = PlayerPrefs.HasKey("masterVolume") ? PlayerPrefs.GetFloat("masterVolume") : 1f;
+    AudioClip clip = gameModeClips[gameMode];
+    Vector3 pos = FindPlayerOne();
+    AudioSource.PlayClipAtPoint(clip, pos, vol);
+  }
+  
+  /* Returns the position of player1 */
+  private Vector3 FindPlayerOne(){
+    foreach(Actor a in players){
+      if(a != null && a.playerNumber == 1){
+        return a.gameObject.transform.position;
+      }
+    }
+    return new Vector3();
+  }
+  
 
   /* Updates hud with current time and objectives */
   void UpdateHUD(){
@@ -131,7 +156,7 @@ public class Arena : MonoBehaviour{
       Data dat = player.GetData();
       int id = player.id;
       Destroy(player.gameObject);
-      if(time > 0){ SpawnPlayer(dat.prefabName, id); }
+      if(time > 0){ SpawnPlayer(dat.prefabName, id, player.stats.faction); }
     }
     else{ 
       if(playerHUD != null){ playerHUD.message = "You are dead."; }
@@ -141,6 +166,22 @@ public class Arena : MonoBehaviour{
       else if(!respawns && OneTeamLeft()){ EndGame(); }
     }
     yield return new WaitForSeconds(0f);
+  }
+  
+  public Transform GetSpawnTransform(int faction = StatHandler.FERAL){
+    switch(faction){
+      case StatHandler.FERAL: 
+        return soloSpawns[Random.Range(0, soloSpawns.Length)]; 
+        break;
+      case StatHandler.REDTEAM: 
+        return redSpawns[Random.Range(0, redSpawns.Length)];
+        break;
+      case StatHandler.BLUETEAM: 
+        return blueSpawns[Random.Range(0, blueSpawns.Length)];
+        break;
+    }
+    
+    return null;
   }
   
   /* Handles a SessionEvent according to the game mode. */
@@ -193,14 +234,6 @@ public class Arena : MonoBehaviour{
     }
     return ((reds == 0) || (blues == 0));
   }
-  
-  /* Populate spawnpoints from child transforms. */
-  void PopulateSpawnPoints(){
-    spawnPoints = new List<Transform>();
-    foreach(Transform t in transform){
-      spawnPoints.Add(t);
-    }
-  }
 
   /* Add players to map according to starting spot. */
   void InitPlayers(){
@@ -208,38 +241,47 @@ public class Arena : MonoBehaviour{
     names = new List<string>();
     factions = new List<int>();
     players = new List<Actor>();
-    for(int i = 0; i < bots; i++){ 
+    for(int i = 0; i < bots; i++){
+      int faction = StatHandler.FERAL;
       if(teams){
-        int faction = (i<(bots/2)) ? 1 : 2;
+        faction = (i<(bots/2)) ? StatHandler.REDTEAM : StatHandler.BLUETEAM; 
         factions.Add(faction);
       }
-      SpawnPlayer("Enemy", i);
+      SpawnPlayer("Enemy", i, faction);
       scores.Add(0);
       names.Add("Bot " + (i+1));
     }
-    if(teams){ factions.Add(p1red ? 1 : 2); }
-    SpawnPlayer("player1", bots);
+    if(teams){ 
+      factions.Add(p1red ? StatHandler.REDTEAM : StatHandler.BLUETEAM);
+    }
+    SpawnPlayer("player1", bots, p1red ? StatHandler.REDTEAM : StatHandler.BLUETEAM);
     scores.Add(0);
     names.Add("Player1");
     
     
     if(Session.session.playerCount > 1){ 
-      if(teams){ factions.Add(p2red ? 1 : 2); }
-      SpawnPlayer("player2", bots + 1);
+      if(teams){ 
+        factions.Add(p2red ? StatHandler.REDTEAM : StatHandler.BLUETEAM);
+      }
+      SpawnPlayer("player2", bots + 1, p2red ? StatHandler.REDTEAM : StatHandler.BLUETEAM);
       scores.Add(0);
       names.Add("Player2");
     }
   }
 
   /* Spawns a player from a prefab at a random spawnpoint. */
-  void SpawnPlayer(string prefabName, int id = -1){
-    Transform trans = spawnPoints[Random.Range(0, spawnPoints.Count)]; 
-    Vector3 pos = trans.position;
-    Quaternion rot = trans.rotation; 
+  void SpawnPlayer(string prefabName, int id, int faction ){
     GameObject pref = (GameObject)Resources.Load(
       "Prefabs/"+ prefabName,
       typeof(GameObject)
     );
+    Transform trans = GetSpawnTransform(faction);
+    if(trans == null){
+      print("Invalid transform for faction " + faction);
+      return;
+    }
+    Vector3 pos = trans.position;
+    Quaternion rot = trans.rotation; 
     GameObject go = (GameObject)GameObject.Instantiate(
       pref,
       pos,
@@ -247,6 +289,7 @@ public class Arena : MonoBehaviour{
     );
     Actor actor = go.GetComponent<Actor>();
     if(actor != null){
+      actor.stats.faction = faction;
       players.Add(actor);
       if(kit != "NONE"){
         Kit k = Session.session.GetKit(kit);
@@ -256,7 +299,7 @@ public class Arena : MonoBehaviour{
         actor.id = id;
         if(teams){
           actor.stats.faction = factions[id];
-          if(factions[id] == 1){
+          if(factions[id] == StatHandler.REDTEAM){
             Kit.ApplyToClothes("Equipment/Shirt", ref actor, true, 1f, 0f, 0f, 1f);
           }
           else{
@@ -265,13 +308,25 @@ public class Arena : MonoBehaviour{
           
         }
         else{
-          actor.stats.faction = 1;
+          actor.stats.faction = StatHandler.FERAL;
         }
         Kit.ApplyToClothes("Equipment/Pants", ref actor, true, 0f, 0f, 0f, 1f);
       }
     }
   }
-
+  
+  /* Returns the name of a gamemode based on its constant */
+  public static string GameModeName(int mode){
+    switch(mode){
+      case NONE: return "None"; break;
+      case DEATHMATCH: return "Deathmatch"; break;
+      case TEAMDEATHMATCH: return "Team Deathmatch"; break;
+      case ELIMINATION: return "Elimination"; break;
+      case TEAMELIMINATION: return "Team Elimination"; break;
+    }
+    return "";
+  }
+  
   /* Returns remaining time in minutes and seconds. */
   string Time(){
     int minutes = time/60;

@@ -44,4 +44,13 @@ public class Melee : Weapon{
     dat.itemType = Item.MELEE;
     return dat;
   }
+  
+  /* Accounts for damage. */
+  public override string GetUseInfo(int row = 0){
+    string ret = "";
+    switch(row){
+      case 0: ret = "Damage: " + damage; break;
+    }
+    return ret;
+  }
 }

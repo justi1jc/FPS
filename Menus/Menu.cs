@@ -1,7 +1,6 @@
 /*
     Base class for the menus and HUD found in the game.
 */﻿
-
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -107,6 +106,7 @@ public class Menu{
     int scalex,
     int scaley
   ){
+    GUI.skin.box.wordWrap = true;
     GUI.color = new Color(1f, 1f, 1f, 1f);
     GUI.Box(new Rect(posx, posy, scalex, scaley), image);
   }

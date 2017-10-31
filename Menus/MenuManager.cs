@@ -95,6 +95,9 @@ public class MenuManager: MonoBehaviour{
       case "ARENAHUD":
         active = (Menu)(new ArenaHUDMenu(this));
         break;
+      case "EDITKITMENU":
+        active = (Menu)(new EditKitMenu(this));
+        break;
     }
   }
   

@@ -74,11 +74,13 @@ public class Actor : MonoBehaviour{
 
   //Movement
   public bool ragdoll = false;
-  public float speed;
+  const float speed = 0.4f; // Base movement speed.
+  public bool movementCooldown = true;
   public bool walking = false;
   public bool sprinting = false;
   public bool crouched = false;
   public bool stagger = false;
+  
     
   //Jumping
   public bool jumpReady = true;
@@ -244,9 +246,10 @@ public class Actor : MonoBehaviour{
   }
   
   public IEnumerator InputRoutine(){
+    const float inputRate = 0.016f; // Roughly 30 times/second.
     while(Alive()){
       input.Update();
-      yield return new WaitForSeconds(0.01f);
+      yield return new WaitForSeconds(inputRate);
     }
   }
   
@@ -345,7 +348,10 @@ public class Actor : MonoBehaviour{
       walking = false;
       return;
     }
-    else if(!walking && (dir.x != 0f || dir.y != 0f)){
+    
+    if(!movementCooldown){ return; }
+    StartCoroutine(MovementCooldownRoutine());
+    if(!walking && (dir.x != 0f || dir.y != 0f)){
       SetAnimBool("walking", true);
       walking = true;
     }
@@ -361,6 +367,14 @@ public class Actor : MonoBehaviour{
     dir = dir.normalized;
     dest = transform.position +  dir * pace;
     if(MoveCheck(dir, pace * 3)){ transform.position += (dir * pace); }
+  }
+  
+  /* Resets movementcooldown */
+  IEnumerator MovementCooldownRoutine(){
+    const float moveDelay = 0.033f; 
+    movementCooldown = false;
+    yield return new WaitForSeconds(moveDelay);
+    movementCooldown = true;
   }
   
   /* Returns the root transform for a given transform. */
@@ -645,6 +659,13 @@ public class Actor : MonoBehaviour{
     Equip(slot);
   }
   
+  /* Public dualequip for an unstored object. */
+  public void DualEquip(Data dat){
+    int slot = StoreItem(dat);
+    if(slot == -1){ print("Inventory full"); return; }
+    DualEquip(slot);
+  }
+  
   /* Equips item in inventory by its index. */
   public void Equip(int itemIndex){
     Data dat = inventory.Peek(itemIndex);
@@ -810,7 +831,7 @@ public class Actor : MonoBehaviour{
     }
     if(interlocutor == other && other.interlocutor == this){
       interlocutor.ReceiveSpeech(option);
-    }
+    } 
   }
 
   /* Respond to being talked to by other Actor. */
