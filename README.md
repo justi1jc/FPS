@@ -42,8 +42,9 @@ ______               _                                  _
 # Current version: 0.5.5
 
 ## Roadmap:
-0.5.X- Arena gamemode.
-0.6.X- Adventure gamemode.
+0.5.X- Deathmatch gamemode
+0.6.x- Tactical gamemode
+0.7.x- Conqeust gamemode
 
 ## Backlog
 ### Base FPS Features
@@ -54,10 +55,9 @@ ______               _                                  _
 
 ### DeathMatch gamemode
 * Create DeathMatchArena.cs
-* 
 
 ### Tactical gamemode
-* 
+* Create TacticalArena.cs
 
 ### Conquest gamemode
 * Create ConquestArena.cs
@@ -121,7 +121,6 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 ### Misc
 * Give abilities a static "one-shot" method that uses them without an instance. 
 * Make 1-4/D-pad into "quick access" slots that uses an ability's one-shot method.
-* Fix slow movement/responsiveness when framerate dips a bit.
 
 ## Current Objectives
 
