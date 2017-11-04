@@ -257,9 +257,8 @@ public class EquipSlot{
   /* Returns true if both hands are used on single item. */
   public bool Single(){
     if(RIGHT < hands.Length && items[RIGHT] != null){
-      return !items[RIGHT].oneHanded;
+      if(LEFT > hands.Length || items[LEFT] == null){ return true; }
     }
-    if(LEFT > hands.Length || items[LEFT] == null){ return true; }
     return false;
   }
   
