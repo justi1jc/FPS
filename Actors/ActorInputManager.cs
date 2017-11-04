@@ -175,7 +175,9 @@ public class ActorInputHandler{
         case InputEvent.K_R: actor.Use(Item.C_DOWN); break;
         case InputEvent.K_E: actor.Interact(); break;
         case InputEvent.X360_X: 
-          if(actor.actorInReach != null){ actor.Interact(); }
+          if(actor.actorInReach != null || actor.itemInReach != null){
+            actor.Interact();
+          }
           else{ actor.Use(Item.C_DOWN); }
           break;
         case InputEvent.K_SPACE: actor.Jump(); break;

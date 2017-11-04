@@ -49,12 +49,8 @@ ______               _                                  _
 ## Backlog
 ### Base FPS Features
 * Transition between ragdoll and up-right states for proper ragdolling.
-* Tactic mode- Squad vs squad mode.
 * Visual hit indicator.
 * Arena.cs should replace itself with relevant script upon startup.
-
-### DeathMatch gamemode
-* Create DeathMatchArena.cs
 
 ### Tactical gamemode
 * Create TacticalArena.cs
@@ -73,6 +69,7 @@ ______               _                                  _
 http://answers.unity3d.com/questions/354044/scrollview-notscrolling.html
 * Allow right-click functionality for Menu.Button() using technique shown in
 http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.html
+* Move item between slots in inventory.
 
 ### Items
 * Rock- (Ragdoll or stagger upon headshot)
@@ -87,6 +84,7 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * "Move there" order.
 * "Regroup" order.
 * Quick Draw slot 1/2/3/4- Equips specified slot.
+* Throw item.
 
 ### Magic abilities
 * Fireball
@@ -105,12 +103,12 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Max health/stamina/mana buff
 * ICEPAWS buff
 * Stealth/chameleon 
-* Force push (With some damage and ragdolling)
+* Force push (With some damage and potentially ragdolling)
 
 ### AI
 * Keep AI from attempting to fire through obstructions.
 * Follower AI that protects a leader.
-* Formation 
+* Formations
 * Provide callback argument for AI state transitions.
 
 ### StatHandler.cs
@@ -119,7 +117,6 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Perks( Bools that give bonuses when set to true.)
 
 ### Misc
-* Give abilities a static "one-shot" method that uses them without an instance. 
 * Make 1-4/D-pad into "quick access" slots that uses an ability's one-shot method.
 
 ## Current Objectives

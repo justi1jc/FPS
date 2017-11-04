@@ -62,7 +62,6 @@ public class Session : MonoBehaviour {
     if(player == 1){ cam1 = cam; }
     else if(player == 2){ cam2 = cam; }
     UpdateCameras();
-    world.RegisterPlayer(actor);
   }
   
   /* Updates the cameras according to remaining players. */

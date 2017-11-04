@@ -48,7 +48,6 @@ public class Actor : MonoBehaviour{
   public GameObject body;    // The base gameobject of the actor, for external use
   public GameObject rFoot;    // Used for jumping.
 
-  
   //UI
   public MenuManager menu;
   public Camera cam; // Camera used for players.

@@ -184,24 +184,15 @@ public class Item : MonoBehaviour{
   public static Data GetItem(string prefab, int quantity = 1){
     if(prefab == ""){ return null; }
     GameObject pref = (GameObject)Resources.Load("Prefabs/" + prefab, typeof(GameObject));
-    if(pref == null){
-      MonoBehaviour.print("Prefab null " + prefab);
-      return null;
-    }
+    if(pref == null){ return null; }
     GameObject go = (GameObject)GameObject.Instantiate(
       pref,
       new Vector3(),
       Quaternion.identity
     );
-    if(go == null){
-      MonoBehaviour.print("Game object null " + prefab);
-      return null;
-    }
+    if(go == null){ return null; }
     Item item = go.GetComponent<Item>();
-    if(item == null){ 
-      MonoBehaviour.print("Item not found " + prefab);
-      return null; 
-    }
+    if(item == null){ return null; }
     Data dat = item.GetData();
     dat.stack = quantity;
     GameObject.Destroy(go);

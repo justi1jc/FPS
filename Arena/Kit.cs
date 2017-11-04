@@ -71,7 +71,6 @@ public class Kit{
   
   /* Applies a given kit's contents to an actor. */
   public void ApplyKit(ref Actor actor){
-    MonoBehaviour.print("Applying kit to " + actor);
     if(arms.Count > 0){ PrimaryEquip(arms[0], ref actor); }
     if(arms.Count > 1){ DualEquip(arms[1], ref actor); }
     foreach(string item in clothes){ ApplyToClothes(item, ref actor); }
@@ -147,7 +146,6 @@ public class Kit{
       if(color){ Equipment.SetColor(new Color(r, g, b, a), ref dat); }
       actor.Equip(dat);
     }
-    else{ MonoBehaviour.print(item + " was null!"); }
   }
   
   /* Applies an item to inventory with optional */
@@ -161,7 +159,6 @@ public class Kit{
       if(dat.itemType == Item.ITEM && fullStack){ Item.FullStack(ref dat); }
       actor.StoreItem(dat);
     }
-    else{ MonoBehaviour.print(item + " was null!"); }
   }
   
   private void FullStack(ref Data dat){
@@ -201,10 +198,7 @@ public class Kit{
           while(line != null && line.ToUpper() != "END"){
             if(line.ToUpper() == "KIT"){
               Kit k = (ParseKit(sr));
-              if(k == null){ 
-                MonoBehaviour.print("Kit null");
-                return new List<Kit>();
-              }
+              if(k == null){ return new List<Kit>(); }
               ret.Add(k);
             }
             line = sr.ReadLine();
