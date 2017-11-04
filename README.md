@@ -39,10 +39,9 @@ ______               _                                  _
                             |_|                             
 ********************************************************************************
 
-# Current version: 0.5.5
+# Current version: 0.6.0
 
 ## Roadmap:
-0.5.X- Deathmatch gamemode
 0.6.x- Tactical gamemode
 0.7.x- Conqeust gamemode
 
@@ -54,6 +53,10 @@ ______               _                                  _
 
 ### Tactical gamemode
 * Create TacticalArena.cs
+* Allow for multiple rounds, customizable in the menu.
+* WeaponPurchase menu (hardcoded values)
+* Plantable/Defusable bomb
+* Game ends when one team is eliminated or bomb is detonated/defused
 
 ### Conquest gamemode
 * Create ConquestArena.cs
