@@ -256,6 +256,9 @@ public class EquipSlot{
   
   /* Returns true if both hands are used on single item. */
   public bool Single(){
+    if(RIGHT < hands.Length && items[RIGHT] != null){
+      return !items[RIGHT].oneHanded;
+    }
     if(LEFT > hands.Length || items[LEFT] == null){ return true; }
     return false;
   }
@@ -331,15 +334,19 @@ public class EquipSlot{
       items[RIGHT].Use(use);
     }
     else{
-      if(items[RIGHT] == null || items[LEFT] == null){ 
-        MonoBehaviour.print("" + items[RIGHT] + "," + items[LEFT]);
-        return;
-      }
       switch(use){
-        case Item.A_DOWN: items[LEFT].Use(Item.A_DOWN); break;
-        case Item.B_DOWN: items[RIGHT].Use(Item.A_DOWN); break;
-        case Item.A_UP: items[LEFT].Use(Item.A_UP); break;
-        case Item.B_UP: items[RIGHT].Use(Item.A_UP); break;
+        case Item.A_DOWN: 
+          if(items[LEFT] != null){ items[LEFT].Use(Item.A_DOWN); }
+          break;
+        case Item.B_DOWN: 
+          if(items[RIGHT] != null){ items[RIGHT].Use(Item.A_DOWN); } 
+          break;
+        case Item.A_UP: 
+          if(items[LEFT] != null){ items[LEFT].Use(Item.A_UP); } 
+          break;
+        case Item.B_UP: 
+          if(items[RIGHT] != null){ items[RIGHT].Use(Item.A_UP); } 
+          break;
       }
     }
   }

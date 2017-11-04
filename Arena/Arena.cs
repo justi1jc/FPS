@@ -40,6 +40,8 @@ public class Arena : MonoBehaviour{
       break;
     }
     if(arena == null){ return; }
+    menu = gameObject.AddComponent<MenuManager>();
+    menu.Change("ARENAHUD");
     arena.CopyData(this);
     arena.LoadDataFromSession();
     arena.Begin();
@@ -68,6 +70,7 @@ public class Arena : MonoBehaviour{
   /* Copies over data from one instance to another */
   public void CopyData(Arena ar){
     menu = ar.menu;
+    menu.arena = (Arena)this;
     soloSpawns = ar.soloSpawns;
     redSpawns = ar.redSpawns;
     blueSpawns = ar.blueSpawns;
@@ -99,7 +102,10 @@ public class Arena : MonoBehaviour{
 
   /* Updates hud with current time and objectives */
   protected void UpdateHUD(){
-    if(menu == null || menu.active == null){ return; }
+    if(menu == null || menu.active == null){ 
+      print("NoHUD");
+      return;
+    }
     ArenaHUDMenu HUD = (ArenaHUDMenu)menu.active;
     if(HUD == null){ print("Menu null"); return; }
     HUD.message = Message();

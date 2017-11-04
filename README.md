@@ -52,9 +52,6 @@ ______               _                                  _
 * Visual hit indicator.
 * Arena.cs should replace itself with relevant script upon startup.
 
-### DeathMatch gamemode
-
-
 ### Tactical gamemode
 * Create TacticalArena.cs
 
@@ -87,6 +84,7 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * "Move there" order.
 * "Regroup" order.
 * Quick Draw slot 1/2/3/4- Equips specified slot.
+* Throw item.
 
 ### Magic abilities
 * Fireball
@@ -105,12 +103,12 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Max health/stamina/mana buff
 * ICEPAWS buff
 * Stealth/chameleon 
-* Force push (With some damage and ragdolling)
+* Force push (With some damage and potentially ragdolling)
 
 ### AI
 * Keep AI from attempting to fire through obstructions.
 * Follower AI that protects a leader.
-* Formation 
+* Formations
 * Provide callback argument for AI state transitions.
 
 ### StatHandler.cs
@@ -122,9 +120,6 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Make 1-4/D-pad into "quick access" slots that uses an ability's one-shot method.
 
 ## Current Objectives
-* Change arenalobbymenu to display only deathmatch mode
-* Change arenalobbymenu to display deathmatch config options.
-* Make Arena.cs replace itself with the appropriate script for the current gamemode.
 
 ********************************************************************************
  _____              __ _       
