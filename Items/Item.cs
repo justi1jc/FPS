@@ -3,9 +3,11 @@
 */
 
 
-﻿using UnityEngine;
+using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class Item : MonoBehaviour{
   // Constants to reference class within Data
@@ -139,6 +141,15 @@ public class Item : MonoBehaviour{
     return dat;
   }
   
+  /* Returns true if an item stored in Data is a weapon. */
+  public static bool IsWeapon(Data dat){
+    if(dat == null){ return false; }
+    if(dat.itemType == MELEE || dat.itemType == RANGED || dat.itemType == WEAPON){
+      return true;
+    }
+    return false;
+  }
+  
   /* Returns true if an item stored in a Data is one-handed. */
   public static bool OneHanded(Data dat){
     if(dat == null || dat.bools.Count < 1){ return true; }
@@ -171,25 +182,17 @@ public class Item : MonoBehaviour{
   /* Returns an item's data based on its prefab name. */
   /* Factory that returns the data of an Item. */
   public static Data GetItem(string prefab, int quantity = 1){
+    if(prefab == ""){ return null; }
     GameObject pref = (GameObject)Resources.Load("Prefabs/" + prefab, typeof(GameObject));
-    if(pref == null){
-      MonoBehaviour.print("Prefab null " + prefab);
-      return null;
-    }
+    if(pref == null){ return null; }
     GameObject go = (GameObject)GameObject.Instantiate(
       pref,
       new Vector3(),
       Quaternion.identity
     );
-    if(go == null){
-      MonoBehaviour.print("Game object null " + prefab);
-      return null;
-    }
+    if(go == null){ return null; }
     Item item = go.GetComponent<Item>();
-    if(item == null){ 
-      MonoBehaviour.print("Item not found " + prefab);
-      return null; 
-    }
+    if(item == null){ return null; }
     Data dat = item.GetData();
     dat.stack = quantity;
     GameObject.Destroy(go);
@@ -243,5 +246,46 @@ public class Item : MonoBehaviour{
         item.holder.Drop(item);
       }
     }
+  }
+  
+  /* Returns all items as data found in Resources/items.txt */
+  public static List<Data> GetKitItems(){
+    List<Data> ret = new List<Data>();
+    List<string> itemNames = Item.ParseItemsFile();
+    foreach(string itemName in itemNames){
+      Data dat = GetItem(itemName);
+      if(dat == null){ MonoBehaviour.print(itemName + " was null."); }
+      else{ 
+        Item.FullStack(ref dat);
+        ret.Add(dat);
+      }
+    }
+    return ret;
+  }
+  
+  /* Returns information about this item's uses for comparison purposes.
+     Specifying a row allows for multiple pieces of information to be gathered
+     when populating a table.
+  */
+  public virtual string GetUseInfo(int row = 0){ return ""; }
+  
+  /* Returns all the lines of the Resources/items.txt file. */
+  private static List<string> ParseItemsFile(){
+    List<string> ret = new List<string>();
+    try{
+      string path = Application.dataPath + "/Resources/items.txt";
+      if(!File.Exists(path)){
+        MonoBehaviour.print("Kits file does not exist at " + path); 
+        return ret;
+      }
+      using(StreamReader sr = new StreamReader(path)){
+        string line = sr.ReadLine();
+        while(line != null){
+          ret.Add(line);
+          line = sr.ReadLine();
+        }
+      }
+    }catch(Exception e){ MonoBehaviour.print("Exception:" + e); }
+    return ret;
   }
 }

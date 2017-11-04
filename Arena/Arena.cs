@@ -1,6 +1,7 @@
 /*
-    Arena handles the arena gameplay.
-    Players are spawned and a timer is set.
+    Arena is the base for all Arena gamemodes. An Arena instance should exist
+    in any scene used for the arena and contain map-specific data such as 
+    spawnpoints. When started, this gamemode  
 */
 using UnityEngine;
 using System.Collections;
@@ -12,106 +13,110 @@ public class Arena : MonoBehaviour{
   public List<int> scores;
   public List<int> factions; 
   public List<string> names;
-  public List<Transform> spawnPoints; //Stores direction and position to spawn players in.
   public List<Actor> players;
-  int time;// Remaining round time in seconds.
-  int bots;// Number of bots in arena.
-  int startingTime; // Total round duration.
-  bool respawns; // True if players respawn.
-  bool teams; // True if teams are enabled.
-  bool p1red, p2red; // True if respective player is on red team.
-  string kit; // Default kit for players.
-  MenuManager menu;
-  int gameMode; // Active gamemode selected from lobby.
-  
+  protected int time;// Remaining round time in seconds.
+  protected int bots;// Number of bots in arena.
+  protected int startingTime; // Total round duration.
+  protected bool respawns; // True if players respawn.
+  protected bool teams; // True if teams are enabled.
+  protected bool p1red, p2red; // True if respective player is on red team.
+  protected string kit; // Default kit for players.
+  protected MenuManager menu;
+  protected int gameMode; // Active gamemode selected from lobby.
+  public AudioClip[] gameModeClips; // Audio for gamemodes
+  public Transform[] soloSpawns, redSpawns, blueSpawns;
+  public bool spawnWeapons; // If set to true, spawners will spawn weapons. 
   
   // GameMode  constants
   public const int NONE = -1;
   public const int DEATHMATCH = 0;
-  public const int TEAMDEATHMATCH = 1;
-  public const int ELIMINATION = 2;
-  public const int TEAMELIMINATION = 3;
   
-  public void Start(){
-    if(Session.Active()){ 
-      Session.session.arena = this;
-      Session.session.gameMode = Session.ARENA;
+  public virtual void Start(){
+    Arena arena = null;
+    switch(ActiveGameMode()){
+      case DEATHMATCH: 
+        DeathmatchArena dmarena = gameObject.AddComponent<DeathmatchArena>();
+        arena = (Arena)dmarena;
+      break;
     }
-    StartCoroutine(StartGame());
-  }
-  
-  /* This co-routine exists to work around an animation bug caused 
-     by Initializing() while loading the scene without a delay. */
-  public IEnumerator StartGame(){
-    yield return new WaitForSeconds(0.05f);
-    Initialize();
-  }
-
-  /* Begin a new round. */
-  public void Initialize(){
-    Session.session.world = new World();
-    Data dat = Session.session.arenaData;
+    if(arena == null){ return; }
     menu = gameObject.AddComponent<MenuManager>();
     menu.Change("ARENAHUD");
-    menu.arena = this;
-    time = startingTime = dat != null ? 60 * dat.ints[0] : 600;
-    bots = dat != null ? dat.ints[1] : 0;
-    if(dat != null){
-      respawns = dat.bools[0];
-      teams = dat.bools[1];
-      p1red = dat.bools[2];
-      p2red = dat.bools[3];
-      kit = dat.strings[0];
-      
-    }
-    PopulateSpawnPoints();
-    InitPlayers();
-    StartCoroutine(UpdateRoutine());
+    arena.CopyData(this);
+    arena.LoadDataFromSession();
+    arena.Begin();
+  }
+  
+  /* STUB: Handles a SessionEvent according to the game mode. */
+  public virtual void HandleEvent(SessionEvent evt){}
+  
+  /* STUB: Starts the selected gamemode. */
+  public virtual void Begin(){}
+  
+  /* STUB: Loads settings contained within Session.session.arenaData
+     Note that this data should be encoded specifically for the current
+     gamemode.
+  */
+  public virtual void LoadDataFromSession(){}
+  
+  /* STUB: Main update loop. */
+  protected virtual IEnumerator UpdateRoutine(){ 
+    yield return new WaitForSeconds(1f); 
+  }
+  
+  /* STUB: Returns a string to display on the HUD */
+  protected virtual string Message(){ return ""; }
+  
+  /* Copies over data from one instance to another */
+  public void CopyData(Arena ar){
+    menu = ar.menu;
+    menu.arena = (Arena)this;
+    soloSpawns = ar.soloSpawns;
+    redSpawns = ar.redSpawns;
+    blueSpawns = ar.blueSpawns;
+    gameModeClips = ar.gameModeClips;
   }
 
-  IEnumerator UpdateRoutine(){
-    while(time > 0){
-      UpdateHUD();
-      HandleKills();
-      yield return new WaitForSeconds(1f);
+  /* Plays the AudioClip for this game mode. */
+  protected void GameModeAnnouncement(){
+    if(gameModeClips == null || gameModeClips.Length < gameMode || gameMode == NONE){ 
+      print("Invalid clip.");
+      return; 
     }
+    float vol = PlayerPrefs.HasKey("masterVolume") ? PlayerPrefs.GetFloat("masterVolume") : 1f;
+    AudioClip clip = gameModeClips[gameMode];
+    Vector3 pos = FindPlayerOne();
+    AudioSource.PlayClipAtPoint(clip, pos, vol);
   }
+  
+  /* Returns the position of player1 */
+  protected Vector3 FindPlayerOne(){
+    foreach(Actor a in players){
+      if(a != null && a.playerNumber == 1){
+        return a.gameObject.transform.position;
+      }
+    }
+    return new Vector3();
+  }
+  
 
   /* Updates hud with current time and objectives */
-  void UpdateHUD(){
+  protected void UpdateHUD(){
+    if(menu == null || menu.active == null){ 
+      print("NoHUD");
+      return;
+    }
     ArenaHUDMenu HUD = (ArenaHUDMenu)menu.active;
     if(HUD == null){ print("Menu null"); return; }
-    HUD.message = "Arena deathmatch\n" + Time();
+    HUD.message = Message();
     if(!respawns){
       HUD.message += ("\nPlayers remaining: \n" + players.Count);
     }
     time--;
-    if(time < 1){ EndGame(); }
   }
   
-  /* Stop gameplay and display end game message. */
-  void EndGame(){
-    ArenaHUDMenu HUD = (ArenaHUDMenu)menu.active;
-    HUD.subMenu = 1;
-    for(int i = 0; i < players.Count; i++){
-      players[i].SetMenuOpen(true);
-      Destroy(players[i].gameObject);
-    }
-  }
-
-  void HandleKills(){
-    for(int i = 0; i < players.Count; i++){
-      Actor actor = players[i];
-      if(!actor.Alive()){
-        players.Remove(actor);
-        i--;
-        StartCoroutine(RespawnPlayer(actor));
-      }
-    }
-  }
-
   /* Displays respawn timer and respawns the player at its completion. */
-  IEnumerator RespawnPlayer(Actor player){
+  protected IEnumerator RespawnPlayer(Actor player){
     List<Item> items = player.DiscardAllItems();
     if(player.droppedLoot != null){ items.AddRange(player.droppedLoot); }
     foreach(Item item in items){
@@ -131,35 +136,36 @@ public class Arena : MonoBehaviour{
       Data dat = player.GetData();
       int id = player.id;
       Destroy(player.gameObject);
-      if(time > 0){ SpawnPlayer(dat.prefabName, id); }
+      if(time > 0){ SpawnPlayer(dat.prefabName, id, player.stats.faction); }
     }
     else{ 
       if(playerHUD != null){ playerHUD.message = "You are dead."; }
       players.Remove(player);
       player.SetMenuOpen(true);
-      if(players.Count <= 1){ EndGame(); }
-      else if(!respawns && OneTeamLeft()){ EndGame(); }
     }
     yield return new WaitForSeconds(0f);
   }
   
-  /* Handles a SessionEvent according to the game mode. */
-  public void HandleEvent(SessionEvent evt){
-    switch(evt.code){
-      case SessionEvent.DEATH:
-        if(
-          gameMode == DEATHMATCH || gameMode == TEAMDEATHMATCH ||
-          gameMode == ELIMINATION || gameMode == TEAMELIMINATION
-        ){ RecordKill(evt); }
+  /* Returns a random spawnpoint according to the faction, or null. */
+  public Transform GetSpawnTransform(int faction = StatHandler.FERAL){
+    switch(faction){
+      case StatHandler.FERAL: 
+        return soloSpawns[Random.Range(0, soloSpawns.Length)]; 
+        break;
+      case StatHandler.REDTEAM: 
+        return redSpawns[Random.Range(0, redSpawns.Length)];
+        break;
+      case StatHandler.BLUETEAM: 
+        return blueSpawns[Random.Range(0, blueSpawns.Length)];
         break;
     }
+    return null;
   }
-  
   
   /* Records the points for a kill individually or for the team according to
      the teams setting. Friendly kills subtract points.
   */
-  private void RecordKill(SessionEvent evt){
+  protected void RecordKill(SessionEvent evt){
     if(evt.args == null || evt.args.Length < 3){ return; }
     if(evt.args[0] == null || evt.args[1] == null){ return; }
     if(evt.args[0].ints.Count < 3 || evt.args[1].ints.Count < 3){ return; }
@@ -175,7 +181,7 @@ public class Arena : MonoBehaviour{
   }
   
   /* Displays the respawn timer for a dead player. */
-  private IEnumerator RespawnTimer(Actor player, HUDMenu playerHUD){
+  protected IEnumerator RespawnTimer(Actor player, HUDMenu playerHUD){
     int respawnTimer = 5;
     for(int i = respawnTimer; i > 0; i--){
       if(playerHUD != null){ playerHUD.message = "Respawn in \n" + i; }  
@@ -183,7 +189,7 @@ public class Arena : MonoBehaviour{
     }
   }
   
-  bool OneTeamLeft(){
+  protected bool OneTeamLeft(){
     if(!teams){ return false; }
     int reds = 0;
     int blues = 0;
@@ -193,53 +199,59 @@ public class Arena : MonoBehaviour{
     }
     return ((reds == 0) || (blues == 0));
   }
-  
-  /* Populate spawnpoints from child transforms. */
-  void PopulateSpawnPoints(){
-    spawnPoints = new List<Transform>();
-    foreach(Transform t in transform){
-      spawnPoints.Add(t);
-    }
-  }
 
   /* Add players to map according to starting spot. */
-  void InitPlayers(){
+  protected void InitPlayers(){
     scores = new List<int>();
     names = new List<string>();
     factions = new List<int>();
     players = new List<Actor>();
-    for(int i = 0; i < bots; i++){ 
+    for(int i = 0; i < bots; i++){
+      int faction = StatHandler.FERAL;
       if(teams){
-        int faction = (i<(bots/2)) ? 1 : 2;
+        faction = (i<(bots/2)) ? StatHandler.REDTEAM : StatHandler.BLUETEAM; 
         factions.Add(faction);
       }
-      SpawnPlayer("Enemy", i);
+      SpawnPlayer("Enemy", i, faction);
       scores.Add(0);
       names.Add("Bot " + (i+1));
     }
-    if(teams){ factions.Add(p1red ? 1 : 2); }
-    SpawnPlayer("player1", bots);
+    if(teams){ 
+      factions.Add(p1red ? StatHandler.REDTEAM : StatHandler.BLUETEAM);
+    }
+    SpawnPlayer("player1", bots, p1red ? StatHandler.REDTEAM : StatHandler.BLUETEAM);
     scores.Add(0);
     names.Add("Player1");
     
     
     if(Session.session.playerCount > 1){ 
-      if(teams){ factions.Add(p2red ? 1 : 2); }
-      SpawnPlayer("player2", bots + 1);
+      if(teams){ 
+        factions.Add(p2red ? StatHandler.REDTEAM : StatHandler.BLUETEAM);
+      }
+      SpawnPlayer("player2", bots + 1, p2red ? StatHandler.REDTEAM : StatHandler.BLUETEAM);
       scores.Add(0);
       names.Add("Player2");
     }
   }
 
   /* Spawns a player from a prefab at a random spawnpoint. */
-  void SpawnPlayer(string prefabName, int id = -1){
-    Transform trans = spawnPoints[Random.Range(0, spawnPoints.Count)]; 
-    Vector3 pos = trans.position;
-    Quaternion rot = trans.rotation; 
+  protected void SpawnPlayer(
+    string prefabName, 
+    int id,
+    int faction, 
+    Transform trans = null 
+  ){
     GameObject pref = (GameObject)Resources.Load(
       "Prefabs/"+ prefabName,
       typeof(GameObject)
     );
+    if(trans == null){ trans = GetSpawnTransform(faction); } 
+    if(trans == null){
+      print("Invalid transform for faction " + faction);
+      return;
+    }
+    Vector3 pos = trans.position;
+    Quaternion rot = trans.rotation; 
     GameObject go = (GameObject)GameObject.Instantiate(
       pref,
       pos,
@@ -247,6 +259,7 @@ public class Arena : MonoBehaviour{
     );
     Actor actor = go.GetComponent<Actor>();
     if(actor != null){
+      actor.stats.faction = faction;
       players.Add(actor);
       if(kit != "NONE"){
         Kit k = Session.session.GetKit(kit);
@@ -256,7 +269,7 @@ public class Arena : MonoBehaviour{
         actor.id = id;
         if(teams){
           actor.stats.faction = factions[id];
-          if(factions[id] == 1){
+          if(factions[id] == StatHandler.REDTEAM){
             Kit.ApplyToClothes("Equipment/Shirt", ref actor, true, 1f, 0f, 0f, 1f);
           }
           else{
@@ -265,15 +278,32 @@ public class Arena : MonoBehaviour{
           
         }
         else{
-          actor.stats.faction = 1;
+          actor.stats.faction = StatHandler.FERAL;
         }
         Kit.ApplyToClothes("Equipment/Pants", ref actor, true, 0f, 0f, 0f, 1f);
       }
     }
   }
-
+  
+  /* Returns the name of a gamemode based on its constant */
+  public static string GameModeName(int mode){
+    switch(mode){
+      case NONE: return "None"; break;
+      case DEATHMATCH: return "Deathmatch"; break;
+    }
+    return "";
+  }
+  
+  /* Returns the gamemode from Session's arenaData, or NONE. */
+  protected int ActiveGameMode(){
+    if(!Session.Active() || Session.session.arenaData == null){ return NONE; }
+    Data dat = Session.session.arenaData;
+    if(dat.ints == null || dat.ints.Count < 1){ return NONE; }
+    return dat.ints[0];
+  }
+  
   /* Returns remaining time in minutes and seconds. */
-  string Time(){
+  protected string Time(){
     int minutes = time/60;
     int seconds = time%60;
     string secs = "";

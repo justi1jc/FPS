@@ -12,9 +12,9 @@ using UnityEngine.SceneManagement;
 
 public class ArenaLobbyMenu : Menu{
   private int duration; // Duration in minutes.
-  private string map;   // map currently selected.
   private int mapIndex; // Index of currently selected map.
   private bool respawns = true; // True if players will respawn.
+  private bool spawnWeapons = false; // True if weaponSpawners will be active.
   private int bots = 15; // Number of bots;
   private string kit = "NONE";
   private int kitId = 0;
@@ -22,46 +22,81 @@ public class ArenaLobbyMenu : Menu{
   private bool p1red = false; // True if player1 is on the red team.
   private bool p2red = false; // True if player2 is on the red team.
   private List<Kit> kits;
-  private Texture thumbnail;
+  private int gameMode = Arena.DEATHMATCH;
+  private List<ArenaMap> maps;
+  
   
   public ArenaLobbyMenu(MenuManager manager) : base(manager){
     duration = 10;
     mapIndex = 0;
-    UpdateMap();
-    kits = Session.session.GetKits();
+    kits = new List<Kit>();
+    for(int i = 0; i < 6; i++){
+      Kit k = Kit.LoadKit(i);
+      if(k != null){ kits.Add(k); }
+    }
+    kits.AddRange(Session.session.GetKits());
+    maps = MapsByMode(gameMode);
+    UpdateGameMode();
+    PrevKit();
   }
 
   public override void Render(){
     int ih = Height()/10;
     int iw = Width()/5;
+    int x, y, h, w;
     Box("Arena Lobby", 2*iw, 0, iw, ih);
     string str = "Players: " + Session.session.playerCount;
-    if(Button(str, 0, 2*ih, iw, ih)){ TogglePlayers(); Sound(0); }
-    str = "Map:" + map;
-    if(Button(str, 0, 3*ih, iw, ih)){ NextMap(); Sound(0);}
-    str = "Duration:" + duration;
-    if(Button(str, 0, 4*ih, iw, ih)){ NextDuration(); }
-    str = "Respawns:" + (respawns ? "Yes" : "No");
-    if(Button(str, 0, 5*ih, iw, ih)){ respawns = !respawns; }
+    if(Button(str, 0, ih, iw, ih)){ 
+      TogglePlayers(); 
+      Sound(0); 
+    }
+    str = "GameMode:" + Arena.GameModeName(gameMode);
+    if(Button(str, 0, 2*ih, iw, ih)){ NextGameMode(); }
+    RenderMap(iw, ih);
     if(Button("Start", Width()-iw, Height()-ih, iw, ih)){ StartArena(); }
     if(Button("Back", 0, Height()-ih, iw, ih)){ 
       manager.Change("MAIN");
       Sound(0);
     }
+    switch(gameMode){
+      case Arena.DEATHMATCH: RenderDeathmatch(); break;
+    }
+    
+  }
+  
+  /* Renders config options relevant to deathmatch mode. */
+  public void RenderDeathmatch(){
+    int ih = Height()/10;
+    int iw = Width()/5;
+    int x, y, w, h;
+    string str;
+    
+    
+    str = "Teams: " + (teams ? "Yes" : "No");
+    if(Button(str, 0, 3*ih, iw, ih )){ teams = !teams; }
+    
+    str = "Duration:" + duration;
+    Box(str, 0, 5*ih, iw, ih/2);
+    x = 0;
+    y = 5*ih + ih/2;
+    w = iw;
+    h = ih/2;
+    duration = (int)GUI.HorizontalSlider(new Rect(x, y, w, h), duration, 1, 60);
+    
     str = "Bots: " + bots;
     Box(str, 0, 6*ih, iw, ih/2);
-    if(Button("-", 0, 6*ih + (ih/2), iw/2, ih/2) && bots > 0){ bots--; }
-    if(Button("+", iw/2, 6*ih + (ih/2), iw/2, ih/2) && bots < 32){ bots++; }
+    x = 0;
+    y = 6*ih + ih/2;
+    w = iw;
+    h = ih/2;
+    
+    bots = (int)GUI.HorizontalSlider(new Rect(x,y,w,h), bots, 0, 128);
     
     str = "Kit: " + kit;
     if(Button(str, 0, 7*ih, iw, ih)){ NextKit(); }
     
-    str = "Teams: " + (teams ? "Yes" : "No");
-    if(Button(str, 0, 8*ih, iw, ih)){ teams = !teams; } 
-    
-    if(thumbnail != null){ Box(thumbnail, iw, 2*ih, 4*iw, 7*ih); }
-    else{ MonoBehaviour.print( map + " has null thumbnail"); }
-    
+    str = "Customize kits";
+    if(Button(str, 0, 8*ih, iw, ih)){ manager.Change("EDITKITMENU"); }
     
     int players = Session.session.playerCount;
     if(players > 0){
@@ -81,7 +116,38 @@ public class ArenaLobbyMenu : Menu{
       }
     }
     
+  
   }
+  
+  
+  /* Returns a list of maps compatible with the given gamemode */
+  public List<ArenaMap> MapsByMode(int gameMode){
+    List<ArenaMap> allMaps = ArenaMap.GetMaps();
+    List<ArenaMap> ret = new List<ArenaMap>();
+    foreach(ArenaMap map in allMaps){
+      if(map.CompatibleMode(gameMode)){ ret.Add(map); }
+    }
+    return ret;
+  }
+  
+  /* Renders the selected map's buttons, boxes, and thumbnail. */
+  public void RenderMap(int iw, int ih){
+    if(mapIndex < 0 || mapIndex >= maps.Count || maps[mapIndex] == null){
+      return;
+    }
+    ArenaMap map = maps[mapIndex];
+    string str = "Map:" + map.name;
+    if(Button(str, 0, 4*ih, iw, ih)){ NextMap(); Sound(0);}
+    if(map.thumbnail != null){ Box(map.thumbnail, iw, 2*ih, 4*iw, 7*ih); }
+    else{ MonoBehaviour.print( map.name + " has null thumbnail"); }
+  }
+  
+  /* Cycles through valid maps. */
+  private void NextMap(){
+    mapIndex++;
+    if(mapIndex >= maps.Count){ mapIndex = 0; }
+  }
+  
   
   /* Cycles through available kits. */
   private void NextKit(){
@@ -91,44 +157,54 @@ public class ArenaLobbyMenu : Menu{
     else{ kit = kits[kitId].name; }
   }
   
-  /* Cycles through valid durations. */
-  private void NextDuration(){
-    duration += 5;
-    if(duration > 20){ duration = 5; }
+  /* Cycles through available kits. */
+  private void PrevKit(){
+    kitId--;
+    if(kitId < 0){ kitId = 0; }
+    if(kits.Count == 0){ kit = "NONE"; }
+    else{ kit = kits[kitId].name; }
   }
   
-  /* Cycles through valid maps. */
-  private void NextMap(){
-    mapIndex++;
-    if(mapIndex > 1){ mapIndex = 0; }
-    UpdateMap();
+  /* Cycles through gamemodes. */
+  private void NextGameMode(){
+    gameMode++;
+    if(gameMode > Arena.DEATHMATCH){ gameMode = Arena.DEATHMATCH; }
+    UpdateGameMode();
+    maps = MapsByMode(gameMode);
+    mapIndex = 0;
   }
   
-
-  /* Changes map text based on map index. */
-  private void UpdateMap(){
-    switch(mapIndex){
-      case 0: map = "Arena_Empty"; break;
-      case 1: map = "Arena_Urban"; break;
-    }
-    thumbnail = Resources.Load("Textures/Thumbnails/" + map) as Texture;
+  /* Configures games according to gamemode. */
+  private void UpdateGameMode(){
   }
   
   /* Set arena options to session and begin arena mode */
   public void StartArena(){
     Session.session.DestroyMenu();
-    Data dat = new Data();
-    dat.ints.Add(duration);
-    dat.ints.Add(bots);
-    dat.bools.Add(respawns);
-    dat.strings.Add(kit);
-    dat.bools.Add(teams);
-    dat.bools.Add(p1red);
-    dat.bools.Add(p2red);
+    Data dat = null;
+    switch(gameMode){
+      case Arena.DEATHMATCH: dat = GetDeathmatchData(); break;
+    }
+    
     Session.session.arenaData = dat;
     manager.Change("NONE");
     Sound(0);
-    SceneManager.LoadScene(map);
+    SceneManager.LoadScene(maps[mapIndex].name);
+  }
+  
+  /* Returns data formatted for the deathmatch gamemode. */
+  private Data GetDeathmatchData(){
+    Data ret = new Data();
+    ret.ints.Add(gameMode);
+    ret.ints.Add(duration);
+    ret.ints.Add(bots);
+    ret.strings.Add(kit);
+    ret.bools.Add(respawns);
+    ret.bools.Add(teams);
+    ret.bools.Add(p1red);
+    ret.bools.Add(p2red);
+    ret.bools.Add(spawnWeapons);
+    return ret;
   }
   
   void TogglePlayers(){

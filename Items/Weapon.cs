@@ -19,7 +19,7 @@ public class Weapon : Item{
   
   /* Returns the damage of a weapon's data, or 0 upon failure. */
   public static int Damage(Data dat){
-    if(dat == null || dat.ints.Count < 2){
+    if(dat != null && dat.ints != null && dat.ints.Count < 2){
       return dat.ints[1];
     }
     return 0;

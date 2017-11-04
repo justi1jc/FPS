@@ -93,7 +93,7 @@ public class PaperDoll{
     actor.inventory.StoreEquipped(dat, status);
   }
   
-  /* Equips equipment to specified slot and stores displaced if possible.*/
+  /* Equips equipment from specified inventory.*/
   public void EquipFromInventory(int invIndex){
     if(actor == null || actor.inventory == null){ return; }
     Data dat = actor.inventory.Peek(invIndex);
@@ -119,7 +119,7 @@ public class PaperDoll{
       }
       else{ MonoBehaviour.print(dat.prefabName + " lacks a color."); }
       Material[] materials = renderer.materials;
-      materials[invIndex+1] = material;
+      materials[slot+1] = material;
       renderer.materials = materials;
     }
     else{ MonoBehaviour.print(dat.prefabName + " lacks a material."); }

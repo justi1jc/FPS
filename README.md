@@ -13,11 +13,11 @@ These scripts work with Unity3D editor 2017.1.1xf1 Ubuntu links below.
 https://forum.unity3d.com/threads/unity-on-linux-release-notes-and-known-issues.350256/
 http://beta.unity3d.com/download/f4fc8fd4067d/public_download.html
 
-Vision: Provide first-person shooter roleplaying gameplay similar to the recent
-installments of The Elder Scrolls and Fallout series, albeit with the addition
-of couch-multiplayer coop.
+## Vision: 
+Provide compelling gameplay with features borrowed from contemporary FPS games
+as well as new ideas.
 
-Strategy:
+## Strategy:
 An iterative development cycle will occur at each expansion of this project's
 scope.
 
@@ -39,80 +39,109 @@ ______               _                                  _
                             |_|                             
 ********************************************************************************
 
-Reoadmap:
-0.5.X- Arena gamemode.
+# Current version: 0.6.0
 
-Current version: 0.5.5
+## Roadmap:
+0.6.x- Tactical gamemode
+0.7.x- Conqeust gamemode
 
-Backlog
-  Base FPS Features
--CasterWeapon.cs that consumes mana.
--Transition between ragdoll and up-right states for proper ragdolling.
+## Backlog
+### Base FPS Features
+* Transition between ragdoll and up-right states for proper ragdolling.
+* Visual hit indicator.
+* Arena.cs should replace itself with relevant script upon startup.
 
-  Arena Features
--Specify Arena maps in config file Resources/Maps.txt
--Offer game-modes to make arena config faster. 
-  -Deathmatch mode-
-    -No teams
-    -Respawns
-    -Fixed starter kits.
-  -Team Deathmatch mode-
-    -Teams
-    -Respawns
-    -Fixed starter kits.
-  -Elimination mode-
-    -No teams
-    -No respawns
-    -Fixed starter kits.
-  -Team Elimination mode-
-    -Teams
-    -No respawns
-    -Fixed starter kits.
-  
--Provide callback argument for AI state transitions.
--Store and access user-defined kits.
--Weapon spawners for modes that don't use kits.
+### Tactical gamemode
+* Create TacticalArena.cs
+* Allow for multiple rounds, customizable in the menu.
+* WeaponPurchase menu (hardcoded values)
+* Plantable/Defusable bomb
+* Game ends when one team is eliminated or bomb is detonated/defused
 
-  UI Features
--Use sliders in the Arena Lobby.
--Discard items from inventory by right-clicking.
--Troubleshoot scroll-views using technique shown in
+### Conquest gamemode
+* Create ConquestArena.cs
+* Control point that changes red, white, or blue according to occupier(s).
+* Players choose control point to spawn/respawn at.
+* Players choose kit to spawn with.
+* Respawns reduce side's reinforcements counter.
+* AI attempt to capture command points.
+
+### UI Features
+* Discard items from inventory by right-clicking.
+* Troubleshoot scroll-views using technique shown in
 http://answers.unity3d.com/questions/354044/scrollview-notscrolling.html
--Allow right-click functionality for Menu.Button() using technique shown in
+* Allow right-click functionality for Menu.Button() using technique shown in
 http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.html
--Budget-based kit customization menu.
--Create some additional convenience methods for Menu
-  -Slider with title.
-  -Selection with next/prev buttons.
+* Move item between slots in inventory.
 
-  Items
--Rock- (Ragdoll or stagger upon headshot)
--Grenade-
--Bow- (Special animations for holding/firing, reusable ammunition)
--Armor- Damage reduction and damage threshold.
--Shield- Large damage threshold.
+### Items
+* Rock- (Ragdoll or stagger upon headshot)
+* Grenade-
+* Bow- (Special animations for holding/firing, reusable ammunition)
+* Armor- Damage reduction and damage threshold.
+* Shield- Large damage threshold.
+* Wand- Maps keys to different spells.
 
+### Non-magic abilities
+* Add/Dismiss follower.
+* "Move there" order.
+* "Regroup" order.
+* Quick Draw slot 1/2/3/4- Equips specified slot.
+* Throw item.
 
-  Magic abilities
--Fireball
--Electric touch(High damage melee.)
--Light beam(Use unity LineRenderer tool)
--Heal self
--Heal other
--Convert stamina to mana
--stamina regen
--Light source
--Give mana- (Establishes link on touch, hold to maintain link.)
--Force field- Create trigger box that converts damage to mana drain.
--Force shield- Magic analogue to shield item. Converts damage to mana drain.
--Force lunge- (Add force in facing direction)
--Force levitate- (negate gravity)
--Max health/stamina/mana buff
--ICEPAWS buff
--Stealth/chameleon 
--Force push (With some damage and ragdolling)
+### Magic abilities
+* Fireball
+* Electric touch(High damage melee.)
+* Light beam(Use unity LineRenderer tool)
+* Heal self
+* Heal other
+* Convert stamina to mana
+* stamina regen
+* Light source
+* Give mana- (Establishes link on touch, hold to maintain link.)
+* Force field- Create trigger box that converts damage to mana drain.
+* Force shield- Magic analogue to shield item. Converts damage to mana drain.
+* Force lunge- (Add force in facing direction)
+* Force levitate- (negate gravity)
+* Max health/stamina/mana buff
+* ICEPAWS buff
+* Stealth/chameleon 
+* Force push (With some damage and potentially ragdolling)
 
-Current Objective
+### AI
+* Keep AI from attempting to fire through obstructions.
+* Follower AI that protects a leader.
+* Formations
+* Provide callback argument for AI state transitions.
+
+### StatHandler.cs
+* Effects(modifies stat)
+* Route attack directly to StatHandler.cs
+* Perks( Bools that give bonuses when set to true.)
+
+### Misc
+* Make 1-4/D-pad into "quick access" slots that uses an ability's one-shot method.
+
+## Current Objectives
+
+********************************************************************************
+ _____              __ _       
+/  __ \            / _(_)      
+| /  \/ ___  _ __ | |_ _  __ _ 
+| |    / _ \| '_ \|  _| |/ _` |
+| \__/\ (_) | | | | | | | (_| |
+ \____/\___/|_| |_|_| |_|\__, |
+                          __/ |
+                         |___/ 
+********************************************************************************
+
+## Resources/kits.txt
+Contains default kits used in Arena
+## Resources/maps.txt
+Contains all maps used in Arena
+## Resources/items.txt
+Contains all items that can be used in user-defined kits.
+
 
 ********************************************************************************
   ___           _     _ _            _                  
@@ -124,23 +153,23 @@ Current Objective
                                                         
 ********************************************************************************
 
-Architecture at a glance:
+# Architecture at a glance:
 
-Session.cs- Singleton that routes method calls between classes and contains
+## Session.cs- Singleton that routes method calls between classes and contains
 global state.
 SessionEvent.cs- A record for an event to be handled by either the session,
 arena, or world.
 
 JukeBox.cs- Responsible for loading and playing music from /Resources/Music/
 
-/Arena/Arena.cs- Manages the "Arena" gamemode.
+## /Arena/Arena.cs- Manages the "Arena" gamemode.
   Kit.cs - Contains items to equip and store on an Actor. Loads kits defined in
   /Resources/Kits.txt configuration file.
 
 CellSaver.cs- Used to automatically create or update /Resources/world.master
 using open Unity scenes.
 
-World.cs- Manages the "Adventure" mode.
+## World.cs- Manages the "Adventure" mode.
   Cell.cs- Contains the Actors and Items of a specific
   Building.cs- A collection of Cells representing rooms in a building.
   HoloDeck.cs- Creates Holocells to load rooms and contiguous overworld.
@@ -155,7 +184,7 @@ World.cs- Manages the "Adventure" mode.
 /Items/- Item Classes inheriting from Item.cs
 
 
-/Actor/- Components of Actor.cs class.
+## /Actor/- Components of Actor.cs class.
   EquipSlot.cs- Manages the equipping and use of Actor's weapon slots.
   PaperDoll.cs- Manages the equipping of the Actor's body with clothes.
   HitBox.cs- Routes attacks to actor.

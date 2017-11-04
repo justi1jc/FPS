@@ -13,7 +13,8 @@ public class ActorInputHandler{
   private Actor actor;
   private DeviceManager devMan;
   private bool menuOpen = false;
-  private int x, y;
+  private float x, y;
+  private bool moved; // True if xDir or yDir are set.
   public ActorInputHandler(Actor actor, string device){
     this.actor = actor;
     this.devMan = new DeviceManager(device);
@@ -21,10 +22,13 @@ public class ActorInputHandler{
   
   /* Collects inputs and calls appropriate method to handle them. */
   public void Update(){
+    x = y = 0.0f;
+    moved = false;
     foreach(InputEvent action in devMan.GetInputs()){ 
       if(menuOpen){ HandleMenuAction(action); }
       else{ HandleActorAction(action); }
     }
+    if(moved){ actor.StickMove(x, y); }
   }
   
   public void SetMenuOpen(bool open){
@@ -111,20 +115,32 @@ public class ActorInputHandler{
     float dt = action.downTime;
     if(pt == InputEvent.HELD || pt == InputEvent.DOWN){
       switch(btn){
-        case InputEvent.K_W: actor.StickMove(0.0f, 1.0f); y = 1; break;
-        case InputEvent.K_S: actor.StickMove(0.0f, -1.0f); y = -1; break;
-        case InputEvent.K_D: actor.StickMove(1.0f, 0.0f); x = 1; break;
-        case InputEvent.K_A: actor.StickMove(-1.0f, 0.0f); x = -1; break;
+        case InputEvent.K_W:
+          y = 1.0f;
+          moved = true; 
+          break;
+        case InputEvent.K_S: 
+          y = -1.0f;
+          moved = true; 
+          break;
+        case InputEvent.K_D: 
+          x = 1;
+          moved = true; 
+          break;
+        case InputEvent.K_A: 
+          x = -1;
+          moved = true;
+          break;
       }
       
     }
     else if(pt == InputEvent.UP){
-      switch(btn){
-        case InputEvent.K_W: y = 0; break;
-        case InputEvent.K_S: y = 0; break;
-        case InputEvent.K_D: x = 0; break;
-        case InputEvent.K_A: x = 0; break;
-      }
+      if(
+        btn == InputEvent.K_W ||
+        btn == InputEvent.K_A || 
+        btn == InputEvent.K_S ||
+        btn == InputEvent.K_D
+      ){ moved = true; }
     }
     
     if(pt == InputEvent.DOWN){
@@ -159,7 +175,9 @@ public class ActorInputHandler{
         case InputEvent.K_R: actor.Use(Item.C_DOWN); break;
         case InputEvent.K_E: actor.Interact(); break;
         case InputEvent.X360_X: 
-          if(actor.actorInReach != null){ actor.Interact(); }
+          if(actor.actorInReach != null || actor.itemInReach != null){
+            actor.Interact();
+          }
           else{ actor.Use(Item.C_DOWN); }
           break;
         case InputEvent.K_SPACE: actor.Jump(); break;
@@ -198,16 +216,16 @@ public class ActorInputHandler{
   /* Handles axis input for Actor. */
   public void HandleActorAxis(InputEvent action){
     int axis = action.axis;
-    float x = action.x;
-    float y = action.y;
+    float xDir = action.x;
+    float yDir = action.y;
     
     if(axis == InputEvent.MOUSE || axis == InputEvent.X360_RIGHTSTICK){
-      actor.Turn(new Vector3(x, y, 0f));
+      actor.Turn(new Vector3(xDir, yDir, 0f));
     }
     else if(axis == InputEvent.X360_LEFTSTICK){ 
-      actor.StickMove(x, y);
-      x = (int)x;
-      y = (int)y; 
+      x = xDir;
+      y = yDir;
+      moved = true;
     }
   }
 }

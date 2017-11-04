@@ -155,7 +155,7 @@ public class Ranged : Weapon{
   
   /* Reloading process. Note: A bool is used by the animation state machine due
     to the buggy behaviour of triggers applying to multiple layers. */
-  public IEnumerator Reload(){
+  public virtual IEnumerator Reload(){
     ready = false;
     Sound(1);
     if(holder != null){ holder.SetAnimBool("reload", true); }
@@ -207,6 +207,18 @@ public class Ranged : Weapon{
     if(holder == null){ return; }
     int available = holder.RequestAmmo(ammunition, (maxAmmo - ammo));
     if(available > 0){ ammo = ammo + available; return; }
+  }
+  
+  /* Accounts for damage, capacity, rof, and reload speed */
+  public override string GetUseInfo(int row = 0){
+    string ret = "";
+    switch(row){
+      case 0: ret = "Damage: " + damage; break;
+      case 1: ret = "Capacity: " + maxAmmo; break;
+      case 2: ret = "Rate of fire: " + (60f/cooldown) + "/minute"; break;
+      case 3: ret = "Reload speed: " + reloadDelay + " seconds"; break;
+    }
+    return ret;
   }
 
   /* Aims weapon or returns it to the hip.*/
