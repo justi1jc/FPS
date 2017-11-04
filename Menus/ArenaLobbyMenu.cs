@@ -46,10 +46,35 @@ public class ArenaLobbyMenu : Menu{
     int x, y, h, w;
     Box("Arena Lobby", 2*iw, 0, iw, ih);
     string str = "Players: " + Session.session.playerCount;
-    if(Button(str, 0, 2*ih, iw, ih)){ TogglePlayers(); Sound(0); }
+    if(Button(str, 0, ih, iw, ih)){ 
+      TogglePlayers(); 
+      Sound(0); 
+    }
     str = "GameMode:" + Arena.GameModeName(gameMode);
-    if(Button(str, 0, 3*ih, iw, ih)){ NextGameMode(); }
+    if(Button(str, 0, 2*ih, iw, ih)){ NextGameMode(); }
     RenderMap(iw, ih);
+    if(Button("Start", Width()-iw, Height()-ih, iw, ih)){ StartArena(); }
+    if(Button("Back", 0, Height()-ih, iw, ih)){ 
+      manager.Change("MAIN");
+      Sound(0);
+    }
+    switch(gameMode){
+      case Arena.DEATHMATCH: RenderDeathmatch(); break;
+    }
+    
+  }
+  
+  /* Renders config options relevant to deathmatch mode. */
+  public void RenderDeathmatch(){
+    int ih = Height()/10;
+    int iw = Width()/5;
+    int x, y, w, h;
+    string str;
+    
+    
+    str = "Teams: " + (teams ? "Yes" : "No");
+    if(Button(str, 0, 3*ih, iw, ih )){ teams = !teams; }
+    
     str = "Duration:" + duration;
     Box(str, 0, 5*ih, iw, ih/2);
     x = 0;
@@ -58,11 +83,6 @@ public class ArenaLobbyMenu : Menu{
     h = ih/2;
     duration = (int)GUI.HorizontalSlider(new Rect(x, y, w, h), duration, 1, 60);
     
-    if(Button("Start", Width()-iw, Height()-ih, iw, ih)){ StartArena(); }
-    if(Button("Back", 0, Height()-ih, iw, ih)){ 
-      manager.Change("MAIN");
-      Sound(0);
-    }
     str = "Bots: " + bots;
     Box(str, 0, 6*ih, iw, ih/2);
     x = 0;
@@ -96,7 +116,9 @@ public class ArenaLobbyMenu : Menu{
       }
     }
     
+  
   }
+  
   
   /* Returns a list of maps compatible with the given gamemode */
   public List<ArenaMap> MapsByMode(int gameMode){
@@ -146,7 +168,7 @@ public class ArenaLobbyMenu : Menu{
   /* Cycles through gamemodes. */
   private void NextGameMode(){
     gameMode++;
-    if(gameMode > Arena.TEAMELIMINATION){ gameMode = Arena.DEATHMATCH; }
+    if(gameMode > Arena.DEATHMATCH){ gameMode = Arena.DEATHMATCH; }
     UpdateGameMode();
     maps = MapsByMode(gameMode);
     mapIndex = 0;
@@ -154,37 +176,35 @@ public class ArenaLobbyMenu : Menu{
   
   /* Configures games according to gamemode. */
   private void UpdateGameMode(){
-    if(gameMode == Arena.DEATHMATCH || gameMode == Arena.TEAMDEATHMATCH){
-      respawns = true;
-      spawnWeapons = true;
-      teams = false;
-      if(gameMode == Arena.TEAMDEATHMATCH){ teams = true; }
-    }
-    else if(gameMode == Arena.ELIMINATION || gameMode == Arena.TEAMELIMINATION){
-      respawns = false;
-      spawnWeapons = false;
-      teams = false;
-      if(gameMode == Arena.TEAMELIMINATION){ teams = true; }
-    }
   }
   
   /* Set arena options to session and begin arena mode */
   public void StartArena(){
     Session.session.DestroyMenu();
-    Data dat = new Data();
-    dat.ints.Add(duration);
-    dat.ints.Add(bots);
-    dat.ints.Add(gameMode);
-    dat.strings.Add(kit);
-    dat.bools.Add(respawns);
-    dat.bools.Add(teams);
-    dat.bools.Add(p1red);
-    dat.bools.Add(p2red);
-    dat.bools.Add(spawnWeapons);
+    Data dat = null;
+    switch(gameMode){
+      case Arena.DEATHMATCH: dat = GetDeathmatchData(); break;
+    }
+    
     Session.session.arenaData = dat;
     manager.Change("NONE");
     Sound(0);
     SceneManager.LoadScene(maps[mapIndex].name);
+  }
+  
+  /* Returns data formatted for the deathmatch gamemode. */
+  private Data GetDeathmatchData(){
+    Data ret = new Data();
+    ret.ints.Add(gameMode);
+    ret.ints.Add(duration);
+    ret.ints.Add(bots);
+    ret.strings.Add(kit);
+    ret.bools.Add(respawns);
+    ret.bools.Add(teams);
+    ret.bools.Add(p1red);
+    ret.bools.Add(p2red);
+    ret.bools.Add(spawnWeapons);
+    return ret;
   }
   
   void TogglePlayers(){

@@ -16,7 +16,8 @@ public class WeaponSpawner : MonoBehaviour{
   public float spawnDelay; // Delay for replacing a weapon.
   public Arena arena;
   
-  public void Awake(){
+  /* Starts the spawning of weapons. */
+  public void Begin(){
     StartCoroutine(SpawnWeapons());
   }
   

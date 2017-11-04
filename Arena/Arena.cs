@@ -1,6 +1,7 @@
 /*
-    Arena handles the arena gameplay.
-    Players are spawned and a timer is set.
+    Arena is the base for all Arena gamemodes. An Arena instance should exist
+    in any scene used for the arena and contain map-specific data such as 
+    spawnpoints. When started, this gamemode  
 */
 using UnityEngine;
 using System.Collections;
@@ -13,15 +14,15 @@ public class Arena : MonoBehaviour{
   public List<int> factions; 
   public List<string> names;
   public List<Actor> players;
-  int time;// Remaining round time in seconds.
-  int bots;// Number of bots in arena.
-  int startingTime; // Total round duration.
-  bool respawns; // True if players respawn.
-  bool teams; // True if teams are enabled.
-  bool p1red, p2red; // True if respective player is on red team.
-  string kit; // Default kit for players.
-  MenuManager menu;
-  int gameMode; // Active gamemode selected from lobby.
+  protected int time;// Remaining round time in seconds.
+  protected int bots;// Number of bots in arena.
+  protected int startingTime; // Total round duration.
+  protected bool respawns; // True if players respawn.
+  protected bool teams; // True if teams are enabled.
+  protected bool p1red, p2red; // True if respective player is on red team.
+  protected string kit; // Default kit for players.
+  protected MenuManager menu;
+  protected int gameMode; // Active gamemode selected from lobby.
   public AudioClip[] gameModeClips; // Audio for gamemodes
   public Transform[] soloSpawns, redSpawns, blueSpawns;
   public bool spawnWeapons; // If set to true, spawners will spawn weapons. 
@@ -29,58 +30,52 @@ public class Arena : MonoBehaviour{
   // GameMode  constants
   public const int NONE = -1;
   public const int DEATHMATCH = 0;
-  public const int TEAMDEATHMATCH = 1;
-  public const int ELIMINATION = 2;
-  public const int TEAMELIMINATION = 3;
   
-  public void Start(){
-    if(Session.Active()){ 
-      Session.session.arena = this;
-      Session.session.gameMode = Session.ARENA;
+  public virtual void Start(){
+    Arena arena = null;
+    switch(ActiveGameMode()){
+      case DEATHMATCH: 
+        DeathmatchArena dmarena = gameObject.AddComponent<DeathmatchArena>();
+        arena = (Arena)dmarena;
+      break;
     }
-    StartCoroutine(StartGame());
+    if(arena == null){ return; }
+    arena.CopyData(this);
+    arena.LoadDataFromSession();
+    arena.Begin();
   }
   
-  /* This co-routine exists to work around an animation bug caused 
-     by Initializing() while loading the scene without a delay. */
-  public IEnumerator StartGame(){
-    yield return new WaitForSeconds(0.05f);
-    Initialize();
+  /* STUB: Handles a SessionEvent according to the game mode. */
+  public virtual void HandleEvent(SessionEvent evt){}
+  
+  /* STUB: Starts the selected gamemode. */
+  public virtual void Begin(){}
+  
+  /* STUB: Loads settings contained within Session.session.arenaData
+     Note that this data should be encoded specifically for the current
+     gamemode.
+  */
+  public virtual void LoadDataFromSession(){}
+  
+  /* STUB: Main update loop. */
+  protected virtual IEnumerator UpdateRoutine(){ 
+    yield return new WaitForSeconds(1f); 
+  }
+  
+  /* STUB: Returns a string to display on the HUD */
+  protected virtual string Message(){ return ""; }
+  
+  /* Copies over data from one instance to another */
+  public void CopyData(Arena ar){
+    menu = ar.menu;
+    soloSpawns = ar.soloSpawns;
+    redSpawns = ar.redSpawns;
+    blueSpawns = ar.blueSpawns;
+    gameModeClips = ar.gameModeClips;
   }
 
-  /* Begin a new round. */
-  public void Initialize(){
-    Session.session.world = new World();
-    Data dat = Session.session.arenaData;
-    menu = gameObject.AddComponent<MenuManager>();
-    menu.Change("ARENAHUD");
-    menu.arena = this;
-    time = startingTime = dat != null ? 60 * dat.ints[0] : 600;
-    bots = dat != null ? dat.ints[1] : 0;
-    gameMode = dat != null ? dat.ints[2] : NONE;
-    if(dat != null){
-      respawns = dat.bools[0];
-      teams = dat.bools[1];
-      p1red = dat.bools[2];
-      p2red = dat.bools[3];
-      spawnWeapons = dat.bools[4];
-      kit = dat.strings[0];
-    }
-    InitPlayers();
-    GameModeAnnouncement();
-    StartCoroutine(UpdateRoutine());
-  }
-
-  IEnumerator UpdateRoutine(){
-    while(time > 0){
-      UpdateHUD();
-      HandleKills();
-      yield return new WaitForSeconds(1f);
-    }
-  }
-  
   /* Plays the AudioClip for this game mode. */
-  private void GameModeAnnouncement(){
+  protected void GameModeAnnouncement(){
     if(gameModeClips == null || gameModeClips.Length < gameMode || gameMode == NONE){ 
       print("Invalid clip.");
       return; 
@@ -92,7 +87,7 @@ public class Arena : MonoBehaviour{
   }
   
   /* Returns the position of player1 */
-  private Vector3 FindPlayerOne(){
+  protected Vector3 FindPlayerOne(){
     foreach(Actor a in players){
       if(a != null && a.playerNumber == 1){
         return a.gameObject.transform.position;
@@ -103,40 +98,19 @@ public class Arena : MonoBehaviour{
   
 
   /* Updates hud with current time and objectives */
-  void UpdateHUD(){
+  protected void UpdateHUD(){
+    if(menu == null || menu.active == null){ return; }
     ArenaHUDMenu HUD = (ArenaHUDMenu)menu.active;
     if(HUD == null){ print("Menu null"); return; }
-    HUD.message = "Arena deathmatch\n" + Time();
+    HUD.message = Message();
     if(!respawns){
       HUD.message += ("\nPlayers remaining: \n" + players.Count);
     }
     time--;
-    if(time < 1){ EndGame(); }
   }
   
-  /* Stop gameplay and display end game message. */
-  void EndGame(){
-    ArenaHUDMenu HUD = (ArenaHUDMenu)menu.active;
-    HUD.subMenu = 1;
-    for(int i = 0; i < players.Count; i++){
-      players[i].SetMenuOpen(true);
-      Destroy(players[i].gameObject);
-    }
-  }
-
-  void HandleKills(){
-    for(int i = 0; i < players.Count; i++){
-      Actor actor = players[i];
-      if(!actor.Alive()){
-        players.Remove(actor);
-        i--;
-        StartCoroutine(RespawnPlayer(actor));
-      }
-    }
-  }
-
   /* Displays respawn timer and respawns the player at its completion. */
-  IEnumerator RespawnPlayer(Actor player){
+  protected IEnumerator RespawnPlayer(Actor player){
     List<Item> items = player.DiscardAllItems();
     if(player.droppedLoot != null){ items.AddRange(player.droppedLoot); }
     foreach(Item item in items){
@@ -162,12 +136,11 @@ public class Arena : MonoBehaviour{
       if(playerHUD != null){ playerHUD.message = "You are dead."; }
       players.Remove(player);
       player.SetMenuOpen(true);
-      if(players.Count <= 1){ EndGame(); }
-      else if(!respawns && OneTeamLeft()){ EndGame(); }
     }
     yield return new WaitForSeconds(0f);
   }
   
+  /* Returns a random spawnpoint according to the faction, or null. */
   public Transform GetSpawnTransform(int faction = StatHandler.FERAL){
     switch(faction){
       case StatHandler.FERAL: 
@@ -180,27 +153,13 @@ public class Arena : MonoBehaviour{
         return blueSpawns[Random.Range(0, blueSpawns.Length)];
         break;
     }
-    
     return null;
   }
-  
-  /* Handles a SessionEvent according to the game mode. */
-  public void HandleEvent(SessionEvent evt){
-    switch(evt.code){
-      case SessionEvent.DEATH:
-        if(
-          gameMode == DEATHMATCH || gameMode == TEAMDEATHMATCH ||
-          gameMode == ELIMINATION || gameMode == TEAMELIMINATION
-        ){ RecordKill(evt); }
-        break;
-    }
-  }
-  
   
   /* Records the points for a kill individually or for the team according to
      the teams setting. Friendly kills subtract points.
   */
-  private void RecordKill(SessionEvent evt){
+  protected void RecordKill(SessionEvent evt){
     if(evt.args == null || evt.args.Length < 3){ return; }
     if(evt.args[0] == null || evt.args[1] == null){ return; }
     if(evt.args[0].ints.Count < 3 || evt.args[1].ints.Count < 3){ return; }
@@ -216,7 +175,7 @@ public class Arena : MonoBehaviour{
   }
   
   /* Displays the respawn timer for a dead player. */
-  private IEnumerator RespawnTimer(Actor player, HUDMenu playerHUD){
+  protected IEnumerator RespawnTimer(Actor player, HUDMenu playerHUD){
     int respawnTimer = 5;
     for(int i = respawnTimer; i > 0; i--){
       if(playerHUD != null){ playerHUD.message = "Respawn in \n" + i; }  
@@ -224,7 +183,7 @@ public class Arena : MonoBehaviour{
     }
   }
   
-  bool OneTeamLeft(){
+  protected bool OneTeamLeft(){
     if(!teams){ return false; }
     int reds = 0;
     int blues = 0;
@@ -236,7 +195,7 @@ public class Arena : MonoBehaviour{
   }
 
   /* Add players to map according to starting spot. */
-  void InitPlayers(){
+  protected void InitPlayers(){
     scores = new List<int>();
     names = new List<string>();
     factions = new List<int>();
@@ -270,12 +229,17 @@ public class Arena : MonoBehaviour{
   }
 
   /* Spawns a player from a prefab at a random spawnpoint. */
-  void SpawnPlayer(string prefabName, int id, int faction ){
+  protected void SpawnPlayer(
+    string prefabName, 
+    int id,
+    int faction, 
+    Transform trans = null 
+  ){
     GameObject pref = (GameObject)Resources.Load(
       "Prefabs/"+ prefabName,
       typeof(GameObject)
     );
-    Transform trans = GetSpawnTransform(faction);
+    if(trans == null){ trans = GetSpawnTransform(faction); } 
     if(trans == null){
       print("Invalid transform for faction " + faction);
       return;
@@ -320,15 +284,20 @@ public class Arena : MonoBehaviour{
     switch(mode){
       case NONE: return "None"; break;
       case DEATHMATCH: return "Deathmatch"; break;
-      case TEAMDEATHMATCH: return "Team Deathmatch"; break;
-      case ELIMINATION: return "Elimination"; break;
-      case TEAMELIMINATION: return "Team Elimination"; break;
     }
     return "";
   }
   
+  /* Returns the gamemode from Session's arenaData, or NONE. */
+  protected int ActiveGameMode(){
+    if(!Session.Active() || Session.session.arenaData == null){ return NONE; }
+    Data dat = Session.session.arenaData;
+    if(dat.ints == null || dat.ints.Count < 1){ return NONE; }
+    return dat.ints[0];
+  }
+  
   /* Returns remaining time in minutes and seconds. */
-  string Time(){
+  protected string Time(){
     int minutes = time/60;
     int seconds = time%60;
     string secs = "";
