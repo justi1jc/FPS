@@ -13,7 +13,7 @@ public class EditKitMenu : Menu{
   private List<Data> availableItems;
   private Data activeItem; // Item to render.
   private bool editName = false;
-  private int activeSlot = NONE;
+  private Slots activeSlot = Slots.None;
   private Item model; // Visual model of active item
   private float zoom = 2f;
   private int kitIndex = -1;
@@ -22,15 +22,7 @@ public class EditKitMenu : Menu{
   private List<Data> activeArms;
   private List<Data> activeInventory;
   private List<Data> activeClothes;
-  
-  // Kit Slot constants.
-  const int NONE = 0;
-  const int RIGHT = 1;
-  const int LEFT = 2;
-  const int FIRST = 3;
-  const int SECOND = 4;
-  const int THIRD = 5;
-  const int FOURTH = 6;
+  enum Slots{ None, Right, Left, First, Second, Third, Fourth };
   
   public EditKitMenu(MenuManager m) : base(m){
     activeKit = null;
@@ -135,64 +127,62 @@ public class EditKitMenu : Menu{
     
     w = Width()/8;
     str = "Right hand: ";
-    Data dat = GetKitItem(RIGHT);
+    Data dat = GetKitItem(Slots.Right);
     str += dat != null ? dat.displayName : "Empty";
     x = Width()/4;
     y = h;
-    if(Button(str, x, y, w, h)){ ChangeActiveSlot(RIGHT); }
+    if(Button(str, x, y, w, h)){ ChangeActiveSlot(Slots.Right); }
     str = "Left hand: ";
-    dat = GetKitItem(LEFT);
+    dat = GetKitItem(Slots.Left);
     str += dat != null ? dat.displayName : "Empty";
     y = 2*h;
     if(activeArms[0] == null || Item.OneHanded(activeArms[0])){
-      if(Button(str, x, y, w, h)){ ChangeActiveSlot(LEFT); }
+      if(Button(str, x, y, w, h)){ ChangeActiveSlot(Slots.Left); }
     }
     str = "Item 1: ";
-    dat = GetKitItem(FIRST);
+    dat = GetKitItem(Slots.First);
     str += dat != null ? dat.displayName : "Empty";
     y = 3*h;
-    if(Button(str, x, y, w, h)){ ChangeActiveSlot(FIRST); }
+    if(Button(str, x, y, w, h)){ ChangeActiveSlot(Slots.First); }
     str = "Item 2: ";
-    dat = GetKitItem(SECOND);
+    dat = GetKitItem(Slots.Second);
     str += dat != null ? dat.displayName : "Empty";
     y = 4*h;
-    if(Button(str, x, y, w, h)){ ChangeActiveSlot(SECOND); }
+    if(Button(str, x, y, w, h)){ ChangeActiveSlot(Slots.Second); }
     str = "Item 3: ";
-    dat = GetKitItem(THIRD);
+    dat = GetKitItem(Slots.Third);
     str += dat != null ? dat.displayName : "Empty";
     y = 5*h;
-    if(Button(str, x, y, w, h)){ ChangeActiveSlot(THIRD); }
+    if(Button(str, x, y, w, h)){ ChangeActiveSlot(Slots.Third); }
     str = "Item 4: ";
-    dat = GetKitItem(FOURTH);
+    dat = GetKitItem(Slots.Fourth);
     str += dat != null ? dat.displayName : "Empty";
     y = 6*h;
-    if(Button(str, x, y, w, h)){ ChangeActiveSlot(FOURTH); }
+    if(Button(str, x, y, w, h)){ ChangeActiveSlot(Slots.Fourth); }
   }
   
-  
-  
   /* Updates available items according to slot. */
-  private void ChangeActiveSlot(int slot){
+  private void ChangeActiveSlot(Slots slot){
     activeSlot = slot;
-    if(slot == NONE){}
-    else if(slot == RIGHT){ availableItems = GetWeapons(); }
-    else if(slot == LEFT){ availableItems = GetOneHandedWeapons(); }
+    if(slot == Slots.None){}
+    else if(slot == Slots.Right){ availableItems = GetWeapons(); }
+    else if(slot == Slots.Left){ availableItems = GetOneHandedWeapons(); }
     else{ availableItems = new List<Data>(allItems); }
     availableItems.Insert(0, null);
     UpdateModel(GetKitItem(slot));
   }
   
   /* Returns the active kit's item in specified slot, or null */
-  private Data GetKitItem(int slot){
+  private Data GetKitItem(Slots slot){
     if(activeKit == null){ return null; }
     Data ret = null;
     switch(slot){
-      case RIGHT: ret = activeArms[0]; break;
-      case LEFT: ret =activeArms[1]; break;
-      case FIRST: ret = activeInventory[0]; break;
-      case SECOND: ret = activeInventory[1]; break;
-      case THIRD: ret = activeInventory[2]; break;
-      case FOURTH: ret = activeInventory[3]; break;
+      case Slots.Right: ret = activeArms[0]; break;
+      case Slots.Left: ret =activeArms[1]; break;
+      case Slots.First: ret = activeInventory[0]; break;
+      case Slots.Second: ret = activeInventory[1]; break;
+      case Slots.Third: ret = activeInventory[2]; break;
+      case Slots.Fourth: ret = activeInventory[3]; break;
     }
     return ret;
   }
@@ -218,22 +208,22 @@ public class EditKitMenu : Menu{
   }
   
   /* string representation of given slot. */
-  private string SlotText(int slot){
+  private string SlotText(Slots slot){
     switch(slot){
-      case NONE: return "None"; break;
-      case RIGHT: return "Primary Weapon"; break;
-      case LEFT: return "Secondary Weapon(Dual-wielded)"; break;
-      case FIRST: return "Inventory slot 1"; break;
-      case SECOND: return "Inventory slot 2"; break;
-      case THIRD: return "Inventory slot 3"; break;
-      case FOURTH: return "Inventory slot 4"; break;
+      case Slots.None: return "None"; break;
+      case Slots.Right: return "Primary Weapon"; break;
+      case Slots.Left: return "Secondary Weapon(Dual-wielded)"; break;
+      case Slots.First: return "Inventory slot 1"; break;
+      case Slots.Second: return "Inventory slot 2"; break;
+      case Slots.Third: return "Inventory slot 3"; break;
+      case Slots.Fourth: return "Inventory slot 4"; break;
     }
     return "";
   }
   
   /* Renders items available to selected slot. */
   private void RenderItems(){
-    if(activeSlot == NONE){ return;}
+    if(activeSlot == Slots.None){ return;}
     string str = SlotText(activeSlot);
     int w = Width()/4;
     int h = Height()/20;
@@ -303,9 +293,9 @@ public class EditKitMenu : Menu{
   
   /* Equips active item to active slot */
   private void Equip(string name){
-    if(activeSlot == NONE){ return; }
+    if(activeSlot == Slots.None){ return; }
     switch(activeSlot){
-      case RIGHT:
+      case Slots.Right:
         activeKit.arms[0] = name;
         activeArms[0] = Item.GetItem(name);
         if(activeArms[0] != null && !Item.OneHanded(activeArms[0])){
@@ -313,23 +303,23 @@ public class EditKitMenu : Menu{
           activeArms[1] = null;
         }
         break;
-      case LEFT: 
+      case Slots.Left: 
         activeKit.arms[1] = name;
         activeArms[1] = Item.GetItem(name);
         break;
-      case FIRST: 
+      case Slots.First: 
         activeKit.inventory[0] = name;
         activeInventory[0] = Item.GetItem(name);
         break;
-      case SECOND:
+      case Slots.Second:
         activeKit.inventory[1] = name;
         activeInventory[1] = Item.GetItem(name);
         break;
-      case THIRD:
+      case Slots.Third:
         activeKit.inventory[2] = name;
         activeInventory[2] = Item.GetItem(name);
         break;
-      case FOURTH:
+      case Slots.Fourth:
         activeKit.inventory[3] = name;
         activeInventory[3] = Item.GetItem(name);
         break;

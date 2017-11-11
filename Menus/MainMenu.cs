@@ -84,8 +84,8 @@ public class MainMenu : Menu{
     SecondaryBounds();
   }
 
-  public override void Input(int button){
-    if(button == A){ Sound(0); }
+  public override void Input(Buttons button){
+    if(button == Buttons.A){ Sound(0); }
     switch(sy){
       case 0:
         break;

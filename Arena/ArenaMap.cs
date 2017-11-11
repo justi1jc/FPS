@@ -33,16 +33,15 @@ public class ArenaMap{
     string ret = name;
     if( gameModes == null){ return ret; }
     for(int i = 0; i < gameModes.Length; i++){
-      ret += "," + Arena.GameModeName(gameModes[i]);
+      ret += "," + Arena.GameModeName((Arena.GameModes)gameModes[i]);
     }
     return ret;
   }
   
   /* Returns true if this map supports a given gameMode */
-  public bool CompatibleMode(int gameMode){
-    if(gameModes == null){ return false; }
+  public bool CompatibleMode(Arena.GameModes gameMode){
     for(int i = 0; i < gameModes.Length; i++){
-      if(gameModes[i] == gameMode){ return true; }
+      if((Arena.GameModes)gameModes[i] == gameMode){ return true; }
     }
     return false;
   }

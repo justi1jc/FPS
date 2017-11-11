@@ -8,17 +8,11 @@ using System.Collections.Generic;
 
 public class Menu{
   // Button constants
-  public const int UP    = 0;
-  public const int DOWN  = 1;
-  public const int LEFT  = 2;
-  public const int RIGHT = 3;
-  public const int A     = 4;
-  public const int B     = 5;
-  public const int X     = 6;
-  public const int Y     = 7;
-  public const int RT    = 8;
-  public const int LT    = 9;
-  public const int START = 10;
+  public enum Buttons{
+    Up, Down, Left, Right, 
+    A, B, X, Y, 
+    RT, LT, Start
+  };
   
   public MenuManager manager;
   public List<string> notifications = new List<string>(); // Notifications that must be displayed.
@@ -167,28 +161,28 @@ public class Menu{
   }
   
   /* Handles directional input and defers other inputs to Input() */
-  public void Press(int button){
+  public void Press(Buttons button){
     if(!ready){ return; }
     Delay();
     switch(button){
-      case UP:
+      case Buttons.Up:
         sy--;
         UpdateFocus();
         break;
-      case DOWN:
+      case Buttons.Down:
         sy++;
         UpdateFocus();
         break;
-      case RIGHT:
+      case Buttons.Right:
         sx++;
         UpdateFocus();
         break;
-      case LEFT:
+      case Buttons.Left:
         sx--;
         UpdateFocus();
         break;
     }
-    if(button <= START && button >= A){ Input(button); }
+    if(button <= Buttons.Start && button >= Buttons.A){ Input(button); }
   }
   
   public virtual void RenderCursor(){
@@ -215,11 +209,11 @@ public class Menu{
   }
   
   /* Performing actions according to focus goes here. */
-  public virtual void Input(int button){}
+  public virtual void Input(Buttons button){}
   
   /* Convenience method for default exit conditions. */
-  public void DefaultExit(int button){
-    if(button == B || button == Y || button == START){
+  public void DefaultExit(Buttons button){
+    if(button == Buttons.B || button == Buttons.Y || button == Buttons.Start){
       manager.Change("HUD");
       manager.actor.SetMenuOpen(false);
     }

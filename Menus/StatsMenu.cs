@@ -106,7 +106,7 @@ public class StatsMenu : Menu{
     
   }
   
-  public string Modifier(int stat){
+  public string Modifier(StatHandler.Stats stat){
     int mod = manager.actor.doll.Modifier(stat);
     if(mod == 0){ return ""; }
     if(mod < 0){ return "(" + mod + ")"; }
@@ -122,14 +122,14 @@ public class StatsMenu : Menu{
     SecondaryBounds();
   }
   
-  public override void Input(int button){
+  public override void Input(Buttons button){
     DefaultExit(button);
-    if(button == A){ Sound(0); }
+    if(button == Buttons.A){ Sound(0); }
     if(manager.actor == null || manager.actor.stats == null){ return; }
     Actor actor = manager.actor;
     StatHandler stats = actor.stats;
-    if(sx == -1 && button == A){ manager.Change("ABILITY"); }
-    else if(sx == 0 && button == A && stats.skillPoints > 0){
+    if(sx == -1 && button == Buttons.A){ manager.Change("ABILITY"); }
+    else if(sx == 0 && button == Buttons.A && stats.skillPoints > 0){
       switch(sy){
         case 0:
           if(stats.ranged < 100){
@@ -158,7 +158,7 @@ public class StatsMenu : Menu{
           break;
       }
     }
-    else if(sx == 1 && button == A){ manager.Change("QUEST"); }
+    else if(sx == 1 && button == Buttons.A){ manager.Change("QUEST"); }
   }
   
 }

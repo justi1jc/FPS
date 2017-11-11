@@ -41,7 +41,7 @@ public class OptionsMenu : Menu{
       Sound(0);
     }
     
-    if(Session.session != null && Session.session.gameMode == 0){
+    if(Session.session != null && Session.session.mode == Session.Modes.None){
       str = "Load";
       if(Button(str, x, 3*ih, 2*iw, ih, 0, 3)){
         Session.session.LoadFiles();
@@ -82,7 +82,7 @@ public class OptionsMenu : Menu{
     }
     
     
-    if(Session.session != null && Session.session.gameMode == 0){
+    if(Session.session != null && Session.session.mode == Session.Modes.None){
       str = "Save and Quit.";
       if(Button(str, x, 3*ih, 2*iw, ih, 0, 3)){
         Session.session.world.SaveGame();
@@ -98,14 +98,14 @@ public class OptionsMenu : Menu{
     SecondaryBounds();
   }
   
-  public override void Input(int button){
+  public override void Input(Buttons button){
     DefaultExit(button);
     if(submenu == 0){ MainOptionsInput(button); }
     else if(submenu == 1){ QuitOptionsInput(button); }
   }
   
-  public void MainOptionsInput(int button){
-    if(button == A){
+  public void MainOptionsInput(Buttons button){
+    if(button == Buttons.A){
       Sound(0);
       switch(sy){
         case 0:
@@ -132,8 +132,8 @@ public class OptionsMenu : Menu{
     }
   }
   
-  public void QuitOptionsInput(int button){
-    if(button == A){
+  public void QuitOptionsInput(Buttons button){
+    if(button == Buttons.A){
       Sound(0);
       switch(sy){
         case 0:

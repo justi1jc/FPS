@@ -81,7 +81,7 @@ public class Kit{
   public static void PrimaryEquip(string item, ref Actor actor){
     Data dat = Item.GetItem(item);
     if(dat != null){
-      if(dat.itemType == Item.RANGED){ Ranged.MaxAmmo(ref dat); }
+      if(dat.itemType == (int)Item.Types.Ranged){ Ranged.MaxAmmo(ref dat); }
       actor.Equip(dat);
     }
     else{ MonoBehaviour.print(item + " was null!"); }
@@ -90,7 +90,7 @@ public class Kit{
   public static void DualEquip(string item, ref Actor actor){
     Data dat = Item.GetItem(item);
     if(dat != null){
-      if(dat.itemType == Item.RANGED){ Ranged.MaxAmmo(ref dat); }
+      if(dat.itemType == (int)Item.Types.Ranged){ Ranged.MaxAmmo(ref dat); }
       if(!actor.arms.DualEquipAvailable(dat)){
         MonoBehaviour.print("Could not dual equip " + item);
         return;
@@ -156,7 +156,9 @@ public class Kit{
   ){
     Data dat = Item.GetItem(item);
     if(dat != null){
-      if(dat.itemType == Item.ITEM && fullStack){ Item.FullStack(ref dat); }
+      if(dat.itemType == (int)Item.Types.Item && fullStack){ 
+        Item.FullStack(ref dat); 
+      }
       actor.StoreItem(dat);
     }
   }

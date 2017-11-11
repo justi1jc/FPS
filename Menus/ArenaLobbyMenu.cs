@@ -22,7 +22,7 @@ public class ArenaLobbyMenu : Menu{
   private bool p1red = false; // True if player1 is on the red team.
   private bool p2red = false; // True if player2 is on the red team.
   private List<Kit> kits;
-  private int gameMode = Arena.DEATHMATCH;
+  private int gameMode = (int)Arena.GameModes.Deathmatch;
   private List<ArenaMap> maps;
   
   
@@ -35,7 +35,7 @@ public class ArenaLobbyMenu : Menu{
       if(k != null){ kits.Add(k); }
     }
     kits.AddRange(Session.session.GetKits());
-    maps = MapsByMode(gameMode);
+    maps = MapsByMode((Arena.GameModes)gameMode);
     UpdateGameMode();
     PrevKit();
   }
@@ -50,7 +50,7 @@ public class ArenaLobbyMenu : Menu{
       TogglePlayers(); 
       Sound(0); 
     }
-    str = "GameMode:" + Arena.GameModeName(gameMode);
+    str = "GameMode:" + Arena.GameModeName((Arena.GameModes)gameMode);
     if(Button(str, 0, 2*ih, iw, ih)){ NextGameMode(); }
     RenderMap(iw, ih);
     if(Button("Start", Width()-iw, Height()-ih, iw, ih)){ StartArena(); }
@@ -58,8 +58,8 @@ public class ArenaLobbyMenu : Menu{
       manager.Change("MAIN");
       Sound(0);
     }
-    switch(gameMode){
-      case Arena.DEATHMATCH: RenderDeathmatch(); break;
+    switch((Arena.GameModes)gameMode){
+      case Arena.GameModes.Deathmatch: RenderDeathmatch(); break;
     }
     
   }
@@ -121,11 +121,11 @@ public class ArenaLobbyMenu : Menu{
   
   
   /* Returns a list of maps compatible with the given gamemode */
-  public List<ArenaMap> MapsByMode(int gameMode){
+  public List<ArenaMap> MapsByMode(Arena.GameModes gameMode){
     List<ArenaMap> allMaps = ArenaMap.GetMaps();
     List<ArenaMap> ret = new List<ArenaMap>();
     foreach(ArenaMap map in allMaps){
-      if(map.CompatibleMode(gameMode)){ ret.Add(map); }
+      if(map.CompatibleMode((Arena.GameModes)gameMode)){ ret.Add(map); }
     }
     return ret;
   }
@@ -168,9 +168,11 @@ public class ArenaLobbyMenu : Menu{
   /* Cycles through gamemodes. */
   private void NextGameMode(){
     gameMode++;
-    if(gameMode > Arena.DEATHMATCH){ gameMode = Arena.DEATHMATCH; }
+    if(gameMode > (int)Arena.GameModes.Deathmatch){
+      gameMode = (int)Arena.GameModes.Deathmatch; 
+    }
     UpdateGameMode();
-    maps = MapsByMode(gameMode);
+    maps = MapsByMode((Arena.GameModes)gameMode);
     mapIndex = 0;
   }
   
@@ -182,8 +184,8 @@ public class ArenaLobbyMenu : Menu{
   public void StartArena(){
     Session.session.DestroyMenu();
     Data dat = null;
-    switch(gameMode){
-      case Arena.DEATHMATCH: dat = GetDeathmatchData(); break;
+    switch((Arena.GameModes)gameMode){
+      case Arena.GameModes.Deathmatch: dat = GetDeathmatchData(); break;
     }
     
     Session.session.arenaData = dat;
@@ -215,5 +217,5 @@ public class ArenaLobbyMenu : Menu{
   }
   public override void UpdateFocus(){}
   
-  public override void Input(int button){}
+  public override void Input(Buttons button){}
 }

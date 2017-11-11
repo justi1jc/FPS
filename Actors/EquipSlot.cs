@@ -9,7 +9,7 @@ using System.Collections.Generic;
 [System.Serializable]
 public class EquipSlot{
   
-  // Hands
+  // Hand named indexes
   public const int RIGHT = 0;
   public const int LEFT = 1;
   
@@ -156,21 +156,21 @@ public class EquipSlot{
   public void Store(int hand){
     if(hand < 0 || hand > hands.Length || items[hand] == null){ return; }
     if(items[hand] is Ability){ return; }
-    int status = GetStatus(hand);
+    Inventory.Statuses status = GetStatus(hand);
     Data dat = items[hand].GetData();
-    if(status == -1 || actor == null || actor.inventory == null || dat == null){
-      return;
-    }
+    if(status == Inventory.Statuses.Empty || 
+      actor == null || actor.inventory == null || dat == null
+    ){ return; }
     actor.inventory.StoreEquipped(dat, status);
     MonoBehaviour.Destroy(items[hand].gameObject);
     items[hand] = null;
   }
   
   /* Returns corresponding hand's equip status according to Inventory. */
-  private int GetStatus(int hand){
-    if(hand == RIGHT){ return Inventory.PRIMARY; }
-    if(hand == LEFT){ return Inventory.SECONDARY; }
-    return -1;
+  private Inventory.Statuses GetStatus(int hand){
+    if(hand == RIGHT){ return Inventory.Statuses.Primary; }
+    if(hand == LEFT){ return Inventory.Statuses.Secondary; }
+    return Inventory.Statuses.Empty;
   }
   
   /* Drop particular item from hand */
@@ -178,8 +178,8 @@ public class EquipSlot{
     int hand = FindHand(item);
     if(hand == -1){ return; }
     if(actor != null && !(item is Ability)){
-      if(hand == RIGHT){ actor.inventory.ClearEquipped(Inventory.PRIMARY); }
-      if(hand == LEFT){ actor.inventory.ClearEquipped(Inventory.SECONDARY); }
+      if(hand == RIGHT){ actor.inventory.ClearEquipped(Inventory.Statuses.Primary); }
+      if(hand == LEFT){ actor.inventory.ClearEquipped(Inventory.Statuses.Secondary); }
     }
     items[hand].Drop();
     items[hand] = null;
@@ -195,8 +195,8 @@ public class EquipSlot{
         items[i].Drop();
         items[i] = null;
         if(actor != null){
-          if(i == RIGHT){ actor.inventory.ClearEquipped(Inventory.PRIMARY); }
-          if(i == LEFT){ actor.inventory.ClearEquipped(Inventory.SECONDARY); }
+          if(i == RIGHT){ actor.inventory.ClearEquipped(Inventory.Statuses.Primary); }
+          if(i == LEFT){ actor.inventory.ClearEquipped(Inventory.Statuses.Secondary); }
         }
         return;
       }
@@ -294,18 +294,21 @@ public class EquipSlot{
   }
   
   /* Triggers melee animations when appropriate. */
-  public void MeleeAnim(int use){
-    if(actor == null || (use != Item.A_DOWN && use != Item.B_DOWN)){ return; }
+  public void MeleeAnim(Item.Inputs use){
+    if(
+      actor == null || 
+      (use != Item.Inputs.A_Down && use != Item.Inputs.B_Down)
+    ){ return; }
     Melee melee = null;
     bool r = false;
-    if(Single() && use == Item.A_DOWN){ 
+    if(Single() && use == Item.Inputs.A_Down){ 
       if(items[RIGHT] != null && items[RIGHT] is Melee){
         melee = (Melee)items[RIGHT];
       }
       r = true;
     }
     else{
-      if(use == Item.A_DOWN){ 
+      if(use == Item.Inputs.A_Down){ 
         r = false;
         if(items[LEFT] != null && items[LEFT] is Melee){ 
           melee = (Melee)items[LEFT];
@@ -326,7 +329,7 @@ public class EquipSlot{
   
   
   /* Use one of the equipped items. */
-  public void Use(int use){
+  public void Use(Item.Inputs use){
     MeleeAnim(use);
     if(Single()){
       if(items[RIGHT] == null){ return; }
@@ -334,17 +337,17 @@ public class EquipSlot{
     }
     else{
       switch(use){
-        case Item.A_DOWN: 
-          if(items[LEFT] != null){ items[LEFT].Use(Item.A_DOWN); }
+        case Item.Inputs.A_Down: 
+          if(items[LEFT] != null){ items[LEFT].Use(Item.Inputs.A_Down); }
           break;
-        case Item.B_DOWN: 
-          if(items[RIGHT] != null){ items[RIGHT].Use(Item.A_DOWN); } 
+        case Item.Inputs.B_Down: 
+          if(items[RIGHT] != null){ items[RIGHT].Use(Item.Inputs.A_Down); } 
           break;
-        case Item.A_UP: 
-          if(items[LEFT] != null){ items[LEFT].Use(Item.A_UP); } 
+        case Item.Inputs.A_Up: 
+          if(items[LEFT] != null){ items[LEFT].Use(Item.Inputs.A_Up); } 
           break;
-        case Item.B_UP: 
-          if(items[RIGHT] != null){ items[RIGHT].Use(Item.A_UP); } 
+        case Item.Inputs.B_Up: 
+          if(items[RIGHT] != null){ items[RIGHT].Use(Item.Inputs.A_Up); } 
           break;
       }
     }

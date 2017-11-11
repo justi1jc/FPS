@@ -41,16 +41,16 @@ public class Ranged : Weapon{
     }
   }
   
-  public override void Use(int action){
-    if(action == A_DOWN && ammo < 1){ Sound(2); }
-    if(action == A_DOWN && !fullAuto){ Fire(); }
-    else if(action == A_DOWN){ StartCoroutine(AutoFireRoutine()); }
-    if(action == A_UP && fullAuto){ autoFireActive = false; }
-    else if(action == B_DOWN){ ToggleAim(); }
-    else if(action == C_DOWN && ammo < maxAmmo && ready){
+  public override void Use(Inputs action){
+    if(action == Inputs.A_Down && ammo < 1){ Sound(2); }
+    if(action == Inputs.A_Down && !fullAuto){ Fire(); }
+    else if(action == Inputs.A_Down){ StartCoroutine(AutoFireRoutine()); }
+    if(action == Inputs.A_Up && fullAuto){ autoFireActive = false; }
+    else if(action == Inputs.B_Down){ ToggleAim(); }
+    else if(action == Inputs.C_Down && ammo < maxAmmo && ready){
       StartCoroutine(Reload());
     }
-    else if(action == D_DOWN && ready){
+    else if(action == Inputs.D_Down && ready){
       StartCoroutine(Melee());
     }
   }
@@ -169,8 +169,8 @@ public class Ranged : Weapon{
     ready = false;
     if(holder != null){
       holder.SetAnimBool("rangedMelee", true);
-      meleeDamage = holder.stats.DrainCondition(StatHandler.STAMINA, 25);
-      meleeDamage += holder.stats.GetStat(StatHandler.STRENGTH);
+      meleeDamage = holder.stats.DrainCondition(StatHandler.Stats.Stamina, 25);
+      meleeDamage += holder.stats.GetStat(StatHandler.Stats.Strength);
     }
     else{ meleeDamage = 25; }
     
@@ -243,7 +243,7 @@ public class Ranged : Weapon{
     dat.ints.Add(ammo);
     dat.ints.Add(maxAmmo);
     dat.strings.Add(ammunition);
-    dat.itemType = Item.RANGED;
+    dat.itemType = (int)Types.Ranged;
     return dat;
   }
 

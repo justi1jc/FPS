@@ -7,19 +7,16 @@
 */
 
 public class SessionEvent{
-  // Event code constants
-  public const int DEATH = 0;
+  // Event to report
+  public enum Events{ Death };
   
-  // Destination constants
-  public const int NONE = -1; // This event has multiple potential destinations.
-  public const int SESSION = 0;
-  public const int ARENA = 1; 
-  public const int WORLD = 2;
+  // Intendeed destination for this event.
+  public enum Destinations{ None, Session, Arena, World };
   
   
   
-  public int destination;
-  public int code; // The type of event.
+  public Destinations destination;
+  public Events code; // The type of event.
   public string message;// The string representation of this message.
   public Data[] args; // Event's data
   
@@ -41,8 +38,8 @@ public class SessionEvent{
       se.message += ".";
     }
     else if(victimName != ""){ se.message = victimName + " died."; }
-    se.code = DEATH;
-    se.destination = NONE;
+    se.code = Events.Death;
+    se.destination = Destinations.None;
     se.args = new Data[3];
     se.args[0] = victim;
     se.args[1] = killer;
@@ -58,7 +55,7 @@ public class SessionEvent{
     dat.strings.Add(a.prefabName);
     dat.ints.Add(a.playerNumber);
     dat.ints.Add(a.id);
-    dat.ints.Add(a.stats.faction);
+    dat.ints.Add((int)a.stats.faction);
     return dat;
   }
 

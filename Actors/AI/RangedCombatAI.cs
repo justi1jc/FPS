@@ -63,10 +63,10 @@ public class RangedCombatAI : AI{
     while(weapon != null && firing && combatant != null){
       if(weapon.ammo > 0){ reloaded = false; }
       yield return actor.StartCoroutine(AimAt(combatant));
-      actor.Use(0);
+      actor.Use(Item.Inputs.A_Down);
       yield return new WaitForSeconds(0.1f);
       if(!reloaded && weapon.ammo == 0){
-        actor.Use(2);
+        actor.Use(Item.Inputs.B_Down);
         yield return new WaitForSeconds(1f);
         reloaded = true;
       }

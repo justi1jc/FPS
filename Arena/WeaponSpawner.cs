@@ -39,7 +39,7 @@ public class WeaponSpawner : MonoBehaviour{
   private void Spawn(){
     Data dat = Item.GetItem(weaponName);
     if(dat != null){
-      if(dat.itemType == Item.RANGED){ Ranged.MaxAmmo(ref dat); }
+      if(dat.itemType == (int)Item.Types.Ranged){ Ranged.MaxAmmo(ref dat); }
       Item item = Item.GetItem(dat);
       if(item != null){
         weapon = item.gameObject;

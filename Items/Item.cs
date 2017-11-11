@@ -10,35 +10,22 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Item : MonoBehaviour{
-  // Constants to reference class within Data
-  public const int ITEM = 0;
-  public const int FOOD = 1;
-  public const int DECOR = 2;
-  public const int CONTAINER = 3;
-  public const int SPAWNER = 4;
-  public const int WARPDOOR = 5;
-  public const int WEAPON = 6;
-  public const int MELEE = 7;
-  public const int RANGED = 8;
-  public const int PROJECTILE = 9;
-  public const int EQUIPMENT = 10;
-  public const int ABILITY = 11;
+  // Id for each type of item used by Data.
+  public enum Types {
+    Item, Food, Decor, Container, Spawner, Warpdoor, Weapon, Melee, Ranged,
+    Projectile, Equipment, Ability
+  };
   
-  // Input constants.
-  public const int A_DOWN = 0;
-  public const int B_DOWN = 1;
-  public const int C_DOWN = 2;
-  public const int D_DOWN = 3;
-  public const int E_DOWN = 4;
-  public const int F_DOWN = 5;
-  public const int G_DOWN = 6;
-  public const int A_UP = 7;
-  public const int B_UP = 8;
-  public const int C_UP = 9;
-  public const int D_UP = 10;
-  public const int E_UP = 11;
-  public const int F_UP = 12;
-  public const int G_UP = 13;
+  // Inputs used for Use()
+  public enum Inputs {
+    A_Down, A_Up,
+    B_Down, B_Up,
+    C_Down, C_Up,
+    D_Down, D_Up,
+    E_Down, E_Up,
+    F_Down, F_Up,
+    G_Down, G_Up,
+  };
 
   // Base variables
   public string prefabName;
@@ -65,7 +52,7 @@ public class Item : MonoBehaviour{
   public float knockBack;   // Magnitude of force exerted on target
   
   // Empty base methods
-  public virtual void Use(int action){}
+  public virtual void Use(Inputs action){}
   public virtual string GetInfo(){ return ""; }
   
   // Implemented base methods
@@ -136,7 +123,7 @@ public class Item : MonoBehaviour{
     dat.stackSize = stackSize;
     dat.ints.Add(weight);
     dat.baseValue = baseValue;
-    dat.itemType = Item.ITEM;
+    dat.itemType = (int)Types.Item;
     dat.bools.Add(oneHanded);
     return dat;
   }
@@ -144,9 +131,10 @@ public class Item : MonoBehaviour{
   /* Returns true if an item stored in Data is a weapon. */
   public static bool IsWeapon(Data dat){
     if(dat == null){ return false; }
-    if(dat.itemType == MELEE || dat.itemType == RANGED || dat.itemType == WEAPON){
-      return true;
-    }
+    if(dat.itemType == (int)Types.Melee || 
+      dat.itemType == (int)Types.Ranged || 
+      dat.itemType == (int)Types.Weapon
+    ){ return true; }
     return false;
   }
   

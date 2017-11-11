@@ -23,7 +23,7 @@ public class MenuManager: MonoBehaviour{
   
   
   /* Send input to menu.. */
-  public void Press(int button){ active.Press(button); }
+  public void Press(Menu.Buttons button){ active.Press(button); }
   
   public void Awake(){
     InitSounds();

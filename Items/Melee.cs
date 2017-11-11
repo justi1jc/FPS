@@ -15,8 +15,8 @@ public class Melee : Weapon{
     ready = true;
   }
   
-  public override void Use(int action){
-    if(action == A_DOWN && ready){ StartCoroutine(Swing()); }
+  public override void Use(Inputs action){
+    if(action == Inputs.A_Down && ready){ StartCoroutine(Swing()); }
   }
   
   /* Swings melee weapon. */
@@ -24,7 +24,7 @@ public class Melee : Weapon{
     ready = false;
     damageActive = false;
     if(holder != null){
-      int stam = holder.stats.DrainCondition(StatHandler.STAMINA, 25);
+      int stam = holder.stats.DrainCondition(StatHandler.Stats.Stamina, 25);
       meleeDamage = (damage * stam)/25;
     }
     else{ meleeDamage = damage; }
@@ -41,7 +41,7 @@ public class Melee : Weapon{
   public override Data GetData(){
     Data dat = GetBaseData();
     AddWeaponData(dat);
-    dat.itemType = Item.MELEE;
+    dat.itemType = (int)Types.Melee;
     return dat;
   }
   

@@ -43,59 +43,58 @@ public class ActorInputHandler{
   }
   
   /* Handles button input in menu. */
-  public void HandleMenuButton(InputEvent action){
-    int btn = action.button;
-    int pt = action.pressType;
-    float dt = action.downTime;
+  public void HandleMenuButton(InputEvent evt){
+    InputEvent.Actions action = evt.action;
+    float dt = evt.downTime;
     MenuManager menu = actor.GetMenu();
     
-    if(pt == InputEvent.DOWN || pt == InputEvent.HELD){
-      switch(btn){
-        case InputEvent.K_W: menu.Press(Menu.UP); break;
-        case InputEvent.K_UP: menu.Press(Menu.UP); break;
-        case InputEvent.X360_DUP: menu.Press(Menu.UP); break;
+    if(action == InputEvent.Actions.Down || action == InputEvent.Actions.Held){
+      switch(evt.button){
+        case InputEvent.Buttons.W: menu.Press(Menu.Buttons.Up); break;
+        case InputEvent.Buttons.Up: menu.Press(Menu.Buttons.Up); break;
+        case InputEvent.Buttons.DUp: menu.Press(Menu.Buttons.Up); break;
         
-        case InputEvent.K_S: menu.Press(Menu.DOWN); break;
-        case InputEvent.K_DOWN: menu.Press(Menu.DOWN); break;
-        case InputEvent.X360_DDOWN: menu.Press(Menu.DOWN); break;
+        case InputEvent.Buttons.S: menu.Press(Menu.Buttons.Down); break;
+        case InputEvent.Buttons.Down: menu.Press(Menu.Buttons.Down); break;
+        case InputEvent.Buttons.DDown: menu.Press(Menu.Buttons.Down); break;
         
-        case InputEvent.K_A: menu.Press(Menu.LEFT); break;
-        case InputEvent.K_LEFT: menu.Press(Menu.LEFT); break;
-        case InputEvent.X360_DLEFT: menu.Press(Menu.LEFT); break;
+        case InputEvent.Buttons.A: menu.Press(Menu.Buttons.Left); break;
+        case InputEvent.Buttons.Left: menu.Press(Menu.Buttons.Left); break;
+        case InputEvent.Buttons.DLeft: menu.Press(Menu.Buttons.Left); break;
         
-        case InputEvent.K_D: menu.Press(Menu.RIGHT); break;
-        case InputEvent.K_RIGHT: menu.Press(Menu.RIGHT); break;
-        case InputEvent.X360_DRIGHT: menu.Press(Menu.RIGHT); break;
+        case InputEvent.Buttons.D: menu.Press(Menu.Buttons.Right); break;
+        case InputEvent.Buttons.Right: menu.Press(Menu.Buttons.Right); break;
+        case InputEvent.Buttons.DRight: menu.Press(Menu.Buttons.Right); break;
       }
     }
-    if(pt == InputEvent.DOWN){
-      switch(btn){
-        case InputEvent.K_E: menu.Press(Menu.A); break;
-        case InputEvent.K_ENTER: menu.Press(Menu.A); break;
-        case InputEvent.X360_A: menu.Press(Menu.A); break;
+    if(action == InputEvent.Actions.Down){
+      switch(evt.button){
+        case InputEvent.Buttons.E: menu.Press(Menu.Buttons.A); break;
+        case InputEvent.Buttons.Enter: menu.Press(Menu.Buttons.A); break;
+        case InputEvent.Buttons.C_A: menu.Press(Menu.Buttons.A); break;
         
-        case InputEvent.K_BACKSPACE: menu.Press(Menu.B); break;
-        case InputEvent.K_TAB: menu.Press(Menu.B); break;
-        case InputEvent.X360_B: menu.Press(Menu.B); break;
+        case InputEvent.Buttons.Backspace: menu.Press(Menu.Buttons.B); break;
+        case InputEvent.Buttons.Tab: menu.Press(Menu.Buttons.B); break;
+        case InputEvent.Buttons.C_B: menu.Press(Menu.Buttons.B); break;
         
-        case InputEvent.K_R: menu.Press(Menu.X); break;
-        case InputEvent.X360_X: menu.Press(Menu.X); break;
+        case InputEvent.Buttons.R: menu.Press(Menu.Buttons.X); break;
+        case InputEvent.Buttons.C_X: menu.Press(Menu.Buttons.X); break;
         
-        case InputEvent.K_ESC: menu.Press(Menu.START); break;
-        case InputEvent.X360_START: menu.Press(Menu.START); break;
+        case InputEvent.Buttons.Escape: menu.Press(Menu.Buttons.Start); break;
+        case InputEvent.Buttons.Start: menu.Press(Menu.Buttons.Start); break;
       }
     }
   }
   
   /* Handles axis input in menu. */
   public void HandleMenuAxis(InputEvent action){
-    if(action.axis != InputEvent.X360_LEFTSTICK){ return; }
+    if(action.axis != InputEvent.Axes.LStick){ return; }
     float x = action.x;
     float y = action.y;
-    if(y > 0){ actor.menu.Press(Menu.UP); }
-    else if( y < 0){ actor.menu.Press(Menu.DOWN); }
-    if(x < 0){ actor.menu.Press(Menu.LEFT); }
-    else if(x > 0){ actor.menu.Press(Menu.RIGHT); }
+    if(y > 0){ actor.menu.Press(Menu.Buttons.Up); }
+    else if( y < 0){ actor.menu.Press(Menu.Buttons.Down); }
+    if(x < 0){ actor.menu.Press(Menu.Buttons.Left); }
+    else if(x > 0){ actor.menu.Press(Menu.Buttons.Right); }
   }
   
   /* Acts upon action in the context of controlling actor. */
@@ -109,122 +108,114 @@ public class ActorInputHandler{
   }
   
   /* Handles button input for Actor. */
-  public void HandleActorButton(InputEvent action){
-    int btn = action.button;
-    int pt = action.pressType;
-    float dt = action.downTime;
-    if(pt == InputEvent.HELD || pt == InputEvent.DOWN){
+  public void HandleActorButton(InputEvent evt){
+    InputEvent.Actions action = evt.action;
+    InputEvent.Buttons btn = evt.button;
+    float dt = evt.downTime;
+    if(action == InputEvent.Actions.Held || action == InputEvent.Actions.Down){
       switch(btn){
-        case InputEvent.K_W:
+        case InputEvent.Buttons.W:
           y = 1.0f;
           moved = true; 
           break;
-        case InputEvent.K_S: 
+        case InputEvent.Buttons.S: 
           y = -1.0f;
           moved = true; 
           break;
-        case InputEvent.K_D: 
+        case InputEvent.Buttons.D: 
           x = 1;
           moved = true; 
           break;
-        case InputEvent.K_A: 
+        case InputEvent.Buttons.A: 
           x = -1;
           moved = true;
           break;
       }
       
     }
-    else if(pt == InputEvent.UP){
+    else if(action == InputEvent.Actions.Up){
       if(
-        btn == InputEvent.K_W ||
-        btn == InputEvent.K_A || 
-        btn == InputEvent.K_S ||
-        btn == InputEvent.K_D
+        btn == InputEvent.Buttons.W ||
+        btn == InputEvent.Buttons.A || 
+        btn == InputEvent.Buttons.S ||
+        btn == InputEvent.Buttons.D
       ){ moved = true; }
     }
     
-    if(pt == InputEvent.DOWN){
+    if(action == InputEvent.Actions.Down){
       if(!actor.arms.Single()){
         switch(btn){
-          case InputEvent.X360_RT: actor.Use(Item.B_DOWN); return; break;
-          case InputEvent.X360_LT: actor.Use(Item.A_DOWN); return; break;
+          case InputEvent.Buttons.RT: actor.Use(Item.Inputs.B_Down); return; break;
+          case InputEvent.Buttons.LT: actor.Use(Item.Inputs.A_Down); return; break;
         }
       }
       switch(btn){
-        case InputEvent.MOUSE_0: actor.Use(Item.A_DOWN); break;
-        case InputEvent.X360_RT: actor.Use(Item.A_DOWN); break;
+        case InputEvent.Buttons.M_0: actor.Use(Item.Inputs.A_Down); break;
+        case InputEvent.Buttons.RT: actor.Use(Item.Inputs.A_Down); break;
         
-        case InputEvent.MOUSE_1: actor.Use(Item.B_DOWN); break;
-        case InputEvent.X360_LT: actor.Use(Item.B_DOWN); break;
+        case InputEvent.Buttons.M_1: actor.Use(Item.Inputs.B_Down); break;
+        case InputEvent.Buttons.LT: actor.Use(Item.Inputs.B_Down); break;
         
-        case InputEvent.K_L_SHIFT: actor.SetSprinting(true); break;
-        case InputEvent.X360_LB: actor.SetSprinting(true); break;
+        case InputEvent.Buttons.L_Shift: actor.SetSprinting(true); break;
+        case InputEvent.Buttons.LB: actor.SetSprinting(true); break;
         
-        case InputEvent.K_Q: actor.Drop(); break;
-        case InputEvent.X360_RB: actor.Drop(); break;
+        case InputEvent.Buttons.Q: actor.Drop(); break;
+        case InputEvent.Buttons.RB: actor.Drop(); break;
         
-        case InputEvent.K_F: actor.Use(Item.D_DOWN); break;
-        case InputEvent.X360_B: actor.Use(Item.D_DOWN); break;
+        case InputEvent.Buttons.F: actor.Use(Item.Inputs.D_Down); break;
+        case InputEvent.Buttons.C_B: actor.Use(Item.Inputs.D_Down); break;
         
-        case InputEvent.K_ESC: actor.ChangeMenu("OPTIONS"); break;
-        case InputEvent.X360_START: actor.ChangeMenu("OPTIONS"); break;
+        case InputEvent.Buttons.Escape: actor.ChangeMenu("OPTIONS"); break;
+        case InputEvent.Buttons.Start: actor.ChangeMenu("OPTIONS"); break;
         
-        case InputEvent.K_TAB: actor.ChangeMenu("INVENTORY"); break;
-        case InputEvent.X360_Y: actor.ChangeMenu("INVENTORY"); break;
+        case InputEvent.Buttons.Tab: actor.ChangeMenu("INVENTORY"); break;
+        case InputEvent.Buttons.C_Y: actor.ChangeMenu("INVENTORY"); break;
         
-        case InputEvent.K_R: actor.Use(Item.C_DOWN); break;
-        case InputEvent.K_E: actor.Interact(); break;
-        case InputEvent.X360_X: 
+        case InputEvent.Buttons.R: actor.Use(Item.Inputs.C_Down); break;
+        case InputEvent.Buttons.E: actor.Interact(); break;
+        case InputEvent.Buttons.C_X: 
           if(actor.actorInReach != null || actor.itemInReach != null){
             actor.Interact();
           }
-          else{ actor.Use(Item.C_DOWN); }
+          else{ actor.Use(Item.Inputs.C_Down); }
           break;
-        case InputEvent.K_SPACE: actor.Jump(); break;
-        case InputEvent.X360_A: actor.Jump(); break;
+        case InputEvent.Buttons.Space: actor.Jump(); break;
+        case InputEvent.Buttons.C_A: actor.Jump(); break;
         
-        case InputEvent.K_L_CTRL: actor.ToggleCrouch(); break;
-        case InputEvent.X360_LSTICKCLICK: actor.ToggleCrouch(); break;
+        case InputEvent.Buttons.L_Ctrl: actor.ToggleCrouch(); break;
+        case InputEvent.Buttons.LStick: actor.ToggleCrouch(); break;
       }
     }
-    else if(pt == InputEvent.HELD){
-      switch(btn){
-      }
-    }
-    else if(pt == InputEvent.UP){
+    else if(action == InputEvent.Actions.Up){
       if(!actor.arms.Single()){
         switch(btn){
-          case InputEvent.X360_RT: actor.Use(Item.B_UP); return; break;
-          case InputEvent.X360_LT: actor.Use(Item.A_UP); return; break;
+          case InputEvent.Buttons.RT: actor.Use(Item.Inputs.B_Up); return; break;
+          case InputEvent.Buttons.LT: actor.Use(Item.Inputs.A_Up); return; break;
         }
       }
       switch(btn){
-        case InputEvent.MOUSE_0: actor.Use(Item.A_UP); break;
-        case InputEvent.X360_RT: actor.Use(Item.A_UP); break;
+        case InputEvent.Buttons.M_0: actor.Use(Item.Inputs.A_Up); break;
+        case InputEvent.Buttons.RT: actor.Use(Item.Inputs.A_Up); break;
         
-        case InputEvent.MOUSE_1: actor.Use(Item.B_UP); break;
-        case InputEvent.X360_LT: actor.Use(Item.B_UP); break;
+        case InputEvent.Buttons.M_1: actor.Use(Item.Inputs.B_Up); break;
+        case InputEvent.Buttons.LT: actor.Use(Item.Inputs.B_Up); break;
         
-        case InputEvent.K_L_SHIFT: actor.SetSprinting(false); break;
-        case InputEvent.X360_LB: actor.SetSprinting(false); break;
+        case InputEvent.Buttons.L_Shift: actor.SetSprinting(false); break;
+        case InputEvent.Buttons.LB: actor.SetSprinting(false); break;
         
-        case InputEvent.K_L_CTRL: actor.ToggleCrouch(); break;
+        case InputEvent.Buttons.L_Ctrl: actor.ToggleCrouch(); break;
       }
     }
   }
   
   /* Handles axis input for Actor. */
-  public void HandleActorAxis(InputEvent action){
-    int axis = action.axis;
-    float xDir = action.x;
-    float yDir = action.y;
-    
-    if(axis == InputEvent.MOUSE || axis == InputEvent.X360_RIGHTSTICK){
-      actor.Turn(new Vector3(xDir, yDir, 0f));
+  public void HandleActorAxis(InputEvent evt){
+    if(evt.axis == InputEvent.Axes.Mouse || evt.axis == InputEvent.Axes.LStick){
+      actor.Turn(new Vector3(evt.x, evt.y, 0f));
     }
-    else if(axis == InputEvent.X360_LEFTSTICK){ 
-      x = xDir;
-      y = yDir;
+    else if(evt.axis == InputEvent.Axes.LStick){ 
+      x = evt.x;
+      y = evt.y;
       moved = true;
     }
   }

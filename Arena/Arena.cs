@@ -11,7 +11,7 @@ using UnityEngine.SceneManagement;
 
 public class Arena : MonoBehaviour{
   public List<int> scores;
-  public List<int> factions; 
+  public List<StatHandler.Factions> factions; 
   public List<string> names;
   public List<Actor> players;
   protected int time;// Remaining round time in seconds.
@@ -22,19 +22,18 @@ public class Arena : MonoBehaviour{
   protected bool p1red, p2red; // True if respective player is on red team.
   protected string kit; // Default kit for players.
   protected MenuManager menu;
-  protected int gameMode; // Active gamemode selected from lobby.
+  protected GameModes gameMode; // Active gamemode selected from lobby.
   public AudioClip[] gameModeClips; // Audio for gamemodes
   public Transform[] soloSpawns, redSpawns, blueSpawns;
   public bool spawnWeapons; // If set to true, spawners will spawn weapons. 
   
   // GameMode  constants
-  public const int NONE = -1;
-  public const int DEATHMATCH = 0;
+  public enum GameModes{ None, Deathmatch };
   
   public virtual void Start(){
     Arena arena = null;
     switch(ActiveGameMode()){
-      case DEATHMATCH: 
+      case GameModes.Deathmatch: 
         DeathmatchArena dmarena = gameObject.AddComponent<DeathmatchArena>();
         arena = (Arena)dmarena;
       break;
@@ -79,12 +78,12 @@ public class Arena : MonoBehaviour{
 
   /* Plays the AudioClip for this game mode. */
   protected void GameModeAnnouncement(){
-    if(gameModeClips == null || gameModeClips.Length < gameMode || gameMode == NONE){ 
+    if(gameModeClips == null || gameModeClips.Length < (int)gameMode || gameMode == GameModes.None){ 
       print("Invalid clip.");
       return; 
     }
     float vol = PlayerPrefs.HasKey("masterVolume") ? PlayerPrefs.GetFloat("masterVolume") : 1f;
-    AudioClip clip = gameModeClips[gameMode];
+    AudioClip clip = gameModeClips[(int)gameMode];
     Vector3 pos = FindPlayerOne();
     AudioSource.PlayClipAtPoint(clip, pos, vol);
   }
@@ -147,15 +146,15 @@ public class Arena : MonoBehaviour{
   }
   
   /* Returns a random spawnpoint according to the faction, or null. */
-  public Transform GetSpawnTransform(int faction = StatHandler.FERAL){
+  public Transform GetSpawnTransform(StatHandler.Factions faction = StatHandler.Factions.Feral){
     switch(faction){
-      case StatHandler.FERAL: 
+      case StatHandler.Factions.Feral: 
         return soloSpawns[Random.Range(0, soloSpawns.Length)]; 
         break;
-      case StatHandler.REDTEAM: 
+      case StatHandler.Factions.RedTeam: 
         return redSpawns[Random.Range(0, redSpawns.Length)];
         break;
-      case StatHandler.BLUETEAM: 
+      case StatHandler.Factions.BlueTeam: 
         return blueSpawns[Random.Range(0, blueSpawns.Length)];
         break;
     }
@@ -172,7 +171,7 @@ public class Arena : MonoBehaviour{
     int killerId = evt.args[1].ints[1]; // Killer's id from ActorDeathData
     int faction = evt.args[0].ints[2]; // Victim's faction from ActorDeathData
     if(killerId != -1){
-      if(teams && factions[killerId] == faction){ 
+      if(teams && (int)factions[killerId] == faction){ 
         scores[killerId]--;
       }
       else if(teams){ scores[killerId]++; }
@@ -204,12 +203,12 @@ public class Arena : MonoBehaviour{
   protected void InitPlayers(){
     scores = new List<int>();
     names = new List<string>();
-    factions = new List<int>();
+    factions = new List<StatHandler.Factions>();
     players = new List<Actor>();
     for(int i = 0; i < bots; i++){
-      int faction = StatHandler.FERAL;
+      StatHandler.Factions faction = StatHandler.Factions.Feral;
       if(teams){
-        faction = (i<(bots/2)) ? StatHandler.REDTEAM : StatHandler.BLUETEAM; 
+        faction = (i<(bots/2)) ? StatHandler.Factions.RedTeam : StatHandler.Factions.BlueTeam; 
         factions.Add(faction);
       }
       SpawnPlayer("Enemy", i, faction);
@@ -217,18 +216,26 @@ public class Arena : MonoBehaviour{
       names.Add("Bot " + (i+1));
     }
     if(teams){ 
-      factions.Add(p1red ? StatHandler.REDTEAM : StatHandler.BLUETEAM);
+      factions.Add(p1red ? StatHandler.Factions.RedTeam : StatHandler.Factions.BlueTeam);
     }
-    SpawnPlayer("player1", bots, p1red ? StatHandler.REDTEAM : StatHandler.BLUETEAM);
+    SpawnPlayer(
+      "player1", 
+      bots, 
+      p1red ? StatHandler.Factions.RedTeam : StatHandler.Factions.BlueTeam
+    );
     scores.Add(0);
     names.Add("Player1");
     
     
     if(Session.session.playerCount > 1){ 
       if(teams){ 
-        factions.Add(p2red ? StatHandler.REDTEAM : StatHandler.BLUETEAM);
+        factions.Add(p2red ? StatHandler.Factions.RedTeam : StatHandler.Factions.BlueTeam);
       }
-      SpawnPlayer("player2", bots + 1, p2red ? StatHandler.REDTEAM : StatHandler.BLUETEAM);
+      SpawnPlayer(
+        "player2",
+        bots + 1,
+        p2red ? StatHandler.Factions.RedTeam : StatHandler.Factions.BlueTeam
+      );
       scores.Add(0);
       names.Add("Player2");
     }
@@ -238,7 +245,7 @@ public class Arena : MonoBehaviour{
   protected void SpawnPlayer(
     string prefabName, 
     int id,
-    int faction, 
+    StatHandler.Factions faction, 
     Transform trans = null 
   ){
     GameObject pref = (GameObject)Resources.Load(
@@ -269,7 +276,7 @@ public class Arena : MonoBehaviour{
         actor.id = id;
         if(teams){
           actor.stats.faction = factions[id];
-          if(factions[id] == StatHandler.REDTEAM){
+          if(factions[id] == StatHandler.Factions.RedTeam){
             Kit.ApplyToClothes("Equipment/Shirt", ref actor, true, 1f, 0f, 0f, 1f);
           }
           else{
@@ -278,7 +285,7 @@ public class Arena : MonoBehaviour{
           
         }
         else{
-          actor.stats.faction = StatHandler.FERAL;
+          actor.stats.faction = StatHandler.Factions.Feral;
         }
         Kit.ApplyToClothes("Equipment/Pants", ref actor, true, 0f, 0f, 0f, 1f);
       }
@@ -286,20 +293,22 @@ public class Arena : MonoBehaviour{
   }
   
   /* Returns the name of a gamemode based on its constant */
-  public static string GameModeName(int mode){
+  public static string GameModeName(GameModes mode){
     switch(mode){
-      case NONE: return "None"; break;
-      case DEATHMATCH: return "Deathmatch"; break;
+      case GameModes.None: return "None"; break;
+      case GameModes.Deathmatch: return "Deathmatch"; break;
     }
     return "";
   }
   
   /* Returns the gamemode from Session's arenaData, or NONE. */
-  protected int ActiveGameMode(){
-    if(!Session.Active() || Session.session.arenaData == null){ return NONE; }
+  protected GameModes ActiveGameMode(){
+    if(!Session.Active() || Session.session.arenaData == null){ 
+      return GameModes.None; 
+    }
     Data dat = Session.session.arenaData;
-    if(dat.ints == null || dat.ints.Count < 1){ return NONE; }
-    return dat.ints[0];
+    if(dat.ints == null || dat.ints.Count < 1){ return GameModes.None; }
+    return (GameModes)dat.ints[0];
   }
   
   /* Returns remaining time in minutes and seconds. */

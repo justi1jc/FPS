@@ -53,23 +53,23 @@ public class InventoryMenu : Menu{
     Data item = inv.Peek(i);
     EquipSlot arms = manager.actor.arms;
     string statusText = "";
-    int status = inv.GetStatus(i);
+    Inventory.Statuses status = inv.GetStatus(i);
     switch(status){
-      case Inventory.PRIMARY: statusText = "[Right]"; break;
-      case Inventory.SECONDARY: statusText = "[Left]"; break;
-      case Inventory.HEAD: statusText = "[Head]"; break;
-      case Inventory.TORSO: statusText = "[Torso]"; break;
-      case Inventory.LEGS: statusText = "[Legs]"; break;
+      case Inventory.Statuses.Primary: statusText = "[Right]"; break;
+      case Inventory.Statuses.Secondary: statusText = "[Left]"; break;
+      case Inventory.Statuses.Head: statusText = "[Head]"; break;
+      case Inventory.Statuses.Torso: statusText = "[Torso]"; break;
+      case Inventory.Statuses.Legs: statusText = "[Legs]"; break;
     }
     string name = item == null ? "EMPTY" : item.displayName;
     string info = item == null ? "" : " " + item.stack + "/" + item.stackSize;
     string str = statusText + name + info;
     if(Button(str, 0, ih * i, iw, ih, 0, i)){ 
-      if(status == Inventory.STORED){ manager.actor.Equip(i); }
-      else if(status != Inventory.EMPTY){ UnequipByIndex(i); }
+      if(status == Inventory.Statuses.Stored){ manager.actor.Equip(i); }
+      else if(status != Inventory.Statuses.Empty){ UnequipByIndex(i); }
       Sound(0); 
     }
-    if(status == Inventory.STORED && arms.DualEquipAvailable(item)){
+    if(status == Inventory.Statuses.Stored && arms.DualEquipAvailable(item)){
       if(Button("Dual Wield", iw, ih * i, iw/2, ih, 1, i)){ 
         manager.actor.DualEquip(i);
         Sound(0);
@@ -107,18 +107,18 @@ public class InventoryMenu : Menu{
   /* Unequips item found at this index. */
   void UnequipByIndex(int index){
     Inventory inv = manager.actor.inventory;
-    int status = inv.GetStatus(index);
+    Inventory.Statuses status = inv.GetStatus(index);
     PaperDoll doll = manager.actor.doll;
     switch(status){
-      case Inventory.PRIMARY: 
+      case Inventory.Statuses.Primary: 
         manager.actor.arms.Store(EquipSlot.RIGHT);
         break;
-      case Inventory.SECONDARY:
+      case Inventory.Statuses.Secondary:
         manager.actor.arms.Store(EquipSlot.LEFT);
         break;
-      case Inventory.HEAD: doll.Store(PaperDoll.HEAD); break;
-      case Inventory.TORSO: doll.Store(PaperDoll.TORSO); break;
-      case Inventory.LEGS: doll.Store(PaperDoll.LEGS); break;
+      case Inventory.Statuses.Head: doll.Store(PaperDoll.Slots.Head); break;
+      case Inventory.Statuses.Torso: doll.Store(PaperDoll.Slots.Torso); break;
+      case Inventory.Statuses.Legs: doll.Store(PaperDoll.Slots.Legs); break;
     }
   }
   
@@ -129,39 +129,39 @@ public class InventoryMenu : Menu{
     int ih = Height()/20;
     string str;
     PaperDoll doll = manager.actor.doll;
-    Data eq = doll.Peek(PaperDoll.HEAD);
+    Data eq = doll.Peek(PaperDoll.Slots.Head);
     str = "Head : " + (eq != null ? eq.displayName : "" );
-    if(Button(str, x, y, iw, ih, 0, -5 )){ doll.Store(PaperDoll.HEAD); }
-    eq = manager.actor.doll.Peek(PaperDoll.TORSO);
+    if(Button(str, x, y, iw, ih, 0, -5 )){ doll.Store(PaperDoll.Slots.Head); }
+    eq = manager.actor.doll.Peek(PaperDoll.Slots.Torso);
     str = "Torso : " + (eq != null ? eq.displayName : "" );
-    if(Button(str, x, y + ih, iw, ih, 0, -4)){ doll.Store(PaperDoll.TORSO); }
-    eq = manager.actor.doll.Peek(PaperDoll.LEGS);
+    if(Button(str, x, y + ih, iw, ih, 0, -4)){ doll.Store(PaperDoll.Slots.Torso); }
+    eq = manager.actor.doll.Peek(PaperDoll.Slots.Legs);
     str = "Legs : " + (eq != null ? eq.displayName : "" );
-    if(Button(str, x, y + 2*ih, iw, ih, 0, -3)){ doll.Store(PaperDoll.LEGS); }
+    if(Button(str, x, y + 2*ih, iw, ih, 0, -3)){ doll.Store(PaperDoll.Slots.Legs); }
   }
 
   /* Deligates to actor */
   void Equip(int slot, bool primary){
-    int status = inv.GetStatus(slot);
+    Inventory.Statuses status = inv.GetStatus(slot);
     PaperDoll doll = manager.actor.doll;
     Data dat = null;
-    if(status == Inventory.EMPTY){ return; }
-    else if(status == Inventory.STORED){ manager.actor.Equip(slot); }
+    if(status == Inventory.Statuses.Empty){ return; }
+    else if(status == Inventory.Statuses.Stored){ manager.actor.Equip(slot); }
     else{
       switch(status){
-        case Inventory.PRIMARY: arms.Store(EquipSlot.RIGHT); break;
-        case Inventory.SECONDARY: arms.Store(EquipSlot.LEFT); break;
-        case Inventory.HEAD:
-          dat = doll.Peek(PaperDoll.HEAD);
-          if(dat != null){ doll.Store(PaperDoll.HEAD);}
+        case Inventory.Statuses.Primary: arms.Store(EquipSlot.RIGHT); break;
+        case Inventory.Statuses.Secondary: arms.Store(EquipSlot.LEFT); break;
+        case Inventory.Statuses.Head:
+          dat = doll.Peek(PaperDoll.Slots.Head);
+          if(dat != null){ doll.Store(PaperDoll.Slots.Head);}
           break;
-        case Inventory.TORSO:
-          dat = doll.Peek(PaperDoll.HEAD);
-          if(dat != null){doll.Store(PaperDoll.TORSO); }
+        case Inventory.Statuses.Torso:
+          dat = doll.Peek(PaperDoll.Slots.Head);
+          if(dat != null){doll.Store(PaperDoll.Slots.Torso); }
           break;
-        case Inventory.LEGS:
-          dat = doll.Peek(PaperDoll.HEAD);
-          if(dat != null){ doll.Store(PaperDoll.LEGS); }
+        case Inventory.Statuses.Legs:
+          dat = doll.Peek(PaperDoll.Slots.Head);
+          if(dat != null){ doll.Store(PaperDoll.Slots.Legs); }
           break;
       }
     }
@@ -174,14 +174,14 @@ public class InventoryMenu : Menu{
     SecondaryBounds();
   }
   
-  public override void Input(int button){
+  public override void Input(Buttons button){
     DefaultExit(button);
     
   }
   
   /*  Controller actions for an item. */
-  public void DefaultItemInput(int button){
-    if(button == X){ manager.actor.DiscardItem(sy); }
+  public void DefaultItemInput(Buttons button){
+    if(button == Buttons.X){ manager.actor.DiscardItem(sy); }
   }
 
 }

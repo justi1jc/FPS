@@ -60,9 +60,9 @@ public class DeathmatchArena : Arena{
   /* Loads data encoded for this gamemode. */
   public override void LoadDataFromSession(){
     if(!Session.Active() || Session.session.arenaData == null){ return; }
-    if(ActiveGameMode() != DEATHMATCH){ return; }
+    if(ActiveGameMode() != GameModes.Deathmatch){ return; }
     Data dat = Session.session.arenaData;
-    gameMode = dat.ints[0];
+    gameMode = (GameModes)dat.ints[0];
     time = startingTime = (dat.ints[1] * 60);
     bots = dat.ints[2];
     respawns = dat.bools[0];
@@ -76,8 +76,8 @@ public class DeathmatchArena : Arena{
   /* Handles a SessionEvent according to the game mode. */
   public override void HandleEvent(SessionEvent evt){
     switch(evt.code){
-      case SessionEvent.DEATH:
-        if( gameMode == DEATHMATCH ){ 
+      case SessionEvent.Events.Death:
+        if( gameMode == GameModes.Deathmatch ){ 
           RecordKill(evt);
           if(!respawns && (players.Count <= 1 || OneTeamLeft())){ EndGame(); }
         }

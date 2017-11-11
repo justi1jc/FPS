@@ -14,6 +14,6 @@ public class Ability : Item{
   
   /* Returns the data for this  */
   public void AddAbilityData(ref Data dat){
-    dat.itemType = Item.ABILITY;  
+    dat.itemType = (int)Item.Types.Ability;  
   }
 }

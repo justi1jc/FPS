@@ -31,7 +31,7 @@ public class Equipment : Item{
   
   /* Changes the color of Equipment in its data form. */
   public static void SetColor(Color color, ref Data dat){
-    if(dat == null || dat.itemType != Item.EQUIPMENT){ return; }
+    if(dat == null || dat.itemType != (int)Item.Types.Equipment){ return; }
     dat.floats[0] = color.r;
     dat.floats[1] = color.g;
     dat.floats[2] = color.b;
@@ -63,31 +63,31 @@ public class Equipment : Item{
     
     dat.strings.Add(slot);
     dat.strings.Add(material);
-    dat.itemType = Item.EQUIPMENT;
+    dat.itemType = (int)Item.Types.Equipment;
     
     return dat;
   }
   
   /* Returns the value of the stat modifier of this Equipment Data */
-  public static int GetMod(Data dat, int stat){
+  public static int GetMod(Data dat, StatHandler.Stats stat){
     if(dat.ints.Count < 13){
       MonoBehaviour.print("Invalid equipment data.");
       return 0;
     }
     switch(stat){
-      case StatHandler.INTELLIGENCE: return dat.ints[1]; break;
-        case StatHandler.CHARISMA: return dat.ints[2]; break;
-        case StatHandler.ENDURANCE: return dat.ints[3]; break;
-        case StatHandler.PERCEPTION: return dat.ints[4]; break;
-        case StatHandler.AGILITY: return dat.ints[5]; break;
-        case StatHandler.WILLPOWER: return dat.ints[6]; break;
-        case StatHandler.STRENGTH: return dat.ints[7]; break;
-        case StatHandler.RANGED: return dat.ints[8]; break;
-        case StatHandler.MELEE: return dat.ints[9]; break;
-        case StatHandler.UNARMED: return dat.ints[10]; break;
-        case StatHandler.MAGIC: return dat.ints[11]; break;
-        case StatHandler.STEALTH: return dat.ints[12]; break;
-        case StatHandler.SLOTS: return dat.ints[13]; break; 
+      case StatHandler.Stats.Intelligence: return dat.ints[1]; break;
+        case StatHandler.Stats.Charisma: return dat.ints[2]; break;
+        case StatHandler.Stats.Endurance: return dat.ints[3]; break;
+        case StatHandler.Stats.Perception: return dat.ints[4]; break;
+        case StatHandler.Stats.Agility: return dat.ints[5]; break;
+        case StatHandler.Stats.Willpower: return dat.ints[6]; break;
+        case StatHandler.Stats.Strength: return dat.ints[7]; break;
+        case StatHandler.Stats.Ranged: return dat.ints[8]; break;
+        case StatHandler.Stats.Melee: return dat.ints[9]; break;
+        case StatHandler.Stats.Unarmed: return dat.ints[10]; break;
+        case StatHandler.Stats.Magic: return dat.ints[11]; break;
+        case StatHandler.Stats.Stealth: return dat.ints[12]; break;
+        case StatHandler.Stats.Slots: return dat.ints[13]; break; 
     }
     return 0;
   }
@@ -124,7 +124,7 @@ public class Equipment : Item{
   
   /* Returns the slot this equipment should be associated with. */
   public static string SlotType(Data dat){
-    if(dat.itemType == Item.EQUIPMENT && dat.strings.Count > 0){
+    if(dat.itemType == (int)Item.Types.Equipment && dat.strings.Count > 0){
       return dat.strings[0];
     }
     return "";

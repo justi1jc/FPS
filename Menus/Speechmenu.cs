@@ -60,11 +60,11 @@ public class SpeechMenu : Menu{
     if(st != null && st.Option(sy) == ""){ sy--; }
   }
   
-  public override void Input(int button){
+  public override void Input(Buttons button){
     DefaultExit(button);
     if(manager.actor == null || manager.actor.interlocutor == null){ return; }
     SpeechTree st = manager.actor.interlocutor.speechTree;
-    if(button == A){
+    if(button == Buttons.A){
       Sound(0);
       if(st.Option(sy) == ""){ return; }
       switch(sy){

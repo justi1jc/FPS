@@ -74,16 +74,16 @@ public class LoadMenu : Menu{
     }
   }
   
-  public override void Input(int button){
+  public override void Input(Buttons button){
     string dest = manager.actor != null ? "OPTIONS" : "MAIN";
-    if(button == A){ Sound(0); }
-    if(button == B || button == Y){ manager.Change(dest); }
-    if(sx == 0 && button == A){
+    if(button == Buttons.A){ Sound(0); }
+    if(button == Buttons.B || button == Buttons.Y){ manager.Change(dest); }
+    if(sx == 0 && button == Buttons.A){
       if(sy < 0 || files == null){ return; }
       if(sy < files.Count){ py = sy; }
       if(sy == files.Count){ manager.Change(dest); }
     }
-    if(sx == 1 && button == A){
+    if(sx == 1 && button == Buttons.A){
       switch(sy){
         case 0:
           Session.session.LoadGame(files[py].sessionName); 

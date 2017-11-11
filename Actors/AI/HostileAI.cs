@@ -68,7 +68,7 @@ public class HostileAI : AI{
     for(int i = 0; i < inv.slots; i++){
       Data dat = inv.Peek(i);
       if(dat != null){
-        if(dat.itemType == Item.MELEE){ ret.Add(i); }
+        if(dat.itemType == (int)Item.Types.Melee){ ret.Add(i); }
       }
     }
     return ret;
@@ -99,7 +99,7 @@ public class HostileAI : AI{
     for(int i = 0; i < inv.slots; i++){
       Data dat = inv.Peek(i);
       if(dat != null){
-        if(dat.itemType == Item.RANGED){ 
+        if(dat.itemType == (int)Item.Types.Ranged){ 
           bool hasAmmo = Ranged.Ammo(dat) > 0;
           if(!hasAmmo){
             string ammoName = Ranged.AmmoName(dat);

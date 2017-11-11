@@ -68,21 +68,21 @@ public class LootMenu : Menu{
     SecondaryBounds();
   }
 
-  public override void Input(int button){
+  public override void Input(Buttons button){
     DefaultExit(button);
-    if(button == A){ Sound(0); }
-    if(button == X){ StoreAll(invB, inv); }
+    if(button == Buttons.A){ Sound(0); }
+    if(button == Buttons.X){ StoreAll(invB, inv); }
     if(sy < 0){ return; }
     if(manager.actor == null){ return; }
     if(inv == null || invB == null){ return; }
     if(sx == 0 && sy > inv.slots){ return; }
     if(sx == 1 && sy > invB.slots){ return; }
     Data item;
-    if(sx == 0 && button == A){
+    if(sx == 0 && button == Buttons.A){
       item = inv.Retrieve(sy);
       Store(invB, item);
     }
-    if(sx == 1 && button == A){
+    if(sx == 1 && button == Buttons.A){
       item = invB.Retrieve(sy);
       Store(inv, item);
     }

@@ -101,8 +101,8 @@ public class HUDMenu : Menu{
   
   public override void UpdateFocus(){}
   
-  public override void Input(int button){
-    if(button == START){ 
+  public override void Input(Buttons button){
+    if(button == Buttons.Start){ 
       manager.Change("OPTIONS");
       if(manager.actor != null){ manager.actor.SetMenuOpen(true); }
     }

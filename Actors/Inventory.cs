@@ -12,17 +12,19 @@ using System.Collections.Generic;
 //[System.Serializable] Prevents null slots.
 public class Inventory{
 
-  // Equip status constants 
-  public const int EMPTY = 0; // Empty slot
-  public const int STORED = 1; // Item is not equipped
-  public const int PRIMARY = 2; // Item is equipped to primary slot.
-  public const int SECONDARY = 3; // Item is eqipped to Secondary slot.
-  public const int HEAD = 4; // Item is equipped to head slot.
-  public const int TORSO = 5; // Item is equipped to torso slot.
-  public const int LEGS = 6; // Item is equipped to leg slot.
+  // Equip status constants
+  public enum Statuses{
+    Empty, // Empty Slot
+    Stored, // Not equipped
+    Primary, // Equipped to primary slot
+    Secondary, // Equipped to secondary slot
+    Head,  // head slot
+    Torso,  // Torso slot
+    Legs // Legs slot
+  };
 
   public List<Data> inv; // Item data each slot.
-  public List<int> status; // Status of this slot's item.
+  public List<Statuses> status; // Status of this slot's item.
   public int slots = 10; // Max number of slots.
   public const int favCount = 4;// Max number of fav slots.
   public List<int> favs; // Slots marked as favorite for quick access.
@@ -30,11 +32,11 @@ public class Inventory{
   
   public Inventory(){
     inv = new List<Data>();
-    status = new List<int>();
+    status = new List<Statuses>();
     favs = new List<int>();
     for(int i = 0 ; i < slots; i++){
       inv.Add(null);
-      status.Add(EMPTY);
+      status.Add(Statuses.Empty);
     }
     for(int i = 0; i < 4; i++){
       favs.Add(-1);
@@ -50,9 +52,9 @@ public class Inventory{
   }
   
   /* Returns the item from a fav slot, updating its status. */
-  public Data EquipFav(int favSlot, int slot){
+  public Data EquipFav(int favSlot, Inventory.Statuses slot){
     if(favSlot < 0 || favSlot > favs.Count){ return null; }
-    if(status[favs[favSlot]] != STORED){ return null; }
+    if(status[favs[favSlot]] != Statuses.Stored){ return null; }
     status[favs[favSlot]] = slot;
     return inv[favs[favSlot]];
   }
@@ -60,13 +62,13 @@ public class Inventory{
   /* Stores an equipped item by its favslot. */
   public void StoreFav(int favSlot, Data dat){
     if(favSlot < 0 || favSlot > favs.Count){ return; }
-    if(status[favs[favSlot]] == STORED){ return; }
+    if(status[favs[favSlot]] == Statuses.Stored){ return; }
     inv[favs[favSlot]] = new Data(dat);
-    status[favs[favSlot]] = STORED;
+    status[favs[favSlot]] = Statuses.Stored;
   }
   
   /* Returns the first slot with the desired status, or -1. */
-  public int GetSlotByStatus(int stat){
+  public int GetSlotByStatus(Statuses stat){
     for(int i = 0; i < slots; i++){
       if(status[i] == stat){ return i; }
     }
@@ -74,19 +76,19 @@ public class Inventory{
   }
   
   /* Returns the status of an item if it were to be equipped. */
-  public static int GetStatusByData(Data dat, bool primary){
-    if(dat == null){ return -1; }
-    int status = -1;
-    if(dat.itemType == Item.EQUIPMENT){
+  public static Statuses GetStatusByData(Data dat, bool primary){
+    if(dat == null){ return Statuses.Empty; }
+    Statuses status = Statuses.Empty;
+    if(dat.itemType == (int)Item.Types.Equipment){
       switch(Equipment.SlotType(dat)){
-        case "": return -1; break;
-        case "HEAD": status = Inventory.HEAD; break;
-        case "TORSO": status = Inventory.TORSO; break;
-        case "LEGS": status = Inventory.LEGS; break;
+        case "": return Statuses.Empty; break;
+        case "HEAD": status = Inventory.Statuses.Head; break;
+        case "TORSO": status = Inventory.Statuses.Torso; break;
+        case "LEGS": status = Inventory.Statuses.Legs; break;
       }
     }
-    else if(primary){ status = Inventory.PRIMARY; }
-    else{ status = Inventory.SECONDARY; }
+    else if(primary){ status = Inventory.Statuses.Primary; }
+    else{ status = Inventory.Statuses.Secondary; }
     return status;
   }
   
@@ -102,31 +104,31 @@ public class Inventory{
   }
   
   /* Uses an equipped item's status to locate and update its slot. */
-  public void StoreEquipped(Data dat, int stat){
+  public void StoreEquipped(Data dat, Statuses stat){
     int slot = GetSlotByStatus(stat);
     if(slot < 0 || slot >= slots || dat == null){ return; }
     inv[slot] = dat;
-    status[slot] = STORED;
+    status[slot] = Inventory.Statuses.Stored;
   }
   
   /* Setter for status. */
-  public void SetStatus(int slot, int val){
+  public void SetStatus(int slot, Statuses val){
     if(slot >= status.Count || slot < 0){ return; }
     status[slot] = val;
   }
   
   /* Getter for status. */
-  public int GetStatus(int slot){
-    if(slot >= status.Count || slot < 0){ return EMPTY; }
+  public Statuses GetStatus(int slot){
+    if(slot >= status.Count || slot < 0){ return Statuses.Empty; }
     return status[slot];
   }
   
   /* Returns the index of the first weapon in inventory, or -1. */
   public int FirstWeapon(){
     for(int i = 0; i < slots; i++){
-      if(inv[i] != null && (inv[i].itemType == Item.WEAPON ||
-        inv[i].itemType == Item.MELEE ||
-        inv[i].itemType == Item.RANGED)
+      if(inv[i] != null && (inv[i].itemType == (int)Item.Types.Weapon ||
+        inv[i].itemType == (int)Item.Types.Melee ||
+        inv[i].itemType == (int)Item.Types.Ranged)
       ){
         return i;
       }
@@ -154,7 +156,7 @@ public class Inventory{
           inv[i] != null &&
           inv[i].displayName == dat.displayName &&
           inv[i].stack < inv[i].stackSize &&
-          status[i] == STORED
+          status[i] == Statuses.Stored
       ){
         dat.stack = StackItem(i, dat);
       }
@@ -162,9 +164,9 @@ public class Inventory{
     if(dat.stack == 0){ return 0; }
     
     for(int i = 0; i < slots; i++){
-      if(inv[i] == null && status[i] == EMPTY){
+      if(inv[i] == null && status[i] == Statuses.Empty){
         inv[i] = dat;
-        status[i] = STORED;
+        status[i] = Statuses.Stored;
         return 0;
       }
     }
@@ -192,24 +194,26 @@ public class Inventory{
     }
     else{
       inv[slot] = null;
-      status[slot] = EMPTY;
+      status[slot] = Statuses.Empty;
     }
     return ret;
   }
   
   /* Returns the contents of this slot, marking it with the given status */
-  public Data Equip(int slot, int stat){
-    if(slot < 0 || slot >= inv.Count || status[slot] != STORED){ return null; }
+  public Data Equip(int slot, Statuses stat){
+    if(slot < 0 || slot >= inv.Count || status[slot] != Statuses.Stored){ 
+      return null; 
+    }
     status[slot] = stat;
     return new Data(inv[slot]);
   }
   
   /* Clears all slots with the given status. */
-  public void ClearEquipped(int stat){
+  public void ClearEquipped(Statuses stat){
     for(int i = 0; i < inv.Count; i++){
       if(status[i] == stat){
         inv[i] = null;
-        status[i] = EMPTY;
+        status[i] = Statuses.Empty;
       }
     }
   }

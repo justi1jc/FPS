@@ -337,7 +337,7 @@ public class Actor : MonoBehaviour{
   /* Attempts to move the Actor. Applies stamina limitations.
      If cannot move, tries to move at 45 degree angle */
   void ExecuteMove(float pace, Vector3 dir){
-    if(sprinting && stats.DrainCondition(StatHandler.STAMINA, 1) == 0){
+    if(sprinting && stats.DrainCondition(StatHandler.Stats.Stamina, 1) == 0){
       sprinting = false;
       return;
     }
@@ -466,7 +466,7 @@ public class Actor : MonoBehaviour{
     float x = recoil;
     x = Random.Range(-x, x);
     float y = Random.Range(recoil, recoil*1.5f);
-    stats.DrainCondition(StatHandler.STAMINA, (int)(5*recoil));
+    stats.DrainCondition(StatHandler.Stats.Stamina, (int)(5*recoil));
     Turn(new Vector3(-y, x, 0f) );
   }
   
@@ -535,11 +535,11 @@ public class Actor : MonoBehaviour{
     if(stats.dead){ return; }
     if(weapon == null || GetRoot(weapon.transform) == transform){ return; }
     if(dam.health != 0){
-      stats.DrainCondition(StatHandler.HEALTH, dam.health, weapon);
+      stats.DrainCondition(StatHandler.Stats.Health, dam.health, weapon);
     }
     if(dam.health > 20){ Stagger(); }
-    if(dam.stamina != 0){ stats.DrainCondition(StatHandler.STAMINA, dam.stamina); }
-    if(dam.mana != 0){ stats.DrainCondition(StatHandler.MANA, dam.mana); }  
+    if(dam.stamina != 0){ stats.DrainCondition(StatHandler.Stats.Stamina, dam.stamina); }
+    if(dam.mana != 0){ stats.DrainCondition(StatHandler.Stats.Mana, dam.mana); }  
     Actor attacker = Attacker(weapon);
   }
   
@@ -624,7 +624,7 @@ public class Actor : MonoBehaviour{
   }
   
   /* Use primary or secondary item */
-  public void Use(int use){ arms.Use(use); }
+  public void Use(Item.Inputs use){ arms.Use(use); }
   
   /* Drops an item from actor's arms. Equips a weapon if hands are empty.*/
   public void Drop(){
@@ -669,7 +669,9 @@ public class Actor : MonoBehaviour{
   public void Equip(int itemIndex){
     Data dat = inventory.Peek(itemIndex);
     if(dat == null){ print("Tried to equip null item."); return; }
-    if(dat.itemType == Item.EQUIPMENT){ doll.EquipFromInventory(itemIndex); }
+    if(dat.itemType == (int)Item.Types.Equipment){ 
+      doll.EquipFromInventory(itemIndex); 
+    }
     else{ arms.EquipFromInventory(itemIndex); }
   }
   

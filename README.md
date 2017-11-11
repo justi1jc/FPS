@@ -123,6 +123,7 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Make 1-4/D-pad into "quick access" slots that uses an ability's one-shot method.
 
 ## Current Objectives
+* Replace int constants with Enums
 
 ********************************************************************************
  _____              __ _       

@@ -11,23 +11,18 @@ public class StatHandler{
   
   public Actor actor;
   
-  // stat constants
-  public const int HEALTH = 0;
-  public const int STAMINA = 1;
-  public const int MANA = 2;
-  public const int INTELLIGENCE = 3;
-  public const int CHARISMA = 4;
-  public const int ENDURANCE = 5;
-  public const int PERCEPTION = 6;
-  public const int AGILITY = 7;
-  public const int WILLPOWER = 8;
-  public const int STRENGTH = 9;
-  public const int SLOTS = 10;
-  public const int RANGED = 11;
-  public const int MELEE = 12;
-  public const int UNARMED = 13;
-  public const int MAGIC = 14;
-  public const int STEALTH = 15;
+  public enum Stats{
+    //Conditions
+    Health, Stamina, Mana, 
+    
+    // ICEPAWS attributes
+    Intelligence, Charisma, Endurance,
+    Perception, Agility, Willpower, Strength,
+    
+    Slots,
+    //Skills
+    Ranged, Melee, Unarmed, Magic, Stealth
+  };
   
   //Conditions
   public bool dead;
@@ -62,12 +57,9 @@ public class StatHandler{
   public List<Data> abilities;
 
 
-  public int faction = 0;
+  public Factions faction = 0;
   // Faction constants
-  public const int NEUTRAL = 0;
-  public const int FERAL = 1;
-  public const int REDTEAM = 2;
-  public const int BLUETEAM = 3;
+  public enum Factions{ Neutral, Feral, RedTeam, BlueTeam };
   
 
   
@@ -110,43 +102,43 @@ public class StatHandler{
   /* Performs a roll for competency.
      difficulty directly lowers effective threshold.
   */
-  public bool StatCheck(int stat, int difficulty = 0){
+  public bool StatCheck(Stats stat, int difficulty = 0){
     int threshold = 0;
     switch(stat){
-      case INTELLIGENCE:
+      case Stats.Intelligence:
         threshold = 10 * (intelligence);
         break;
-      case CHARISMA:
+      case Stats.Charisma:
         threshold = 10 * (charisma);
         break;
-      case ENDURANCE:
+      case Stats.Endurance:
         threshold = 10 * (endurance);
         break;
-      case PERCEPTION:
+      case Stats.Perception:
         threshold = 10 * (perception);
         break;
-      case AGILITY:
+      case Stats.Agility:
         threshold = 10 * (agility);
         break;
-      case WILLPOWER:
+      case Stats.Willpower:
         threshold = 10 * (willpower);
         break;
-      case STRENGTH:
+      case Stats.Strength:
         threshold = 10 * (strength);
         break;
-      case RANGED:
+      case Stats.Ranged:
         threshold = ranged;
         break;
-      case MELEE:
+      case Stats.Melee:
         threshold = melee;
         break;
-      case UNARMED:
+      case Stats.Unarmed:
         threshold = unarmed;
         break;
-      case MAGIC:
+      case Stats.Magic:
         threshold = magic;
         break;
-      case STEALTH:
+      case Stats.Stealth:
         threshold = stealth;
         break;
     }
@@ -190,31 +182,31 @@ public class StatHandler{
     return new Vector3(x,y,z);
   }
   
-  public int GetStat(int stat){
+  public int GetStat(Stats stat){
     return BaseStat(stat) + Modifier(stat);
   }
   
   /* Returns a stat without modifiers, or -1*/
-  public int BaseStat(int stat){
+  public int BaseStat(Stats stat){
     switch(stat){
-      case INTELLIGENCE: return intelligence; break;
-      case CHARISMA: return charisma; break;
-      case ENDURANCE: return endurance; break;
-      case PERCEPTION: return perception; break;
-      case AGILITY: return agility; break;
-      case WILLPOWER: return willpower; break;
-      case STRENGTH: return strength; break;
-      case RANGED: return ranged; break;
-      case MELEE: return melee; break;
-      case UNARMED: return unarmed; break;
-      case MAGIC: return magic; break;
-      case STEALTH: return stealth; break;
-      case SLOTS: return slots; break;
+      case Stats.Intelligence: return intelligence; break;
+      case Stats.Charisma: return charisma; break;
+      case Stats.Endurance: return endurance; break;
+      case Stats.Perception: return perception; break;
+      case Stats.Agility: return agility; break;
+      case Stats.Willpower: return willpower; break;
+      case Stats.Strength: return strength; break;
+      case Stats.Ranged: return ranged; break;
+      case Stats.Melee: return melee; break;
+      case Stats.Unarmed: return unarmed; break;
+      case Stats.Magic: return magic; break;
+      case Stats.Stealth: return stealth; break;
+      case Stats.Slots: return slots; break;
     }
     return -1;
   }
   
-  public int Modifier(int stat){
+  public int Modifier(Stats stat){
     int mod = 0;
     if(actor.doll != null){ mod += actor.doll.Modifier(stat); }
     return mod;
@@ -242,10 +234,10 @@ public class StatHandler{
   /* Reduce a particular condition.
      Returns the condition drained. 
   */
-  public int DrainCondition(int condition, int drain, GameObject weapon = null){
+  public int DrainCondition(Stats condition, int drain, GameObject weapon = null){
     int ret = drain;
     switch(condition){
-      case HEALTH:
+      case Stats.Health:
         health -= drain;
         if(health <= 0){
           ret = drain + health;
@@ -254,7 +246,7 @@ public class StatHandler{
         }
         if(health > healthMax){ health = healthMax; }
         break;
-      case STAMINA:
+      case Stats.Stamina:
         stamina -= drain;
         if(stamina < 0){
           ret = drain + stamina; 
@@ -262,7 +254,7 @@ public class StatHandler{
         }
         if(stamina > staminaMax){ stamina = staminaMax; }
         break;
-      case MANA:
+      case Stats.Mana:
         mana -= drain;
         if(mana < 0){
           ret = drain + mana; 
@@ -276,20 +268,20 @@ public class StatHandler{
   
   /* Returns true if the selected actor is an enemy of this one. */
   public bool Enemy(Actor a){
-    if(faction == 0){ return false; }
-    if(faction == 1){ return true; }
+    if(faction == Factions.Neutral){ return false; }
+    if(faction == Factions.Feral){ return true; }
     if( faction == a.stats.faction){ return false; }
     return true;
   }
   
   /* Returns the id representation of a faction. */
-  public static int Faction(string factionName){
+  public static Factions Faction(string factionName){
     switch(factionName.ToUpper()){
-      case "NONE": return 0; break;
-      case "RED": return 1; break;
-      case "BLUE": return 1; break;
+      case "NONE": return Factions.Neutral; break;
+      case "RED": return Factions.RedTeam; break;
+      case "BLUE": return Factions.BlueTeam; break;
     }
-    return -1;
+    return Factions.Neutral;
   }
   
   /* Returns the name of a given faction ID */

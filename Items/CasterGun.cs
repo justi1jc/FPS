@@ -40,7 +40,7 @@ public class CasterGun : Ranged{
   private IEnumerator Recharge(){
     while(holder != null){
       if(ammo < maxAmmo){
-        manaReserve += holder.stats.DrainCondition(StatHandler.MANA, conversionCost);
+        manaReserve += holder.stats.DrainCondition(StatHandler.Stats.Mana, conversionCost);
         if(manaReserve >= conversionCost){
           manaReserve -= conversionCost;
           ammo++;

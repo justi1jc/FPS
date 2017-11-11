@@ -54,5 +54,5 @@ public class ArenaHUDMenu : Menu{
   
   public override void UpdateFocus(){}
   
-  public override void Input(int button){}
+  public override void Input(Menu.Buttons button){}
 }

@@ -20,12 +20,10 @@ public class Session : MonoBehaviour {
   private readonly object syncLock = new object(); // Mutex lock
   public string sessionName; //Name Used in save file.
   public Data arenaData = null;
-  public int gameMode = -1;
+  public Modes mode = Modes.None;
   
-  // gameMode constants
-  public const int NONE = -1;
-  public const int ARENA = 0;
-  public const int ADVENTURE = 1;
+  // Modes of play.
+  public enum Modes{ None, Arena, Adventure };
   
   // Arena
   public int playerCount = 1;
@@ -286,16 +284,18 @@ public class Session : MonoBehaviour {
   
   /* Route a SessionEvent to its appropriate destination. */
   public void ReceiveEvent(SessionEvent evt){
-    if(evt.destination == SessionEvent.SESSION){ HandleEvent(evt); }
-    else if(evt.destination == SessionEvent.ARENA && arena != null){
+    if(evt.destination == SessionEvent.Destinations.Session){ 
+      HandleEvent(evt); 
+    }
+    else if(evt.destination == SessionEvent.Destinations.Arena && arena != null){
       arena.HandleEvent(evt);
     }
-    else if(evt.destination == SessionEvent.WORLD && world != null){
+    else if(evt.destination == SessionEvent.Destinations.World && world != null){
       // STUB awaiting World.cs implementation.
     }
     else{
-      if(gameMode == ARENA && arena != null){ arena.HandleEvent(evt); }
-      if(gameMode == ADVENTURE && world != null){
+      if(mode == Modes.Arena && arena != null){ arena.HandleEvent(evt); }
+      if(mode == Modes.Adventure && world != null){
         // STUB awaiting World.cs implementation
       }
     }

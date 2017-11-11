@@ -56,9 +56,9 @@ public class QuestMenu : Menu{
     SecondaryBounds();
   }
   
-  public override void Input(int button){
+  public override void Input(Buttons button){
     DefaultExit(button);
-    if(button == A){ Sound(0); }
+    if(button == Buttons.A){ Sound(0); }
     switch(sx){
       case 0:
         //if(sy < 0 || sy > Session.session.quests.Count -1){ return; }

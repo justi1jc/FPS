@@ -13,8 +13,8 @@ public class Unarmed : Ability{
     ready = true;
   }
   
-  public override void Use(int use){
-    if(use == Item.A_DOWN && ready){ RightPunch(); }
+  public override void Use(Inputs use){
+    if(use == Inputs.A_Down && ready){ RightPunch(); }
   }
   
   /* Bonds an item to an actor */
@@ -45,8 +45,8 @@ public class Unarmed : Ability{
   IEnumerator Swing(){
     ready = false;
     damageActive = false;
-    damage = holder.stats.DrainCondition(StatHandler.STAMINA, 25);
-    damage += holder.stats.GetStat(StatHandler.STRENGTH);
+    damage = holder.stats.DrainCondition(StatHandler.Stats.Stamina, 25);
+    damage += holder.stats.GetStat(StatHandler.Stats.Strength);
     yield return new WaitForSeconds(damageStart);
     damageActive = true;
     yield return new WaitForSeconds(damageEnd);

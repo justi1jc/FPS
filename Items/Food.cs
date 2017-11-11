@@ -10,8 +10,8 @@ using System.Collections.Generic;
 public class Food : Item{
   public int healing; // Health gained by consumption.
   
-  public override void Use(int action){
-    if(action == A_DOWN){ Consume(); }
+  public override void Use(Inputs action){
+    if(action == Inputs.A_Down){ Consume(); }
   }
   
   /* Heals holder. */
