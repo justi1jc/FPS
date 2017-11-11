@@ -42,21 +42,12 @@ ______               _                                  _
 # Current version: 0.6.0
 
 ## Roadmap:
-0.6.x- Tactical gamemode
-0.7.x- Conqeust gamemode
+0.6.x- Conquest gamemode
 
 ## Backlog
 ### Base FPS Features
 * Transition between ragdoll and up-right states for proper ragdolling.
 * Visual hit indicator.
-* Arena.cs should replace itself with relevant script upon startup.
-
-### Tactical gamemode
-* Create TacticalArena.cs
-* Allow for multiple rounds, customizable in the menu.
-* WeaponPurchase menu (hardcoded values)
-* Plantable/Defusable bomb
-* Game ends when one team is eliminated or bomb is detonated/defused
 
 ### Conquest gamemode
 * Create ConquestArena.cs
@@ -82,14 +73,13 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Shield- Large damage threshold.
 * Wand- Maps keys to different spells.
 
-### Non-magic abilities
+### Abilities
+* Allow certain abilities to be equipped to 1-4/Dpad
 * Add/Dismiss follower.
 * "Move there" order.
 * "Regroup" order.
 * Quick Draw slot 1/2/3/4- Equips specified slot.
 * Throw item.
-
-### Magic abilities
 * Fireball
 * Electric touch(High damage melee.)
 * Light beam(Use unity LineRenderer tool)
@@ -109,21 +99,23 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 * Force push (With some damage and potentially ragdolling)
 
 ### AI
+* Restructure AI around specific tasks.
 * Keep AI from attempting to fire through obstructions.
 * Follower AI that protects a leader.
 * Formations
 * Provide callback argument for AI state transitions.
 
 ### StatHandler.cs
-* Effects(modifies stat)
-* Route attack directly to StatHandler.cs
-* Perks( Bools that give bonuses when set to true.)
+* Effects(modifies stat for certain number of ticks)
+* Route attacks directly to StatHandler.cs
+* Perks( Bools that give bonuses when set to true. )
 
 ### Misc
-* Make 1-4/D-pad into "quick access" slots that uses an ability's one-shot method.
+* Minimize number of Coroutine update loops.
+* Add more robust documentation
 
 ## Current Objectives
-* Replace int constants with Enums
+
 
 ********************************************************************************
  _____              __ _       

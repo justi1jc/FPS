@@ -68,21 +68,6 @@ public class MenuManager: MonoBehaviour{
       case "SETTINGS":
         active = (Menu)(new SettingsMenu(this));
         break;
-      case "SPEECH":
-        active = (Menu)(new SpeechMenu(this));
-        break;
-      case "TRADE":
-        active = (Menu)(new TradeMenu(this));
-        break;
-      case "QUEST":
-        active = (Menu)(new QuestMenu(this));
-        break;
-      case "ABILITY":
-        active = (Menu)(new AbilityMenu(this));
-        break;
-      case "STATS":
-        active = (Menu)(new StatsMenu(this));
-        break;
       case "LOOT":
         active = (Menu)(new LootMenu(this));
         break;
