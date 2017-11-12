@@ -6,8 +6,6 @@
 */
 
 
-
-
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,25 +14,26 @@ public class Data{
   public bool readyToRead;
   public string prefabName;
   public string displayName;
-  public float x;
-  public float y;
-  public float z;
-  public float xr;
-  public float yr;
-  public float zr;
-  public int itemType = -1;
-  public int stack;
-  public int stackSize;
+  public float x, y, z; // Position
+  public float xr, yr, zr; // Rotation
+  public int itemType = -1; // Corresponds to Item.Types
+  public int stack, stackSize;
   public List<int> ints;
   public List<string> strings;
   public List<float> floats;
   public List<bool> bools;
-  public int baseValue;
+  public int baseValue; // Monetary value of item.
   public InventoryRecord inventoryRecord;
   public Cell lastPos = null;
+  
+  // Variables for Actor
   public SpeechTree speechTree;
   public EquipSlot equipSlot;
   public PaperDoll doll;
+  
+  /**
+   * Default constructor.
+   */
   public Data(){
      ints = new List<int>();
      strings = new List<string>();
@@ -46,6 +45,10 @@ public class Data{
      doll = null;
   }
    
+  /**
+    * Constructor for cloning a Data.
+    * @param {Data} dat - The data to clone.
+    */
   public Data(Data dat){
     if(dat == null){ return; }
     readyToRead = dat.readyToRead;

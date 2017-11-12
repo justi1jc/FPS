@@ -7,7 +7,6 @@
 */
 
 
-
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,32 +19,33 @@ public class Session : MonoBehaviour {
   private readonly object syncLock = new object(); // Mutex lock
   public string sessionName; //Name Used in save file.
   public Data arenaData = null;
-  public Modes mode = Modes.None;
+  public Modes mode = Modes.None; // Current mode.
+  public enum Modes{ None, Arena, Adventure }; // Modes of play
   
-  // Modes of play.
-  public enum Modes{ None, Arena, Adventure };
-  
-  // Arena
+  // Arena variables
   public int playerCount = 1;
   private List<Kit> kits;
   public Arena arena;
   
-  // Adventure
+  // Adventure variables
   public World world;
   public List<HoloDeck> decks; // active HoloDecks
   int currentID = 0;
   
-  // players
+  // player variables
   List<Data> playerData;
   Camera cam1;
   Camera cam2;
-
   
   // Main menu UI
   Camera sesCam;
   public MenuManager sesMenu;
   public JukeBox jukeBox;
 
+  /**
+    * Destroys self if Session.session already exists, otherwise
+    * Initializes main menu.
+    */
   void Awake(){
     DontDestroyOnLoad(gameObject);
     if(Session.session != null){ Destroy(this); }
@@ -55,37 +55,53 @@ public class Session : MonoBehaviour {
     CreateMenu();
   }
   
-  /* Updates cameras and associates player with appropriate HoloDeck. */
+  
+  /**
+    * Updates cameras and associates player with appropriate HoloDeck.
+    * @param {Actor} actor - The actor to be registered.
+    * @param {int} player - The player number.
+    * @param {Camera} cam - The camera associated with the player. 
+    */
   public void RegisterPlayer(Actor actor, int player, Camera cam){
     if(player == 1){ cam1 = cam; }
     else if(player == 2){ cam2 = cam; }
     UpdateCameras();
   }
   
-  /* Updates the cameras according to remaining players. */
+  /** 
+    * Updates the cameras according to remaining players.
+    * @param {int} player - The player number.
+    */
   public void UnregisterPlayer(int player){
     if(player == 1){ cam1 = null; }
     else if(player == 2){ cam2 = null; }
     UpdateCameras();
   }
   
-  /* Returns true if the session instance exists. */
+  /**
+    * Returns true if the session instance exists.
+    * @return {bool} true if session instance exists.
+    */
   public static bool Active(){
     return Session.session != null;
   }
   
-  /* Create a new game.
-     Warning: This is hardcoded in a project-specific fashion.
-  */
+  /**
+    * Create a new game.
+    * Warning: This is hardcoded in a project-specific fashion.
+    */
   public void CreateAdventure(){
     if(sesMenu != null){ DestroyMenu(); }
     world = new World();
     world.CreateAdventure();
   }
 
-  /* Cached access to Kit.GetKits() to reduce file parsing.
-     Reload clears the cache when set to true.
-  */
+  /** 
+    * Cached access to Kit.GetKits() to reduce file parsing.
+    * Reload clears the cache when set to true.
+    * @param {bool} reload - Whether to reload kits from their files.
+    * @return {List<Kit>} the list of available kits.
+    */
   public List<Kit> GetKits(bool reload = false){
     if(kits == null || reload){ 
       kits = Kit.GetKits();
@@ -94,7 +110,11 @@ public class Session : MonoBehaviour {
     return new List<Kit>(kits);
   }
   
-  /* Returns a specific kit by name, or null. */
+  /**
+    * Returns a specific kit by name, or null.
+    * @param {string} kitName - the desired kit's name.
+    * @return {Kit} - the desired kit.
+    */
   public Kit GetKit(string kitName){
     if(kits == null){ kits = Kit.GetKits(); }
     foreach(Kit kit in kits){
@@ -104,7 +124,10 @@ public class Session : MonoBehaviour {
     return null;
   }
   
-  /* Load contents from a specific file. */
+  /**
+    * Load contents from a specific file.
+    * @param {string} fileName - name of desired file. 
+    */
   public void LoadGame(string fileName){
     print("method stub");
     if(sesMenu != null){ DestroyMenu();}
@@ -114,10 +137,11 @@ public class Session : MonoBehaviour {
   }
   
   
-  /* Sets up each player's Menu */
+  /** 
+    * Sets up each player's Menu 
+    */
   void UpdateCameras(){
     bool split = playerCount == 2;
-    //print("PlayerCount:" + playerCount);
     if(split){
       if(cam1 != null){ cam1.rect = new Rect(0f, 0f, 0.5f, 1f); }
       if(cam2 != null){ cam2.rect = new Rect(0.5f, 0, 0.5f, 1f); }
@@ -143,9 +167,10 @@ public class Session : MonoBehaviour {
     }   
   }
   
-  /* Creates UI for main menu and renders menu cell in the background. 
-     Warning: Is hardcoded with project-specific variables.
-  */
+  /** 
+    * Creates UI for main menu and renders menu cell in the background. 
+    * Warning: Is hardcoded with project-specific variables.
+    */
   public void CreateMenu(){
     Cursor.visible = false;
     string MENU_BUILDING = "House";
@@ -158,7 +183,9 @@ public class Session : MonoBehaviour {
     jukeBox.Play("Menu");
   }
   
-  /* Destroys Camera and Menu attached to gameObject */
+  /**
+    * Destroys Camera and Menu attached to gameObject 
+    */
   public void DestroyMenu(){
     if(jukeBox != null){ jukeBox.Stop(); }
     Camera cam = sesCam;
@@ -166,7 +193,9 @@ public class Session : MonoBehaviour {
     if(cam != null){ Destroy(cam.gameObject); }
   }
   
-  /* Clears all HoloDecks and then removes them. */
+  /**
+    * Clears all HoloDecks and then removes them. 
+    */
   public void ClearDecks(){
     for(int i = 0; i < decks.Count; i++){
       decks[i].ClearContents();
@@ -175,7 +204,9 @@ public class Session : MonoBehaviour {
     decks = new List<HoloDeck>();
   }
   
-  /* Initializes a new HoloDeck*/
+  /** 
+    * Initializes a new HoloDeck
+    */
   public HoloDeck CreateDeck(){
     HoloDeck ret = gameObject.AddComponent<HoloDeck>();
     decks.Add(ret);
@@ -183,7 +214,11 @@ public class Session : MonoBehaviour {
     return ret;
   }
   
-  /* Returns the deck this position is in, or null */
+  /** 
+    * Returns the deck this position is in, or null.
+    * @param {Vector3} pos - Posiion in question.
+    * @return {HoloCell} - The HoloCell associated with the position. 
+    */
   public HoloCell GetCell(Vector3 pos){
     for(int i = 0; i < decks.Count; i++){
       HoloCell hc = decks[i].ContainingCell(pos);
@@ -192,26 +227,38 @@ public class Session : MonoBehaviour {
     return null;
   } 
   
-  /* Gathers player data from all decks. */
+  /**
+    * Gathers player data from all decks.
+    * @return {List<Data>} - List of player Data.
+    */
   public List<Data> GetPlayerData(){
     List<Data> ret = new List<Data>();
     for(int i = 0; i < decks.Count; i++){ ret.AddRange(decks[i].GetPlayers()); }
     return ret;
   }
   
-  /* Returns a GameRecord containing this Session's data. */
+  /**
+    * Returns a GameRecord containing this Session's data.
+    * @return {GameRecord} - GameRecord containing this session's data. 
+    */
   GameRecord GetData(){
     if(world != null){ return world.GetData(); }
     return null;
   }
   
-  /* Loads the contents of a GameRecord */
+  /**
+    * Loads the contents of a GameRecord
+    * @param {GameRecord} dat - Session data. 
+    */
   public void LoadData(GameRecord dat){
     sessionName = dat.sessionName;
   }
   
-  
-  /* Returns a GameRecord containing data from a specified file, or null.*/
+  /**
+    * Returns a GameRecord containing data from a specified file, or null.
+    * @param {string} fileName - name of desired file.
+    * @return {GameRecord} - The desired session data stored in the file.
+    */
   GameRecord LoadFile(string fileName){
     if(fileAccess){ return null; }
     fileAccess = true;
@@ -226,7 +273,10 @@ public class Session : MonoBehaviour {
     }
   }
   
-  /* Deletes a specified save. */
+  /**
+    * Deletes a specified save. 
+    * @param {string} fileName - Name of desired file.
+    */
   public void DeleteFile(string fileName){
     if(fileAccess){ return; }
     fileAccess = true;
@@ -236,7 +286,10 @@ public class Session : MonoBehaviour {
     File.Delete(path);
   }
   
-  /* Returns an array of every valid GameRecord in the directory.*/
+  /**
+    * Returns an array of every valid GameRecord in the directory.
+    * @return {List<GameRecord>} - valid GameRecords found in directory.
+    */
   public List<GameRecord> LoadFiles(){
     if(fileAccess){ return new List<GameRecord>(); }
     fileAccess = true;
@@ -255,7 +308,10 @@ public class Session : MonoBehaviour {
     return records;
   }
   
-  /* Returns all active actors in this session. */
+  /**
+    * Returns all active actors in this session.
+    * @return {List<Actor>} - actors active in this session.
+    */
   public List<Actor> GetActors(){
     List<Actor> ret = new List<Actor>();
     for(int i = 0; i < decks.Count; i++){
@@ -264,7 +320,11 @@ public class Session : MonoBehaviour {
     return ret;
   }
   
-  /* Returns all active players in this session. */
+  /** 
+    * Returns all active players in this session. Players have a playerNumber
+    * between 1 and 4.
+    * @return {List<Actor>} - list of active players.
+    */
   public List<Actor> GetPlayers(){
     List<Actor> ret = new List<Actor>();
     for(int i = 0; i < decks.Count; i++){
@@ -273,8 +333,12 @@ public class Session : MonoBehaviour {
     return ret;
   }
   
-  /* Sends a notification to every player's HUD, 
-     or a specific player's HUD */
+  /**
+    * Sends a notification to every player's HUD, 
+    * or a specific player's HUD
+    * @param {string} message - message to deliver.
+    * @param {string} player - exclusive target of message.
+    */
   public void Notify(string message, Actor player = null){
     List<Actor> players = GetPlayers();
     for(int i = 0; i < players.Count; i++){ 
@@ -282,7 +346,10 @@ public class Session : MonoBehaviour {
     }
   }
   
-  /* Route a SessionEvent to its appropriate destination. */
+  /** 
+    * Route a SessionEvent to its appropriate destination.
+    * @param {SessionEvent} evt - the event to route. 
+    */
   public void ReceiveEvent(SessionEvent evt){
     if(evt.destination == SessionEvent.Destinations.Session){ 
       HandleEvent(evt); 
@@ -301,7 +368,10 @@ public class Session : MonoBehaviour {
     }
   }
   
-  /* Handle a SessionEvent directed toward the session. */
+  /**
+    * Handle a SessionEvent directed toward the session.
+    * @param {SesssionEvent} evt - 
+    */
   public void HandleEvent(SessionEvent evt){
     print(evt.message);
   }

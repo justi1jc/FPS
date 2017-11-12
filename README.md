@@ -48,6 +48,7 @@ ______               _                                  _
 ### Base FPS Features
 * Transition between ragdoll and up-right states for proper ragdolling.
 * Visual hit indicator.
+* Adjust staggering to be less common and more stat-based.
 
 ### Conquest gamemode
 * Create ConquestArena.cs
@@ -58,17 +59,15 @@ ______               _                                  _
 * AI attempt to capture command points.
 
 ### UI Features
-* Discard items from inventory by right-clicking.
 * Troubleshoot scroll-views using technique shown in
 http://answers.unity3d.com/questions/354044/scrollview-notscrolling.html
-* Allow right-click functionality for Menu.Button() using technique shown in
-http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.html
 * Move item between slots in inventory.
 
 ### Items
 * Rock- (Ragdoll or stagger upon headshot)
 * Grenade-
 * Bow- (Special animations for holding/firing, reusable ammunition)
+* Model-based equipment.
 * Armor- Damage reduction and damage threshold.
 * Shield- Large damage threshold.
 * Wand- Maps keys to different spells.
@@ -100,10 +99,9 @@ http://answers.unity3d.com/questions/379163/detect-right-click-on-gui-buttons.ht
 
 ### AI
 * Restructure AI around specific tasks.
-* Keep AI from attempting to fire through obstructions.
-* Follower AI that protects a leader.
-* Formations
-* Provide callback argument for AI state transitions.
+* AI should run from an Update() method instead of launching its own coroutines.
+* AI should check if a shot is clear before firing.
+* Provide nextState before transitioning.
 
 ### StatHandler.cs
 * Effects(modifies stat for certain number of ticks)

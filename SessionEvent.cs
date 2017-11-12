@@ -7,25 +7,25 @@
 */
 
 public class SessionEvent{
-  // Event to report
   public enum Events{ Death };
-  
-  // Intendeed destination for this event.
   public enum Destinations{ None, Session, Arena, World };
-  
-  
-  
   public Destinations destination;
   public Events code; // The type of event.
   public string message;// The string representation of this message.
   public Data[] args; // Event's data
   
-  
-  
-  /* Default constructor */
+  /**
+    * Default constructor 
+    */
   public SessionEvent(){ args = null; }
   
-  /* Returns an event formatted for an actor's death. */
+  /**
+    * Returns an event formatted for an actor's death.
+    * @param {Data} victim - the data of the actor killed.
+    * @param {Data} killer - the data of the actor that did the killing
+    * @param {Data} weapon - the data of the weapon used to kill the victim.
+    * @return {SessionEvent} - The formatted SessionEvent;
+    */
   public static SessionEvent DeathEvent(Data victim, Data killer, Data weapon){
     SessionEvent se = new SessionEvent();
     se.message = "Someone died.";
@@ -47,7 +47,11 @@ public class SessionEvent{
     return se;
   }
   
-  /* Converts Actor to Data for use in DeathEvent */
+  /**
+    * Converts Actor to Data for use in DeathEvent
+    * @param {Actor} a - the Actor whose data will be converted.
+    * @param {Data} - The Actor's data. 
+    */
   public static Data ActorDeathData(Actor a){
     if(a == null){ return null; }
     Data dat = new Data();

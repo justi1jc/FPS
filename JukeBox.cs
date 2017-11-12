@@ -7,28 +7,35 @@
   Menu    - Music for the Main menu
 */
 
+
 using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
+
 public class JukeBox{
-  List<AudioClip> ambient;
-  List<AudioClip> combat;
-  List<AudioClip> menu;
+  List<AudioClip> ambient, combat, menu; // Playlists to choose from.
   MonoBehaviour parent;
   public GameObject gameObject;
   AudioSource audioSource;
-  
   public string playList;
   
+  /**
+    Default constructor.
+    @param {MonoBehaviour} parent - parent of this JukeBox
+  */
   public JukeBox(MonoBehaviour parent){
     playList = "Ambient";
     this.parent = parent;
     this.gameObject = new GameObject();
   }
   
+  /**
+    * Begins playing music from a playlist.
+    * @param {string} playlist - The name of the playlist that will be played from.
+    */
   public void Play(string playList = "Ambient"){
     playList = playList;
     if(gameObject == null){
@@ -41,6 +48,10 @@ public class JukeBox{
     parent.StartCoroutine(PlayFolder());
   }
   
+  /**
+    * Ceases playing music and destroys the gameObject associated with this
+    * JukeBox.
+    */
   public void Stop(){
     parent.StopAllCoroutines();
     if(audioSource != null){
@@ -49,6 +60,9 @@ public class JukeBox{
     }
   }
   
+  /**
+    * Plays music from the currently selected playlist.
+    */
   IEnumerator PlayFolder(){
     List<AudioClip> songs = new List<AudioClip>();
     switch(playList){
@@ -80,11 +94,13 @@ public class JukeBox{
     }
     yield return new WaitForSeconds(0f);  
   }
-  
-  
-  
+
+  /**
+    * Returns the AudioClips in a particular folder.
+    * @param {string} folder - The name of the foler to check in.
+    * @return {List<AudioClip>} the clips found in that folder. 
+    */  
   public List<AudioClip> GetSongs(string folder){
-    
     List<AudioClip> clips = new List<AudioClip>();
     string path = Application.dataPath + "/Resources/Music/" + folder;
     if(!Directory.Exists(path)){ MonoBehaviour.print(path + " Doesn't exist"); return clips; }

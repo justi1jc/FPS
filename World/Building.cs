@@ -4,9 +4,11 @@
   counterparts within Cells ofs the overworld.
 */
 
-using System.Collections.Generic;
-[System.Serializable]
 
+using System.Collections.Generic;
+
+
+[System.Serializable]
 public class Building{
   public int x, y; // Center position on overworld.
   public string name;
@@ -14,7 +16,10 @@ public class Building{
   public List<DoorRecord> doors;
   public List<Cell> rooms;
   
-  /* Cloning constructor */
+  /**
+    * Cloning constructor
+    * @param {Building} b - building to clone.  
+    */
   public Building(Building b){
     x = b.x;
     y = b.y;
@@ -24,12 +29,18 @@ public class Building{
     rooms = new List<Cell>(b.rooms);
   }
   
+  /**
+    * No args constructor.
+    */
   public Building(){
     doors = new List<DoorRecord>();
     rooms = new List<Cell>();
   }
   
-  /* Returns true if this building has exterior doors across multiple cells. */
+  /**
+    * Returns true if this building has exterior doors across multiple cells. 
+    * @return {bool} - true if building spans multiple cells.
+    */
   public bool MultiCell(){
     if(doors.Count < 2){ return false; }
     List<DoorRecord> efDoors = ExteriorFacingDoors();

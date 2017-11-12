@@ -540,7 +540,6 @@ public class Actor : MonoBehaviour{
     if(dam.health > 20){ Stagger(); }
     if(dam.stamina != 0){ stats.DrainCondition(StatHandler.Stats.Stamina, dam.stamina); }
     if(dam.mana != 0){ stats.DrainCondition(StatHandler.Stats.Mana, dam.mana); }  
-    Actor attacker = Attacker(weapon);
   }
   
   

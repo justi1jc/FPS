@@ -1,12 +1,17 @@
 /*
   This abstract class provides a base for all other classes. 
 */
+
+
 using UnityEngine;
+
+
 public abstract class Quest{
-  /* Perform any initial file i/o specific to this quest. Some quests.
-     Some quests will implement this with a dummy method because they 
-     only need a couple arguments.
-  */
+  /** Perform any initial file i/o specific to this quest. Some quests.
+    * Some quests will implement this with a dummy method because they 
+    * only need a couple arguments.
+    * @param {string} fileName - name of the file to init with.
+    */
   public abstract void Init(string fileName);
   public abstract void Update();     // Check for quest events.
   public abstract Data GetData();    // Return serializeable quest record
