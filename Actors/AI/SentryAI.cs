@@ -10,14 +10,16 @@ using System.Collections.Generic;
 
 
 public class SentryAI : AI{
-  public SentryAI(Actor actor, AIManager manager) : base(actor, manager){}
+  public SentryAI(Actor actor, AIManager manager) : base(actor, manager){
+    destinationState = AI.States.Sentry;
+  }
   
   public override void Update(){
     if(!EnemiesFound()){ return; }
-    if(EquipRangedWeapon()){ manager.Transition(States.Ranged); }
+    if(EquipRangedWeapon()){ Transition(States.Ranged); }
     else{
       EquipMeleeWeapon();
-      manager.Transition(States.Melee);
+      Transition(States.Melee);
     }
   }
 }

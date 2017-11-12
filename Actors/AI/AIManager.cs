@@ -54,7 +54,7 @@ public class AIManager{
       case AI.States.None: this.ai = new AI(actor, this); break;
       case AI.States.Sentry: this.ai = (AI)new SentryAI(actor, this); break;
       case AI.States.Search: break;
-      case AI.States.Melee: break;
+      case AI.States.Melee: ai = (AI)new MeleeAI(actor, this); break;
       case AI.States.Ranged: break;
       case AI.States.Guard: break;
       case AI.States.Advance: break;
@@ -91,6 +91,19 @@ public class AIManager{
         break;
     }
     paused = false;
+  }
+  
+  /* Removes null entries from Enemies. */
+  public void PruneEnemies(){
+    for(int i = 0; i < enemies.Count; i++){
+      if(enemies[i] == null || 
+        enemies[i].GetComponent<Actor>() == null ||
+        !enemies[i].GetComponent<Actor>().Alive()
+      ){
+        enemies.Remove(enemies[i]);
+        if(i != 0){ i--; }
+      }
+    }
   }
   
   /**

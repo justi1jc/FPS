@@ -19,9 +19,10 @@ public class AI{
     Advance, // Move to desired location, fighting along the way.
     Retreat // Distance self from enemies.
   };
-  
+  public States destinationState = States.None; // Redirects the next state's transition.
   public const float visualRange = 50f;
   public Actor actor;
+  public Actor target; // The actor being focused on.
   public AIManager manager;
   
   public AI(Actor actor, AIManager manager){
@@ -35,8 +36,10 @@ public class AI{
     * @param {States} current - default destination.
     * @param {States} next - value for AIManager.nextState.
     */
-  private void Transition(States current, States next){
-    if(manager.nextState != States.None){ manager.Transition(current, next); }
+  protected void Transition(States current){
+    if(manager.nextState == States.None){ 
+      manager.Transition(current, destinationState); 
+    }
     else{ manager.Transition(manager.nextState); }
   }
   
@@ -63,6 +66,37 @@ public class AI{
       if(actor.stats.Enemy(a)){ ret.Add(a.gameObject); }
     }
     if(ret.Count > 0){ manager.enemies = ret; }
+    return false;
+  }
+  
+  /**
+    * Returns true if target is found, or can be found from the list of enemies.
+    */
+  public bool TargetFound(){
+    try{
+      if(target != null && target.Alive()){ return true; }
+      manager.PruneEnemies();
+      if(manager.enemies.Count == 0){ return false; }
+      float minDist = 10000000f;
+      Actor minActor = null;
+      Vector3 aPos = actor.transform.position;
+      foreach(GameObject go in manager.enemies){
+        if(go != null){
+          Actor a = go.GetComponent<Actor>();
+          if(a != null){
+            float dist = Vector3.Distance(aPos, go.transform.position);
+            if(dist < minDist){
+              minDist = dist;
+              minActor = a;
+            }
+          }
+        }
+      }
+      if(minActor != null){
+        target = minActor;
+        return true;
+      }
+    }catch(System.Exception e){}
     return false;
   }
   
@@ -169,4 +203,53 @@ public class AI{
     }
     return false;
   }
+  
+  /**
+    * Moves towards a target
+    */
+  public bool MoveToward(Vector3 destination, float dist = 3f){
+    Vector3 dest = new Vector3(destination.x, 0f, destination.z);
+    Vector3 pos = actor.body.transform.position;
+    pos = new Vector3(pos.x, 0f, pos.z);
+    if(Vector3.Distance(pos, dest) <= dist){
+      if(actor.walking){ 
+        actor.walking = false;
+        actor.SetAnimBool("walking", false);
+      }
+      return true;
+    }
+    if(!actor.walking){
+      actor.walking = true;
+      actor.SetAnimBool("walking", true);
+    }
+    Vector3 move = dest - pos;
+    actor.AxisMove(move.x, move.z);
+    return false;
+  }
+  
+  /**
+    * Returns true if currently aiming at specified transform wthin margin.
+    */
+  public bool AimAt(Transform trans, float aimMargin = 1f){
+    Transform head = actor.head.transform;
+    Quaternion desired = Quaternion.LookRotation(trans.position - head.position);
+    Vector3 hrot = head.rotation.eulerAngles;
+    Quaternion actual = Quaternion.Euler(hrot.x, hrot.y, 0f);
+    float angle = Quaternion.Angle(desired, actual);
+    Vector3 actualEulers = actual.eulerAngles;
+    Vector3 desiredEulers = desired.eulerAngles;
+    float x = desiredEulers.x - actualEulers.x;
+    float y = desiredEulers.y - actualEulers.y;
+    if(Mathf.Abs(x) > 180){ x *= -1f; }
+    if(Mathf.Abs(y) > 180){ y *= -1f; }
+    if(x < 0 && actor.headRoty < -59f ||
+       x > 0 && actor.headRoty > 59f){
+    }
+    Vector3 turn = new Vector3(x, y, 0f).normalized;
+    float turnRate = 3f;
+    turn *= (turnRate < angle ? turnRate : angle);
+    actor.Turn(turn);
+    if(angle <= aimMargin){ return true; }
+    return false;
+  } 
 }
