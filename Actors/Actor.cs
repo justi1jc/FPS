@@ -3,9 +3,7 @@
         
         An actor script controls a character's stats,
         model, input/AI, inventory, and speech.
-
       Note: Player's root collider(The one ignored by bodyparts) should be on layer 9.
-
         GameObject structure:
       Body| // Parent to others. Rigidbody, collider, Actor
           |
@@ -92,7 +90,7 @@ public class Actor : MonoBehaviour{
   
   //Inventory
   public Inventory inventory;
-    
+
   //Stats
   public StatHandler stats;
   public int id = -1;
@@ -110,7 +108,6 @@ public class Actor : MonoBehaviour{
   
   // AI
   public AIManager ai;
-  public string defaultAI = "";
   
   // Controller
   ActorInputHandler input;
@@ -235,19 +232,20 @@ public class Actor : MonoBehaviour{
       else{ print("Session or cam is null"); }
       if(player == 1){ input = new ActorInputHandler(this, "KEYBOARD AND MOUSE"); }
       else{ input = new ActorInputHandler(this, "XBOX 360 CONTROLLER"); }
-      StartCoroutine(InputRoutine());
+      
     }
     else if(player == 5){
-      if(defaultAI == ""){ ai = new AIManager(this, "PASSIVE"); }
-      else{ ai = new AIManager(this, defaultAI); }
-      if(speechTreeFile != ""){ speechTree = new SpeechTree(speechTreeFile); }
+      ai = new AIManager(this);
+      ai.Start();
     }
+    StartCoroutine(InputRoutine());
   }
   
   public IEnumerator InputRoutine(){
     const float inputRate = 0.016f; // Roughly 30 times/second.
     while(Alive()){
-      input.Update();
+      if(ai != null){ ai.Tick(); }
+      else{ input.Update(); }
       yield return new WaitForSeconds(inputRate);
     }
   }
@@ -615,7 +613,7 @@ public class Actor : MonoBehaviour{
       rb.constraints = RigidbodyConstraints.None; 
     }
     else{
-      if(ai != null){ ai.Resume(); }
+      if(ai != null){ ai.Start(); }
       rb.constraints = RigidbodyConstraints.FreezeRotationX |
                       RigidbodyConstraints.FreezeRotationY |
                       RigidbodyConstraints.FreezeRotationZ;
@@ -839,3 +837,4 @@ public class Actor : MonoBehaviour{
     //TODO Make one response for NPC, one for Player
   }
 }
+

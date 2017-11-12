@@ -1,5 +1,6 @@
 /*
-    The AIManager is a wrapper for the ai scripts. 
+    The AIManager is a wrapper for the ai scripts, allowing each ai script
+    to be swapped out automatically with the transition of each state. 
 */
 
 
@@ -7,53 +8,80 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 
-[System.Serializable]
 public class AIManager{
-  public bool paused = false;
   public string currentBehaviour;
-  public AI ai;
+  public bool paused = true;
+  public int updateDelay = 1000; // Milisecond update delay.
+  private AI ai;
+  public Stopwatch watch;
   public Actor actor;
-  [System.NonSerialized]public GameObject target;
-  [System.NonSerialized]public List<Actor> sighted;
+  public List<GameObject> enemies, objectives;
   
-  public AIManager(Actor actor, string initial = "IDLE"){
+  public AI.States currentState = AI.States.None; // Active state
+  public AI.States nextState = AI.States.None; // Override default transitions.
+  
+  /**
+    * Default constructor.
+    * @param {Actor} actor - The actor to control.
+    */
+  public AIManager(Actor actor){
     this.actor = actor;
-    sighted = new List<Actor>();
-    Change(initial);
+    this.enemies = new List<GameObject>();
+    this.objectives = new List<GameObject>();
+    this.watch = Stopwatch.StartNew();
   }
   
-  /* Informs active script of receiving damage from an Actor */
-  public void ReceiveDamage(int damage, Actor damager){
-    if(damage > 0 && ai != null){ ai.ReceiveDamage(damage, damager); }
+  /**
+    * Should pass on an event to the active AI.
+    * @param {AIEvent} evt - the event to pass to the ai.
+    */
+  public void HandleEvent(AIEvent evt){
+    if(ai != null){ ai.HandleEvent(evt); }
   }
   
-  public void Pause(){ paused = true; }
-  public void Resume(){ paused = false; }
-  
-  /* Swaps the active ai script */
-  public void Change(string behaviour){
-    currentBehaviour = behaviour;
-    switch(behaviour.ToUpper()){
-      case "PASSIVE": // Inert AI
-        ai = new AI(actor, this);
-        break;
-      case "IDLE": // Stands around until attacked.
-        ai = (AI)new IdleAI(actor, this);
-        break;
-      case "HOSTILE":
-        ai = (AI)new HostileAI(actor, this);
-        break;
-      case "MELEECOMBAT":
-        ai = (AI)new MeleeCombatAI(actor, this);
-        break;
-      case "RANGEDCOMBAT":
-        ai = (AI)new RangedCombatAI(actor, this);
-        break;
-      case "ROAMING":
-        ai = (AI)new RoamingAI(actor, this);
-        break;
+  /**
+    * Transitions from this state to a new one.
+    * @param {States} state - state to transition to.
+    * @param {States} next - new value for nextState
+    */
+  public void Transition(AI.States current, AI.States next = AI.States.None){
+    currentState = current;
+    nextState = next;
+    switch(current){
+      case AI.States.None: this.ai = new AI(actor, this); break;
+      case AI.States.Sentry: break;
+      case AI.States.Search: break;
+      case AI.States.Melee: break;
+      case AI.States.Ranged: break;
+      case AI.States.Guard: break;
+      case AI.States.Advance: break;
     }
   }
+  
+  /**
+    * Updates if not paused and ai is available.
+    */
+  public void Tick(){
+    if(!paused && ai != null){ ai.Update(); }
+  }
+  
+  /**
+    * Pauses the manager, preventing it from updating on each Tick().
+    */
+  public void Pause(){ 
+    paused = true; 
+  }
+  
+  /**
+    * Resumes the updating on each Tick().
+    */
+  public void Start(AI.States state = AI.States.None){
+    MonoBehaviour.print("Starting");
+    Transition(state);
+    paused = false;
+  }
+  
 }
