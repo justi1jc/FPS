@@ -16,7 +16,6 @@ public class AIManager{
   public bool paused = true;
   public int updateDelay = 1000; // Milisecond update delay.
   private AI ai;
-  public Stopwatch watch;
   public Actor actor;
   public List<GameObject> enemies, objectives;
   
@@ -26,12 +25,13 @@ public class AIManager{
   /**
     * Default constructor.
     * @param {Actor} actor - The actor to control.
+    * @param {Factions} faction - the faction to select the starting state with.
     */
-  public AIManager(Actor actor){
+  public AIManager(Actor actor, StatHandler.Factions faction){
     this.actor = actor;
     this.enemies = new List<GameObject>();
     this.objectives = new List<GameObject>();
-    this.watch = Stopwatch.StartNew();
+    StartByFaction(faction);
   }
   
   /**
@@ -52,7 +52,7 @@ public class AIManager{
     nextState = next;
     switch(current){
       case AI.States.None: this.ai = new AI(actor, this); break;
-      case AI.States.Sentry: break;
+      case AI.States.Sentry: this.ai = (AI)new SentryAI(actor, this); break;
       case AI.States.Search: break;
       case AI.States.Melee: break;
       case AI.States.Ranged: break;
@@ -60,7 +60,7 @@ public class AIManager{
       case AI.States.Advance: break;
     }
   }
-  
+
   /**
     * Updates if not paused and ai is available.
     */
@@ -76,11 +76,29 @@ public class AIManager{
   }
   
   /**
+    * Starts the AI in 
+    */
+  public void StartByFaction(StatHandler.Factions faction){
+    Transition(AI.States.Sentry);
+    switch(faction){
+      case StatHandler.Factions.Neutral: 
+        break;
+      case StatHandler.Factions.RedTeam:
+        break;
+      case StatHandler.Factions.BlueTeam:
+        break;
+      case StatHandler.Factions.Feral: 
+        break;
+    }
+    paused = false;
+  }
+  
+  /**
     * Resumes the updating on each Tick().
+    * @param {States} state - state to transition to when resuming.
     */
   public void Start(AI.States state = AI.States.None){
-    MonoBehaviour.print("Starting");
-    Transition(state);
+    if(state != currentState){ Transition(state); }
     paused = false;
   }
   

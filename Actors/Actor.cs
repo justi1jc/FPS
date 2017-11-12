@@ -141,12 +141,6 @@ public class Actor : MonoBehaviour{
     init = true;
   }
   
-  /* Cycle loop. Runs once per frame. */
-  void Update(){
-    UpdateReach();
-    UpdateFall(); 
-  }
-  
   /* Listens for faling. */
   void UpdateFall(){
     Rigidbody rb = GetComponent<Rigidbody>();
@@ -235,8 +229,7 @@ public class Actor : MonoBehaviour{
       
     }
     else if(player == 5){
-      ai = new AIManager(this);
-      ai.Start();
+      ai = new AIManager(this, stats.faction);
     }
     StartCoroutine(InputRoutine());
   }
@@ -246,12 +239,15 @@ public class Actor : MonoBehaviour{
     while(Alive()){
       if(ai != null){ ai.Tick(); }
       else{ input.Update(); }
+      UpdateReach();
+      UpdateFall(); 
       yield return new WaitForSeconds(inputRate);
     }
   }
   
   /* Returns an empty string or the info of the active item. */
   public string ItemInfo(){
+    if(arms == null){ return ""; }
     return arms.GetInfo();
   }
   
