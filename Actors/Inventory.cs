@@ -59,6 +59,20 @@ public class Inventory{
     return inv[favs[favSlot]];
   }
   
+  /**
+    * Returns the index of the found item, or -1 if not
+    * @param {string} name - display name to search for.
+    * @return {int} - index of result. -1 means no result.
+    */
+  public int ItemByDisplayName(string name){
+    for(int i = 0; i < slots; i++){
+      if(inv[i] != null && inv[i].displayName == name){
+        return i;
+      }
+    }
+    return -1;
+  }
+  
   /* Stores an equipped item by its favslot. */
   public void StoreFav(int favSlot, Data dat){
     if(favSlot < 0 || favSlot > favs.Count){ return; }

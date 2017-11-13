@@ -19,6 +19,7 @@ public class CasterGun : Ranged{
   
   /* Bonds this castergun to actor and begins recharge */
   public override void Hold(Actor a){
+    ammunition = "NONE";
     if(held){ return; }
     held = true;
     holder = a;

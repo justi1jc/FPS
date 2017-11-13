@@ -55,7 +55,7 @@ public class AIManager{
       case AI.States.Sentry: this.ai = (AI)new SentryAI(actor, this); break;
       case AI.States.Search: break;
       case AI.States.Melee: ai = (AI)new MeleeAI(actor, this); break;
-      case AI.States.Ranged: break;
+      case AI.States.Ranged: ai = (AI)new RangedAI(actor, this); break;
       case AI.States.Guard: break;
       case AI.States.Advance: break;
     }

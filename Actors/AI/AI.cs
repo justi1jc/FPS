@@ -227,6 +227,8 @@ public class AI{
     return false;
   }
   
+  
+  
   /**
     * Returns true if currently aiming at specified transform wthin margin.
     */
