@@ -71,9 +71,6 @@ public class MenuManager: MonoBehaviour{
       case "LOOT":
         active = (Menu)(new LootMenu(this));
         break;
-      case "LOAD":
-        active = (Menu)(new LoadMenu(this));
-        break;
       case "ARENALOBBY":
         active = (Menu)(new ArenaLobbyMenu(this));
         break;

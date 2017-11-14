@@ -41,20 +41,6 @@ public class OptionsMenu : Menu{
       Sound(0);
     }
     
-    if(Session.session != null && Session.session.mode == Session.Modes.None){
-      str = "Load";
-      if(Button(str, x, 3*ih, 2*iw, ih, 0, 3)){
-        Session.session.LoadFiles();
-        manager.Change("LOAD");
-        Sound(0);
-      }
-      str = "Save";
-      if(Button(str, x, 4*ih, 2*iw, ih, 0, 4)){
-        Session.session.world.SaveGame();
-        Sound(0);
-      }
-    }
-    
   }
   
   public void RenderQuitOptions(){
@@ -80,17 +66,6 @@ public class OptionsMenu : Menu{
       Application.Quit();
       Sound(0);
     }
-    
-    
-    if(Session.session != null && Session.session.mode == Session.Modes.None){
-      str = "Save and Quit.";
-      if(Button(str, x, 3*ih, 2*iw, ih, 0, 3)){
-        Session.session.world.SaveGame();
-        Application.Quit();
-        Sound(0);
-      }
-    }
-    
   }
   
   public override void UpdateFocus(){
@@ -111,19 +86,8 @@ public class OptionsMenu : Menu{
         case 0:
           manager.Change("HUD");
           break;
-        case 1:
-          Session.session.LoadFiles();
-          manager.Change("LOAD");
-          break;
         case 2:
           MonoBehaviour.print("Settings");
-          break;
-        case 3:
-          Session.session.world.SaveGame();
-          break;
-        case 4:
-          Session.session.world.SaveGame();
-          Application.Quit();
           break;
         case 5:
           Application.Quit();
@@ -139,19 +103,8 @@ public class OptionsMenu : Menu{
         case 0:
           manager.Change("HUD");
           break;
-        case 1:
-          Session.session.LoadFiles();
-          manager.Change("LOAD");
-          break;
         case 2:
           MonoBehaviour.print("Settings");
-          break;
-        case 3:
-          Session.session.world.SaveGame();
-          break;
-        case 4:
-          Session.session.world.SaveGame();
-          Application.Quit();
           break;
         case 5:
           Application.Quit();

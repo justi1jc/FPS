@@ -36,7 +36,6 @@ public class Actor : MonoBehaviour{
   public string displayName;
   public string prefabName;
   public int playerNumber; // 1 for keyboard, 3-4 for controller, 5 for NPC
-  public Cell lastPos = null; // Used to place player in correct cell
   
   //Body parts
   public GameObject head;    // Gameobject containing the camera.
@@ -791,7 +790,6 @@ public class Actor : MonoBehaviour{
     dat.equipSlot = arms;
     dat.doll = doll;
     dat.inventoryRecord = inventory.GetData();
-    dat.lastPos = lastPos;
     dat.strings.Add(speechTreeFile);
     dat.speechTree = speechTree;
     return dat;
@@ -811,7 +809,6 @@ public class Actor : MonoBehaviour{
     arms.Load(offHand, hand, this);
     inventory.LoadData(dat.inventoryRecord);
     id = dat.ints[i]; i++;
-    lastPos = dat.lastPos;
     speechTree = dat.speechTree;
   }
 

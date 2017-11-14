@@ -26,10 +26,6 @@ public class Session : MonoBehaviour {
   public int playerCount = 1;
   private List<Kit> kits;
   public Arena arena;
-  
-  // Adventure variables
-  public World world;
-  public List<HoloDeck> decks; // active HoloDecks
   int currentID = 0;
   
   // player variables
@@ -50,14 +46,13 @@ public class Session : MonoBehaviour {
     DontDestroyOnLoad(gameObject);
     if(Session.session != null){ Destroy(this); }
     else{ Session.session = this; }
-    decks = new List<HoloDeck>();
     if(jukeBox == null){ jukeBox = new JukeBox(this); }
     CreateMenu();
   }
   
   
   /**
-    * Updates cameras and associates player with appropriate HoloDeck.
+    * Updates cameras.
     * @param {Actor} actor - The actor to be registered.
     * @param {int} player - The player number.
     * @param {Camera} cam - The camera associated with the player. 
@@ -84,16 +79,6 @@ public class Session : MonoBehaviour {
     */
   public static bool Active(){
     return Session.session != null;
-  }
-  
-  /**
-    * Create a new game.
-    * Warning: This is hardcoded in a project-specific fashion.
-    */
-  public void CreateAdventure(){
-    if(sesMenu != null){ DestroyMenu(); }
-    world = new World();
-    world.CreateAdventure();
   }
 
   /** 
@@ -122,18 +107,6 @@ public class Session : MonoBehaviour {
     }
     print(kitName + " not found.");
     return null;
-  }
-  
-  /**
-    * Load contents from a specific file.
-    * @param {string} fileName - name of desired file. 
-    */
-  public void LoadGame(string fileName){
-    print("method stub");
-    if(sesMenu != null){ DestroyMenu();}
-    if(world != null){ world.Clear(); }
-    world = new World();
-    world.LoadGame(fileName);
   }
   
   
@@ -193,159 +166,6 @@ public class Session : MonoBehaviour {
     if(cam != null){ Destroy(cam.gameObject); }
   }
   
-  /**
-    * Clears all HoloDecks and then removes them. 
-    */
-  public void ClearDecks(){
-    for(int i = 0; i < decks.Count; i++){
-      decks[i].ClearContents();
-      Destroy(decks[i]);
-    }
-    decks = new List<HoloDeck>();
-  }
-  
-  /** 
-    * Initializes a new HoloDeck
-    */
-  public HoloDeck CreateDeck(){
-    HoloDeck ret = gameObject.AddComponent<HoloDeck>();
-    decks.Add(ret);
-    ret.id = decks.IndexOf(ret);
-    return ret;
-  }
-  
-  /** 
-    * Returns the deck this position is in, or null.
-    * @param {Vector3} pos - Posiion in question.
-    * @return {HoloCell} - The HoloCell associated with the position. 
-    */
-  public HoloCell GetCell(Vector3 pos){
-    for(int i = 0; i < decks.Count; i++){
-      HoloCell hc = decks[i].ContainingCell(pos);
-      if(hc != null){ return hc; }
-    }
-    return null;
-  } 
-  
-  /**
-    * Gathers player data from all decks.
-    * @return {List<Data>} - List of player Data.
-    */
-  public List<Data> GetPlayerData(){
-    List<Data> ret = new List<Data>();
-    for(int i = 0; i < decks.Count; i++){ ret.AddRange(decks[i].GetPlayers()); }
-    return ret;
-  }
-  
-  /**
-    * Returns a GameRecord containing this Session's data.
-    * @return {GameRecord} - GameRecord containing this session's data. 
-    */
-  GameRecord GetData(){
-    if(world != null){ return world.GetData(); }
-    return null;
-  }
-  
-  /**
-    * Loads the contents of a GameRecord
-    * @param {GameRecord} dat - Session data. 
-    */
-  public void LoadData(GameRecord dat){
-    sessionName = dat.sessionName;
-  }
-  
-  /**
-    * Returns a GameRecord containing data from a specified file, or null.
-    * @param {string} fileName - name of desired file.
-    * @return {GameRecord} - The desired session data stored in the file.
-    */
-  GameRecord LoadFile(string fileName){
-    if(fileAccess){ return null; }
-    fileAccess = true;
-    BinaryFormatter bf = new BinaryFormatter();
-    string path = Application.persistentDataPath + "/" + fileName + ".save";
-    if(!File.Exists(path)){ fileAccess = false; return null; }
-    using(FileStream file = File.Open(path, FileMode.Open)){
-      GameRecord record = (GameRecord)bf.Deserialize(file);
-      file.Close();
-      fileAccess = false;
-      return record;
-    }
-  }
-  
-  /**
-    * Deletes a specified save. 
-    * @param {string} fileName - Name of desired file.
-    */
-  public void DeleteFile(string fileName){
-    if(fileAccess){ return; }
-    fileAccess = true;
-    BinaryFormatter bf = new BinaryFormatter();
-    string path = Application.persistentDataPath + "/" + fileName + ".save";
-    if(!File.Exists(path)){ fileAccess = false; return; }
-    File.Delete(path);
-  }
-  
-  /**
-    * Returns an array of every valid GameRecord in the directory.
-    * @return {List<GameRecord>} - valid GameRecords found in directory.
-    */
-  public List<GameRecord> LoadFiles(){
-    if(fileAccess){ return new List<GameRecord>(); }
-    fileAccess = true;
-    List<GameRecord> records = new List<GameRecord>();
-    string path = Application.persistentDataPath + "/";
-    DirectoryInfo dir = new DirectoryInfo(path);
-    FileInfo[] info = dir.GetFiles("*.save");
-    BinaryFormatter bf = new BinaryFormatter();
-    for(int i = 0; i < info.Length; i++){
-      using(FileStream file = File.Open(info[i].FullName, FileMode.Open)){
-        GameRecord record = (GameRecord)bf.Deserialize(file);
-        records.Add(record);
-      }
-    }
-    fileAccess = false;
-    return records;
-  }
-  
-  /**
-    * Returns all active actors in this session.
-    * @return {List<Actor>} - actors active in this session.
-    */
-  public List<Actor> GetActors(){
-    List<Actor> ret = new List<Actor>();
-    for(int i = 0; i < decks.Count; i++){
-      ret.AddRange(decks[i].GetActors());
-    }
-    return ret;
-  }
-  
-  /** 
-    * Returns all active players in this session. Players have a playerNumber
-    * between 1 and 4.
-    * @return {List<Actor>} - list of active players.
-    */
-  public List<Actor> GetPlayers(){
-    List<Actor> ret = new List<Actor>();
-    for(int i = 0; i < decks.Count; i++){
-      ret.AddRange(decks[i].players);
-    }
-    return ret;
-  }
-  
-  /**
-    * Sends a notification to every player's HUD, 
-    * or a specific player's HUD
-    * @param {string} message - message to deliver.
-    * @param {string} player - exclusive target of message.
-    */
-  public void Notify(string message, Actor player = null){
-    List<Actor> players = GetPlayers();
-    for(int i = 0; i < players.Count; i++){ 
-      if(player == null || player == players[i]){ players[i].Notify(message); }
-    }
-  }
-  
   /** 
     * Route a SessionEvent to its appropriate destination.
     * @param {SessionEvent} evt - the event to route. 
@@ -357,14 +177,8 @@ public class Session : MonoBehaviour {
     else if(evt.destination == SessionEvent.Destinations.Arena && arena != null){
       arena.HandleEvent(evt);
     }
-    else if(evt.destination == SessionEvent.Destinations.World && world != null){
-      // STUB awaiting World.cs implementation.
-    }
     else{
       if(mode == Modes.Arena && arena != null){ arena.HandleEvent(evt); }
-      if(mode == Modes.Adventure && world != null){
-        // STUB awaiting World.cs implementation
-      }
     }
   }
   

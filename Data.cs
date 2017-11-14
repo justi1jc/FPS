@@ -24,7 +24,6 @@ public class Data{
   public List<bool> bools;
   public int baseValue; // Monetary value of item.
   public InventoryRecord inventoryRecord;
-  public Cell lastPos = null;
   
   // Variables for Actor
   public SpeechTree speechTree;
@@ -63,7 +62,6 @@ public class Data{
     itemType = dat.itemType;
     stack = dat.stack;
     stackSize = dat.stackSize;
-    lastPos = dat.lastPos;
     baseValue = dat.baseValue;
     ints = dat.ints;
     strings = dat.strings;
