@@ -51,9 +51,9 @@ public class AIManager{
     currentState = current;
     nextState = next;
     switch(current){
-      case AI.States.None: this.ai = new AI(actor, this); break;
-      case AI.States.Sentry: this.ai = (AI)new SentryAI(actor, this); break;
-      case AI.States.Search: break;
+      case AI.States.None: ai = new AI(actor, this); break;
+      case AI.States.Sentry: ai = (AI)new SentryAI(actor, this); break;
+      case AI.States.Search: ai = (AI)new SearchAI(actor, this);  break;
       case AI.States.Melee: ai = (AI)new MeleeAI(actor, this); break;
       case AI.States.Ranged: ai = (AI)new RangedAI(actor, this); break;
       case AI.States.Guard: break;
@@ -79,7 +79,7 @@ public class AIManager{
     * Starts the AI in 
     */
   public void StartByFaction(StatHandler.Factions faction){
-    Transition(AI.States.Sentry);
+    Transition(AI.States.Search);
     switch(faction){
       case StatHandler.Factions.Neutral: 
         break;
