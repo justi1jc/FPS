@@ -8,25 +8,19 @@ ____________  _____  ______
 (Text art Source: http://patorjk.com/software/taag/)
 ********************************************************************************
 
-This is boiler-plate code for an open-world first-person shooter game.
+This is boiler-plate code for a first-person shooter game.
 These scripts work with Unity3D editor 2017.1.1xf1 Ubuntu links below.
 https://forum.unity3d.com/threads/unity-on-linux-release-notes-and-known-issues.350256/
 http://beta.unity3d.com/download/f4fc8fd4067d/public_download.html
 
-## Vision: 
-Provide compelling gameplay with features borrowed from contemporary FPS games
-as well as new ideas.
-
-## Strategy:
-An iterative development cycle will occur at each expansion of this project's
-scope.
-
-1. Tech Demo phase: Base code for new features will be expanded using
-placeholder assets and content.
-2. Product phase: Base code will remain largely unchanged, production turning
-instead toward assets and content.
-3. Product release: A polished product will be sold. Assets and content may or
-may not be re-used on next iteration. 
+# Hiatus/project dormancy:
+My original vision for this project was to recreate the gameplay found in the
+3D Fallout series and provide a code base others could fork. I was finishing up
+my degree(and subsequently hunting for a job) at that time. I've found a job
+and thus my time budget for this project is about to dry up. This repository
+will undergo some pruning and improvements to documentation to prepare it for
+dormancy. It is unlikely that I will resume work with Unity3D following this
+hiatus, and so this project will become the first entry in my portfolio.
 
 ********************************************************************************
 ______               _                                  _   
@@ -42,78 +36,14 @@ ______               _                                  _
 # Current version: 0.6.0
 
 ## Roadmap:
-0.6.x- Conquest gamemode
+0.7 - Project dormancy.
 
 ## Backlog
-### Base FPS Features
-* Transition between ragdoll and up-right states for proper ragdolling.
-* Visual hit indicator.
-* Adjust staggering to be less common and more stat-based.
-
-### Conquest gamemode
-* Create ConquestArena.cs
-* Control point that changes red, white, or blue according to occupier(s).
-* Players choose control point to spawn/respawn at.
-* Players choose kit to spawn with.
-* Respawns reduce side's reinforcements counter.
-* AI attempt to capture command points.
-
-### UI Features
-* Troubleshoot scroll-views using technique shown in
-http://answers.unity3d.com/questions/354044/scrollview-notscrolling.html
-* Move item between slots in inventory.
-
-### Items
-* Rock- (Ragdoll or stagger upon headshot)
-* Grenade-
-* Bow- (Special animations for holding/firing, reusable ammunition)
-* Model-based equipment.
-* Armor- Damage reduction and damage threshold.
-* Shield- Large damage threshold.
-* Wand- Maps keys to different spells.
-
-### Abilities
-* Allow certain abilities to be equipped to 1-4/Dpad
-* Add/Dismiss follower.
-* "Move there" order.
-* "Regroup" order.
-* Quick Draw slot 1/2/3/4- Equips specified slot.
-* Throw item.
-* Fireball
-* Electric touch(High damage melee.)
-* Light beam(Use unity LineRenderer tool)
-* Heal self
-* Heal other
-* Convert stamina to mana
-* stamina regen
-* Light source
-* Give mana- (Establishes link on touch, hold to maintain link.)
-* Force field- Create trigger box that converts damage to mana drain.
-* Force shield- Magic analogue to shield item. Converts damage to mana drain.
-* Force lunge- (Add force in facing direction)
-* Force levitate- (negate gravity)
-* Max health/stamina/mana buff
-* ICEPAWS buff
-* Stealth/chameleon 
-* Force push (With some damage and potentially ragdolling)
-
-### AI
-* Restructure AI around specific tasks.
-* AI should run from an Update() method instead of launching its own coroutines.
-* AI should check if a shot is clear before firing.
-* Provide nextState before transitioning.
-
-### StatHandler.cs
-* Effects(modifies stat for certain number of ticks)
-* Route attacks directly to StatHandler.cs
-* Perks( Bools that give bonuses when set to true. )
-
-### Misc
-* Minimize number of Coroutine update loops.
-* Add more robust documentation
 
 ## Current Objectives
-
+-Prepare for project dormancy.
+  -Prune non-functioning code.
+  -Provide documentation for remaining code.
 
 ********************************************************************************
  _____              __ _       
