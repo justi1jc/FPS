@@ -153,6 +153,16 @@ public class Ranged : Weapon{
     holder = null;
   }
   
+  /** Returns true if this weapon either has ammo in it, or its holder has
+    * compatible ammo. 
+    */
+  public virtual bool HasAmmo(){
+    if(ammo > 0 ){ return true; }
+    if(holder == null){ return false; }
+    if(holder.inventory.ItemByDisplayName(ammunition) == -1){ return false; }
+    return true;
+  }
+  
   /* Reloading process. Note: A bool is used by the animation state machine due
     to the buggy behaviour of triggers applying to multiple layers. */
   public virtual IEnumerator Reload(){

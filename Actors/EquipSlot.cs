@@ -48,6 +48,20 @@ public class EquipSlot{
     return items[hand];
   }
   
+  /* Returns true if the right hand contains a ranged weapon. */
+  public bool WieldingRanged(){
+    if(items[RIGHT] == null){ return false; }
+    if(items[RIGHT] is Ranged){ return true; }
+    return false;
+  }
+  
+  /* Returns true if the right hand contains a melee weapon. */
+  public bool WieldingMelee(){
+    if(items[RIGHT] == null){ return false; }
+    if(items[RIGHT] is Melee){ return true; }
+    return false;
+  }
+  
   /* Retuns from serialization when attached to an actor. */
   public void Load(GameObject rightHand, GameObject leftHand, Actor actor){
     hands[RIGHT] = rightHand;
