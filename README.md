@@ -13,14 +13,21 @@ These scripts work with Unity3D editor 2017.1.1xf1 Ubuntu links below.
 https://forum.unity3d.com/threads/unity-on-linux-release-notes-and-known-issues.350256/
 http://beta.unity3d.com/download/f4fc8fd4067d/public_download.html
 
-# Hiatus/project dormancy:
+# Project dormancy:
+### TL;DR - Jumping ship from Unity to Godot at my blukatstudios account
+
+
 My original vision for this project was to recreate the gameplay found in the
-3D Fallout series and provide a code base others could fork. I was finishing up
-my degree(and subsequently hunting for a job) at that time. I've found a job
-and thus my time budget for this project is about to dry up. This repository
-will undergo some pruning and improvements to documentation to prepare it for
-dormancy. It is unlikely that I will resume work with Unity3D following this
-hiatus, and so this project will become the first entry in my portfolio.
+3D Fallout series and provide a code base others could fork. After getting
+familiar with Unity3D I've come to realize its weaknesses. Though there are a
+number of practical problems such as lacking threading support, providing
+terrible script-based GUI support, and providing an unstable platform for use on
+linux, the philosophy is where I must draw the line. Unity3D caters to a GUI
+workflow and the purchase of 3rd party code. I can't version-control dragging
+and dropping, nor will I pay piecemeal for features of a free service. Lastly,
+I want a platform that will allow me to sell products without taking a cut,
+should that ever be a goal of mine. Also, this account has numbers in the name
+and I'm going to thusly move to another that has a proper pseudonym(blukatstudios).
 
 ********************************************************************************
 ______               _                                  _   
@@ -33,17 +40,8 @@ ______               _                                  _
                             |_|                             
 ********************************************************************************
 
-# Current version: 0.6.0
+# Current version: 0.7.0
 
-## Roadmap:
-0.7 - Project dormancy.
-
-## Backlog
-
-## Current Objectives
--Prepare for project dormancy.
-  -Prune non-functioning code.
-  -Provide documentation for remaining code.
 
 ********************************************************************************
  _____              __ _       
